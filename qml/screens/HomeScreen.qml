@@ -355,15 +355,12 @@ Item {
                     id: analogGauge
                     anchors.fill: parent
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: popup.open(
+                    onMachinePhaseClicked: popup.open(
                                        "Machine Phase",
                                        analogGauge.machinePhase,
                                        function(val){ analogGauge.machinePhase = val },
                                        0, 180
                                        )
-                    }
                 }
             }
 
@@ -389,15 +386,12 @@ Item {
                     thresholdLabel: "Thr-S"
                     maxValue: 1200
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: popup.open(
+                    onThresholdClicked: popup.open(
                                        "Thr-S",
                                        signalGauge.threshold,
                                        function(val){ signalGauge.threshold = val },
                                        100, 1500
                                        )
-                    }
                 }
 
                 // Bottom Navigation
@@ -454,15 +448,12 @@ Item {
                     thresholdLabel: "Thr-A"
                     maxValue: 1200
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: popup.open(
+                    onThresholdClicked: popup.open(
                                        "Thr-A",
                                        ampGauge.threshold,
                                        function(val){ ampGauge.threshold = val },
                                        50, 1500
                                        )
-                    }
                 }
             }
         }

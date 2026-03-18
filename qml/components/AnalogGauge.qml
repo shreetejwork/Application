@@ -22,6 +22,9 @@ Item {
     property color needleColor: "#1A4DB5"
     property color tickColor: "#2A2A4A"
 
+    // Signal when Machine Phase text is clicked
+    signal machinePhaseClicked()
+
     function valueToAngleDeg(v) {
         var startDeg = -90
         var sweepDeg = 180
@@ -131,7 +134,6 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
         anchors.leftMargin: parent.width * 0.10
 
-
         spacing: Math.max(6, height * 0.035)
 
         Text {
@@ -156,19 +158,36 @@ Item {
             color: "#90CAF9"
         }
 
+        // CLICKABLE MACHINE PHASE AREA
         Text {
             text: root.machinePhase
             font.pixelSize: Math.max(12, root.height * 0.055)
-            color: "#111"
-            horizontalAlignment: Text.AlignHCenter
-        }
-
-        Text {
-            text: "Machine Phase"
-            font.pixelSize: Math.max(10, root.height * 0.035)
             font.bold: true
             color: "#1A4DB5"
             horizontalAlignment: Text.AlignHCenter
+        }
+
+        Item {
+            width: parent.width
+            height: machinePhaseLabel.height
+
+            Text {
+                id: machinePhaseLabel
+                text: "Machine Phase"
+                font.pixelSize: Math.max(10, root.height * 0.035)
+                font.bold: true
+                color: "#111"
+                horizontalAlignment: Text.AlignHCenter
+                anchors.horizontalCenter: parent.horizontalCenter
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: {
+                    root.machinePhaseClicked()
+                }
+            }
         }
     }
 

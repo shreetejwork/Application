@@ -3,7 +3,6 @@ import QtQuick
 Item {
     id: root
 
-
     property real sizeRef: Math.min(width, height)
 
     property real value: 950
@@ -21,6 +20,9 @@ Item {
     readonly property real startAngle: 0
     readonly property real span: 260
     readonly property real colorSpan: 340
+
+    // Signal when threshold text is clicked
+    signal thresholdClicked()
 
     function toDeg(v) {
         return startAngle + (v / maxValue) * colorSpan
@@ -121,19 +123,38 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
         }
 
-        Text {
-            text: root.threshold
-            font.pixelSize: Math.max(13, sizeRef * 0.09)
-            color: "#444"
+        // CLICKABLE THRESHOLD AREA
+        Item {
+            width: parent.width
+            height: thresholdColumn.height
             anchors.horizontalCenter: parent.horizontalCenter
-        }
 
-        Text {
-            text: root.thresholdLabel
-            font.pixelSize: Math.max(12, sizeRef * 0.08)
-            font.bold: true
-            color: "#2446B8"
-            anchors.horizontalCenter: parent.horizontalCenter
+            Column {
+                id: thresholdColumn
+                anchors.centerIn: parent
+                spacing: Math.max(3, sizeRef * 0.02)
+
+                Text {
+                    text: root.threshold
+                    font.pixelSize: Math.max(13, sizeRef * 0.09)
+                    color: "#444"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                Text {
+                    text: root.thresholdLabel
+                    font.pixelSize: Math.max(12, sizeRef * 0.08)
+                    font.bold: true
+                    color: "#2446B8"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+            }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.thresholdClicked()
+            }
         }
     }
 
