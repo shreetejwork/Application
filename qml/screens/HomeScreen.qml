@@ -6,6 +6,8 @@ import "../components"
 
 Item {
     id: homeScreen
+    property bool showTopBar: true
+    property var globalTopBar: null
 
     Rectangle {
         anchors.fill: parent
@@ -16,7 +18,8 @@ Item {
             anchors.top: parent.top
             anchors.left: parent.left
             anchors.right: parent.right
-            height: Math.max(70, parent.height * 0.08)
+            height: showTopBar ? Math.max(70, parent.height * 0.08) : 0
+            visible: showTopBar
 
             userName: "Rahul1234567789"
             userRole: "Supervisor"
@@ -176,7 +179,7 @@ Item {
                             Layout.fillHeight: true
                             radius: 10
                             color: mouseArea.pressed ? (modelData === "C" ? "#FF9999" : modelData === "⌫" ? "#FFCC99" : "#CCCCCC")
-                                                    : (modelData === "C" ? "#FFCDD2" : modelData === "⌫" ? "#FFE0B2" : "#F0F0F0")
+                                                     : (modelData === "C" ? "#FFCDD2" : modelData === "⌫" ? "#FFE0B2" : "#F0F0F0")
                             border.color: "#E0E0E0"
                             border.width: 1
 
@@ -301,8 +304,12 @@ Item {
                                     popup.onSaveCallback(val)
                                 }
                                 
-                                // Show notifications
-                                topBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
+                                // Show notifications via global top bar if available
+                                if (globalTopBar) {
+                                    globalTopBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
+                                } else {
+                                    topBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
+                                }
                                 
                                 // Close popup
                                 popup.visible = false
@@ -356,11 +363,11 @@ Item {
                     anchors.fill: parent
 
                     onMachinePhaseClicked: popup.open(
-                                       "Machine Phase",
-                                       analogGauge.machinePhase,
-                                       function(val){ analogGauge.machinePhase = val },
-                                       0, 180
-                                       )
+                                               "Machine Phase",
+                                               analogGauge.machinePhase,
+                                               function(val){ analogGauge.machinePhase = val },
+                                               0, 180
+                                               )
                 }
             }
 
@@ -387,42 +394,11 @@ Item {
                     maxValue: 1200
 
                     onThresholdClicked: popup.open(
-                                       "Thr-S",
-                                       signalGauge.threshold,
-                                       function(val){ signalGauge.threshold = val },
-                                       100, 1500
-                                       )
-                }
-
-                // Bottom Navigation
-                Item {
-                    id: pageNavRow
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    anchors.bottom: parent.bottom
-
-
-                    anchors.bottomMargin: Math.max(8, parent.height * 0.02)
-
-                    height: Math.max(40, parent.height * 0.08)
-
-                    NavPageIndicator {
-                        id: pageIndicator
-                        anchors.centerIn: parent
-                        width: Math.min(parent.width * 0.5, 260)
-                        height: parent.height * 0.8
-
-                        pageCount: 3
-                        currentPage: 1
-
-                        onPreviousClicked: {
-                            console.log("Previous page")
-                        }
-
-                        onNextClicked: {
-                            console.log("Next page")
-                        }
-                    }
+                                            "Thr-S",
+                                            signalGauge.threshold,
+                                            function(val){ signalGauge.threshold = val },
+                                            100, 1500
+                                            )
                 }
             }
 
@@ -449,11 +425,11 @@ Item {
                     maxValue: 1200
 
                     onThresholdClicked: popup.open(
-                                       "Thr-A",
-                                       ampGauge.threshold,
-                                       function(val){ ampGauge.threshold = val },
-                                       50, 1500
-                                       )
+                                            "Thr-A",
+                                            ampGauge.threshold,
+                                            function(val){ ampGauge.threshold = val },
+                                            50, 1500
+                                            )
                 }
             }
         }

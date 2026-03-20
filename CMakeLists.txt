@@ -17,6 +17,7 @@ qt_add_qml_module(appApplication
     QML_FILES
         qml/Main.qml
         qml/screens/HomeScreen.qml
+        qml/screens/DDusterScreen.qml
         qml/components/TopBar.qml
         qml/components/AnalogGauge.qml
         qml/components/CircularGauge.qml
