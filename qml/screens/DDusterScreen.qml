@@ -9,133 +9,223 @@ Item {
     property bool showTopBar: true
     property var globalTopBar
 
-    // 🎨 THEME
-    QtObject {
-        id: theme
-        property color bg: "#F5F7FC"
-        property color panel: "#FFFFFF"
-        property color border: "#E5E7EB"
-        property color primary: "#4A6CF7"
-        property color success: "#22C55E"
-        property color danger: "#EF4444"
-        property color text: "#1F2937"
-    }
-
     function notify(msg) {
         if (globalTopBar && globalTopBar.showNotification)
             globalTopBar.showNotification(msg)
     }
 
-    // ✨ Smooth fade-in
     opacity: 0
     Behavior on opacity { NumberAnimation { duration: 400 } }
     Component.onCompleted: opacity = 1
 
-    RowLayout {
+    Rectangle {
         anchors.fill: parent
-        anchors.margins: 30
-        spacing: 30
+        color: "#FAFBFC"
 
-        // ================= LEFT PANEL =================
-        Rectangle {
-            Layout.fillHeight: true
-            Layout.preferredWidth: parent.width * 0.28
+        RowLayout {
+            anchors.fill: parent
+            anchors.topMargin: showTopBar ? topBar.height : 20
+            anchors.leftMargin: 35
+            anchors.rightMargin: 35
+            anchors.bottomMargin: 35
+            spacing: 30
 
-            radius: 24
-            color: theme.panel
-            border.color: theme.border
-            border.width: 1
+            // =========== LEFT SIDE ===========
+            ColumnLayout {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredWidth: 1
+                spacing: 10
 
-            Column {
-                anchors.centerIn: parent
-                spacing: 30
+                //Heading
+                Column {
+                    spacing: 4
 
-                Text {
-                    text: "Controls"
-                    font.pixelSize: 18
-                    font.bold: true
-                    color: theme.text
-                    anchors.horizontalCenter: parent.horizontalCenter
+                    Text {
+                        text: "Batch Menu"
+                        font.pixelSize: 18
+                        font.bold: true
+                        color: "#1A4DB5"
+                    }
+
+                    Rectangle {
+                        width: 40
+                        height: 3
+                        radius: 2
+                        color: "#1A4DB5"
+                    }
                 }
 
-                ActionButton {
-                    text: "Auto Learn"
-                    onClicked: root.notify("Auto Learn triggered")
-                }
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.color: "#E5E7EB"
+                    border.width: 1
 
-                ActionButton {
-                    text: "Manual Validation"
-                    onClicked: root.notify("Manual Validation triggered")
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 24
+                        spacing: 40
+
+                        Item { Layout.fillHeight: true }
+
+
+
+                        Item { Layout.fillHeight: true }
+                    }
                 }
             }
-        }
 
-        // ================= RIGHT PANEL =================
-        Rectangle {
-            Layout.fillHeight: true
-            Layout.fillWidth: true
-
-            radius: 24
-            color: theme.panel
-            border.color: theme.border
-            border.width: 1
-
+            // =========== RIGHT SIDE ===========
             ColumnLayout {
-                anchors.fill: parent
-                anchors.margins: 30
-                spacing: 40
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                Layout.preferredWidth: 1
+                spacing: 10
 
-                // 🔘 Toggle Section
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 100
-                    radius: 18
-                    color: "#F9FAFB"
-                    border.color: theme.border
+                // Heading
+                Column {
+                    spacing: 4
 
-                    DDButton {
-                        anchors.centerIn: parent
+                    Text {
+                        text: "D Duster Menu"
+                        font.pixelSize: 18
+                        font.bold: true
+                        color: "#1A4DB5"
+                    }
 
-                        onToggledChanged: {
-                            root.notify("DD toggled: " + toggled)
-                        }
+                    Rectangle {
+                        width: 40
+                        height: 3
+                        radius: 2
+                        color: "#1A4DB5"
                     }
                 }
 
-                // 🔢 Value 1
-                Rectangle {
+                ColumnLayout {
                     Layout.fillWidth: true
-                    height: 110
-                    radius: 18
-                    color: "#F9FAFB"
-                    border.color: theme.border
+                    Layout.fillHeight: true
+                    spacing: 20
 
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: 20
+                    // DD ON/OFF
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 140
+                        radius: 16
+                        color: "#FFFFFF"
+                        border.color: "#E5E7EB"
+                        border.width: 1
 
-                        ValueControl {
-                            Layout.fillWidth: true
-                            onSaveClicked: (val) => root.notify("Value1 saved: " + val)
+                        ColumnLayout {
+                            anchors.fill: parent
+                            anchors.margins: 20
+                            spacing: 12
+
+                            Text {
+                                text: "DD ON/OFF"
+                                font.pixelSize: 13
+                                font.bold: true
+                                color: "#6B7280"
+                                Layout.alignment: Qt.AlignHCenter
+                            }
+
+                            Item { Layout.fillHeight: true }
+
+                            DDButton {
+                                Layout.alignment: Qt.AlignHCenter
+
+                                onToggledChanged: {
+                                    globalTopBar.showNotification(
+                                        toggled ? "✓ DD ON" : "✓ DD OFF"
+                                    )
+                                }
+                            }
+
+                            Item { Layout.fillHeight: true }
                         }
                     }
-                }
 
-                // 🔢 Value 2
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 110
-                    radius: 18
-                    color: "#F9FAFB"
-                    border.color: theme.border
 
-                    RowLayout {
-                        anchors.fill: parent
-                        anchors.margins: 20
+                    // PARAMETER 1
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: 16
+                        color: "#FFFFFF"
+                        border.color: "#E5E7EB"
+                        border.width: 1
 
-                        ValueControl {
-                            Layout.fillWidth: true
-                            onSaveClicked: (val) => root.notify("Value2 saved: " + val)
+                        //  Title (Top-Left)
+                        Text {
+                            text: "Power (Volt)"
+                            font.pixelSize: 13
+                            font.bold: true
+                            color: "#6B7280"
+
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.margins: 16
+                        }
+
+
+                        Item {
+                            anchors.fill: parent
+
+                            ValueControl {
+                                anchors.centerIn: parent
+                                anchors.verticalCenterOffset: -parent.height * 0.1
+                                width: parent.width * 0.7
+
+                                minValue: 0
+                                maxValue: 100
+                                value: 0
+
+                                onSaveClicked: (val) =>
+                                    root.globalTopBar.showNotification("✓ DD Power Saved " + val)
+                            }
+                        }
+                    }
+
+                    // PARAMETER 2
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: 16
+                        color: "#FFFFFF"
+                        border.color: "#E5E7EB"
+                        border.width: 1
+
+                        //  Title (Top-Left)
+                        Text {
+                            text: "Frequency (Hz)"
+                            font.pixelSize: 13
+                            font.bold: true
+                            color: "#6B7280"
+
+                            anchors.top: parent.top
+                            anchors.left: parent.left
+                            anchors.margins: 16
+                        }
+
+
+                        Item {
+                            anchors.fill: parent
+
+                            ValueControl {
+                                anchors.centerIn: parent
+                                anchors.verticalCenterOffset: -parent.height * 0.1
+                                width: parent.width * 0.7
+
+
+                                minValue: 25
+                                maxValue: 50
+                                value: 25
+
+                                onSaveClicked: (val) =>
+                                    root.globalTopBar.showNotification("✓ DD Frequency Saved " + val)
+                            }
                         }
                     }
                 }

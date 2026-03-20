@@ -411,25 +411,97 @@ Item {
                 anchors.bottom: parent.bottom
                 anchors.leftMargin: parent.width * 0.02
 
-                CircularGauge {
-                    id: ampGauge
+                Column {
                     anchors.centerIn: parent
-                    width: parent.width * 0.75
-                    height: width
+                    width: parent.width * 0.85
+                    spacing: 45   //  better spacing between button & gauge
 
-                    // Amplitude Gauge Configuration
-                    value: 650
-                    label: "Amplitude"
-                    threshold: 400
-                    thresholdLabel: "Thr-A"
-                    maxValue: 1200
+                    // 🔵 Manual Validation Button (enhanced)
+                    Rectangle {
+                        width: parent.width * 0.6
+                        height: 44
+                        radius: 10
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        color: "#1A4DB5"
 
-                    onThresholdClicked: popup.open(
-                                            "Thr-A",
-                                            ampGauge.threshold,
-                                            function(val){ ampGauge.threshold = val },
-                                            50, 1500
-                                            )
+                        property bool hovered: false
+                        property bool pressed: false
+
+                        // 🔲 Outer subtle border (optional depth)
+                        border.color: "#163E91"
+                        border.width: 1
+
+                        // ⚪ Inner white border
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: 2   // 🔥 creates inner border effect
+                            radius: parent.radius - 2
+                            color: "transparent"
+                            border.color: "white"
+                            border.width: 1
+                        }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Manual Validation"
+                            font.pixelSize: 13
+                            font.bold: true
+                            color: "white"
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+
+                            onEntered: parent.hovered = true
+                            onExited: parent.hovered = false
+                            onPressed: parent.pressed = true
+                            onReleased: parent.pressed = false
+
+                            onClicked: globalTopBar.showNotification("✓ Manual Validation ON")
+                        }
+
+                        // 🎯 Press animation
+                        scale: pressed ? 0.96 : 1.0
+                        Behavior on scale { NumberAnimation { duration: 120 } }
+
+                        Behavior on color { ColorAnimation { duration: 150 } }
+
+                        states: [
+                            State {
+                                name: "hovered"
+                                when: parent.hovered && !parent.pressed
+                                PropertyChanges { target: parent; color: "#3B5BDB" }
+                            },
+                            State {
+                                name: "pressed"
+                                when: parent.pressed
+                                PropertyChanges { target: parent; color: "#2F49C6" }
+                            }
+                        ]
+                    }
+
+                    // Circular Gauge (bigger)
+                    CircularGauge {
+                        id: ampGauge
+                        width: parent.width   //  increased size
+                        height: width
+
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        value: 650
+                        label: "Amplitude"
+                        threshold: 400
+                        thresholdLabel: "Thr-A"
+                        maxValue: 1200
+
+                        onThresholdClicked: popup.open(
+                            "Thr-A",
+                            ampGauge.threshold,
+                            function(val){ ampGauge.threshold = val },
+                            50, 1500
+                        )
+                    }
                 }
             }
         }

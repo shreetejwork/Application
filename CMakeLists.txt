@@ -31,6 +31,7 @@ qt_add_qml_module(appApplication
             assets/images/PowerOff.png
             QML_FILES qml/components/ActionButton.qml
             QML_FILES qml/components/ValueControl.qml
+            QML_FILES qml/components/CircleActionButton.qml
 
 
 )
