@@ -6,8 +6,13 @@ Item {
     id: root
 
     property int value: 10
-    property int minValue: 0        // ✅ NEW
-    property int maxValue: 100      // ✅ NEW
+    property int minValue: 0
+    property int maxValue: 100
+
+    // ================= RESPONSIVE SCALE (NO VISUAL CHANGE) =================
+    property real minScale: 0.75
+    property real maxScale: 1.0
+    property real s: Math.max(minScale, Math.min(maxScale, Math.min(width, height) / 200))
 
     signal saveClicked(int value)
 
@@ -46,7 +51,7 @@ Item {
                 radius: 10
 
                 property bool pressed: false
-                property bool disabled: root.value >= root.maxValue   // ✅ logic
+                property bool disabled: root.value >= root.maxValue
 
                 color: disabled ? "#D1D5DB" : "#1A4DB5"
                 opacity: disabled ? 0.5 : 1.0
@@ -61,7 +66,7 @@ Item {
 
                 MouseArea {
                     anchors.fill: parent
-                    enabled: !parent.disabled   // ✅ disable click
+                    enabled: !parent.disabled
 
                     onPressed: parent.pressed = true
                     onReleased: parent.pressed = false
@@ -70,7 +75,6 @@ Item {
 
                 scale: pressed ? 0.94 : 1.0
                 Behavior on scale { NumberAnimation { duration: 120 } }
-                Behavior on color { ColorAnimation { duration: 150 } }
             }
 
             // ➖ MINUS BUTTON
@@ -104,7 +108,6 @@ Item {
 
                 scale: pressed ? 0.94 : 1.0
                 Behavior on scale { NumberAnimation { duration: 120 } }
-                Behavior on color { ColorAnimation { duration: 150 } }
             }
         }
 
