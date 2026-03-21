@@ -48,6 +48,12 @@ Window {
             onCurrentIndexChanged: {
                 navigator.currentPage = currentIndex
             }
+
+            AutoLearnScreen{
+                showTopBar: false
+                globalTopBar: mainTopBar
+
+            }
         }
 
         NavPageIndicator {
@@ -56,7 +62,7 @@ Window {
             Layout.preferredHeight: Math.max(32, root.height * 0.015)
             scale: 0.85
 
-            pageCount: 2
+            pageCount: 3
             currentPage: swipeView.currentIndex
 
             onPreviousClicked: {

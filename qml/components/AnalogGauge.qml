@@ -4,10 +4,9 @@ import QtQuick.Controls
 Item {
     id: root
 
-    // KEEP FLEXIBLE SIZE (parent controlled)
-    // width: 500
-    // height: 400
-
+    // ===== OPTIONAL TRACKING =====
+    property real trackingPhase: -1
+    property string trackingCountLabel: "Tracking Phase"
 
     property real baseHeight: 400
     property real scale: Math.max(0.6, height / baseHeight)
@@ -22,7 +21,6 @@ Item {
     property color needleColor: "#1A4DB5"
     property color tickColor: "#2A2A4A"
 
-    // Signal when Machine Phase text is clicked
     signal machinePhaseClicked()
 
     function valueToAngleDeg(v) {
@@ -31,6 +29,7 @@ Item {
         return startDeg + (v / valueRange) * sweepDeg
     }
 
+    // ================= CANVAS =================
     Canvas {
         id: canvas
         anchors.fill: parent
@@ -50,7 +49,6 @@ Item {
             var fontSize = Math.max(7 * root.scale, radius * 0.075)
             var labelOffset = radius * 0.14
 
-            // --- TICKS AND LABELS ---
             for (var v = root.minValue; v <= root.maxValue; v += 5) {
                 var isMajor = (v % 10 === 0)
                 var tLen = isMajor ? tickMajorLen : tickMinorLen
@@ -81,7 +79,7 @@ Item {
                 }
             }
 
-            // --- PRODUCT PHASE MARKER (RED DASH) ---
+            // PRODUCT MARKER
             var mAngleRad = root.valueToAngleDeg(root.productPhase) * Math.PI / 180
             var outerR = radius
             var innerR = radius - radius * 0.10
@@ -102,11 +100,11 @@ Item {
             ctx.fillStyle = "rgba(255, 0, 0, 0.6)"
             ctx.fill()
 
-            // -------- NEEDLE FOR MACHINE PHASE --------
+            // MACHINE NEEDLE
             var nAngleRad = root.valueToAngleDeg(root.machinePhase) * Math.PI / 180
-            var startOffset = radius * 0.60   // distance from center
-            var needleLen = radius * 0.15     // short needle
-            var baseOffset = radius * 0.025   // width of needle
+            var startOffset = radius * 0.60
+            var needleLen = radius * 0.15
+            var baseOffset = radius * 0.025
 
             var startX = cx + startOffset * Math.cos(nAngleRad)
             var startY = cy + startOffset * Math.sin(nAngleRad)
@@ -129,80 +127,103 @@ Item {
     onMachinePhaseChanged: canvas.requestPaint()
     Component.onCompleted: canvas.requestPaint()
 
+    // ================= CENTERED LEFT PANEL =================
     Column {
         anchors.left: parent.left
+        anchors.leftMargin: parent.width * 0.08
         anchors.verticalCenter: parent.verticalCenter
-        anchors.leftMargin: parent.width * 0.10
 
-        spacing: Math.max(6, height * 0.035)
+        // 🔥 dynamic spacing (smaller when 3 items)
+        spacing: root.trackingPhase >= 0
+                 ? Math.max(6, root.height * 0.02)
+                 : Math.max(10, root.height * 0.03)
 
-        Text {
-            text: root.productPhase
-            font.pixelSize: Math.max(12, root.height * 0.07)
-            font.bold: true
-            color: "#1A4DB5"
-            horizontalAlignment: Text.AlignHCenter
+        // ===== PRODUCT =====
+        Column {
+            spacing: 2
+
+            Text {
+                text: root.productPhase
+                font.pixelSize: root.trackingPhase >= 0
+                                ? Math.max(10, root.height * 0.055)   // smaller when 3
+                                : Math.max(12, root.height * 0.07)
+                font.bold: true
+                color: "#1A4DB5"
+            }
+
+            Text {
+                text: "Product Phase"
+                font.pixelSize: root.trackingPhase >= 0
+                                ? Math.max(9, root.height * 0.03)
+                                : Math.max(10, root.height * 0.035)
+                font.bold: true
+            }
         }
 
-        Text {
-            text: "Product Phase"
-            font.pixelSize: Math.max(10, root.height * 0.035)
-            font.bold: true
-            color: "#111"
-            horizontalAlignment: Text.AlignHCenter
-        }
-
+        // ===== DIVIDER (only when tracking NOT present) =====
         Rectangle {
-            width: parent.width * 0.4
-            height: Math.max(1, 2 * root.scale)
+            visible: root.trackingPhase < 0
+            width: 40
+            height: 2
             color: "#90CAF9"
         }
 
-        // CLICKABLE MACHINE PHASE AREA
-        Text {
-            text: root.machinePhase
-            font.pixelSize: Math.max(12, root.height * 0.055)
-            font.bold: true
-            color: "#1A4DB5"
-            horizontalAlignment: Text.AlignHCenter
-        }
-
-        Item {
-            width: parent.width
-            height: machinePhaseLabel.height
+        // ===== MACHINE =====
+        Column {
+            spacing: 2
 
             Text {
-                id: machinePhaseLabel
-                text: "Machine Phase"
-                font.pixelSize: Math.max(10, root.height * 0.035)
+                id: machineValue
+                text: root.machinePhase
+                font.pixelSize: root.trackingPhase >= 0
+                                ? Math.max(10, root.height * 0.05)
+                                : Math.max(12, root.height * 0.055)
                 font.bold: true
-                color: "#111"
-                horizontalAlignment: Text.AlignHCenter
-                anchors.horizontalCenter: parent.horizontalCenter
+                color: "#1A4DB5"
             }
 
-            MouseArea {
-                anchors.fill: parent
-                cursorShape: Qt.PointingHandCursor
-                onClicked: {
-                    root.machinePhaseClicked()
+            Item {
+                width: machineLabel.width
+                height: machineLabel.height
+
+                Text {
+                    id: machineLabel
+                    text: "Machine Phase"
+                    font.pixelSize: root.trackingPhase >= 0
+                                    ? Math.max(9, root.height * 0.03)
+                                    : Math.max(10, root.height * 0.035)
+                    font.bold: true
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.machinePhaseClicked()
                 }
             }
         }
+
+        // ===== TRACKING =====
+        Column {
+            visible: root.trackingPhase >= 0
+            spacing: 2
+
+            Text {
+                text: root.trackingPhase
+                font.pixelSize: Math.max(10, root.height * 0.05)
+                font.bold: true
+                color: "#1A4DB5"
+            }
+
+            Text {
+                text: root.trackingCountLabel
+                font.pixelSize: Math.max(9, root.height * 0.03)
+                font.bold: true
+            }
+        }
     }
 
-    Text {
-        anchors.bottom: machineSlider.top
-        anchors.horizontalCenter: machineSlider.horizontalCenter
-        anchors.bottomMargin: 6
-
-        text: "Product Phase: " + Math.round(machineSlider.value)
-
-
-        font.pixelSize: Math.max(12, 16 * root.scale)
-        color: "#333"
-    }
-
+    // ================= SLIDER =================
     Slider {
         id: machineSlider
         anchors.bottom: parent.bottom

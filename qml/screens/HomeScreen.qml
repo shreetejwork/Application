@@ -35,7 +35,7 @@ Item {
             radius: 16
             color: "#FFFFFF"
             anchors.centerIn: parent
-            
+
             // Simple shadow effect using opacity layers
             Rectangle {
                 anchors.fill: popup
@@ -96,7 +96,7 @@ Item {
                     border.color: popup.hasError ? "#FF5252" : "#D0D0D0"
                     border.width: popup.hasError ? 2 : 1
                     color: "#F8F9FB"
-                    
+
                     Behavior on border.color { ColorAnimation { duration: 150 } }
 
                     TextInput {
@@ -109,7 +109,7 @@ Item {
                         horizontalAlignment: TextInput.AlignHCenter
                         verticalAlignment: TextInput.AlignVCenter
                         inputMethodHints: Qt.ImhDigitsOnly
-                        
+
                         onTextChanged: {
                             if (popup.hasError) {
                                 popup.errorText = ""
@@ -125,12 +125,12 @@ Item {
                     Layout.preferredHeight: 35
                     radius: 8
                     color: "#E8EEFB"
-                    
+
                     RowLayout {
                         anchors.fill: parent
                         anchors.margins: 10
                         spacing: 15
-                        
+
                         Text {
                             text: "Min: " + popup.minValue
                             color: "#1A4DB5"
@@ -138,9 +138,9 @@ Item {
                             font.bold: true
                             Layout.fillWidth: true
                         }
-                        
+
                         Rectangle { width: 1; height: parent.height * 0.6; color: "#D0D0D0" }
-                        
+
                         Text {
                             text: "Max: " + popup.maxValue
                             color: "#1A4DB5"
@@ -194,7 +194,7 @@ Item {
                             MouseArea {
                                 id: mouseArea
                                 anchors.fill: parent
-                                
+
                                 onClicked: {
                                     if (modelData === "C") {
                                         inputField.text = ""
@@ -227,7 +227,7 @@ Item {
                         color: cancelMouseArea.pressed ? "#CCCCCC" : "#E8E8E8"
                         border.color: "#D0D0D0"
                         border.width: 1
-                        
+
                         Behavior on color { ColorAnimation { duration: 100 } }
 
                         Text {
@@ -254,7 +254,7 @@ Item {
                         Layout.fillHeight: true
                         radius: 10
                         color: saveMouseArea.pressed ? "#0D3BA8" : "#1A4DB5"
-                        
+
                         Behavior on color { ColorAnimation { duration: 100 } }
 
                         Text {
@@ -268,7 +268,7 @@ Item {
                         MouseArea {
                             id: saveMouseArea
                             anchors.fill: parent
-                            
+
                             onClicked: {
                                 var inputText = inputField.text.trim()
 
@@ -303,17 +303,17 @@ Item {
                                 if (popup.onSaveCallback) {
                                     popup.onSaveCallback(val)
                                 }
-                                
+
                                 // Show notifications via global top bar if available
                                 if (globalTopBar) {
                                     globalTopBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
                                 } else {
                                     topBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
                                 }
-                                
+
                                 // Close popup
                                 popup.visible = false
-                                
+
                                 // Reset error state
                                 popup.errorText = ""
                                 popup.hasError = false

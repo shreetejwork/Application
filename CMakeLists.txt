@@ -32,6 +32,8 @@ qt_add_qml_module(appApplication
             QML_FILES qml/components/ActionButton.qml
             QML_FILES qml/components/ValueControl.qml
             QML_FILES qml/components/CircleActionButton.qml
+            QML_FILES qml/screens/AutoLearnScreen.qml
+            QML_FILES qml/components/CustomPopup.qml
 
 
 )
