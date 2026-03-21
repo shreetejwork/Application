@@ -23,7 +23,7 @@ Item {
         onReleased: {
             var delta = touchPoints[0].x - swipeStartX
 
-            // ✅ SCALE SAFE SWIPE DISTANCE
+            // SCALE SAFE SWIPE DISTANCE
             var threshold = 40 * root.scale
 
             if (delta < -threshold) root.nextClicked()
@@ -34,8 +34,8 @@ Item {
     RowLayout {
         anchors.centerIn: parent
 
-        // ✅ SAFE SPACING
-        spacing: Math.max(6, parent.width * 0.04)
+        //  SAFE SPACING
+        spacing: Math.max(6, parent.width * 0.02)
 
         Item {
             width: Math.max(48 * root.scale, root.height * 1.2)
@@ -53,7 +53,7 @@ Item {
                 anchors.centerIn: parent
                 text: "❮"
 
-                // ✅ SAME DESIGN + SAFE MIN
+                //  SAME DESIGN + SAFE MIN
                 font.pixelSize: Math.max(14, root.height * 0.55)
                 font.bold: true
                 color: "#1A4DB5"
@@ -69,7 +69,7 @@ Item {
         }
 
         Row {
-            spacing: Math.max(4, root.width * 0.025)
+            spacing: Math.max(4, root.width * 0.020)
 
             Repeater {
                 model: root.pageCount
@@ -83,7 +83,7 @@ Item {
 
                     border.color: "#1A4DB5"
 
-                    // ✅ SCALE SAFE BORDER
+                    // SCALE SAFE BORDER
                     border.width: Math.max(1, root.height * 0.06)
                 }
             }
@@ -105,7 +105,7 @@ Item {
                 anchors.centerIn: parent
                 text: "❯"
 
-                // ✅ SAME DESIGN + SAFE MIN
+                //  SAME DESIGN + SAFE MIN
                 font.pixelSize: Math.max(14, root.height * 0.55)
                 font.bold: true
                 color: "#1A4DB5"

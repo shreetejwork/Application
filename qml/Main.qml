@@ -53,7 +53,9 @@ Window {
         NavPageIndicator {
             id: navigator
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.max(48, root.height * 0.04)
+            Layout.preferredHeight: Math.max(32, root.height * 0.015)
+            scale: 0.85
+
             pageCount: 2
             currentPage: swipeView.currentIndex
 
