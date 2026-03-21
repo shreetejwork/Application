@@ -81,6 +81,7 @@ Item {
 
                         RowLayout {
                             Layout.fillWidth: true
+                            Layout.topMargin: 20
                             spacing: 12
 
                             Rectangle {
@@ -281,6 +282,7 @@ Item {
                     Layout.fillHeight: true
                     spacing: 20
 
+                    // ================= DD ON/OFF =================
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 140
@@ -305,13 +307,20 @@ Item {
                             Item { Layout.fillHeight: true }
 
                             DDButton {
+                                id: ddBtn
                                 Layout.alignment: Qt.AlignHCenter
+
+
+                                onToggledChanged: {
+                                    root.notify(toggled ? "✓ DD ON" : "✓ DD OFF")
+                                }
                             }
 
                             Item { Layout.fillHeight: true }
                         }
                     }
 
+                    // ================= POWER =================
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -337,13 +346,20 @@ Item {
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -parent.height * 0.1
                                 width: parent.width * 0.7
+
                                 minValue: 0
                                 maxValue: 100
                                 value: 0
+
+
+                                onSaveClicked: (val) => {
+                                    root.notify("✓ DD Power Saved: " + val)
+                                }
                             }
                         }
                     }
 
+                    // ================= FREQUENCY =================
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -369,9 +385,15 @@ Item {
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -parent.height * 0.1
                                 width: parent.width * 0.7
+
                                 minValue: 25
                                 maxValue: 50
                                 value: 25
+
+
+                                onSaveClicked: (val) => {
+                                    root.notify("✓ DD Frequency Saved: " + val)
+                                }
                             }
                         }
                     }
