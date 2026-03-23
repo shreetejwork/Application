@@ -108,7 +108,7 @@ Rectangle {
                 }
 
                 Item {
-                    width: root.width * 0.10   // 🔥 adjust this value for more/less space
+                    width: root.width * 0.10
                 }
 
                 //  MENU BUTTON
