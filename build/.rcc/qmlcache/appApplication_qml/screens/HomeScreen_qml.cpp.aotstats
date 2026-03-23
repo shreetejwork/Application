@@ -496,7 +496,7 @@
                         {
                             "codegenResult": 2,
                             "column": 44,
-                            "durationMicroseconds": 1000,
+                            "durationMicroseconds": 2000,
                             "functionName": "onMachinePhaseClicked",
                             "line": 367,
                             "message": "Cannot load property machinePhase from const QMetaObject."

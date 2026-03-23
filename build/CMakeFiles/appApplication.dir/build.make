@@ -332,6 +332,21 @@ Application/appApplication.qmltypes: appapplication_qmltyperegistrations.cpp
 .rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.aotstats: .rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp
 	@$(CMAKE_COMMAND) -E touch_nocreate .rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.aotstats
 
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: /opt/homebrew/share/qt/libexec/qmlcachegen
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/SysDetailsScreen.qml
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: .qt/rcc/qmake_Application.qrc
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: .qt/rcc/appApplication_raw_qml_0.qrc
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: .qt/rcc/appApplication_raw_res_0.qrc
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: .qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: Application/appApplication.qmltypes
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: Application/qmldir
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_20) "Generating .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp, .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats"
+	/opt/homebrew/bin/cmake -E make_directory "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens"
+	/opt/homebrew/share/qt/libexec/qmlcachegen --bare --resource-path /qt/qml/Application/qml/screens/SysDetailsScreen.qml -I "/Users/shreetej721/Desktop/QT Projects/Application/build" -I /opt/homebrew/share/qt/qml -i "/Users/shreetej721/Desktop/QT Projects/Application/build/Application/qmldir" --resource "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qmake_Application.qrc" --resource "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0.qrc" --resource "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_res_0.qrc" --resource "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc" --dump-aot-stats "--module-id=Application(appApplication)" -o "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp" "/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/SysDetailsScreen.qml"
+
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats: .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp
+	@$(CMAKE_COMMAND) -E touch_nocreate .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats
+
 .qt/rcc/qrc_appApplication_raw_qml_0.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/Main.qml
 .qt/rcc/qrc_appApplication_raw_qml_0.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/HomeScreen.qml
 .qt/rcc/qrc_appApplication_raw_qml_0.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/DDusterScreen.qml
@@ -347,9 +362,10 @@ Application/appApplication.qmltypes: appapplication_qmltyperegistrations.cpp
 .qt/rcc/qrc_appApplication_raw_qml_0.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/AutoLearnScreen.qml
 .qt/rcc/qrc_appApplication_raw_qml_0.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/components/CustomPopup.qml
 .qt/rcc/qrc_appApplication_raw_qml_0.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/GlobalState.qml
+.qt/rcc/qrc_appApplication_raw_qml_0.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/SysDetailsScreen.qml
 .qt/rcc/qrc_appApplication_raw_qml_0.cpp: .qt/rcc/appApplication_raw_qml_0.qrc
 .qt/rcc/qrc_appApplication_raw_qml_0.cpp: /opt/homebrew/share/qt/libexec/rcc
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_20) "Running rcc for resource appApplication_raw_qml_0"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_21) "Running rcc for resource appApplication_raw_qml_0"
 	/opt/homebrew/share/qt/libexec/rcc --output "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp" --name appApplication_raw_qml_0 "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0.qrc"
 
 .qt/rcc/qrc_appApplication_raw_res_0.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/assets/images/Bell.png
@@ -358,7 +374,7 @@ Application/appApplication.qmltypes: appapplication_qmltyperegistrations.cpp
 .qt/rcc/qrc_appApplication_raw_res_0.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/assets/images/PowerOff.png
 .qt/rcc/qrc_appApplication_raw_res_0.cpp: .qt/rcc/appApplication_raw_res_0.qrc
 .qt/rcc/qrc_appApplication_raw_res_0.cpp: /opt/homebrew/share/qt/libexec/rcc
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_21) "Running rcc for resource appApplication_raw_res_0"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_22) "Running rcc for resource appApplication_raw_res_0"
 	/opt/homebrew/share/qt/libexec/rcc --output "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp" --name appApplication_raw_res_0 "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_res_0.qrc"
 
 .qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp: Application/qml/qmldir
@@ -366,22 +382,22 @@ Application/appApplication.qmltypes: appapplication_qmltyperegistrations.cpp
 .qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp: Application/qml/components/qmldir
 .qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp: .qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
 .qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp: /opt/homebrew/share/qt/libexec/rcc
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_22) "Running rcc for resource appApplication_raw_qml_0_extra_qmldirs"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_23) "Running rcc for resource appApplication_raw_qml_0_extra_qmldirs"
 	/opt/homebrew/share/qt/libexec/rcc --output "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp" --name appApplication_raw_qml_0_extra_qmldirs "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc"
 
 appApplication_autogen/timestamp: /opt/homebrew/share/qt/libexec/moc
 appApplication_autogen/timestamp: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_23) "Automatic MOC and UIC for target appApplication"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_24) "Automatic MOC and UIC for target appApplication"
 	/opt/homebrew/bin/cmake -E cmake_autogen "/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles/appApplication_autogen.dir/AutogenInfo.json" ""
 	/opt/homebrew/bin/cmake -E touch "/Users/shreetej721/Desktop/QT Projects/Application/build/appApplication_autogen/timestamp"
 
 meta_types/appApplication_json_file_list.txt: /opt/homebrew/share/qt/libexec/cmake_automoc_parser
 meta_types/appApplication_json_file_list.txt: appApplication_autogen/timestamp
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_24) "Running AUTOMOC file extraction for target appApplication"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_25) "Running AUTOMOC file extraction for target appApplication"
 	/opt/homebrew/share/qt/libexec/cmake_automoc_parser --cmake-autogen-cache-file "/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles/appApplication_autogen.dir/ParseCache.txt" --cmake-autogen-info-file "/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles/appApplication_autogen.dir/AutogenInfo.json" --output-file-path "/Users/shreetej721/Desktop/QT Projects/Application/build/meta_types/appApplication_json_file_list.txt" --timestamp-file-path "/Users/shreetej721/Desktop/QT Projects/Application/build/meta_types/appApplication_json_file_list.txt.timestamp" --cmake-autogen-include-dir-path "/Users/shreetej721/Desktop/QT Projects/Application/build/appApplication_autogen/include"
 
 meta_types/qt6appapplication_metatypes.json: meta_types/qt6appapplication_metatypes.json.gen
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_25) "Generating meta_types/qt6appapplication_metatypes.json"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_26) "Generating meta_types/qt6appapplication_metatypes.json"
 	/opt/homebrew/bin/cmake -E true
 
 CMakeFiles/appApplication.dir/codegen:
@@ -390,7 +406,7 @@ CMakeFiles/appApplication.dir/codegen:
 CMakeFiles/appApplication.dir/appApplication_autogen/mocs_compilation.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/appApplication_autogen/mocs_compilation.cpp.o: appApplication_autogen/mocs_compilation.cpp
 CMakeFiles/appApplication.dir/appApplication_autogen/mocs_compilation.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_26) "Building CXX object CMakeFiles/appApplication.dir/appApplication_autogen/mocs_compilation.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_27) "Building CXX object CMakeFiles/appApplication.dir/appApplication_autogen/mocs_compilation.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/appApplication_autogen/mocs_compilation.cpp.o -MF CMakeFiles/appApplication.dir/appApplication_autogen/mocs_compilation.cpp.o.d -o CMakeFiles/appApplication.dir/appApplication_autogen/mocs_compilation.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/appApplication_autogen/mocs_compilation.cpp"
 
 CMakeFiles/appApplication.dir/appApplication_autogen/mocs_compilation.cpp.i: cmake_force
@@ -404,7 +420,7 @@ CMakeFiles/appApplication.dir/appApplication_autogen/mocs_compilation.cpp.s: cma
 CMakeFiles/appApplication.dir/src/main.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/src/main.cpp.o: /Users/shreetej721/Desktop/QT\ Projects/Application/src/main.cpp
 CMakeFiles/appApplication.dir/src/main.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_27) "Building CXX object CMakeFiles/appApplication.dir/src/main.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_28) "Building CXX object CMakeFiles/appApplication.dir/src/main.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/src/main.cpp.o -MF CMakeFiles/appApplication.dir/src/main.cpp.o.d -o CMakeFiles/appApplication.dir/src/main.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/src/main.cpp"
 
 CMakeFiles/appApplication.dir/src/main.cpp.i: cmake_force
@@ -418,7 +434,7 @@ CMakeFiles/appApplication.dir/src/main.cpp.s: cmake_force
 CMakeFiles/appApplication.dir/appapplication_qmltyperegistrations.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/appapplication_qmltyperegistrations.cpp.o: appapplication_qmltyperegistrations.cpp
 CMakeFiles/appApplication.dir/appapplication_qmltyperegistrations.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_28) "Building CXX object CMakeFiles/appApplication.dir/appapplication_qmltyperegistrations.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/appApplication.dir/appapplication_qmltyperegistrations.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/appapplication_qmltyperegistrations.cpp.o -MF CMakeFiles/appApplication.dir/appapplication_qmltyperegistrations.cpp.o.d -o CMakeFiles/appApplication.dir/appapplication_qmltyperegistrations.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/appapplication_qmltyperegistrations.cpp"
 
 CMakeFiles/appApplication.dir/appapplication_qmltyperegistrations.cpp.i: cmake_force
@@ -432,7 +448,7 @@ CMakeFiles/appApplication.dir/appapplication_qmltyperegistrations.cpp.s: cmake_f
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_qmake_Application.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_qmake_Application.cpp.o: .qt/rcc/qrc_qmake_Application.cpp
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_qmake_Application.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_29) "Building CXX object CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_qmake_Application.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_30) "Building CXX object CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_qmake_Application.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_qmake_Application.cpp.o -MF CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_qmake_Application.cpp.o.d -o CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_qmake_Application.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qrc_qmake_Application.cpp"
 
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_qmake_Application.cpp.i: cmake_force
@@ -446,7 +462,7 @@ CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_qmake_Application.cpp.s: cmake_f
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o: .rcc/qmlcache/appApplication_qmlcache_loader.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_30) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_31) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.i: cmake_force
@@ -460,7 +476,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/Main_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/Main_qml.cpp.o: .rcc/qmlcache/appApplication_qml/Main_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/Main_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_31) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/Main_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_32) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/Main_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/Main_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/Main_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/Main_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/Main_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/Main_qml.cpp.i: cmake_force
@@ -474,7 +490,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/Main_qml.cp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.o: .rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_32) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_33) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.i: cmake_force
@@ -488,7 +504,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/Hom
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.o: .rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_33) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_34) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.i: cmake_force
@@ -502,7 +518,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDu
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp.o: .rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_34) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_35) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/TopBar_qml.cpp.i: cmake_force
@@ -516,7 +532,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp.o: .rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_35) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_36) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/AnalogGauge_qml.cpp.i: cmake_force
@@ -530,7 +546,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp.o: .rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_36) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_37) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircularGauge_qml.cpp.i: cmake_force
@@ -544,7 +560,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp.o: .rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_37) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_38) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CoilProgressBar_qml.cpp.i: cmake_force
@@ -558,7 +574,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp.o: .rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_38) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_39) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/DDButton_qml.cpp.i: cmake_force
@@ -572,7 +588,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp.o: .rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_39) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_40) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/NavPageIndicator_qml.cpp.i: cmake_force
@@ -586,7 +602,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp.o: .rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_40) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_41) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ActionButton_qml.cpp.i: cmake_force
@@ -600,7 +616,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp.o: .rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_41) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_42) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/ValueControl_qml.cpp.i: cmake_force
@@ -614,7 +630,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp.o: .rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_42) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_43) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CircleActionButton_qml.cpp.i: cmake_force
@@ -628,7 +644,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o: .rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_43) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_44) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.i: cmake_force
@@ -642,7 +658,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/Aut
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.o: .rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_44) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_45) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.i: cmake_force
@@ -656,7 +672,7 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.o: .rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_45) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_46) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp"
 
 CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.i: cmake_force
@@ -667,10 +683,24 @@ CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.s"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp" -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.s
 
+CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o: CMakeFiles/appApplication.dir/flags.make
+CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o: .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp
+CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_47) "Building CXX object CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o -MF CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o.d -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp"
+
+CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.i"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp" > CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.i
+
+CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.s"
+	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp" -o CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.s
+
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.o: .qt/rcc/qrc_appApplication_raw_qml_0.cpp
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_46) "Building CXX object CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_48) "Building CXX object CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.o -MF CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.o.d -o CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp"
 
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.i: cmake_force
@@ -684,7 +714,7 @@ CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.s: 
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.o: .qt/rcc/qrc_appApplication_raw_res_0.cpp
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_47) "Building CXX object CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_49) "Building CXX object CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.o -MF CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.o.d -o CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp"
 
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.i: cmake_force
@@ -698,7 +728,7 @@ CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.s: 
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.o: CMakeFiles/appApplication.dir/flags.make
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.o: .qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.o: CMakeFiles/appApplication.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_48) "Building CXX object CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_50) "Building CXX object CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.o"
 	/usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.o -MF CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.o.d -o CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.o -c "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp"
 
 CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.i: cmake_force
@@ -731,6 +761,7 @@ appApplication_OBJECTS = \
 "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o" \
 "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.o" \
 "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.o" \
+"CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o" \
 "CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.o" \
 "CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.o" \
 "CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.o"
@@ -758,6 +789,7 @@ appApplication.app/Contents/MacOS/appApplication: CMakeFiles/appApplication.dir/
 appApplication.app/Contents/MacOS/appApplication: CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o
 appApplication.app/Contents/MacOS/appApplication: CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.o
 appApplication.app/Contents/MacOS/appApplication: CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.o
+appApplication.app/Contents/MacOS/appApplication: CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o
 appApplication.app/Contents/MacOS/appApplication: CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0.cpp.o
 appApplication.app/Contents/MacOS/appApplication: CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_res_0.cpp.o
 appApplication.app/Contents/MacOS/appApplication: CMakeFiles/appApplication.dir/build/.qt/rcc/qrc_appApplication_raw_qml_0_extra_qmldirs.cpp.o
@@ -769,7 +801,7 @@ appApplication.app/Contents/MacOS/appApplication: /opt/homebrew/lib/QtQml.framew
 appApplication.app/Contents/MacOS/appApplication: /opt/homebrew/lib/QtNetwork.framework/Versions/A/QtNetwork
 appApplication.app/Contents/MacOS/appApplication: /opt/homebrew/lib/QtCore.framework/Versions/A/QtCore
 appApplication.app/Contents/MacOS/appApplication: CMakeFiles/appApplication.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_49) "Linking CXX executable appApplication.app/Contents/MacOS/appApplication"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_51) "Linking CXX executable appApplication.app/Contents/MacOS/appApplication"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/appApplication.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
@@ -814,6 +846,8 @@ CMakeFiles/appApplication.dir/depend: .rcc/qmlcache/appApplication_qml/screens/D
 CMakeFiles/appApplication.dir/depend: .rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.aotstats
 CMakeFiles/appApplication.dir/depend: .rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp
 CMakeFiles/appApplication.dir/depend: .rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.aotstats
+CMakeFiles/appApplication.dir/depend: .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp
+CMakeFiles/appApplication.dir/depend: .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats
 CMakeFiles/appApplication.dir/depend: .rcc/qmlcache/appApplication_qmlcache_loader.cpp
 CMakeFiles/appApplication.dir/depend: Application/appApplication.qmltypes
 CMakeFiles/appApplication.dir/depend: appApplication_autogen/timestamp

@@ -3,119 +3,150 @@ import QtQuick
 Item {
     id: root
 
-    // ✅ SAFE SCALE
-    property real baseHeight: 120
-    property real scale: Math.max(0.6, height / baseHeight)
-
+    // ================= INPUT =================
     property int value: 1500
     property int maxValue: 3000
     property string label: "Coil"
-    property color fillColor: "#4CAF50"
-    property color trackColor: "#E0E0E0"
 
-    readonly property real fillRatio: Math.min(1.0, Math.max(0.0, value / maxValue))
+    // ================= COLORS (BACKWARD SAFE) =================
+    property color fillColor: "#4CAF50"     // OLD SUPPORT (DO NOT REMOVE)
+    property color baseColor: fillColor     // NEW SYSTEM USES THIS
+    // Gradient middle (yellow) and end (red) colors
+    property color gradientMidColor: "#F5C242"
+    property color gradientEndColor: "#E53935"
+    property color trackColor: "#E6E6E6"
+    property color handleColor: "#2E2E2E"
+
+    // ================= RATIO =================
+    property real ratio: Math.min(1, Math.max(0, value / maxValue))
+
+    // smooth value animation
+    Behavior on value {
+        NumberAnimation { duration: 120 }
+    }
 
     Column {
         anchors.fill: parent
+        spacing: Math.max(10, height * 0.08)
 
-        // ✅ SAFE SPACING
-        spacing: Math.max(6, parent.height * 0.08)
-
+        // ================= TRACK =================
         Item {
             id: trackArea
             width: parent.width
+            // Taller bar area so the pill matches the reference screenshot.
+            height: Math.max(48, parent.height * 0.70)
 
-            // ✅ MIN HEIGHT SAFETY
-            height: Math.max(48, root.height * 0.50)
-
+            // BACK TRACK
             Rectangle {
+                id: bgTrack
                 anchors.verticalCenter: parent.verticalCenter
                 width: parent.width
-                height: parent.height * 0.38
+                height: parent.height * 0.80
                 radius: height / 2
                 color: root.trackColor
+                border.color: "#6F95D6"
+                border.width: 2
+            }
 
-                Rectangle {
-                    anchors.verticalCenter: parent.verticalCenter
-                    anchors.left: parent.left
-                    width: parent.width * root.fillRatio
-                    height: parent.height
-                    radius: height / 2
-                    color: root.fillColor
+            // ================= FILLED BAR =================
+            Rectangle {
+                id: fillBar
+                anchors.left: parent.left
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width * root.ratio
+                height: bgTrack.height
+                radius: height / 2
+
+                // Horizontal left->right color change
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0.0; color: root.baseColor }
+                    GradientStop { position: 0.55; color: root.gradientMidColor }
+                    GradientStop { position: 1.0; color: root.gradientEndColor }
                 }
             }
 
-            // 🔘 HANDLE
-            Rectangle {
-                anchors.verticalCenter: parent.verticalCenter
+            // ================= NEEDLE MARKER =================
+            // Teardrop/needle marker at the current value position.
+            Item {
+                id: needle
+                width: Math.max(14, bgTrack.height * 0.35)
+                height: bgTrack.height * 1.08
+
+                // Place the bottom tip at the top of the pill (slightly overlapping).
+                anchors.bottom: bgTrack.top
+                anchors.bottomMargin: -2
 
                 x: Math.min(
                     parent.width - width,
-                    Math.max(0, (parent.width * root.fillRatio) - width / 2)
+                    Math.max(0, parent.width * root.ratio - width / 2)
                 )
 
-                // ✅ SIZE SAFETY
-                width: Math.max(48, parent.height * 0.85)
-                height: Math.max(48, parent.height * 0.85)
+                Canvas {
+                    anchors.fill: parent
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        ctx.clearRect(0, 0, width, height)
 
-                radius: Math.max(4, width * 0.08)
-                color: "#888888"
-                opacity: 0.85
+                        var w = width
+                        var h = height
 
-                Column {
-                    anchors.centerIn: parent
+                        // Teardrop path (point down)
+                        ctx.beginPath()
+                        ctx.moveTo(w / 2, h) // bottom tip
+                        ctx.quadraticCurveTo(w * 0.95, h * 0.78, w * 0.82, h * 0.55)
+                        ctx.quadraticCurveTo(w * 0.68, h * 0.28, w / 2, 0)
+                        ctx.quadraticCurveTo(w * 0.32, h * 0.28, w * 0.18, h * 0.55)
+                        ctx.quadraticCurveTo(w * 0.05, h * 0.78, w / 2, h)
+                        ctx.closePath()
 
-                    // ✅ SAFE SPACING
-                    spacing: Math.max(2, parent.height * 0.05)
+                        ctx.fillStyle = "#1A4DB5"
+                        ctx.strokeStyle = "#0D3BA8"
+                        ctx.lineWidth = 2
+                        ctx.fill()
+                        ctx.stroke()
 
-                    Repeater {
-                        model: 3
-                        Rectangle {
-                            width: parent.parent.width * 0.45
-
-                            // ✅ LINE VISIBILITY FIX
-                            height: Math.max(2, parent.parent.height * 0.08)
-
-                            color: "white"
-                            opacity: 0.8
-                        }
+                        // small highlight near the top
+                        ctx.beginPath()
+                        ctx.arc(w / 2, h * 0.18, Math.max(2, w * 0.16), 0, Math.PI * 2)
+                        ctx.fillStyle = "white"
+                        ctx.globalAlpha = 0.25
+                        ctx.fill()
+                        ctx.globalAlpha = 1.0
                     }
                 }
             }
 
+            // ================= TOUCH =================
             MultiPointTouchArea {
                 anchors.fill: parent
                 maximumTouchPoints: 1
 
                 onUpdated: {
                     var tp = touchPoints[0]
-                    var ratio = Math.min(1.0, Math.max(0.0, tp.x / trackArea.width))
+                    var ratio = Math.min(1.0, Math.max(0.0, tp.x / width))
                     root.value = Math.round(ratio * root.maxValue)
                 }
             }
         }
 
+        // ================= LABEL + VALUE =================
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
-
-            // ✅ SAFE SPACING
-            spacing: Math.max(6, root.width * 0.015)
+            spacing: 28
 
             Text {
-                text: root.label + " :"
-
-                // ✅ FONT CLAMP (NO DESIGN CHANGE)
-                font.pixelSize: Math.max(12, root.height * 0.22)
-                color: "#222"
+                text: root.label
+                font.pixelSize: Math.max(16, root.height * 0.18)
+                color: "#1A4DB5"
             }
 
             Text {
                 text: root.value
-
-                // ✅ FONT CLAMP
-                font.pixelSize: Math.max(12, root.height * 0.22)
+                font.pixelSize: Math.max(16, root.height * 0.18)
                 font.bold: true
-                color: "#1A4DB5"
+                color: "#111827"
+                font.family: "monospace"
             }
         }
     }

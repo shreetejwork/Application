@@ -83,6 +83,7 @@ CMakeFiles/module_appApplication_aotstats_target: .rcc/qmlcache/module_appApplic
 .rcc/qmlcache/module_appApplication.aotstats: .rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.aotstats
 .rcc/qmlcache/module_appApplication.aotstats: .rcc/qmlcache/appApplication_qml/components/CustomPopup_qml.cpp.aotstats
 .rcc/qmlcache/module_appApplication.aotstats: .rcc/qmlcache/appApplication_qml/GlobalState_qml.cpp.aotstats
+.rcc/qmlcache/module_appApplication.aotstats: .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats
 .rcc/qmlcache/module_appApplication.aotstats: .rcc/qmlcache/module_appApplication.aotstatslist
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Generating .rcc/qmlcache/module_appApplication.aotstats"
 	/opt/homebrew/share/qt/libexec/qmlaotstats aggregate /Users/shreetej721/Desktop/QT\ Projects/Application/build/.rcc/qmlcache/module_appApplication.aotstatslist /Users/shreetej721/Desktop/QT\ Projects/Application/build/.rcc/qmlcache/module_appApplication.aotstats
@@ -312,6 +313,21 @@ CMakeFiles/module_appApplication_aotstats_target: .rcc/qmlcache/module_appApplic
 .rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.aotstats: .rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp
 	@$(CMAKE_COMMAND) -E touch_nocreate .rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.aotstats
 
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: /opt/homebrew/share/qt/libexec/qmlcachegen
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/SysDetailsScreen.qml
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: .qt/rcc/qmake_Application.qrc
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: .qt/rcc/appApplication_raw_qml_0.qrc
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: .qt/rcc/appApplication_raw_res_0.qrc
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: .qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: Application/appApplication.qmltypes
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp: Application/qmldir
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_17) "Generating .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp, .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats"
+	/opt/homebrew/bin/cmake -E make_directory "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens"
+	/opt/homebrew/share/qt/libexec/qmlcachegen --bare --resource-path /qt/qml/Application/qml/screens/SysDetailsScreen.qml -I "/Users/shreetej721/Desktop/QT Projects/Application/build" -I /opt/homebrew/share/qt/qml -i "/Users/shreetej721/Desktop/QT Projects/Application/build/Application/qmldir" --resource "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qmake_Application.qrc" --resource "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0.qrc" --resource "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_res_0.qrc" --resource "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc" --dump-aot-stats "--module-id=Application(appApplication)" -o "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp" "/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/SysDetailsScreen.qml"
+
+.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats: .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp
+	@$(CMAKE_COMMAND) -E touch_nocreate .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats
+
 CMakeFiles/module_appApplication_aotstats_target.dir/codegen:
 .PHONY : CMakeFiles/module_appApplication_aotstats_target.dir/codegen
 
@@ -345,6 +361,8 @@ module_appApplication_aotstats_target: .rcc/qmlcache/appApplication_qml/screens/
 module_appApplication_aotstats_target: .rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.aotstats
 module_appApplication_aotstats_target: .rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp
 module_appApplication_aotstats_target: .rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.aotstats
+module_appApplication_aotstats_target: .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp
+module_appApplication_aotstats_target: .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats
 module_appApplication_aotstats_target: .rcc/qmlcache/module_appApplication.aotstats
 module_appApplication_aotstats_target: CMakeFiles/module_appApplication_aotstats_target
 module_appApplication_aotstats_target: CMakeFiles/module_appApplication_aotstats_target.dir/build.make

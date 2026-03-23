@@ -12,7 +12,7 @@ Item {
     property real baseHeight: 400
     property real scale: Math.max(0.6, height / baseHeight)
 
-    // ✅ LOCAL STATE (SYNCED WITH GLOBAL)
+    // LOCAL STATE (SYNCED WITH GLOBAL)
     property real productPhase: 0
     property real machinePhase: 0
 
@@ -125,7 +125,7 @@ Item {
         }
     }
 
-    // ✅ SAFE CONNECTION (IMPORTANT FIX)
+    //  SAFE CONNECTION (IMPORTANT FIX)
     Connections {
         target: (typeof GlobalState !== "undefined" && GlobalState) ? GlobalState : null
 
@@ -140,7 +140,7 @@ Item {
         }
     }
 
-    // ✅ INITIAL LOAD (CRITICAL)
+    //  INITIAL LOAD (CRITICAL)
     Component.onCompleted: {
         if (typeof GlobalState !== "undefined" && GlobalState) {
             root.productPhase = GlobalState.productPhase

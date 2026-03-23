@@ -88,6 +88,7 @@ CMakeFiles/appApplication_qmlimportscan: .qt/qml_imports/appApplication_build.cm
 .qt/qml_imports/appApplication_build.cmake: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/AutoLearnScreen.qml
 .qt/qml_imports/appApplication_build.cmake: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/components/CustomPopup.qml
 .qt/qml_imports/appApplication_build.cmake: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/GlobalState.qml
+.qt/qml_imports/appApplication_build.cmake: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/SysDetailsScreen.qml
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Running qmlimportscanner for appApplication"
 	cd "/Users/shreetej721/Desktop/QT Projects/Application" && /opt/homebrew/share/qt/libexec/qmlimportscanner "@/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/qml_imports/appApplication_build.rsp"
 

@@ -27,6 +27,7 @@ set(CMAKE_MULTIPLE_OUTPUT_PAIRS
   "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.aotstats" "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp"
   "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.aotstats" "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp"
   "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.aotstats" "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp"
+  "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats" "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp"
   )
 
 

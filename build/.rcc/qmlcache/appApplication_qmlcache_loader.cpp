@@ -110,6 +110,13 @@ namespace _qt_qml_Application_qml_GlobalState_qml {
         reinterpret_cast<const QV4::CompiledData::Unit*>(&qmlData), &aotBuiltFunctions[0], nullptr
     };
 }
+namespace _qt_qml_Application_qml_screens_SysDetailsScreen_qml { 
+    extern const unsigned char qmlData[];
+    extern const QQmlPrivate::AOTCompiledFunction aotBuiltFunctions[];
+    const QQmlPrivate::CachedQmlUnit unit = {
+        reinterpret_cast<const QV4::CompiledData::Unit*>(&qmlData), &aotBuiltFunctions[0], nullptr
+    };
+}
 
 }
 namespace {
@@ -139,6 +146,7 @@ Registry::Registry() {
     resourcePathToCachedUnit.insert(QStringLiteral("/qt/qml/Application/qml/screens/AutoLearnScreen.qml"), &QmlCacheGeneratedCode::_qt_qml_Application_qml_screens_AutoLearnScreen_qml::unit);
     resourcePathToCachedUnit.insert(QStringLiteral("/qt/qml/Application/qml/components/CustomPopup.qml"), &QmlCacheGeneratedCode::_qt_qml_Application_qml_components_CustomPopup_qml::unit);
     resourcePathToCachedUnit.insert(QStringLiteral("/qt/qml/Application/qml/GlobalState.qml"), &QmlCacheGeneratedCode::_qt_qml_Application_qml_GlobalState_qml::unit);
+    resourcePathToCachedUnit.insert(QStringLiteral("/qt/qml/Application/qml/screens/SysDetailsScreen.qml"), &QmlCacheGeneratedCode::_qt_qml_Application_qml_screens_SysDetailsScreen_qml::unit);
     QQmlPrivate::RegisterQmlUnitCacheHook registration;
     registration.structVersion = 0;
     registration.lookupCachedQmlUnit = &lookupCachedUnit;

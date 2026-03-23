@@ -32,6 +32,8 @@ set(src_and_dest_list
     "/Users/shreetej721/Desktop/QT Projects/Application/build/Application/qml/components/CustomPopup.qml"
     "/Users/shreetej721/Desktop/QT Projects/Application/qml/GlobalState.qml"
     "/Users/shreetej721/Desktop/QT Projects/Application/build/Application/qml/GlobalState.qml"
+    "/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/SysDetailsScreen.qml"
+    "/Users/shreetej721/Desktop/QT Projects/Application/build/Application/qml/screens/SysDetailsScreen.qml"
 
 )
 set(timestamp_file "/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/appApplication_qml.txt")

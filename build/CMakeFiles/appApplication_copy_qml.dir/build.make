@@ -84,6 +84,7 @@ CMakeFiles/appApplication_copy_qml: .qt/appApplication_qml.txt
 .qt/appApplication_qml.txt: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/AutoLearnScreen.qml
 .qt/appApplication_qml.txt: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/components/CustomPopup.qml
 .qt/appApplication_qml.txt: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/GlobalState.qml
+.qt/appApplication_qml.txt: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/SysDetailsScreen.qml
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --blue --bold --progress-dir="/Users/shreetej721/Desktop/QT Projects/Application/build/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Copying appApplication qml sources into build dir"
 	/opt/homebrew/bin/cmake "-DFILES_INFO_PATH=/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/appApplication_qml.cmake" -P /opt/homebrew/lib/cmake/Qt6Qml/Qt6QmlCopyFiles.cmake
 

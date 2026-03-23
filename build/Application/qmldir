@@ -16,5 +16,6 @@ CircleActionButton 254.0 qml/components/CircleActionButton.qml
 AutoLearnScreen 254.0 qml/screens/AutoLearnScreen.qml
 CustomPopup 254.0 qml/components/CustomPopup.qml
 GlobalState 254.0 qml/GlobalState.qml
+SysDetailsScreen 254.0 qml/screens/SysDetailsScreen.qml
 depends QtQuick
 

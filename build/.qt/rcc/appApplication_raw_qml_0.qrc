@@ -15,6 +15,7 @@
     <file alias="qml/screens/AutoLearnScreen.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/AutoLearnScreen.qml</file>
     <file alias="qml/components/CustomPopup.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CustomPopup.qml</file>
     <file alias="qml/GlobalState.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/GlobalState.qml</file>
+    <file alias="qml/screens/SysDetailsScreen.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/SysDetailsScreen.qml</file>
   </qresource>
 </RCC>
 

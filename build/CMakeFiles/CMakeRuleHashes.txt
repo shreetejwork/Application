@@ -23,6 +23,7 @@ cbd0b4267c8fabdf6d8596139721cab7 .rcc/qmlcache/appApplication_qml/components/Val
 4a240e8058e6b3523c109cc12d4f9aa3 .rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp
 91ccd122f53ea86f1111e512947dfaa3 .rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp
 c4e3398e5b4ba22eeb05bfd214990fbc .rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp
+d3413ada3b2a735bb13f2e1db1c4614e .rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp
 0984373175526b7e246d010250df895d .rcc/qmlcache/appApplication_qmlcache_loader.cpp
 79c56911b3f5ba7bcc74e1dfc8db4840 .rcc/qmlcache/module_appApplication.aotstats
 636840393d595c7fb9b95eb9a821fa8f CMakeFiles/all_aotstats

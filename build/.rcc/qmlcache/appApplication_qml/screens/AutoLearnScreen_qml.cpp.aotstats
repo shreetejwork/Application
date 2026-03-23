@@ -46,14 +46,6 @@
                             "message": ""
                         },
                         {
-                            "codegenResult": 2,
-                            "column": 40,
-                            "durationMicroseconds": 2000,
-                            "functionName": "onMachinePhaseClicked",
-                            "line": 35,
-                            "message": "Cannot load property machinePhase from const QMetaObject."
-                        },
-                        {
                             "codegenResult": 0,
                             "column": 31,
                             "durationMicroseconds": 0,
@@ -66,7 +58,7 @@
                             "column": 27,
                             "durationMicroseconds": 0,
                             "functionName": "globalTopBar",
-                            "line": 48,
+                            "line": 41,
                             "message": ""
                         },
                         {
@@ -74,7 +66,7 @@
                             "column": 27,
                             "durationMicroseconds": 0,
                             "functionName": "fill",
-                            "line": 47,
+                            "line": 40,
                             "message": ""
                         }
                     ],

@@ -105,7 +105,7 @@ Item {
                                     focus: false
                                     activeFocusOnPress: false
 
-                                    readOnly: root.batchRunning   // ✅ DISABLE WHILE RUNNING
+                                    readOnly: root.batchRunning   //  DISABLE WHILE RUNNING
 
                                     background: null
                                     cursorVisible: activeFocus
@@ -130,7 +130,7 @@ Item {
                             Text {
                                 text: "Edit"
                                 font.pixelSize: 12
-                                color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"  // ✅ Visual feedback
+                                color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"  // Visual feedback
 
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
@@ -139,7 +139,7 @@ Item {
                                     anchors.fill: parent
                                     cursorShape: root.batchRunning ? Qt.ArrowCursor : Qt.PointingHandCursor
 
-                                    enabled: !root.batchRunning   // ✅ DISABLE CLICK
+                                    enabled: !root.batchRunning   // DISABLE CLICK
 
                                     onClicked: {
                                         inputField.readOnly = false
@@ -185,7 +185,7 @@ Item {
                                 bgColor: "#1A4DB5"
                                 hoverColor: "#123A8A"
 
-                                enabled: root.batchRunning   // ✅
+                                enabled: root.batchRunning
 
                                 onClicked: {
                                     root.batchPaused = !root.batchPaused
@@ -201,7 +201,7 @@ Item {
                                 bgColor: "#1A4DB5"
                                 hoverColor: "#123A8A"
 
-                                enabled: root.batchRunning   // ✅
+                                enabled: root.batchRunning
 
                                 onClicked: {
                                     root.batchRunning = false
@@ -256,7 +256,7 @@ Item {
                 }
             }
 
-            // RIGHT SIDE (UNCHANGED)
+            // RIGHT SIDE
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true

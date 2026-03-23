@@ -29,6 +29,8 @@ file(REMOVE_RECURSE
   ".rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.aotstats"
   ".rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp"
   ".rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.aotstats"
+  ".rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp"
+  ".rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats"
   ".rcc/qmlcache/module_appApplication.aotstats"
   "CMakeFiles/module_appApplication_aotstats_target"
 )

@@ -82,6 +82,7 @@ CMakeFiles/appApplication_qmllint: /Users/shreetej721/Desktop/QT\ Projects/Appli
 CMakeFiles/appApplication_qmllint: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/AutoLearnScreen.qml
 CMakeFiles/appApplication_qmllint: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/components/CustomPopup.qml
 CMakeFiles/appApplication_qmllint: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/GlobalState.qml
+CMakeFiles/appApplication_qmllint: /Users/shreetej721/Desktop/QT\ Projects/Application/qml/screens/SysDetailsScreen.qml
 CMakeFiles/appApplication_qmllint: .rcc/qmllint/appApplication.rsp
 	cd "/Users/shreetej721/Desktop/QT Projects/Application" && /opt/homebrew/bin/qmllint @/Users/shreetej721/Desktop/QT\ Projects/Application/build/.rcc/qmllint/appApplication.rsp
 

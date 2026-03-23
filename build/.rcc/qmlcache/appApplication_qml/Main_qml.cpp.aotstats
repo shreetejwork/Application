@@ -54,11 +54,19 @@
                             "message": ""
                         },
                         {
+                            "codegenResult": 0,
+                            "column": 31,
+                            "durationMicroseconds": 0,
+                            "functionName": "globalTopBar",
+                            "line": 60,
+                            "message": ""
+                        },
+                        {
                             "codegenResult": 2,
                             "column": 26,
                             "durationMicroseconds": 0,
                             "functionName": "currentPage",
-                            "line": 66,
+                            "line": 71,
                             "message": "Cannot retrieve a non-object type by ID: swipeView"
                         },
                         {
@@ -66,7 +74,7 @@
                             "column": 32,
                             "durationMicroseconds": 0,
                             "functionName": "onPreviousClicked",
-                            "line": 68,
+                            "line": 73,
                             "message": "Cannot retrieve a non-object type by ID: swipeView"
                         },
                         {
@@ -74,7 +82,7 @@
                             "column": 28,
                             "durationMicroseconds": 0,
                             "functionName": "onNextClicked",
-                            "line": 71,
+                            "line": 76,
                             "message": "Cannot retrieve a non-object type by ID: swipeView"
                         },
                         {
@@ -82,7 +90,7 @@
                             "column": 37,
                             "durationMicroseconds": 0,
                             "functionName": "preferredHeight",
-                            "line": 62,
+                            "line": 67,
                             "message": ""
                         }
                     ],

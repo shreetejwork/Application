@@ -54,6 +54,11 @@ Window {
                 globalTopBar: mainTopBar
 
             }
+
+            SysDetailsScreen{
+                showTopBar: false
+                globalTopBar: mainTopBar
+            }
         }
 
         NavPageIndicator {
@@ -62,7 +67,7 @@ Window {
             Layout.preferredHeight: Math.max(32, root.height * 0.015)
             scale: 0.85
 
-            pageCount: 3
+            pageCount: 4
             currentPage: swipeView.currentIndex
 
             onPreviousClicked: {

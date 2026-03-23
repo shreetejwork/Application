@@ -30,6 +30,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp" "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o" "gcc" "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.o.d"
   "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp" "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.o" "gcc" "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.o.d"
   "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp" "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.o" "gcc" "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.o.d"
+  "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp" "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o" "gcc" "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o.d"
   "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp" "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o" "gcc" "CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o.d"
   "/Users/shreetej721/Desktop/QT Projects/Application/src/main.cpp" "CMakeFiles/appApplication.dir/src/main.cpp.o" "gcc" "CMakeFiles/appApplication.dir/src/main.cpp.o.d"
   )
@@ -51,6 +52,7 @@ set(CMAKE_MULTIPLE_OUTPUT_PAIRS
   "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp.aotstats" "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/AutoLearnScreen_qml.cpp"
   "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp.aotstats" "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/DDusterScreen_qml.cpp"
   "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.aotstats" "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp"
+  "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.aotstats" "/Users/shreetej721/Desktop/QT Projects/Application/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp"
   "/Users/shreetej721/Desktop/QT Projects/Application/build/Application/appApplication.qmltypes" "/Users/shreetej721/Desktop/QT Projects/Application/build/appapplication_qmltyperegistrations.cpp"
   )
 

@@ -31,13 +31,6 @@ Item {
                 anchors.fill: parent
                 trackingCountLabel: "Tracking Phase"
                 trackingPhase: 50
-
-                onMachinePhaseClicked: popup.open(
-                    "Machine Phase",
-                    GlobalState.machinePhase,
-                    function(val){ GlobalState.machinePhase = val },
-                    0, 180
-                )
             }
         }
 

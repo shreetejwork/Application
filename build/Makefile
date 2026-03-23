@@ -887,6 +887,30 @@ build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/appApplication.dir/build.make CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.s
 .PHONY : build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.cpp.s
 
+build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.o: build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o
+.PHONY : build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.o
+
+# target to build an object file
+build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/appApplication.dir/build.make CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o
+.PHONY : build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.o
+
+build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.i: build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.i
+.PHONY : build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.i
+
+# target to preprocess a source file
+build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/appApplication.dir/build.make CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.i
+.PHONY : build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.i
+
+build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.s: build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.s
+.PHONY : build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.s
+
+# target to generate assembly for a file
+build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/appApplication.dir/build.make CMakeFiles/appApplication.dir/build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.s
+.PHONY : build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.cpp.s
+
 build/.rcc/qmlcache/appApplication_qmlcache_loader.o: build/.rcc/qmlcache/appApplication_qmlcache_loader.cpp.o
 .PHONY : build/.rcc/qmlcache/appApplication_qmlcache_loader.o
 
@@ -1027,6 +1051,9 @@ help:
 	@echo "... build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.o"
 	@echo "... build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.i"
 	@echo "... build/.rcc/qmlcache/appApplication_qml/screens/HomeScreen_qml.s"
+	@echo "... build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.o"
+	@echo "... build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.i"
+	@echo "... build/.rcc/qmlcache/appApplication_qml/screens/SysDetailsScreen_qml.s"
 	@echo "... build/.rcc/qmlcache/appApplication_qmlcache_loader.o"
 	@echo "... build/.rcc/qmlcache/appApplication_qmlcache_loader.i"
 	@echo "... build/.rcc/qmlcache/appApplication_qmlcache_loader.s"
