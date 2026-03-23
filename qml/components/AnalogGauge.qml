@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import AppState 1.0
 
 Item {
     id: root
@@ -11,8 +12,9 @@ Item {
     property real baseHeight: 400
     property real scale: Math.max(0.6, height / baseHeight)
 
-    property real productPhase: 40
-    property real machinePhase: 60
+    // LOCAL STATE (SYNCED WITH GLOBAL)
+    property real productPhase: 0
+    property real machinePhase: 0
 
     property real minValue: 0
     property real maxValue: 180
@@ -123,29 +125,47 @@ Item {
         }
     }
 
-    onProductPhaseChanged: canvas.requestPaint()
-    onMachinePhaseChanged: canvas.requestPaint()
-    Component.onCompleted: canvas.requestPaint()
+    //  SAFE CONNECTION (IMPORTANT FIX)
+    Connections {
+        target: (typeof GlobalState !== "undefined" && GlobalState) ? GlobalState : null
 
-    // ================= CENTERED LEFT PANEL =================
+        function onProductPhaseChanged() {
+            root.productPhase = GlobalState.productPhase
+            canvas.requestPaint()
+        }
+
+        function onMachinePhaseChanged() {
+            root.machinePhase = GlobalState.machinePhase
+            canvas.requestPaint()
+        }
+    }
+
+    //  INITIAL LOAD (CRITICAL)
+    Component.onCompleted: {
+        if (typeof GlobalState !== "undefined" && GlobalState) {
+            root.productPhase = GlobalState.productPhase
+            root.machinePhase = GlobalState.machinePhase
+        }
+        canvas.requestPaint()
+    }
+
+    // ================= LEFT PANEL =================
     Column {
         anchors.left: parent.left
         anchors.leftMargin: parent.width * 0.08
         anchors.verticalCenter: parent.verticalCenter
 
-        // 🔥 dynamic spacing (smaller when 3 items)
         spacing: root.trackingPhase >= 0
                  ? Math.max(6, root.height * 0.02)
                  : Math.max(10, root.height * 0.03)
 
-        // ===== PRODUCT =====
         Column {
             spacing: 2
 
             Text {
                 text: root.productPhase
                 font.pixelSize: root.trackingPhase >= 0
-                                ? Math.max(10, root.height * 0.055)   // smaller when 3
+                                ? Math.max(10, root.height * 0.055)
                                 : Math.max(12, root.height * 0.07)
                 font.bold: true
                 color: "#1A4DB5"
@@ -160,7 +180,6 @@ Item {
             }
         }
 
-        // ===== DIVIDER (only when tracking NOT present) =====
         Rectangle {
             visible: root.trackingPhase < 0
             width: 40
@@ -168,12 +187,10 @@ Item {
             color: "#90CAF9"
         }
 
-        // ===== MACHINE =====
         Column {
             spacing: 2
 
             Text {
-                id: machineValue
                 text: root.machinePhase
                 font.pixelSize: root.trackingPhase >= 0
                                 ? Math.max(10, root.height * 0.05)
@@ -203,7 +220,6 @@ Item {
             }
         }
 
-        // ===== TRACKING =====
         Column {
             visible: root.trackingPhase >= 0
             spacing: 2
@@ -235,8 +251,12 @@ Item {
         from: root.minValue
         to: root.maxValue
         stepSize: 1
+
         value: root.productPhase
 
-        onValueChanged: root.productPhase = value
+        onValueChanged: {
+            if (typeof GlobalState !== "undefined" && GlobalState)
+                GlobalState.productPhase = value
+        }
     }
 }

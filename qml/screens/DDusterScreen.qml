@@ -12,7 +12,6 @@ Item {
 
     property string lastValidBatch: "General Batch"
 
-
     property bool batchRunning: false
     property bool batchPaused: false
 
@@ -100,17 +99,15 @@ Item {
                                     anchors.margins: 10
 
                                     text: root.lastValidBatch
-
                                     font.pixelSize: 18
                                     color: "#1A4DB5"
 
                                     focus: false
                                     activeFocusOnPress: false
 
-                                    readOnly: true
+                                    readOnly: root.batchRunning   // ✅ DISABLE WHILE RUNNING
 
                                     background: null
-
                                     cursorVisible: activeFocus
 
                                     onAccepted: {
@@ -133,13 +130,16 @@ Item {
                             Text {
                                 text: "Edit"
                                 font.pixelSize: 12
-                                color: "#1A4DB5"
+                                color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"  // ✅ Visual feedback
+
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
 
                                 MouseArea {
                                     anchors.fill: parent
-                                    cursorShape: Qt.PointingHandCursor
+                                    cursorShape: root.batchRunning ? Qt.ArrowCursor : Qt.PointingHandCursor
+
+                                    enabled: !root.batchRunning   // ✅ DISABLE CLICK
 
                                     onClicked: {
                                         inputField.readOnly = false
@@ -185,6 +185,8 @@ Item {
                                 bgColor: "#1A4DB5"
                                 hoverColor: "#123A8A"
 
+                                enabled: root.batchRunning   // ✅
+
                                 onClicked: {
                                     root.batchPaused = !root.batchPaused
                                     root.notify(root.batchPaused ? "⏸ Paused" : "▶ Resumed")
@@ -198,6 +200,8 @@ Item {
                                 height: 50
                                 bgColor: "#1A4DB5"
                                 hoverColor: "#123A8A"
+
+                                enabled: root.batchRunning   // ✅
 
                                 onClicked: {
                                     root.batchRunning = false
@@ -252,7 +256,7 @@ Item {
                 }
             }
 
-            // =========== RIGHT SIDE ===========
+            // RIGHT SIDE (UNCHANGED)
             ColumnLayout {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -282,7 +286,6 @@ Item {
                     Layout.fillHeight: true
                     spacing: 20
 
-                    // ================= DD ON/OFF =================
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.preferredHeight: 140
@@ -310,7 +313,6 @@ Item {
                                 id: ddBtn
                                 Layout.alignment: Qt.AlignHCenter
 
-
                                 onToggledChanged: {
                                     root.notify(toggled ? "✓ DD ON" : "✓ DD OFF")
                                 }
@@ -320,7 +322,6 @@ Item {
                         }
                     }
 
-                    // ================= POWER =================
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -351,7 +352,6 @@ Item {
                                 maxValue: 100
                                 value: 0
 
-
                                 onSaveClicked: (val) => {
                                     root.notify("✓ DD Power Saved: " + val)
                                 }
@@ -359,7 +359,6 @@ Item {
                         }
                     }
 
-                    // ================= FREQUENCY =================
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -389,7 +388,6 @@ Item {
                                 minValue: 25
                                 maxValue: 50
                                 value: 25
-
 
                                 onSaveClicked: (val) => {
                                     root.notify("✓ DD Frequency Saved: " + val)

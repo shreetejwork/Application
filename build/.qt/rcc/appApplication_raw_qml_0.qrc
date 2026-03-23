@@ -1,0 +1,20 @@
+<RCC>
+  <qresource prefix="/qt/qml/Application/">
+    <file alias="qml/Main.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/Main.qml</file>
+    <file alias="qml/screens/HomeScreen.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/HomeScreen.qml</file>
+    <file alias="qml/screens/DDusterScreen.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/DDusterScreen.qml</file>
+    <file alias="qml/components/TopBar.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/TopBar.qml</file>
+    <file alias="qml/components/AnalogGauge.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/AnalogGauge.qml</file>
+    <file alias="qml/components/CircularGauge.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CircularGauge.qml</file>
+    <file alias="qml/components/CoilProgressBar.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CoilProgressBar.qml</file>
+    <file alias="qml/components/DDButton.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/DDButton.qml</file>
+    <file alias="qml/components/NavPageIndicator.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/NavPageIndicator.qml</file>
+    <file alias="qml/components/ActionButton.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/ActionButton.qml</file>
+    <file alias="qml/components/ValueControl.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/ValueControl.qml</file>
+    <file alias="qml/components/CircleActionButton.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CircleActionButton.qml</file>
+    <file alias="qml/screens/AutoLearnScreen.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/AutoLearnScreen.qml</file>
+    <file alias="qml/components/CustomPopup.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CustomPopup.qml</file>
+    <file alias="qml/GlobalState.qml">/Users/shreetej721/Desktop/QT Projects/Application/qml/GlobalState.qml</file>
+  </qresource>
+</RCC>
+

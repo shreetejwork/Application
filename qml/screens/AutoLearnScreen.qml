@@ -1,8 +1,10 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
+import AppState 1.0
 
 import "../components"
+
 
 
 
@@ -29,13 +31,14 @@ Item {
                 anchors.fill: parent
                 trackingCountLabel: "Tracking Phase"
                 trackingPhase: 50
-                onMachinePhaseClicked: popup.open(
-                                           "Machine Phase",
-                                           analogGauge.machinePhase,
-                                           function(val){ analogGauge.machinePhase = val },
-                                           0, 180
-                                           )
             }
+        }
+
+        // Popup used by AnalogGauge's `machinePhaseClicked` interaction
+        CustomPopup {
+            id: popup
+            anchors.fill: parent
+            globalTopBar: root.globalTopBar
         }
     }
 }

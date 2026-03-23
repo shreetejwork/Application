@@ -1,0 +1,23 @@
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qmake_Application.qrc
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0.qrc
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_res_0.qrc
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
+/qt/qml/Application/qml/Main.qml
+/qt/qml/Application/qml/screens/HomeScreen.qml
+/qt/qml/Application/qml/screens/DDusterScreen.qml
+/qt/qml/Application/qml/components/TopBar.qml
+/qt/qml/Application/qml/components/AnalogGauge.qml
+/qt/qml/Application/qml/components/CircularGauge.qml
+/qt/qml/Application/qml/components/CoilProgressBar.qml
+/qt/qml/Application/qml/components/DDButton.qml
+/qt/qml/Application/qml/components/NavPageIndicator.qml
+/qt/qml/Application/qml/components/ActionButton.qml
+/qt/qml/Application/qml/components/ValueControl.qml
+/qt/qml/Application/qml/components/CircleActionButton.qml
+/qt/qml/Application/qml/screens/AutoLearnScreen.qml
+/qt/qml/Application/qml/components/CustomPopup.qml
+/qt/qml/Application/qml/GlobalState.qml

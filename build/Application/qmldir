@@ -1,0 +1,20 @@
+module Application
+typeinfo appApplication.qmltypes
+prefer :/qt/qml/Application/
+Main 254.0 qml/Main.qml
+HomeScreen 254.0 qml/screens/HomeScreen.qml
+DDusterScreen 254.0 qml/screens/DDusterScreen.qml
+TopBar 254.0 qml/components/TopBar.qml
+AnalogGauge 254.0 qml/components/AnalogGauge.qml
+CircularGauge 254.0 qml/components/CircularGauge.qml
+CoilProgressBar 254.0 qml/components/CoilProgressBar.qml
+DDButton 254.0 qml/components/DDButton.qml
+NavPageIndicator 254.0 qml/components/NavPageIndicator.qml
+ActionButton 254.0 qml/components/ActionButton.qml
+ValueControl 254.0 qml/components/ValueControl.qml
+CircleActionButton 254.0 qml/components/CircleActionButton.qml
+AutoLearnScreen 254.0 qml/screens/AutoLearnScreen.qml
+CustomPopup 254.0 qml/components/CustomPopup.qml
+GlobalState 254.0 qml/GlobalState.qml
+depends QtQuick
+

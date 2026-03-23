@@ -1,8 +1,10 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import AppState 1.0
 
 import "../components"
+
 
 Item {
     id: homeScreen
@@ -363,11 +365,11 @@ Item {
                     anchors.fill: parent
 
                     onMachinePhaseClicked: popup.open(
-                                               "Machine Phase",
-                                               analogGauge.machinePhase,
-                                               function(val){ analogGauge.machinePhase = val },
-                                               0, 180
-                                               )
+                        "Machine Phase",
+                        GlobalState.machinePhase,
+                        function(val){ GlobalState.machinePhase = val },
+                        0, 180
+                    )
                 }
             }
 
@@ -416,28 +418,28 @@ Item {
                     width: parent.width * 0.85
                     spacing: 45   //  better spacing between button & gauge
 
-                    // 🔵 Manual Validation Button (enhanced)
+                    //  Manual Validation Button
                     Rectangle {
                         width: parent.width * 0.6
                         height: 44
                         radius: 10
                         anchors.horizontalCenter: parent.horizontalCenter
-                        color: "#1A4DB5"
+                        color: "#F5F7FC"
 
                         property bool hovered: false
                         property bool pressed: false
 
-                        // 🔲 Outer subtle border (optional depth)
-                        border.color: "#163E91"
+                        // Outer blue border
+                        border.color: "#1A4DB5"
                         border.width: 1
 
-                        // ⚪ Inner white border
+                        // Inner border (light blue for subtle effect)
                         Rectangle {
                             anchors.fill: parent
-                            anchors.margins: 2   // 🔥 creates inner border effect
+                            anchors.margins: 2
                             radius: parent.radius - 2
                             color: "transparent"
-                            border.color: "white"
+                            border.color: "#1A4DB5"
                             border.width: 1
                         }
 
@@ -446,7 +448,7 @@ Item {
                             text: "Manual Validation"
                             font.pixelSize: 13
                             font.bold: true
-                            color: "white"
+                            color: "#1A4DB5"
                         }
 
                         MouseArea {
@@ -461,7 +463,7 @@ Item {
                             onClicked: globalTopBar.showNotification("✓ Manual Validation ON")
                         }
 
-                        // 🎯 Press animation
+                        // Press animation
                         scale: pressed ? 0.96 : 1.0
                         Behavior on scale { NumberAnimation { duration: 120 } }
 
@@ -471,12 +473,12 @@ Item {
                             State {
                                 name: "hovered"
                                 when: parent.hovered && !parent.pressed
-                                PropertyChanges { target: parent; color: "#3B5BDB" }
+                                PropertyChanges { target: parent; color: "#EEF2FF" }
                             },
                             State {
                                 name: "pressed"
                                 when: parent.pressed
-                                PropertyChanges { target: parent; color: "#2F49C6" }
+                                PropertyChanges { target: parent; color: "#E0E7FF" }
                             }
                         ]
                     }

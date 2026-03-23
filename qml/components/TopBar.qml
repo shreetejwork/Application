@@ -83,26 +83,32 @@ Rectangle {
                     }
                 }
 
-                //  BELL BUTTON
+
+
+                // //  BELL BUTTON
                 Item {
                     id: bellButton
                     width: Math.max(28 * root.scale, root.height * 0.55)
                     height: root.height * 0.50
                     anchors.verticalCenter: parent.verticalCenter
 
-                    Image {
-                        anchors.centerIn: parent
-                        source: "qrc:/qt/qml/Application/assets/images/Bell.png"
-                        width: parent.width
-                        height: parent.height
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
-                    }
+                    // Image {
+                    //     anchors.centerIn: parent
+                    //     source: "qrc:/qt/qml/Application/assets/images/Bell.png"
+                    //     width: parent.width
+                    //     height: parent.height
+                    //     fillMode: Image.PreserveAspectFit
+                    //     smooth: true
+                    // }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: root.bellClicked()
-                    }
+                    // MouseArea {
+                    //     anchors.fill: parent
+                    //     onClicked: root.bellClicked()
+                    // }
+                }
+
+                Item {
+                    width: root.width * 0.10   // 🔥 adjust this value for more/less space
                 }
 
                 //  MENU BUTTON

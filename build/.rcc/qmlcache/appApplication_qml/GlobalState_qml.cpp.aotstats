@@ -1,0 +1,15 @@
+{
+    "formatRevision": 1,
+    "modules": [
+        {
+            "moduleFiles": [
+                {
+                    "entries": [
+                    ],
+                    "filePath": "/Users/shreetej721/Desktop/QT Projects/Application/qml/GlobalState.qml"
+                }
+            ],
+            "moduleId": "Application(appApplication)"
+        }
+    ]
+}

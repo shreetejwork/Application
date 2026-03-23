@@ -1,0 +1,34 @@
+--bare
+-I
+/Users/shreetej721/Desktop/QT Projects/Application/build
+-I
+/Users/shreetej721/Desktop/QT Projects/Application/build/Application
+-I
+/Users/shreetej721/Desktop/QT Projects/Application/build
+-I
+/opt/homebrew/share/qt/qml
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qmake_Application.qrc
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0.qrc
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_res_0.qrc
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
+/Users/shreetej721/Desktop/QT Projects/Application/qml/Main.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/HomeScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/DDusterScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/TopBar.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/AnalogGauge.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CircularGauge.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CoilProgressBar.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/DDButton.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/NavPageIndicator.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/ActionButton.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/ValueControl.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CircleActionButton.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/AutoLearnScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CustomPopup.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/GlobalState.qml
+--json
+/Users/shreetej721/Desktop/QT Projects/Application/build/appApplication_qmllint.json
