@@ -1,152 +1,215 @@
-import QtQuick
+import QtQuick 2.15
+import QtQuick.Controls 2.15
 
 Item {
     id: root
 
-    // ================= INPUT =================
-    property int value: 1500
-    property int maxValue: 3000
-    property string label: "Coil"
+    property int value: 2208
+    property int maxValue: 10000
+    property string label: "Coil Output"
 
-    // ================= COLORS (BACKWARD SAFE) =================
-    property color fillColor: "#4CAF50"     // OLD SUPPORT (DO NOT REMOVE)
-    property color baseColor: fillColor     // NEW SYSTEM USES THIS
-    // Gradient middle (yellow) and end (red) colors
-    property color gradientMidColor: "#F5C242"
-    property color gradientEndColor: "#E53935"
-    property color trackColor: "#E6E6E6"
-    property color handleColor: "#2E2E2E"
+    property color trackColor: "#D9D9D9"
 
-    // ================= RATIO =================
     property real ratio: Math.min(1, Math.max(0, value / maxValue))
 
-    // smooth value animation
+    width: 500
+    height: 140
+
     Behavior on value {
-        NumberAnimation { duration: 120 }
+        NumberAnimation { duration: 150 }
     }
 
     Column {
-        anchors.fill: parent
-        spacing: Math.max(10, height * 0.08)
+        anchors.centerIn: parent
+        width: parent.width
+        spacing: 12
 
         // ================= TRACK =================
         Item {
-            id: trackArea
+            id: track
             width: parent.width
-            // Taller bar area so the pill matches the reference screenshot.
-            height: Math.max(48, parent.height * 0.70)
+            height: 24
 
-            // BACK TRACK
+            // ===== BACKGROUND =====
             Rectangle {
-                id: bgTrack
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width
-                height: parent.height * 0.80
+                anchors.fill: parent
                 radius: height / 2
                 color: root.trackColor
-                border.color: "#6F95D6"
-                border.width: 2
             }
 
-            // ================= FILLED BAR =================
-            Rectangle {
-                id: fillBar
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                width: parent.width * root.ratio
-                height: bgTrack.height
-                radius: height / 2
-
-                // Horizontal left->right color change
-                gradient: Gradient {
-                    orientation: Gradient.Horizontal
-                    GradientStop { position: 0.0; color: root.baseColor }
-                    GradientStop { position: 0.55; color: root.gradientMidColor }
-                    GradientStop { position: 1.0; color: root.gradientEndColor }
-                }
-            }
-
-            // ================= NEEDLE MARKER =================
-            // Teardrop/needle marker at the current value position.
+            // ===== COLOR BARS =====
             Item {
-                id: needle
-                width: Math.max(14, bgTrack.height * 0.35)
-                height: bgTrack.height * 1.08
+                anchors.fill: parent
+                clip: true
 
-                // Place the bottom tip at the top of the pill (slightly overlapping).
-                anchors.bottom: bgTrack.top
-                anchors.bottomMargin: -2
+                // GREEN
+                Rectangle {
+                    x: 0
+                    height: parent.height
+                    color: "#3FAE6A"
+                    width: Math.min(root.value, 2800) / root.maxValue * parent.width
+                    radius: width > 0 ? height / 2 : 0
+                }
 
-                x: Math.min(
-                    parent.width - width,
-                    Math.max(0, parent.width * root.ratio - width / 2)
-                )
+                // GREEN → YELLOW
+                Rectangle {
+                    height: parent.height
+                    x: (2600 / root.maxValue) * parent.width - 1
 
-                Canvas {
-                    anchors.fill: parent
-                    onPaint: {
-                        var ctx = getContext("2d")
-                        ctx.clearRect(0, 0, width, height)
+                    width: root.value <= 2600 ? 0 :
+                           Math.min(root.value - 2600, 1600) / root.maxValue * parent.width + 1
 
-                        var w = width
-                        var h = height
-
-                        // Teardrop path (point down)
-                        ctx.beginPath()
-                        ctx.moveTo(w / 2, h) // bottom tip
-                        ctx.quadraticCurveTo(w * 0.95, h * 0.78, w * 0.82, h * 0.55)
-                        ctx.quadraticCurveTo(w * 0.68, h * 0.28, w / 2, 0)
-                        ctx.quadraticCurveTo(w * 0.32, h * 0.28, w * 0.18, h * 0.55)
-                        ctx.quadraticCurveTo(w * 0.05, h * 0.78, w / 2, h)
-                        ctx.closePath()
-
-                        ctx.fillStyle = "#1A4DB5"
-                        ctx.strokeStyle = "#0D3BA8"
-                        ctx.lineWidth = 2
-                        ctx.fill()
-                        ctx.stroke()
-
-                        // small highlight near the top
-                        ctx.beginPath()
-                        ctx.arc(w / 2, h * 0.18, Math.max(2, w * 0.16), 0, Math.PI * 2)
-                        ctx.fillStyle = "white"
-                        ctx.globalAlpha = 0.25
-                        ctx.fill()
-                        ctx.globalAlpha = 1.0
+                    gradient: Gradient {
+                        orientation: Gradient.Horizontal
+                        GradientStop { position: 0.0; color: "#3FAE6A" }
+                        GradientStop { position: 1.0; color: "#F5C242" }
                     }
                 }
+
+                // YELLOW → ORANGE
+                Rectangle {
+                    height: parent.height
+                    x: (4200 / root.maxValue) * parent.width - 1
+
+                    width: root.value <= 4200 ? 0 :
+                           Math.min(root.value - 4200, 1000) / root.maxValue * parent.width + 1
+
+                    gradient: Gradient {
+                        orientation: Gradient.Horizontal
+                        GradientStop { position: 0.0; color: "#F5C242" }
+                        GradientStop { position: 1.0; color: "#F39C34" }
+                    }
+                }
+
+                // ORANGE
+                Rectangle {
+                    height: parent.height
+                    color: "#F39C34"
+
+                    x: (5200 / root.maxValue) * parent.width - 1
+
+                    width: root.value <= 5200 ? 0 :
+                           Math.min(root.value - 5200, 2000) / root.maxValue * parent.width + 1
+                }
+
+                //  ORANGE → RED
+                Rectangle {
+                    height: parent.height
+
+                    // slightly overlap both sides for perfect connection
+                    x: (7000 / root.maxValue) * parent.width - 1
+
+                    width: root.value <= 7000 ? 0 :
+                           Math.min(root.value - 7000, 2000) / root.maxValue * parent.width + 2
+
+                    gradient: Gradient {
+                        orientation: Gradient.Horizontal
+
+
+                        GradientStop { position: 0.0;  color: "#F39C34" } // orange
+                        GradientStop { position: 0.25; color: "#F07F2F" } // orange-red
+                        GradientStop { position: 0.5;  color: "#EC5E2B" } // deeper
+                        GradientStop { position: 0.75; color: "#E84A2F" } // near red
+                        GradientStop { position: 1.0;  color: "#E53935" } // red
+                    }
+
+                    Behavior on width { NumberAnimation { duration: 150 } }
+                }
+
+                // RED
+                Rectangle {
+                    height: parent.height
+                    color: "#E53935"
+
+                    x: (8700 / root.maxValue) * parent.width - 1
+
+                    width: root.value <= 8800 ? 0 :
+                           (root.value - 8800) / root.maxValue * parent.width + 1
+
+                    radius: root.value >= root.maxValue ? height / 2 : 0
+                }
             }
 
-            // ================= TOUCH =================
-            MultiPointTouchArea {
+            // ===== BORDER =====
+            Rectangle {
                 anchors.fill: parent
-                maximumTouchPoints: 1
+                radius: height / 2
+                color: "transparent"
+                border.color: "black"
+                border.width: 2
+                z: 10
+            }
 
-                onUpdated: {
-                    var tp = touchPoints[0]
-                    var ratio = Math.min(1.0, Math.max(0.0, tp.x / width))
-                    root.value = Math.round(ratio * root.maxValue)
+            // ===== NEEDLE =====
+            Rectangle {
+                id: needle
+                width: 8
+                height: track.height + 8
+                radius: 6
+                color: "black"
+                border.color: "#0D3BA8"
+                border.width: 1
+                anchors.verticalCenter: parent.verticalCenter
+
+                x: Math.min(track.width - width,
+                            Math.max(0, track.width * root.ratio - width / 2))
+
+                Behavior on x { NumberAnimation { duration: 150 } }
+                z: 20
+            }
+
+            // ===== CLICK INTERACTION =====
+            MouseArea {
+                anchors.fill: parent
+
+                onClicked: function(mouse) {
+                    var xPos = Math.min(Math.max(mouse.x, 0), track.width)
+                    root.value = Math.round((xPos / track.width) * root.maxValue)
+                }
+
+                onPositionChanged: function(mouse) {
+                    if (!(mouse.buttons & Qt.LeftButton)) return
+                    var xPos = Math.min(Math.max(mouse.x, 0), track.width)
+                    root.value = Math.round((xPos / track.width) * root.maxValue)
                 }
             }
         }
 
-        // ================= LABEL + VALUE =================
+        // ===== LABEL =====
         Row {
             anchors.horizontalCenter: parent.horizontalCenter
-            spacing: 28
+            spacing: 8
 
             Text {
                 text: root.label
-                font.pixelSize: Math.max(16, root.height * 0.18)
+                font.pixelSize: 16
+                font.bold: true
                 color: "#1A4DB5"
             }
 
             Text {
-                text: root.value
-                font.pixelSize: Math.max(16, root.height * 0.18)
+                text: ":"
+                font.pixelSize: 16
                 font.bold: true
-                color: "#111827"
-                font.family: "monospace"
+            }
+
+            Text {
+                text: root.value
+                font.pixelSize: 16
+                font.bold: true
+            }
+        }
+
+        // ================= SLIDER (LIVE TEST) =================
+        Slider {
+            id: testSlider
+            width: parent.width
+            from: 0
+            to: root.maxValue
+            value: root.value
+
+            onValueChanged: {
+                root.value = Math.round(value)
             }
         }
     }

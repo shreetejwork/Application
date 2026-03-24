@@ -26,6 +26,7 @@ Item {
             anchors.fill: parent
             anchors.margins: 20
             spacing: 24
+            anchors.topMargin: 60
 
             // ===== COIL OUTPUT =====
             CoilProgressBar {
@@ -36,11 +37,7 @@ Item {
 
                 label: "Coil Output"
                 value: 2208
-                maxValue: 3000
-                fillColor: "#3FAE6A"
-                gradientMidColor: "#F5C242"
-                gradientEndColor: "#E53935"
-                trackColor: "#D9D9D9"
+                maxValue: 10000
             }
 
             // ===== CARD =====
@@ -48,9 +45,7 @@ Item {
                 id: card
                 anchors.horizontalCenter: parent.horizontalCenter
 
-                width: Math.min(parent.width * 0.6, 600)
-
-
+                width: Math.min(parent.width * 0.6, 500)
                 height: contentColumn.implicitHeight + 56
 
                 radius: 24
@@ -61,10 +56,10 @@ Item {
                 Column {
                     id: contentColumn
 
-                    anchors.centerIn: parent   // 🔥 KEY FIX (true vertical + horizontal center)
+                    anchors.centerIn: parent
 
-                    width: parent.width * 0.85
-                    spacing: 14
+                    width: parent.width * 0.75
+                    spacing: 20
 
                     // ===== TITLE =====
                     Column {
@@ -77,58 +72,53 @@ Item {
                             font.pixelSize: 20
                             font.bold: true
                             color: "#1A4DB5"
-                            horizontalAlignment: Text.AlignLeft
-                        }
-
-                        Rectangle {
-                            width: 40
-                            height: 3
-                            radius: 2
-                            color: "#1A4DB5"
-                            anchors.left: titleText.left
                         }
                     }
 
-                    // ===== DETAILS =====
-                    Repeater {
-                        model: root.sysDetails
+                    // ===== DETAILS CONTAINER =====
+                    Column {
+                        width: parent.width
+                        spacing: 10   // spacing between rows
 
-                        delegate: Row {
-                            width: parent.width
-                            height: 34
-                            anchors.horizontalCenter: parent.horizontalCenter
+                        Repeater {
+                            model: root.sysDetails
 
-                            property real labelW: parent.width * 0.42
-                            property real colonW: 20
-                            property real valueW: parent.width * 0.48
+                            delegate: Row {
+                                width: parent.width
+                                height: 34
 
-                            Text {
-                                text: modelData.label
-                                width: parent.labelW
-                                font.pixelSize: 18
-                                font.bold: true
-                                color: "#000000"
-                                horizontalAlignment: Text.AlignLeft
-                                verticalAlignment: Text.AlignVCenter
-                            }
+                                property real labelW: parent.width * 0.42
+                                property real colonW: 20
+                                property real valueW: parent.width * 0.48
 
-                            Text {
-                                text: ":"
-                                width: parent.colonW
-                                font.pixelSize: 18
-                                font.bold: true
-                                color: "#000000"
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
-                            }
+                                Text {
+                                    text: modelData.label
+                                    width: parent.labelW
+                                    font.pixelSize: 18
+                                    font.bold: true
+                                    color: "#000000"
+                                    horizontalAlignment: Text.AlignLeft
+                                    verticalAlignment: Text.AlignVCenter
+                                }
 
-                            Text {
-                                text: modelData.value
-                                width: parent.valueW
-                                font.pixelSize: 18
-                                font.bold: true
-                                color: "#1A4DB5"
-                                verticalAlignment: Text.AlignVCenter
+                                Text {
+                                    text: ":"
+                                    width: parent.colonW
+                                    font.pixelSize: 18
+                                    font.bold: true
+                                    color: "#000000"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+
+                                Text {
+                                    text: modelData.value
+                                    width: parent.valueW
+                                    font.pixelSize: 18
+                                    font.bold: true
+                                    color: "#1A4DB5"
+                                    verticalAlignment: Text.AlignVCenter
+                                }
                             }
                         }
                     }
