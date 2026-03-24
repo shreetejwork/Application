@@ -11,6 +11,11 @@ Item {
     property bool showTopBar: true
     property var globalTopBar
 
+
+
+    property real baseHeight: 700
+    property real scale: Math.max(0.9, Math.min(1.8, height / baseHeight))
+
     property var sysDetails: [
         { label: "User", value: "..............."},
         { label: "Location", value: "..............."},
@@ -22,102 +27,105 @@ Item {
         anchors.fill: parent
         color: "#F5F7FC"
 
-        Column {
-            anchors.fill: parent
-            anchors.margins: 20
-            spacing: 24
-            anchors.topMargin: 60
+        // ===== CENTER WRAPPER =====
+        Item {
+            anchors.centerIn: parent
+            width: Math.min(parent.width * 0.92, 900 * root.scale)
+            height: contentColumn.implicitHeight
 
-            // ===== COIL OUTPUT =====
-            CoilProgressBar {
-                id: coilOut
-                anchors.horizontalCenter: parent.horizontalCenter
-                width: Math.min(parent.width * 0.60, 540)
-                height: 72
+            Column {
+                id: contentColumn
+                width: parent.width
+                spacing: 24 * root.scale
 
-                label: "Coil Output"
-                value: 2208
-                maxValue: 10000
-            }
+                // ===== COIL OUTPUT =====
+                CoilProgressBar {
+                    id: coilOut
+                    anchors.horizontalCenter: parent.horizontalCenter
 
-            // ===== CARD =====
-            Rectangle {
-                id: card
-                anchors.horizontalCenter: parent.horizontalCenter
+                    width: Math.min(parent.width * 0.8, 540 * root.scale)
+                    height: 72 * root.scale
 
-                width: Math.min(parent.width * 0.6, 500)
-                height: contentColumn.implicitHeight + 56
+                    label: "Coil Output"
+                    value: 2208
+                    maxValue: 10000
+                }
 
-                radius: 24
-                color: "white"
-                border.width: 2
-                border.color: "#6F95D6"
+                // ===== CARD =====
+                Rectangle {
+                    id: card
+                    anchors.horizontalCenter: parent.horizontalCenter
 
-                Column {
-                    id: contentColumn
+                    width: Math.min(parent.width * 0.85, 600 * root.scale)
+                    height: contentInner.implicitHeight + (66 * root.scale)
 
-                    anchors.centerIn: parent
+                    radius: 24 * root.scale
+                    color: "white"
+                    border.width: 2
+                    border.color: "#6F95D6"
 
-                    width: parent.width * 0.75
-                    spacing: 20
-
-                    // ===== TITLE =====
                     Column {
-                        spacing: 10
-                        anchors.horizontalCenter: parent.horizontalCenter
+                        id: contentInner
+                        anchors.centerIn: parent
+                        width: parent.width * 0.75
+                        spacing: 20 * root.scale
 
-                        Text {
-                            id: titleText
-                            text: "About Machine"
-                            font.pixelSize: 20
-                            font.bold: true
-                            color: "#1A4DB5"
+                        // ===== TITLE =====
+                        Column {
+                            spacing: 10 * root.scale
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            Text {
+                                text: "About Machine"
+                                font.pixelSize: 20 * root.scale
+                                font.bold: true
+                                color: "#1A4DB5"
+                            }
                         }
-                    }
 
-                    // ===== DETAILS CONTAINER =====
-                    Column {
-                        width: parent.width
-                        spacing: 10   // spacing between rows
+                        // ===== DETAILS =====
+                        Column {
+                            width: parent.width
+                            spacing: 10 * root.scale
 
-                        Repeater {
-                            model: root.sysDetails
+                            Repeater {
+                                model: root.sysDetails
 
-                            delegate: Row {
-                                width: parent.width
-                                height: 34
+                                delegate: Row {
+                                    width: parent.width
+                                    height: 34 * root.scale
 
-                                property real labelW: parent.width * 0.42
-                                property real colonW: 20
-                                property real valueW: parent.width * 0.48
+                                    property real labelW: parent.width * 0.42
+                                    property real colonW: 20 * root.scale
+                                    property real valueW: parent.width * 0.48
 
-                                Text {
-                                    text: modelData.label
-                                    width: parent.labelW
-                                    font.pixelSize: 18
-                                    font.bold: true
-                                    color: "#000000"
-                                    horizontalAlignment: Text.AlignLeft
-                                    verticalAlignment: Text.AlignVCenter
-                                }
+                                    Text {
+                                        text: modelData.label
+                                        width: parent.labelW
+                                        font.pixelSize: 18 * root.scale
+                                        font.bold: true
+                                        color: "#000000"
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
 
-                                Text {
-                                    text: ":"
-                                    width: parent.colonW
-                                    font.pixelSize: 18
-                                    font.bold: true
-                                    color: "#000000"
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-                                }
+                                    Text {
+                                        text: ":"
+                                        width: parent.colonW
+                                        font.pixelSize: 18 * root.scale
+                                        font.bold: true
+                                        color: "#000000"
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
 
-                                Text {
-                                    text: modelData.value
-                                    width: parent.valueW
-                                    font.pixelSize: 18
-                                    font.bold: true
-                                    color: "#1A4DB5"
-                                    verticalAlignment: Text.AlignVCenter
+                                    Text {
+                                        text: modelData.value
+                                        width: parent.valueW
+                                        font.pixelSize: 18 * root.scale
+                                        font.bold: true
+                                        color: "#1A4DB5"
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
                                 }
                             }
                         }
