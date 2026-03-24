@@ -5,7 +5,11 @@ Rectangle {
     id: root
     color: "#1A4DB5"
 
-    // Notification (single banner; auto-hides after 5s)
+
+    property bool showBackButton: false
+    signal menuClicked()
+    signal backClicked()
+
     property string notificationText: ""
     property bool notificationVisible: false
 
@@ -65,7 +69,9 @@ Rectangle {
 
                 spacing: Math.max(10 * root.scale, root.width * 0.015)
 
+                // ===== TIME  =====
                 Column {
+
                     spacing: Math.max(4, root.height * 0.02)
 
                     Text {
@@ -83,37 +89,42 @@ Rectangle {
                     }
                 }
 
-
-
-                // //  BELL BUTTON
+                // ===== BACK BUTTON =====
                 Item {
-                    id: bellButton
-                    width: Math.max(28 * root.scale, root.height * 0.55)
-                    height: root.height * 0.50
+                    visible: root.showBackButton
+
+                    width: Math.max(36 * root.scale, root.height * 0.85)
+                    height: width
                     anchors.verticalCenter: parent.verticalCenter
 
-                    // Image {
-                    //     anchors.centerIn: parent
-                    //     source: "qrc:/qt/qml/Application/assets/images/Bell.png"
-                    //     width: parent.width
-                    //     height: parent.height
-                    //     fillMode: Image.PreserveAspectFit
-                    //     smooth: true
-                    // }
+                    // DEBUG BACKGROUND (optional)
+                    // Rectangle { anchors.fill: parent; color: "#FF000033"; radius: 6 }
 
-                    // MouseArea {
-                    //     anchors.fill: parent
-                    //     onClicked: root.bellClicked()
-                    // }
+                    Image {
+                        id: backIcon
+                        anchors.fill: parent
+                        anchors.margins: width * 0.20
+
+                        source: "qrc:/qt/qml/Application/assets/images/Back.png"
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+
+                        visible: status === Image.Ready
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: root.backClicked()
+                    }
                 }
 
-                Item {
-                    width: root.width * 0.10
-                }
+                // spacing gap (keep existing UI balance)
+                Item { width: root.width * 0.10 }
 
-                //  MENU BUTTON
+                // ===== MENU BUTTON =====
                 Item {
                     id: menuButton
+                    visible: !root.showBackButton
                     width: Math.max(28 * root.scale, root.height * 0.55)
                     height: root.height * 0.50
                     anchors.verticalCenter: parent.verticalCenter
@@ -126,6 +137,11 @@ Rectangle {
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                     }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: root.menuClicked()
+                    }
                 }
             }
 
@@ -136,7 +152,7 @@ Rectangle {
             }
         }
 
-        //  CENTER (NOTIFICATION BAR - SAME DESIGN)
+        //  CENTER (NOTIFICATION BAR)
         Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -185,7 +201,7 @@ Rectangle {
             }
         }
 
-        //  RIGHT SIDE (USER + COUNTDOWN + POWER)
+        //  RIGHT SIDE
         RowLayout {
             Layout.fillHeight: true
             spacing: Math.max(6, root.width * 0.012)
@@ -198,14 +214,12 @@ Rectangle {
                     source: "qrc:/qt/qml/Application/assets/images/User.png"
                     Layout.preferredWidth: root.height * 0.55
                     Layout.preferredHeight: root.height * 0.55
-                    Layout.alignment: Qt.AlignVCenter
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                 }
 
                 ColumnLayout {
                     spacing: Math.max(2, root.height * 0.01)
-                    Layout.alignment: Qt.AlignVCenter
 
                     Rectangle {
                         Layout.preferredHeight: root.height * 0.26
@@ -256,14 +270,11 @@ Rectangle {
                 }
             }
 
-            //  COUNTDOWN CIRCLE
             Rectangle {
                 id: countdownCircle
-
                 width: Math.max(48 * root.scale, root.height * 0.60)
                 height: Math.max(48 * root.scale, root.height * 0.60)
                 radius: width / 2
-
                 color: "transparent"
                 border.color: "white"
                 border.width: Math.max(1, root.height * 0.038)
@@ -290,11 +301,9 @@ Rectangle {
                     anchors.centerIn: parent
                     text: countdownCircle.remainingSeconds
                     color: "white"
-
                     opacity: countdownCircle.remainingSeconds <= 20
                              ? (countdownCircle.blink ? 0.2 : 1)
                              : 1
-
                     font.pixelSize: Math.max(10, root.height * 0.26)
                     font.bold: true
                 }
@@ -305,7 +314,6 @@ Rectangle {
                 }
             }
 
-            //  POWER BUTTON
             Item {
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: root.width * 0.01
