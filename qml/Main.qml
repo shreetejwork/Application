@@ -13,6 +13,9 @@ Window {
     title: "Dashboard"
     color: "#F5F7FC"
 
+    // Track current menu screen
+    property string currentMenuScreen: ""
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -28,19 +31,29 @@ Window {
 
             // ===== MENU CLICK =====
             onMenuClicked: {
+                currentMenuScreen = "Menu"
                 menuLoader.source = "screens/MenuScreen.qml"
                 menuLoader.visible = true
                 swipeView.visible = false
                 mainTopBar.showBackButton = true
             }
 
-            // ===== BACK CLICK =====
+            // ===== BACK CLICK  =====
             onBackClicked: {
-                menuLoader.visible = false
-                menuLoader.source = ""
-                swipeView.visible = true
-                swipeView.currentIndex = 0
-                mainTopBar.showBackButton = false
+                if (currentMenuScreen !== "" && currentMenuScreen !== "Menu") {
+                    // ANY SUBSCREEN - MENU
+                    currentMenuScreen = "Menu"
+                    menuLoader.source = "screens/MenuScreen.qml"
+
+                } else if (currentMenuScreen === "Menu") {
+                    //  MENU - MAIN
+                    currentMenuScreen = ""
+                    menuLoader.visible = false
+                    menuLoader.source = ""
+                    swipeView.visible = true
+                    swipeView.currentIndex = 0
+                    mainTopBar.showBackButton = false
+                }
             }
         }
 
@@ -50,6 +63,16 @@ Window {
             Layout.fillWidth: true
             Layout.fillHeight: true
             visible: false
+
+            onLoaded: {
+                if (item) {
+                    // Inject navigation function
+                    item.navigateTo = function(screen) {
+                        root.currentMenuScreen = screen
+                        menuLoader.source = "screens/" + screen + "Screen.qml"
+                    }
+                }
+            }
         }
 
         // ===== MAIN SCREENS =====
@@ -61,29 +84,12 @@ Window {
 
             currentIndex: 0
 
-            HomeScreen {
-                showTopBar: false
-                globalTopBar: mainTopBar
-            }
+            HomeScreen { showTopBar: false; globalTopBar: mainTopBar }
+            DDusterScreen { showTopBar: false; globalTopBar: mainTopBar }
+            AutoLearnScreen { showTopBar: false; globalTopBar: mainTopBar }
+            SysDetailsScreen { showTopBar: false; globalTopBar: mainTopBar }
 
-            DDusterScreen {
-                showTopBar: false
-                globalTopBar: mainTopBar
-            }
-
-            AutoLearnScreen {
-                showTopBar: false
-                globalTopBar: mainTopBar
-            }
-
-            SysDetailsScreen {
-                showTopBar: false
-                globalTopBar: mainTopBar
-            }
-
-            onCurrentIndexChanged: {
-                navigator.currentPage = currentIndex
-            }
+            onCurrentIndexChanged: navigator.currentPage = currentIndex
         }
 
         // ===== NAV INDICATOR =====
@@ -96,13 +102,8 @@ Window {
             pageCount: 4
             currentPage: swipeView.currentIndex
 
-            onPreviousClicked: {
-                if (swipeView.currentIndex > 0) swipeView.currentIndex--
-            }
-
-            onNextClicked: {
-                if (swipeView.currentIndex < pageCount - 1) swipeView.currentIndex++
-            }
+            onPreviousClicked: if (swipeView.currentIndex > 0) swipeView.currentIndex--
+            onNextClicked: if (swipeView.currentIndex < pageCount - 1) swipeView.currentIndex++
         }
     }
 }

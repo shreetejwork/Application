@@ -80,8 +80,8 @@ Item {
 
                         RowLayout {
                             Layout.fillWidth: true
-                            Layout.topMargin: 20
-                            spacing: 12
+                            Layout.topMargin: Math.max(10, 20 * root.scale)
+                            spacing: Math.max(6, 12 * root.scale)
 
                             Rectangle {
                                 Layout.fillWidth: true

@@ -36,6 +36,13 @@ qt_add_qml_module(appApplication
             assets/images/ProductLib.png
             assets/images/Settings.png
             assets/images/UserCircle.png
+            assets/images/userNew.png
+            assets/images/updated.png
+            assets/images/usbupdate.png
+            assets/images/supplier.png
+            assets/images/bug.png
+            assets/images/coding.png
+            assets/images/social.png
             QML_FILES qml/components/ActionButton.qml
             QML_FILES qml/components/ValueControl.qml
             QML_FILES qml/components/CircleActionButton.qml
@@ -45,6 +52,9 @@ qt_add_qml_module(appApplication
             QML_FILES qml/screens/SysDetailsScreen.qml
             QML_FILES qml/screens/MenuScreen.qml
             QML_FILES qml/components/MenuTile.qml
+            QML_FILES qml/screens/UserScreen.qml
+            QML_FILES qml/screens/FactorySettingsScreen.qml
+            QML_FILES qml/components/LoginPopup.qml
 
 
 )

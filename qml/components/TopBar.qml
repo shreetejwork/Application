@@ -13,6 +13,17 @@ Rectangle {
     property string notificationText: ""
     property bool notificationVisible: false
 
+    LoginPopup {
+        id: loginPopup
+
+        onLoginRequested: function(userType, username, password) {
+            console.log("Login:", userType, username, password)
+
+            // 👉 your validation logic
+            loginPopup.close()
+        }
+    }
+
     Timer {
         id: notificationTimer
         interval: 5000
@@ -329,7 +340,7 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: console.log("Power button clicked")
+                    onClicked: loginPopup.open()
                 }
             }
         }
