@@ -68,7 +68,7 @@ Item {
                     iconSource: "qrc:/qt/qml/Application/assets/images/coding.png"
                     label:      "Developer Settings"
                     iconSize:   100 * root.scale
-                    visible: false
+                    visible: true
                     enabled: false
                     onTileClicked: {
                         console.log("Slot 1 tapped")
@@ -87,13 +87,13 @@ Item {
                     }
                 }
 
-                // ── SLOT 3: Add your future PNG here ─────────────────
+                // ── SLOT 3: Add your future PNG here ───────
 
                 MenuTile {
                     iconSource: "qrc:/qt/qml/Application/assets/images/social.png"
                     label:      ""
                     iconSize:   100 * root.scale
-                    visible: false
+                    visible: true
                     enabled: false
                     onTileClicked: {
                         console.log("Slot 3 tapped")

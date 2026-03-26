@@ -486,7 +486,7 @@ Item {
                     // Circular Gauge (bigger)
                     CircularGauge {
                         id: ampGauge
-                        width: parent.width   //  increased size
+                        width: parent.width
                         height: width
 
                         anchors.horizontalCenter: parent.horizontalCenter
