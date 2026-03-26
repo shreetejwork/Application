@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.VirtualKeyboard
+import AppState 1.0
 
 import "screens"
 import "components"
@@ -30,7 +31,6 @@ Window {
             userName: "Rahul1234567789"
             userRole: "Supervisor"
 
-            // ===== MENU CLICK =====
             onMenuClicked: {
                 currentMenuScreen = "Menu"
                 menuLoader.source = "screens/MenuScreen.qml"
@@ -39,15 +39,12 @@ Window {
                 mainTopBar.showBackButton = true
             }
 
-            // ===== BACK CLICK  =====
             onBackClicked: {
                 if (currentMenuScreen !== "" && currentMenuScreen !== "Menu") {
-                    // ANY SUBSCREEN - MENU
                     currentMenuScreen = "Menu"
                     menuLoader.source = "screens/MenuScreen.qml"
 
                 } else if (currentMenuScreen === "Menu") {
-                    //  MENU - MAIN
                     currentMenuScreen = ""
                     menuLoader.visible = false
                     menuLoader.source = ""
@@ -67,7 +64,6 @@ Window {
 
             onLoaded: {
                 if (item) {
-                    // Inject navigation function
                     item.navigateTo = function(screen) {
                         root.currentMenuScreen = screen
                         menuLoader.source = "screens/" + screen + "Screen.qml"
@@ -105,6 +101,26 @@ Window {
 
             onPreviousClicked: if (swipeView.currentIndex > 0) swipeView.currentIndex--
             onNextClicked: if (swipeView.currentIndex < pageCount - 1) swipeView.currentIndex++
+        }
+    }
+
+
+    InputPanel {
+        id: keyboard
+
+        parent: Overlay.overlay
+
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+
+        z: 9999
+
+        visible: Qt.inputMethod.visible && GlobalState.keyFlag
+
+        y: visible ? parent.height - height : parent.height
+        Behavior on y {
+            NumberAnimation { duration: 250 }
         }
     }
 }

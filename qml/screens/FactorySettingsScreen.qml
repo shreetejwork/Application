@@ -38,7 +38,7 @@ Item {
 
                 MenuTile {
                     iconSource: "qrc:/qt/qml/Application/assets/images/updated.png"
-                    label:      "Software Update"
+                    label:      "Software Update \n(Git)"
                     iconSize:   100 * root.scale
                     onTileClicked: {
                         console.log("Software Update tapped")
@@ -79,7 +79,7 @@ Item {
                 // ── Col 2: USB Software Update ───────
                 MenuTile {
                     iconSource: "qrc:/qt/qml/Application/assets/images/usbupdate.png"
-                    label:      "USB Software\nUpdate"
+                    label:      "Software Update \n(USB)"
                     iconSize:   100 * root.scale
                     onTileClicked: {
                         console.log("USB Software Update tapped")

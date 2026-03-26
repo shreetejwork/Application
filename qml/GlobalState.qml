@@ -7,4 +7,6 @@ QtObject {
 
     property real signalThreshold: 500
     property real amplitudeThreshold: 400
+
+    property bool  keyFlag: false
 }
