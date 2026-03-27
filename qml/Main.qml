@@ -116,7 +116,7 @@ Window {
 
         z: 9999
 
-        visible: Qt.inputMethod.visible && GlobalState.keyFlag
+        visible: Qt.inputMethod.visible && GlobalState.loginKeyboardRequest
 
         y: visible ? parent.height - height : parent.height
         Behavior on y {

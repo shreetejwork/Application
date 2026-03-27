@@ -55,6 +55,7 @@ qt_add_qml_module(appApplication
             QML_FILES qml/screens/UserScreen.qml
             QML_FILES qml/screens/FactorySettingsScreen.qml
             QML_FILES qml/components/LoginPopup.qml
+            QML_FILES qml/components/CreateUserPopup.qml
 
 
 )

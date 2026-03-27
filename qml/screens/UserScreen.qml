@@ -1,16 +1,33 @@
 import QtQuick
 import QtQuick.Controls
+import "../components"
+
 
 Item {
     id: root
     anchors.fill: parent
 
-
     property real baseWidth: 1024
     property real baseHeight: 600
 
-
     property real scale: Math.min(width / baseWidth, height / baseHeight)
+
+    //CREATE USER POPUP INSTANCE
+    CreateUserPopup {
+        id: createUserPopup
+        parent: root
+        scale: root.scale
+
+        // OPTIONAL: handle signals
+        onCreateUserRequested: (type, username, password) => {
+            console.log("CREATE USER:", type, username, password)
+            close()
+        }
+
+        onClearRequested: {
+            console.log("Fields cleared")
+        }
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -95,7 +112,9 @@ Item {
 
                 ActionButton {
                     label: "Add User"
-                    onClicked: console.log("Add user tapped")
+                    onClicked: {
+                        createUserPopup.open()
+                    }
                 }
 
                 ActionButton {

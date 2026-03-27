@@ -18,8 +18,6 @@ Rectangle {
 
         onLoginRequested: function(userType, username, password) {
             console.log("Login:", userType, username, password)
-
-            // 👉 your validation logic
             loginPopup.close()
         }
     }

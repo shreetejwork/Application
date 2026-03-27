@@ -69,7 +69,7 @@ Item {
                     label:      "Developer Settings"
                     iconSize:   100 * root.scale
                     visible: true
-                    enabled: false
+                    enabled: true
                     onTileClicked: {
                         console.log("Slot 1 tapped")
                         // TODO: navigateTo("YourScreen1")
@@ -94,7 +94,7 @@ Item {
                     label:      ""
                     iconSize:   100 * root.scale
                     visible: true
-                    enabled: false
+                    enabled: true
                     onTileClicked: {
                         console.log("Slot 3 tapped")
                         // TODO: navigateTo("YourScreen2")

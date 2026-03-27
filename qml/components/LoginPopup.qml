@@ -6,32 +6,31 @@ import AppState 1.0
 Popup {
     id: loginPopup
 
-
-
     property real baseWidth: 1024
     property real baseHeight: 600
 
-    // KEYBOARD HEIGHT DETECTION
+    property bool isLongPress: false
+    property int longPressCount: 0
+
+    // ✅ NEW
+    property bool devModeActive: false
+    property bool fieldsLocked: false
+
+    property string developerPassword: "dev123"
+    property string engineerPassword: "eng123"
+
     property real keyboardHeight: Qt.inputMethod.visible ? Qt.inputMethod.keyboardRectangle.height : 0
 
     signal loginRequested(string userType, string username, string password)
     signal clearRequested()
 
-    Connections {
-        target: Qt.inputMethod
-        function onVisibleChanged() {
-            GlobalState.keyFlag = Qt.inputMethod.visible
-        }
-    }
-
     modal: true
     focus: true
-    closePolicy: Popup.CloseOnPressOutside | Popup.CloseOnEscape
+    closePolicy: Popup.CloseOnPressOutside
 
     width: 520 * scale
     height: 460 * scale
 
-    //  DYNAMIC POSITIONING
     x: (Overlay.overlay.width - width) / 2
     y: Qt.inputMethod.visible
        ? Math.max(20, (Overlay.overlay.height - height - keyboardHeight) / 2)
@@ -41,14 +40,19 @@ Popup {
         NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
     }
 
-    // RESET
     onOpened: {
         userTypeValue.text = "--- Select ---"
         usernameValue.text = "--- Select ---"
         passwordInput.text = ""
 
+        loginPopup.devModeActive = false
+        loginPopup.fieldsLocked = false
+        loginPopup.longPressCount = 0
+
         passwordInput.focus = false
         loginPopup.focus = true
+
+        GlobalState.loginKeyboardRequest = false
 
         if (selectionPopup.visible)
             selectionPopup.close()
@@ -59,6 +63,10 @@ Popup {
     onClosed: {
         Qt.inputMethod.hide()
         passwordInput.focus = false
+
+        loginPopup.devModeActive = false
+        loginPopup.fieldsLocked = false
+        GlobalState.loginKeyboardRequest = false
     }
 
     background: Rectangle {
@@ -68,9 +76,7 @@ Popup {
         border.width: 1
     }
 
-
-    // SELECTION POPUP
-
+    // ================= SELECTION POPUP =================
     Popup {
         id: selectionPopup
         modal: true
@@ -140,14 +146,11 @@ Popup {
                                    ? "#E8EDFF"
                                    : (index % 2 === 0 ? "#FFFFFF" : "#FAFBFF")
 
-                            Behavior on color { ColorAnimation { duration: 120 } }
-
                             Rectangle {
                                 anchors.bottom: parent.bottom
                                 width: parent.width
                                 height: 1
                                 color: "#F0F0F0"
-                                visible: index !== (selectionPopup.modelData.length - 1)
                             }
 
                             Text {
@@ -163,6 +166,8 @@ Popup {
                             MouseArea {
                                 id: mouse
                                 anchors.fill: parent
+                                enabled: !loginPopup.fieldsLocked
+
                                 onClicked: {
                                     selectionPopup.close()
                                     if (selectionPopup.onSelectCallback)
@@ -176,9 +181,7 @@ Popup {
         }
     }
 
-
-    // MAIN CONTENT
-
+    // ================= MAIN CONTENT =================
     contentItem: Flickable {
         id: flick
         anchors.fill: parent
@@ -205,7 +208,6 @@ Popup {
                 font.pixelSize: Math.max(16, 26 * scale)
                 font.bold: true
                 color: "#1A4DB5"
-                Layout.alignment: Qt.AlignLeft
             }
 
             // USER TYPE
@@ -224,7 +226,6 @@ Popup {
                     text: "--- Select ---"
                     font.pixelSize: Math.max(12, 18 * scale)
                     font.bold: true
-                    color: text === "--- Select ---" ? "#AAAAAA" : "#1A1A2E"
                 }
 
                 Text {
@@ -237,9 +238,11 @@ Popup {
 
                 MouseArea {
                     anchors.fill: parent
+                    enabled: !loginPopup.fieldsLocked
+
                     onClicked: {
                         selectionPopup.title = "Select User Type"
-                        selectionPopup.modelData = ["Admin", "Operator", "User"]
+                        selectionPopup.modelData = ["Admin","Operator","User"]
                         selectionPopup.onSelectCallback = function(val) {
                             userTypeValue.text = val
                         }
@@ -264,7 +267,6 @@ Popup {
                     text: "--- Select ---"
                     font.pixelSize: Math.max(12, 18 * scale)
                     font.bold: true
-                    color: text === "--- Select ---" ? "#AAAAAA" : "#1A1A2E"
                 }
 
                 Text {
@@ -277,13 +279,11 @@ Popup {
 
                 MouseArea {
                     anchors.fill: parent
+                    enabled: !loginPopup.fieldsLocked
+
                     onClicked: {
                         selectionPopup.title = "Select Username"
-                        selectionPopup.modelData = [
-                            "John Doe","Jane Smith","Bob Johnson",
-                            "Michael Lee","Chris Evans","Tony Stark",
-                            "Bruce Wayne","Clark Kent"
-                        ]
+                        selectionPopup.modelData = ["John Doe","Jane Smith","Bob Johnson","John Doe","Jane Smith","Bob Johnson"]
                         selectionPopup.onSelectCallback = function(val) {
                             usernameValue.text = val
                         }
@@ -309,7 +309,6 @@ Popup {
 
                     echoMode: TextInput.Password
                     font.pixelSize: Math.max(12, 18 * scale)
-                    font.bold: true
 
                     inputMethodHints: Qt.ImhPreferLatin
                                       | Qt.ImhNoPredictiveText
@@ -317,11 +316,32 @@ Popup {
 
                     onActiveFocusChanged: {
                         if (activeFocus) {
+                            GlobalState.loginKeyboardRequest = true
                             Qt.inputMethod.show()
                             flick.adjustView()
-                            GlobalState.keyFlag = true
                         } else {
-                            GlobalState.keyFlag = false
+                            GlobalState.loginKeyboardRequest = false
+                            Qt.inputMethod.hide()
+                        }
+                    }
+
+                    //  PASSWORD CHECK
+                    onTextChanged: {
+                        if (!loginPopup.devModeActive)
+                            return
+
+                        if (text === loginPopup.developerPassword) {
+                            userTypeValue.text = "Developer"
+                            usernameValue.text = "Developer"
+                            loginPopup.fieldsLocked = true
+                            loginPopup.devModeActive = false
+                        }
+
+                        if (text === loginPopup.engineerPassword) {
+                            userTypeValue.text = "Engineer"
+                            usernameValue.text = "Engineer"
+                            loginPopup.fieldsLocked = true
+                            loginPopup.devModeActive = false
                         }
                     }
                 }
@@ -335,9 +355,7 @@ Popup {
                 }
             }
 
-
-
-            // BUTTONS (unchanged)
+            // ================= BUTTONS =================
             Row {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 20 * scale
@@ -357,8 +375,42 @@ Popup {
 
                     MouseArea {
                         anchors.fill: parent
+
+                        Timer {
+                            id: longPressTimer
+                            interval: 3000
+                            repeat: false
+
+                            onTriggered: {
+                                loginPopup.longPressCount++
+
+                                if (loginPopup.longPressCount >= 2) {
+
+                                    loginPopup.devModeActive = true
+                                    loginPopup.fieldsLocked = false
+
+                                    passwordInput.forceActiveFocus()
+                                    GlobalState.loginKeyboardRequest = true
+                                    Qt.inputMethod.show()
+
+                                    loginPopup.longPressCount = 0
+                                }
+                            }
+                        }
+
+                        onPressed: longPressTimer.start()
+                        onReleased: longPressTimer.stop()
+
                         onClicked: {
+                            if (userTypeValue.text === "--- Select ---" ||
+                                usernameValue.text === "--- Select ---")
+                                return
+
+                            if (loginPopup.devModeActive)
+                                return
+
                             Qt.inputMethod.hide()
+
                             loginPopup.loginRequested(
                                 userTypeValue.text,
                                 usernameValue.text,
@@ -385,10 +437,16 @@ Popup {
 
                     MouseArea {
                         anchors.fill: parent
+                        enabled: !loginPopup.fieldsLocked
+
                         onClicked: {
                             userTypeValue.text = "--- Select ---"
                             usernameValue.text = "--- Select ---"
                             passwordInput.text = ""
+
+                            loginPopup.devModeActive = false
+                            loginPopup.fieldsLocked = false
+
                             Qt.inputMethod.hide()
                             loginPopup.clearRequested()
                         }
