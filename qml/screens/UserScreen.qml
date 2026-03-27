@@ -29,6 +29,34 @@ Item {
         }
     }
 
+    //EDIT PASSWORD POPUP INSTANCE
+    EditPasswordPopup {
+        id: editPasswordPopup
+
+        onUpdatePasswordRequested: function(newPassword) {
+            console.log("New Password:", newPassword)
+
+            editPasswordPopup.close()
+        }
+
+        onClearRequested: {
+            console.log("Clear clicked")
+        }
+    }
+
+    //DELETE USER POPUP INSTANCE
+    DeleteUserPopup {
+        id: deleteUserPopup
+
+        onDeleteUserRequested: function(userType, username) {
+            console.log("Delete:", userType, username)
+        }
+
+        onClearRequested: {
+            console.log("Clear pressed")
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
         color: "#F5F7FC"
@@ -119,12 +147,14 @@ Item {
 
                 ActionButton {
                     label: "Edit PW"
-                    onClicked: console.log("Edit user tapped")
+                    onClicked: editPasswordPopup.open()
                 }
 
                 ActionButton {
                     label: "Delete User"
-                    onClicked: console.log("Delete user tapped")
+                    onClicked: {
+                        deleteUserPopup.open()
+                    }
                 }
             }
         }

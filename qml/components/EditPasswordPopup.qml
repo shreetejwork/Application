@@ -4,24 +4,16 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Popup {
-    id: loginPopup
+    id: editPasswordPopup
 
     property real baseWidth: 1024
     property real baseHeight: 600
 
-    property bool isLongPress: false
-    property int longPressCount: 0
+    property real keyboardHeight: Qt.inputMethod.visible
+                                  ? Qt.inputMethod.keyboardRectangle.height
+                                  : 0
 
-
-    property bool devModeActive: false
-    property bool fieldsLocked: false
-
-    property string developerPassword: "dev123"
-    property string engineerPassword: "eng123"
-
-    property real keyboardHeight: Qt.inputMethod.visible ? Qt.inputMethod.keyboardRectangle.height : 0
-
-    signal loginRequested(string userType, string username, string password)
+    signal updatePasswordRequested(string userType, string username, string newPassword)
     signal clearRequested()
 
     modal: true
@@ -32,41 +24,37 @@ Popup {
     height: 460 * scale
 
     x: (Overlay.overlay.width - width) / 2
-    y: Qt.inputMethod.visible
-       ? Math.max(20, (Overlay.overlay.height - height - keyboardHeight) / 2)
-       : (Overlay.overlay.height - height) / 2
 
-    Behavior on y {
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+    y: {
+        if (!Qt.inputMethod.visible)
+            return (Overlay.overlay.height - height) / 2 - (40 * scale)
+
+        // 🚀 STRONG push above keyboard (NOT centered anymore)
+        return Math.max(
+            10 * scale,   // top safety margin
+            Overlay.overlay.height
+            - height
+            - keyboardHeight
+            - (180 * scale)
+        )
     }
 
     onOpened: {
         userTypeValue.text = "--- Select ---"
         usernameValue.text = "--- Select ---"
-        passwordInput.text = ""
+        newPasswordInput.text = ""
+        confirmPasswordInput.text = ""
 
-        loginPopup.devModeActive = false
-        loginPopup.fieldsLocked = false
-        loginPopup.longPressCount = 0
-
-        passwordInput.focus = false
-        loginPopup.focus = true
-
-        GlobalState.loginKeyboardRequest = false
+        Qt.inputMethod.hide()
 
         if (selectionPopup.visible)
             selectionPopup.close()
-
-        Qt.inputMethod.hide()
     }
 
     onClosed: {
         Qt.inputMethod.hide()
-        passwordInput.focus = false
-
-        loginPopup.devModeActive = false
-        loginPopup.fieldsLocked = false
-        GlobalState.loginKeyboardRequest = false
+        newPasswordInput.focus = false
+        confirmPasswordInput.focus = false
     }
 
     background: Rectangle {
@@ -164,9 +152,7 @@ Popup {
                             }
 
                             MouseArea {
-                                id: mouse
                                 anchors.fill: parent
-                                enabled: !loginPopup.fieldsLocked
 
                                 onClicked: {
                                     selectionPopup.close()
@@ -181,21 +167,18 @@ Popup {
         }
     }
 
-    // ================= MAIN CONTENT =================
+    // ================= MAIN UI =================
     contentItem: Flickable {
         id: flick
         anchors.fill: parent
         anchors.margins: 28 * scale
 
-        contentWidth: width
         contentHeight: columnContent.height
         clip: true
 
-        function adjustView() {
-            if (passwordInput.activeFocus) {
-                var itemY = passwordInput.mapToItem(columnContent, 0, 0).y
-                contentY = Math.max(0, itemY - height * 0.4)
-            }
+        function adjustView(item) {
+            var itemY = item.mapToItem(columnContent, 0, 0).y
+            contentY = Math.max(0, itemY - height * 0.4)
         }
 
         ColumnLayout {
@@ -204,7 +187,7 @@ Popup {
             spacing: 14 * scale
 
             Text {
-                text: "Login"
+                text: "Edit Password"
                 font.pixelSize: Math.max(16, 26 * scale)
                 font.bold: true
                 color: "#1A4DB5"
@@ -234,11 +217,12 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Usertype"
                     color: "#AAAAAA"
+                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.bold: true
                 }
 
                 MouseArea {
                     anchors.fill: parent
-                    enabled: !loginPopup.fieldsLocked
 
                     onClicked: {
                         selectionPopup.title = "Select User Type"
@@ -275,15 +259,16 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Username"
                     color: "#AAAAAA"
+                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.bold: true
                 }
 
                 MouseArea {
                     anchors.fill: parent
-                    enabled: !loginPopup.fieldsLocked
 
                     onClicked: {
                         selectionPopup.title = "Select Username"
-                        selectionPopup.modelData = ["John Doe","Jane Smith","Bob Johnson","John Doe","Jane Smith","Bob Johnson"]
+                        selectionPopup.modelData = ["John Doe","Jane Smith","Bob Johnson"]
                         selectionPopup.onSelectCallback = function(val) {
                             usernameValue.text = val
                         }
@@ -292,7 +277,7 @@ Popup {
                 }
             }
 
-            // PASSWORD
+            // NEW PASSWORD
             Rectangle {
                 Layout.fillWidth: true
                 height: 58 * scale
@@ -301,63 +286,93 @@ Popup {
                 border.color: "#1A4DB5"
 
                 TextInput {
-                    id: passwordInput
+                    id: newPasswordInput
                     anchors.left: parent.left
                     anchors.leftMargin: 18 * scale
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width * 0.75
+                    width: parent.width * 0.7
 
                     echoMode: TextInput.Password
-
                     font.pixelSize: Math.max(15, 21 * scale)
                     font.bold: true
 
-                    inputMethodHints: Qt.ImhPreferLatin
-                                      | Qt.ImhNoPredictiveText
-                                      | Qt.ImhSensitiveData
-
                     onActiveFocusChanged: {
                         if (activeFocus) {
-                            GlobalState.loginKeyboardRequest = true
                             Qt.inputMethod.show()
-                            flick.adjustView()
-                        } else {
+                            flick.adjustView(newPasswordInput)
+                            GlobalState.loginKeyboardRequest = true
+                        }else {
                             GlobalState.loginKeyboardRequest = false
                             Qt.inputMethod.hide()
                         }
                     }
+                }
 
-                    //  PASSWORD CHECK
-                    onTextChanged: {
-                        if (!loginPopup.devModeActive)
-                            return
-
-                        if (text === loginPopup.developerPassword) {
-                            userTypeValue.text = "Developer"
-                            usernameValue.text = "Developer"
-                            loginPopup.fieldsLocked = true
-                            loginPopup.devModeActive = false
-                        }
-
-                        if (text === loginPopup.engineerPassword) {
-                            userTypeValue.text = "Engineer"
-                            usernameValue.text = "Engineer"
-                            loginPopup.fieldsLocked = true
-                            loginPopup.devModeActive = false
-                        }
-                    }
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: newPasswordInput.forceActiveFocus()
                 }
 
                 Text {
                     anchors.right: parent.right
                     anchors.rightMargin: 18 * scale
                     anchors.verticalCenter: parent.verticalCenter
-                    text: "Password"
+                    text: "New Password"
                     color: "#AAAAAA"
+                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.bold: true
                 }
             }
 
-            // ================= BUTTONS =================
+            // CONFIRM PASSWORD
+            Rectangle {
+                Layout.fillWidth: true
+                height: 58 * scale
+                radius: 10 * scale
+                color: "#F2F2F2"
+                border.color: "#1A4DB5"
+
+                TextInput {
+                    id: confirmPasswordInput
+                    anchors.left: parent.left
+                    anchors.leftMargin: 18 * scale
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: parent.width * 0.7
+
+                    echoMode: TextInput.Password
+
+                    font.pixelSize: Math.max(15, 21 * scale)
+                    font.bold: true
+
+                    onActiveFocusChanged: {
+                        if (activeFocus) {
+                            Qt.inputMethod.show()
+                            flick.adjustView(confirmPasswordInput)
+                            GlobalState.loginKeyboardRequest = true
+                        }else {
+                            GlobalState.loginKeyboardRequest = false
+                            Qt.inputMethod.hide()
+                        }
+                    }
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: confirmPasswordInput.forceActiveFocus()
+                }
+
+                Text {
+                    anchors.right: parent.right
+                    anchors.rightMargin: 18 * scale
+                    anchors.verticalCenter: parent.verticalCenter
+                    text: "Confirm"
+                    color: "#AAAAAA"
+                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.bold: true
+                }
+            }
+
+            // BUTTONS
             Row {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 20 * scale
@@ -370,7 +385,7 @@ Popup {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "Login"
+                        text: "Update"
                         color: "white"
                         font.bold: true
                     }
@@ -378,46 +393,24 @@ Popup {
                     MouseArea {
                         anchors.fill: parent
 
-                        Timer {
-                            id: longPressTimer
-                            interval: 3000
-                            repeat: false
-
-                            onTriggered: {
-                                loginPopup.longPressCount++
-
-                                if (loginPopup.longPressCount >= 2) {
-
-                                    loginPopup.devModeActive = true
-                                    loginPopup.fieldsLocked = false
-
-                                    passwordInput.forceActiveFocus()
-                                    GlobalState.loginKeyboardRequest = true
-                                    Qt.inputMethod.show()
-
-                                    loginPopup.longPressCount = 0
-                                }
-                            }
-                        }
-
-                        onPressed: longPressTimer.start()
-                        onReleased: longPressTimer.stop()
-
                         onClicked: {
                             if (userTypeValue.text === "--- Select ---" ||
-                                usernameValue.text === "--- Select ---")
+                                usernameValue.text === "--- Select ---" ||
+                                newPasswordInput.text === "" ||
+                                confirmPasswordInput.text === "")
                                 return
 
-                            if (loginPopup.devModeActive)
+                            if (newPasswordInput.text !== confirmPasswordInput.text)
                                 return
 
                             Qt.inputMethod.hide()
 
-                            loginPopup.loginRequested(
+                            editPasswordPopup.updatePasswordRequested(
                                 userTypeValue.text,
                                 usernameValue.text,
-                                passwordInput.text
+                                newPasswordInput.text
                             )
+                            editPasswordPopup.close()
                         }
                     }
                 }
@@ -439,18 +432,15 @@ Popup {
 
                     MouseArea {
                         anchors.fill: parent
-                        enabled: !loginPopup.fieldsLocked
 
                         onClicked: {
                             userTypeValue.text = "--- Select ---"
                             usernameValue.text = "--- Select ---"
-                            passwordInput.text = ""
-
-                            loginPopup.devModeActive = false
-                            loginPopup.fieldsLocked = false
+                            newPasswordInput.text = ""
+                            confirmPasswordInput.text = ""
 
                             Qt.inputMethod.hide()
-                            loginPopup.clearRequested()
+                            editPasswordPopup.clearRequested()
                         }
                     }
                 }

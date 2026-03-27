@@ -262,7 +262,9 @@ Popup {
                     width: parent.width * 0.7
 
                     echoMode: TextInput.Password
-                    font.pixelSize: Math.max(12, 18 * scale)
+
+                    font.pixelSize: Math.max(15, 21 * scale)
+                    font.bold: true
 
                     onActiveFocusChanged: {
                         if (activeFocus) {

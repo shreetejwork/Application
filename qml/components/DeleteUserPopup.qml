@@ -4,7 +4,7 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Popup {
-    id: loginPopup
+    id: deleteUserPopup
 
     property real baseWidth: 1024
     property real baseHeight: 600
@@ -12,16 +12,10 @@ Popup {
     property bool isLongPress: false
     property int longPressCount: 0
 
-
     property bool devModeActive: false
     property bool fieldsLocked: false
 
-    property string developerPassword: "dev123"
-    property string engineerPassword: "eng123"
-
-    property real keyboardHeight: Qt.inputMethod.visible ? Qt.inputMethod.keyboardRectangle.height : 0
-
-    signal loginRequested(string userType, string username, string password)
+    signal deleteUserRequested(string userType, string username)
     signal clearRequested()
 
     modal: true
@@ -29,12 +23,10 @@ Popup {
     closePolicy: Popup.CloseOnPressOutside
 
     width: 520 * scale
-    height: 460 * scale
+    height: 380 * scale
 
     x: (Overlay.overlay.width - width) / 2
-    y: Qt.inputMethod.visible
-       ? Math.max(20, (Overlay.overlay.height - height - keyboardHeight) / 2)
-       : (Overlay.overlay.height - height) / 2
+    y: (Overlay.overlay.height - height) / 2 - (60 * scale)
 
     Behavior on y {
         NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
@@ -43,30 +35,20 @@ Popup {
     onOpened: {
         userTypeValue.text = "--- Select ---"
         usernameValue.text = "--- Select ---"
-        passwordInput.text = ""
 
-        loginPopup.devModeActive = false
-        loginPopup.fieldsLocked = false
-        loginPopup.longPressCount = 0
+        deleteUserPopup.devModeActive = false
+        deleteUserPopup.fieldsLocked = false
+        deleteUserPopup.longPressCount = 0
 
-        passwordInput.focus = false
-        loginPopup.focus = true
-
-        GlobalState.loginKeyboardRequest = false
+        deleteUserPopup.focus = true
 
         if (selectionPopup.visible)
             selectionPopup.close()
-
-        Qt.inputMethod.hide()
     }
 
     onClosed: {
-        Qt.inputMethod.hide()
-        passwordInput.focus = false
-
-        loginPopup.devModeActive = false
-        loginPopup.fieldsLocked = false
-        GlobalState.loginKeyboardRequest = false
+        deleteUserPopup.devModeActive = false
+        deleteUserPopup.fieldsLocked = false
     }
 
     background: Rectangle {
@@ -142,6 +124,7 @@ Popup {
                             width: parent.width
                             height: 64 * scale
 
+
                             color: mouse.pressed
                                    ? "#E8EDFF"
                                    : (index % 2 === 0 ? "#FFFFFF" : "#FAFBFF")
@@ -166,7 +149,7 @@ Popup {
                             MouseArea {
                                 id: mouse
                                 anchors.fill: parent
-                                enabled: !loginPopup.fieldsLocked
+                                enabled: !deleteUserPopup.fieldsLocked
 
                                 onClicked: {
                                     selectionPopup.close()
@@ -182,32 +165,27 @@ Popup {
     }
 
     // ================= MAIN CONTENT =================
-    contentItem: Flickable {
-        id: flick
+    contentItem: Item {
         anchors.fill: parent
         anchors.margins: 28 * scale
 
-        contentWidth: width
-        contentHeight: columnContent.height
-        clip: true
-
-        function adjustView() {
-            if (passwordInput.activeFocus) {
-                var itemY = passwordInput.mapToItem(columnContent, 0, 0).y
-                contentY = Math.max(0, itemY - height * 0.4)
-            }
-        }
-
         ColumnLayout {
             id: columnContent
-            width: flick.width
+            anchors.fill: parent
             spacing: 14 * scale
 
-            Text {
-                text: "Login"
-                font.pixelSize: Math.max(16, 26 * scale)
-                font.bold: true
-                color: "#1A4DB5"
+            // Title row with warning icon
+            Row {
+                spacing: 10 * scale
+                Layout.fillWidth: true
+
+                Text {
+                    text: "Delete User"
+                    font.pixelSize: Math.max(16, 26 * scale)
+                    font.bold: true
+                    color: "#1A4DB5"
+                    anchors.verticalCenter: parent.verticalCenter
+                }
             }
 
             // USER TYPE
@@ -217,6 +195,7 @@ Popup {
                 radius: 10 * scale
                 color: "#F2F2F2"
                 border.color: "#1A4DB5"
+                border.width: 1
 
                 Text {
                     id: userTypeValue
@@ -226,6 +205,7 @@ Popup {
                     text: "--- Select ---"
                     font.pixelSize: Math.max(12, 18 * scale)
                     font.bold: true
+                    color: text === "--- Select ---" ? "#AAAAAA" : "#1A1A2E"
                 }
 
                 Text {
@@ -234,15 +214,17 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Usertype"
                     color: "#AAAAAA"
+                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.bold: true
                 }
 
                 MouseArea {
                     anchors.fill: parent
-                    enabled: !loginPopup.fieldsLocked
+                    enabled: !deleteUserPopup.fieldsLocked
 
                     onClicked: {
                         selectionPopup.title = "Select User Type"
-                        selectionPopup.modelData = ["Admin","Operator","User"]
+                        selectionPopup.modelData = ["Admin", "Operator", "User"]
                         selectionPopup.onSelectCallback = function(val) {
                             userTypeValue.text = val
                         }
@@ -258,6 +240,7 @@ Popup {
                 radius: 10 * scale
                 color: "#F2F2F2"
                 border.color: "#1A4DB5"
+                border.width: 1
 
                 Text {
                     id: usernameValue
@@ -267,6 +250,7 @@ Popup {
                     text: "--- Select ---"
                     font.pixelSize: Math.max(12, 18 * scale)
                     font.bold: true
+                    color: text === "--- Select ---" ? "#AAAAAA" : "#1A1A2E"
                 }
 
                 Text {
@@ -275,15 +259,17 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Username"
                     color: "#AAAAAA"
+                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.bold: true
                 }
 
                 MouseArea {
                     anchors.fill: parent
-                    enabled: !loginPopup.fieldsLocked
+                    enabled: !deleteUserPopup.fieldsLocked
 
                     onClicked: {
                         selectionPopup.title = "Select Username"
-                        selectionPopup.modelData = ["John Doe","Jane Smith","Bob Johnson","John Doe","Jane Smith","Bob Johnson"]
+                        selectionPopup.modelData = ["John Doe", "Jane Smith", "Bob Johnson"]
                         selectionPopup.onSelectCallback = function(val) {
                             usernameValue.text = val
                         }
@@ -292,76 +278,12 @@ Popup {
                 }
             }
 
-            // PASSWORD
-            Rectangle {
-                Layout.fillWidth: true
-                height: 58 * scale
-                radius: 10 * scale
-                color: "#F2F2F2"
-                border.color: "#1A4DB5"
-
-                TextInput {
-                    id: passwordInput
-                    anchors.left: parent.left
-                    anchors.leftMargin: 18 * scale
-                    anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width * 0.75
-
-                    echoMode: TextInput.Password
-
-                    font.pixelSize: Math.max(15, 21 * scale)
-                    font.bold: true
-
-                    inputMethodHints: Qt.ImhPreferLatin
-                                      | Qt.ImhNoPredictiveText
-                                      | Qt.ImhSensitiveData
-
-                    onActiveFocusChanged: {
-                        if (activeFocus) {
-                            GlobalState.loginKeyboardRequest = true
-                            Qt.inputMethod.show()
-                            flick.adjustView()
-                        } else {
-                            GlobalState.loginKeyboardRequest = false
-                            Qt.inputMethod.hide()
-                        }
-                    }
-
-                    //  PASSWORD CHECK
-                    onTextChanged: {
-                        if (!loginPopup.devModeActive)
-                            return
-
-                        if (text === loginPopup.developerPassword) {
-                            userTypeValue.text = "Developer"
-                            usernameValue.text = "Developer"
-                            loginPopup.fieldsLocked = true
-                            loginPopup.devModeActive = false
-                        }
-
-                        if (text === loginPopup.engineerPassword) {
-                            userTypeValue.text = "Engineer"
-                            usernameValue.text = "Engineer"
-                            loginPopup.fieldsLocked = true
-                            loginPopup.devModeActive = false
-                        }
-                    }
-                }
-
-                Text {
-                    anchors.right: parent.right
-                    anchors.rightMargin: 18 * scale
-                    anchors.verticalCenter: parent.verticalCenter
-                    text: "Password"
-                    color: "#AAAAAA"
-                }
-            }
-
             // ================= BUTTONS =================
             Row {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 20 * scale
 
+                // DELETE USER button
                 Rectangle {
                     width: 160 * scale
                     height: 52 * scale
@@ -370,58 +292,30 @@ Popup {
 
                     Text {
                         anchors.centerIn: parent
-                        text: "Login"
+                        text: "Delete User"
                         color: "white"
                         font.bold: true
+                        font.pixelSize: Math.max(10, 15 * scale)
                     }
 
                     MouseArea {
                         anchors.fill: parent
-
-                        Timer {
-                            id: longPressTimer
-                            interval: 3000
-                            repeat: false
-
-                            onTriggered: {
-                                loginPopup.longPressCount++
-
-                                if (loginPopup.longPressCount >= 2) {
-
-                                    loginPopup.devModeActive = true
-                                    loginPopup.fieldsLocked = false
-
-                                    passwordInput.forceActiveFocus()
-                                    GlobalState.loginKeyboardRequest = true
-                                    Qt.inputMethod.show()
-
-                                    loginPopup.longPressCount = 0
-                                }
-                            }
-                        }
-
-                        onPressed: longPressTimer.start()
-                        onReleased: longPressTimer.stop()
 
                         onClicked: {
                             if (userTypeValue.text === "--- Select ---" ||
                                 usernameValue.text === "--- Select ---")
                                 return
 
-                            if (loginPopup.devModeActive)
-                                return
-
-                            Qt.inputMethod.hide()
-
-                            loginPopup.loginRequested(
+                            deleteUserPopup.deleteUserRequested(
                                 userTypeValue.text,
-                                usernameValue.text,
-                                passwordInput.text
+                                usernameValue.text
                             )
+                            deleteUserPopup.close()
                         }
                     }
                 }
 
+                // CLEAR button
                 Rectangle {
                     width: 160 * scale
                     height: 52 * scale
@@ -435,26 +329,27 @@ Popup {
                         text: "Clear"
                         color: "#1A4DB5"
                         font.bold: true
+                        font.pixelSize: Math.max(10, 15 * scale)
                     }
 
                     MouseArea {
                         anchors.fill: parent
-                        enabled: !loginPopup.fieldsLocked
+                        enabled: !deleteUserPopup.fieldsLocked
 
                         onClicked: {
                             userTypeValue.text = "--- Select ---"
                             usernameValue.text = "--- Select ---"
-                            passwordInput.text = ""
 
-                            loginPopup.devModeActive = false
-                            loginPopup.fieldsLocked = false
+                            deleteUserPopup.devModeActive = false
+                            deleteUserPopup.fieldsLocked = false
 
-                            Qt.inputMethod.hide()
-                            loginPopup.clearRequested()
+                            deleteUserPopup.clearRequested()
                         }
                     }
                 }
             }
+
+            Item { Layout.fillHeight: true }
         }
     }
 }
