@@ -58,6 +58,7 @@ qt_add_qml_module(appApplication
             QML_FILES qml/components/CreateUserPopup.qml
             QML_FILES qml/components/DeleteUserPopup.qml
             QML_FILES qml/components/EditPasswordPopup.qml
+            QML_FILES qml/screens/SysSettingsScreen.qml
 
 
 )

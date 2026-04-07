@@ -64,6 +64,10 @@ Item {
                 iconSource: "qrc:/qt/qml/Application/assets/images/Settings.png"
                 label: "System\nSettings"
                 iconSize: 100 * root.scale
+
+                onTileClicked: {
+                    navigateTo("SysSettings")
+                }
             }
 
             MenuTile {
