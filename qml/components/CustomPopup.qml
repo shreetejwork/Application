@@ -40,15 +40,18 @@ Item {
 
         function open(title, value, callback, minVal = 0, maxVal = 100) {
             fieldName = title
+
             inputField.text = ""
+
             onSaveCallback = callback
             minValue = minVal
             maxValue = maxVal
             errorText = ""
             hasError = false
             visible = true
+
             inputField.forceActiveFocus()
-            inputField.selectAll()
+            inputField.cursorPosition = inputField.text.length
         }
 
         scale: visible ? 1 : 0.95
@@ -62,6 +65,7 @@ Item {
             anchors.margins: 20
             spacing: 12
 
+            // ===== TITLE =====
             Text {
                 text: popup.fieldName
                 font.pixelSize: 22
@@ -71,6 +75,7 @@ Item {
                 Layout.fillWidth: true
             }
 
+            // ===== INPUT =====
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 60
@@ -101,6 +106,7 @@ Item {
                 }
             }
 
+            // ===== MIN MAX =====
             Rectangle {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 35
@@ -110,7 +116,6 @@ Item {
                 RowLayout {
                     anchors.fill: parent
                     anchors.margins: 10
-                    spacing: 15
 
                     Text {
                         text: "Min: " + popup.minValue
@@ -132,6 +137,7 @@ Item {
                 }
             }
 
+            // ===== ERROR =====
             Text {
                 text: popup.errorText
                 color: "#FF5252"
@@ -143,6 +149,7 @@ Item {
                 Layout.preferredHeight: visible ? 20 : 0
             }
 
+            // ===== KEYPAD =====
             GridLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 160
@@ -185,16 +192,18 @@ Item {
                 }
             }
 
+            // ===== BUTTONS =====
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 48
                 spacing: 10
 
+                // CANCEL
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: 10
-                    color: "#E8E8E8"
+                    color: cancelMouseArea.pressed ? "#CCCCCC" : "#E8E8E8"
 
                     Text {
                         anchors.centerIn: parent
@@ -203,16 +212,18 @@ Item {
                     }
 
                     MouseArea {
+                        id: cancelMouseArea
                         anchors.fill: parent
                         onClicked: popup.visible = false
                     }
                 }
 
+                // SAVE
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
                     radius: 10
-                    color: "#1A4DB5"
+                    color: saveMouseArea.pressed ? "#0D3BA8" : "#1A4DB5"
 
                     Text {
                         anchors.centerIn: parent
@@ -222,18 +233,55 @@ Item {
                     }
 
                     MouseArea {
+                        id: saveMouseArea
                         anchors.fill: parent
+
                         onClicked: {
-                            var val = parseInt(inputField.text)
-                            if (!isNaN(val) && popup.onSaveCallback) {
+                            var inputText = inputField.text.trim()
+
+                            if (inputText === "") {
+                                popup.errorText = "Please enter a value"
+                                popup.hasError = true
+                                return
+                            }
+
+                            var val = parseFloat(inputText)
+
+                            if (isNaN(val)) {
+                                popup.errorText = "Enter valid number"
+                                popup.hasError = true
+                                return
+                            }
+
+                            if (val < popup.minValue) {
+                                popup.errorText = "Too low! Min: " + popup.minValue
+                                popup.hasError = true
+                                return
+                            }
+
+                            if (val > popup.maxValue) {
+                                popup.errorText = "Too high! Max: " + popup.maxValue
+                                popup.hasError = true
+                                return
+                            }
+
+                            // ===== UPDATE VALUE =====
+                            if (popup.onSaveCallback) {
                                 popup.onSaveCallback(val)
                             }
 
-                            if (popupRoot.globalTopBar) {
-                                popupRoot.globalTopBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
+                            // ===== NOTIFICATION =====
+                            if (popupRoot.globalTopBar && popupRoot.globalTopBar.showNotification) {
+                                popupRoot.globalTopBar.showNotification(
+                                    "✓ " + popup.fieldName + " updated to " + val
+                                )
+                            } else {
+                                console.log("Notification:", popup.fieldName, val)
                             }
 
                             popup.visible = false
+                            popup.errorText = ""
+                            popup.hasError = false
                         }
                     }
                 }
@@ -258,7 +306,6 @@ Item {
         }
     }
 
-    // expose open()
     function open(title, value, callback, minVal = 0, maxVal = 100) {
         popup.open(title, value, callback, minVal, maxVal)
     }

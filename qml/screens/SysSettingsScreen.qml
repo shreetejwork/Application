@@ -35,10 +35,15 @@ Item {
             Rectangle {
                 color: "#F5F7FC"
 
-                Text {
-                    anchors.centerIn: parent
-                    text: "System Settings - Page 1"
-                    font.pixelSize: 28 * root.scale
+                SettingsS1 {
+                    anchors.fill: parent
+
+                    onFieldClicked: function(label) {
+                        console.log("Clicked:", label)
+
+                        // future use:
+                        // open popup / keypad / change value
+                    }
                 }
             }
 
