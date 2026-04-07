@@ -7,6 +7,8 @@ Item {
     id: root
     anchors.fill: parent
 
+    property var globalTopBar
+
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
@@ -89,10 +91,10 @@ Item {
     // ===== LAYOUT =====
     Column {
         anchors.centerIn: parent
-        spacing: 60 * root.scale
+        spacing: 70 * root.scale
 
         Row {
-            spacing: 40 * root.scale
+            spacing: 55 * root.scale
             anchors.horizontalCenter: parent.horizontalCenter
 
             FilterTile { fieldId: "lpf1" }
@@ -100,7 +102,7 @@ Item {
         }
 
         Row {
-            spacing: 60 * root.scale
+            spacing: 70 * root.scale
             anchors.horizontalCenter: parent.horizontalCenter
 
             FilterTile { fieldId: "od" }
@@ -109,7 +111,7 @@ Item {
         }
 
         Row {
-            spacing: 40 * root.scale
+            spacing: 55 * root.scale
             anchors.horizontalCenter: parent.horizontalCenter
 
             FilterTile { fieldId: "dg" }

@@ -13,6 +13,7 @@ Item {
 
     property var globalTopBar
 
+
     Component.onCompleted: {
         if (globalTopBar) {
             globalTopBar.showBackButton = true
@@ -38,6 +39,8 @@ Item {
                 SettingsS1 {
                     anchors.fill: parent
 
+                    globalTopBar: root.globalTopBar
+
                     onFieldClicked: function(label) {
                         console.log("Clicked:", label)
 
@@ -51,11 +54,9 @@ Item {
             Rectangle {
                 color: "#F5F7FC"
 
-                Text {
-                    anchors.centerIn: parent
-                    text: "System Settings - Page 2"
-                    font.pixelSize: 28 * root.scale
-                }
+                SettingsS2 {
+                       anchors.fill: parent
+                   }
             }
 
             // ===== SCREEN 3 =====
