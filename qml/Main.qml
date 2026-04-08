@@ -104,6 +104,15 @@ Window {
         }
     }
 
+    Timer {
+        interval: 1000
+        running: true
+        repeat: true
+        onTriggered: {
+            GlobalState.globalDateTime = new Date()
+        }
+    }
+
 
     InputPanel {
         id: keyboard

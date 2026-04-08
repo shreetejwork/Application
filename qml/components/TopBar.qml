@@ -1,10 +1,10 @@
 import QtQuick
 import QtQuick.Layouts
+import AppState 1.0
 
 Rectangle {
     id: root
     color: "#1A4DB5"
-
 
     property bool showBackButton: false
     signal menuClicked()
@@ -49,26 +49,12 @@ Rectangle {
         anchors.rightMargin: parent.width * 0.02
         spacing: Math.max(6, root.width * 0.01)
 
-        //  LEFT (TIME + BELL + MENU)
+        //  LEFT (TIME + MENU)
         Item {
             id: timeBlock
             Layout.fillHeight: true
             Layout.alignment: Qt.AlignVCenter
             Layout.preferredWidth: Math.min(root.width * 0.45, leftCluster.implicitWidth + root.width * 0.02)
-
-            property string currentTime: ""
-            property string currentDate: ""
-
-            Timer {
-                interval: 1000
-                running: true
-                repeat: true
-                onTriggered: {
-                    var now = new Date()
-                    timeBlock.currentTime = Qt.formatTime(now, "HH:mm:ss")
-                    timeBlock.currentDate = Qt.formatDate(now, "dd MMM yyyy")
-                }
-            }
 
             Row {
                 id: leftCluster
@@ -78,20 +64,19 @@ Rectangle {
 
                 spacing: Math.max(10 * root.scale, root.width * 0.015)
 
-                // ===== TIME  =====
+                // ===== TIME (GLOBAL) =====
                 Column {
-
                     spacing: Math.max(4, root.height * 0.02)
 
                     Text {
-                        text: timeBlock.currentTime
+                        text: Qt.formatTime(GlobalState.globalDateTime, "HH:mm:ss")
                         color: "white"
                         font.pixelSize: Math.max(12, root.height * 0.30)
                         font.bold: true
                     }
 
                     Text {
-                        text: timeBlock.currentDate
+                        text: Qt.formatDate(GlobalState.globalDateTime, "dd MMM yyyy")
                         color: "white"
                         font.pixelSize: Math.max(10, root.height * 0.25)
                         opacity: 0.9
@@ -101,23 +86,17 @@ Rectangle {
                 // ===== BACK BUTTON =====
                 Item {
                     visible: root.showBackButton
-
                     width: Math.max(36 * root.scale, root.height * 0.85)
                     height: width
                     anchors.verticalCenter: parent.verticalCenter
-
-                    // DEBUG BACKGROUND (optional)
-                    // Rectangle { anchors.fill: parent; color: "#FF000033"; radius: 6 }
 
                     Image {
                         id: backIcon
                         anchors.fill: parent
                         anchors.margins: width * 0.20
-
                         source: "qrc:/qt/qml/Application/assets/images/Back.png"
                         fillMode: Image.PreserveAspectFit
                         smooth: true
-
                         visible: status === Image.Ready
                     }
 
@@ -127,7 +106,6 @@ Rectangle {
                     }
                 }
 
-                // spacing gap (keep existing UI balance)
                 Item { width: root.width * 0.10 }
 
                 // ===== MENU BUTTON =====
@@ -152,12 +130,6 @@ Rectangle {
                         onClicked: root.menuClicked()
                     }
                 }
-            }
-
-            Component.onCompleted: {
-                var now = new Date()
-                timeBlock.currentTime = Qt.formatTime(now, "HH:mm:ss")
-                timeBlock.currentDate = Qt.formatDate(now, "dd MMM yyyy")
             }
         }
 
@@ -200,7 +172,6 @@ Rectangle {
                 }
 
                 Rectangle {
-                    id: bottomLine
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
@@ -248,7 +219,6 @@ Rectangle {
 
                     Text {
                         id: userNameText
-
                         property bool showFullName: false
 
                         text: userNameText.showFullName
@@ -282,7 +252,7 @@ Rectangle {
             Rectangle {
                 id: countdownCircle
                 width: Math.max(48 * root.scale, root.height * 0.60)
-                height: Math.max(48 * root.scale, root.height * 0.60)
+                height: width
                 radius: width / 2
                 color: "transparent"
                 border.color: "white"

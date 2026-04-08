@@ -9,4 +9,7 @@ QtObject {
     property real amplitudeThreshold: 400
 
     property bool loginKeyboardRequest: false
+
+   property date globalDateTime: new Date()
+
 }
