@@ -103,7 +103,7 @@ Item {
             // ===== TITLE =====
             Text {
                 id: filterTitle
-                text: "Frequency Settings"
+                text: "Digital filter Settings"
                 font.pixelSize: 26 * root.scale
                 font.bold: true
                 color: "#1A4DB5"
