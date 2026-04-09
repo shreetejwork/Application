@@ -23,8 +23,6 @@ Item {
     CustomPopup {
         id: numberPopup
         anchors.fill: parent
-
-        // IMPORTANT: connect to your top bar
         globalTopBar: root.globalTopBar
     }
 
@@ -55,7 +53,13 @@ Item {
     function displayValue(fieldId) {
         var item = getItem(fieldId)
         if (!item) return ""
-        return item.unit !== "" ? item.value + " " + item.unit : item.value
+        return item.value
+    }
+
+    function displayUnit(fieldId) {
+        var item = getItem(fieldId)
+        if (!item) return ""
+        return item.unit
     }
 
     function updateValue(fieldId, newVal) {
@@ -77,7 +81,6 @@ Item {
             "",
             function(newVal) {
                 updateValue(fieldId, newVal)
-
                 root.fieldClicked(
                     item.label,
                     newVal + (item.unit !== "" ? " " + item.unit : "")
@@ -89,33 +92,150 @@ Item {
     }
 
     // ===== LAYOUT =====
-    Column {
+    Row {
         anchors.centerIn: parent
-        spacing: 70 * root.scale
+        spacing: 100 * root.scale
 
-        Row {
-            spacing: 55 * root.scale
-            anchors.horizontalCenter: parent.horizontalCenter
+        // --- Left panel: Filter ---
+        Column {
+            spacing: 8 * root.scale
 
-            FilterTile { fieldId: "lpf1" }
-            FilterTile { fieldId: "hpf1" }
+            // ===== TITLE =====
+            Text {
+                id: filterTitle
+                text: "Frequency Settings"
+                font.pixelSize: 26 * root.scale
+                font.bold: true
+                color: "#1A4DB5"
+            }
+
+            Rectangle {
+                width: 40 * root.scale
+                height: 3 * root.scale
+                radius: 2 * root.scale
+                color: "#1A4DB5"
+            }
+
+            // ===== PANEL =====
+            Rectangle {
+                width: 280 * root.scale
+                height: 460 * root.scale
+                radius: 18 * root.scale
+                color: "#FFFFFF"
+                border.color: "#E5E7EB"
+                border.width: 1
+
+                Column {
+                    anchors.fill: parent
+                    anchors.margins: 20 * root.scale
+
+                    Item {
+                        anchors.fill: parent
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 40 * root.scale
+
+                            FilterTile { fieldId: "lpf1" }
+                            FilterTile { fieldId: "hpf1" }
+                        }
+                    }
+                }
+            }
+        }
+        // --- Middle panel: Delay ---
+        Column {
+            spacing: 8 * root.scale
+
+            // ===== TITLE =====
+            Text {
+                text: "Delay Settings"
+                font.pixelSize: 26 * root.scale
+                font.bold: true
+                color: "#1A4DB5"
+            }
+
+            Rectangle {
+                width: 40 * root.scale
+                height: 3 * root.scale
+                radius: 2 * root.scale
+                color: "#1A4DB5"
+            }
+
+            // ===== PANEL =====
+            Rectangle {
+                width: 280 * root.scale
+                height: 460 * root.scale
+                radius: 18 * root.scale
+                color: "#FFFFFF"
+                border.color: "#E5E7EB"
+                border.width: 1
+
+                Column {
+                    anchors.fill: parent
+                    anchors.margins: 20 * root.scale
+
+                    Item {
+                        anchors.fill: parent
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 40 * root.scale
+
+                            FilterTile { fieldId: "hd" }
+                            FilterTile { fieldId: "od" }
+                            FilterTile { fieldId: "rd" }
+                        }
+                    }
+                }
+            }
         }
 
-        Row {
-            spacing: 70 * root.scale
-            anchors.horizontalCenter: parent.horizontalCenter
+        // --- Right panel: Gain ---
+        Column {
+            spacing: 8 * root.scale
 
-            FilterTile { fieldId: "od" }
-            FilterTile { fieldId: "hd" }
-            FilterTile { fieldId: "rd" }
-        }
+            // ===== TITLE =====
+            Text {
+                text: "Gain Settings"
+                font.pixelSize: 26 * root.scale
+                font.bold: true
+                color: "#1A4DB5"
+            }
 
-        Row {
-            spacing: 55 * root.scale
-            anchors.horizontalCenter: parent.horizontalCenter
+            Rectangle {
+                width: 40 * root.scale
+                height: 3 * root.scale
+                radius: 2 * root.scale
+                color: "#1A4DB5"
+            }
 
-            FilterTile { fieldId: "dg" }
-            FilterTile { fieldId: "ag" }
+            // ===== PANEL =====
+            Rectangle {
+                width: 280 * root.scale
+                height: 460 * root.scale
+                radius: 18 * root.scale
+                color: "#FFFFFF"
+                border.color: "#E5E7EB"
+                border.width: 1
+
+                Column {
+                    anchors.fill: parent
+                    anchors.margins: 20 * root.scale
+
+                    Item {
+                        anchors.fill: parent
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 40 * root.scale
+
+                            FilterTile { fieldId: "ag" }
+                            FilterTile { fieldId: "dg" }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -123,58 +243,76 @@ Item {
     component FilterTile: Item {
         id: tile
         property string fieldId: ""
+        property bool pressed: false
 
-        width: 200 * root.scale
+        width: 188 * root.scale
         height: 90 * root.scale
 
         Rectangle {
-            id: body
-            width: parent.width
-            height: parent.height * 0.65
-            anchors.bottom: parent.bottom
+            id: card
+            anchors.fill: parent
+            radius: 12 * root.scale
+            color: tile.pressed ? "#EEF3FF" : "#FFFFFF"
+            border.color: "#D0D9F0"
+            border.width: 1
 
-            radius: height * 0.45
-            color: body.pressed ? "#1A4DB5" : "#FFFFFF"
+            // Top accent bar
+            Rectangle {
+                id: accentBar
+                width: parent.width
+                height: 30 * root.scale
+                color: "#1A4DB5"
+                radius: card.radius
 
-            border.color: "#1A4DB5"
-            border.width: 3
+                Rectangle {
+                    width: parent.width
+                    height: parent.radius
+                    anchors.bottom: parent.bottom
+                    color: parent.color
+                }
 
-            property bool pressed: false
+                Text {
+                    anchors.centerIn: parent
+                    text: root.getItem(tile.fieldId)?.label || ""
+                    color: "#FFFFFF"
+                    font.pixelSize: 18 * root.scale
+                    font.bold: true
+                }
+            }
 
-            Text {
-                anchors.centerIn: parent
-                text: root.displayValue(tile.fieldId)
-                color: body.pressed ? "#FFFFFF" : "#1A4DB5"
-                font.pixelSize: 18 * root.scale
-                font.bold: true
+            // Value area
+            Item {
+                anchors.top: accentBar.bottom
+                anchors.bottom: parent.bottom
+                anchors.left: parent.left
+                anchors.right: parent.right
+
+                Text {
+                    id: valueText
+                    anchors.centerIn: parent
+                    text: root.displayValue(tile.fieldId)
+                    color: "#1A4DB5"
+                    font.pixelSize: 25 * root.scale
+                    font.bold: true
+                }
+
+                Text {
+                    anchors.left: valueText.right
+                    anchors.leftMargin: 4 * root.scale
+                    anchors.baseline: valueText.baseline
+                    text: root.displayUnit(tile.fieldId)
+                    color: "#7A96CC"
+                    font.pixelSize: 16 * root.scale
+                    visible: root.displayUnit(tile.fieldId) !== ""
+                }
             }
 
             MouseArea {
                 anchors.fill: parent
-                onPressed:  body.pressed = true
-                onReleased: body.pressed = false
-                onCanceled: body.pressed = false
+                onPressed:  tile.pressed = true
+                onReleased: tile.pressed = false
+                onCanceled: tile.pressed = false
                 onClicked:  root.openDialog(tile.fieldId)
-            }
-        }
-
-        Rectangle {
-            width: parent.width * 0.55
-            height: parent.height * 0.38
-
-            anchors.horizontalCenter: parent.horizontalCenter
-            anchors.bottom: body.top
-            anchors.bottomMargin: -height * 0.35
-
-            radius: height / 2
-            color: "#1A4DB5"
-
-            Text {
-                anchors.centerIn: parent
-                text: root.getItem(tile.fieldId)?.label || ""
-                color: "#FFFFFF"
-                font.pixelSize: 14 * root.scale
-                font.bold: true
             }
         }
     }

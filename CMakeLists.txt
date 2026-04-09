@@ -61,6 +61,7 @@ qt_add_qml_module(appApplication
             QML_FILES qml/screens/SysSettingsScreen.qml
             QML_FILES qml/components/SettingsS1.qml
             QML_FILES qml/components/SettingsS2.qml
+            QML_FILES qml/components/SettingsS3.qml
 
 
 )

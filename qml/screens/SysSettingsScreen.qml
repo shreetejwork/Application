@@ -63,10 +63,8 @@ Item {
             Rectangle {
                 color: "#F5F7FC"
 
-                Text {
-                    anchors.centerIn: parent
-                    text: "System Settings - Page 3"
-                    font.pixelSize: 28 * root.scale
+                SettingsS3{
+                    anchors.fill: parent
                 }
             }
             // ===== SCREEN 4 =====
