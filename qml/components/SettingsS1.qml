@@ -22,7 +22,9 @@ Item {
 
     CustomPopup {
         id: numberPopup
+        parent: Overlay.overlay
         anchors.fill: parent
+        z: 9999
         globalTopBar: root.globalTopBar
     }
 

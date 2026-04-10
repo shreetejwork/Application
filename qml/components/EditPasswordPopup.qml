@@ -29,13 +29,13 @@ Popup {
         if (!Qt.inputMethod.visible)
             return (Overlay.overlay.height - height) / 2 - (40 * scale)
 
-        // 🚀 STRONG push above keyboard (NOT centered anymore)
+        //  STRONG push above keyboard
         return Math.max(
-            10 * scale,   // top safety margin
+            5 * scale,   // top safety margin
             Overlay.overlay.height
             - height
             - keyboardHeight
-            - (180 * scale)
+            - (500 * scale)
         )
     }
 

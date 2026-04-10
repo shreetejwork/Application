@@ -145,6 +145,8 @@ Item {
                                         inputField.readOnly = false
                                         inputField.forceActiveFocus()
                                         inputField.selectAll()
+
+                                        GlobalState.loginKeyboardRequest = true
                                         Qt.inputMethod.show()
                                     }
                                 }
@@ -398,13 +400,5 @@ Item {
                 }
             }
         }
-    }
-
-    InputPanel {
-        id: keyboard
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-        visible: Qt.inputMethod.visible
     }
 }

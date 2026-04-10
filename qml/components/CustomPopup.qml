@@ -16,7 +16,7 @@ Item {
         visible: false
         z: 101
         width: Math.min(parent.width * 0.35, 420)
-        height: Math.min(parent.height * 0.85, 650)
+        height: Math.min(parent.height * 0.70, 650)
         radius: 16
         color: "#FFFFFF"
         anchors.centerIn: parent

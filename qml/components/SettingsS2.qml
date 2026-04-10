@@ -29,8 +29,8 @@ Item {
         color: "#1A4DB5"
         anchors.left: parent.left
         anchors.top: parent.top
-        anchors.leftMargin: 30 * root.scale
-        anchors.topMargin: 20 * root.scale
+        anchors.leftMargin: 10 * root.scale
+        anchors.topMargin: 5 * root.scale
     }
 
     Rectangle {
@@ -45,7 +45,9 @@ Item {
 
     // ===== MAIN CONTENT ROW =====
     Row {
-        anchors.centerIn: parent
+        anchors.top: titleText.bottom
+        anchors.topMargin: 40 * root.scale
+        anchors.horizontalCenter: parent.horizontalCenter
         spacing: 100 * root.scale
 
         // ===== LEFT PANEL: Hour + Minutes + Set =====
@@ -490,7 +492,6 @@ Item {
             border.width: 1.5
         }
 
-        // Everything inside uses fixed arithmetic — no binding to header.height
         Item {
             anchors.fill: parent
             anchors.margins: 20 * root.scale
