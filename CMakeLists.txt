@@ -64,6 +64,7 @@ qt_add_qml_module(appApplication
             QML_FILES qml/components/SettingsS3.qml
             QML_FILES qml/components/SettingsS4.qml
             QML_FILES qml/components/CommonKeyboard.qml
+            QML_FILES qml/components/SettingsS5.qml
 
 
 )

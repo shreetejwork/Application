@@ -90,7 +90,21 @@ Item {
                     height: Math.min(parent.height * 0.9, 520 * root.scale)
 
                     SettingsS4 {
-                        anchors.fill: parent   // ✅ fixed typo
+                        anchors.fill: parent
+                    }
+                }
+            }
+            // ===== SCREEN 5 =====
+            Rectangle {
+                color: "#F5F7FC"
+
+                Item {
+                    anchors.centerIn: parent
+                    width: Math.min(parent.width * 0.9, 900 * root.scale)
+                    height: Math.min(parent.height * 0.9, 520 * root.scale)
+
+                    SettingsS5{
+                        anchors.fill: parent
                     }
                 }
             }
