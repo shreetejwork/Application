@@ -80,7 +80,7 @@ Item {
         if (!item) return
 
         numberPopup.open(
-            "Edit - " + item.title,
+            item.title,
             "",
             function(newVal) {
                 updateValue(fieldId, newVal)

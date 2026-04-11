@@ -44,7 +44,7 @@ Item {
         Row {
             spacing: 25
 
-            // ➕ PLUS BUTTON
+            //  PLUS BUTTON
             Rectangle {
                 width: 45
                 height: 50
@@ -77,7 +77,7 @@ Item {
                 Behavior on scale { NumberAnimation { duration: 120 } }
             }
 
-            // ➖ MINUS BUTTON
+            //  MINUS BUTTON
             Rectangle {
                 width: 45
                 height: 50

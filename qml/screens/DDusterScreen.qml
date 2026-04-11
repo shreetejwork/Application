@@ -149,6 +149,12 @@ Item {
                                         GlobalState.loginKeyboardRequest = true
                                         Qt.inputMethod.show()
                                     }
+                                    Keys.onReturnPressed: {
+                                        card.confirmed(text.trim())
+                                        Qt.inputMethod.hide()
+                                        focus = false
+                                    }
+
                                 }
                             }
                         }

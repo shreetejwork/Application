@@ -306,6 +306,12 @@ Popup {
                             Qt.inputMethod.hide()
                         }
                     }
+                    Keys.onReturnPressed: {
+                        card.confirmed(text.trim())
+                        Qt.inputMethod.hide()
+                        focus = false
+                    }
+
                 }
 
                 MouseArea {
@@ -354,6 +360,12 @@ Popup {
                             Qt.inputMethod.hide()
                         }
                     }
+                    Keys.onReturnPressed: {
+                        card.confirmed(text.trim())
+                        Qt.inputMethod.hide()
+                        focus = false
+                    }
+
                 }
 
                 MouseArea {

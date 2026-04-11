@@ -225,6 +225,12 @@ Popup {
                             Qt.inputMethod.hide()
                         }
                     }
+                    Keys.onReturnPressed: {
+                        card.confirmed(text.trim())
+                        Qt.inputMethod.hide()
+                        focus = false
+                    }
+
                 }
 
                 // IMPORTANT CLICK HANDLER
@@ -276,6 +282,12 @@ Popup {
                             Qt.inputMethod.hide()
                         }
                     }
+                    Keys.onReturnPressed: {
+                        card.confirmed(text.trim())
+                        Qt.inputMethod.hide()
+                        focus = false
+                    }
+
                 }
 
                 // CLICK HANDLER
