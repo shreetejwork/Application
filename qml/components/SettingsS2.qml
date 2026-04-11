@@ -15,6 +15,9 @@ Item {
     // Local editable date
     property date selectedDate: GlobalState.globalDateTime
 
+    property var globalTopBar
+    property var notify
+
     Rectangle {
         anchors.fill: parent
         color: "#F5F7FC"
@@ -220,7 +223,8 @@ Item {
 
                         GlobalState.globalDateTime = d
 
-                        console.log("Updated Global Date:", GlobalState.globalDateTime)
+                        if (notify)
+                            notify("✓ Time Updated")
                     }
                 }
             }
@@ -461,7 +465,8 @@ Item {
                             d.setMilliseconds(0)
 
                             GlobalState.globalDateTime = d
-                            console.log("Updated Global Date:", GlobalState.globalDateTime)
+                            if (notify)
+                                notify("✓ Date Updated")
                         }
                     }
                 }

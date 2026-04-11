@@ -34,7 +34,6 @@ Item {
                 iconSize: 100 * root.scale
 
                 onTileClicked: {
-                    console.log("User tapped")
                     navigateTo("User")
                 }
             }

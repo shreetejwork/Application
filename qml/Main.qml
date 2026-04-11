@@ -64,6 +64,8 @@ Window {
 
             onLoaded: {
                 if (item) {
+                    if ("globalTopBar" in item)
+                                item.globalTopBar = mainTopBar
                     item.navigateTo = function(screen) {
                         root.currentMenuScreen = screen
                         menuLoader.source = "screens/" + screen + "Screen.qml"

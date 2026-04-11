@@ -10,6 +10,9 @@ Item {
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
+    property var globalTopBar
+    property var notify
+
     Rectangle {
         anchors.fill: parent
         color: "#F5F7FC"
@@ -434,7 +437,8 @@ Item {
                         MouseArea {
                             anchors.fill: parent
                             onClicked: {
-                                console.log("Saved:", JSON.stringify(timeModel))
+                                if (notify)
+                                    notify("✓ Alarm Set")
                             }
                         }
                     }

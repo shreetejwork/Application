@@ -13,6 +13,12 @@ Item {
 
     property var globalTopBar
 
+    function notify(msg) {
+
+        if (globalTopBar && globalTopBar.showNotification)
+            globalTopBar.showNotification(msg)
+    }
+
     Component.onCompleted: {
         if (globalTopBar) {
             globalTopBar.showBackButton = true
@@ -41,6 +47,9 @@ Item {
 
                     SettingsS1 {
                         anchors.fill: parent
+
+                        notify: root.notify
+
                         globalTopBar: root.globalTopBar
 
                         onFieldClicked: function(label) {
@@ -61,6 +70,8 @@ Item {
 
                     SettingsS2 {
                         anchors.fill: parent
+                        notify: root.notify
+                        globalTopBar: root.globalTopBar
                     }
                 }
             }
@@ -76,6 +87,8 @@ Item {
 
                     SettingsS3 {
                         anchors.fill: parent
+                        notify: root.notify
+                        globalTopBar: root.globalTopBar
                     }
                 }
             }
@@ -91,6 +104,8 @@ Item {
 
                     SettingsS4 {
                         anchors.fill: parent
+                        notify: root.notify
+                        globalTopBar: root.globalTopBar
                     }
                 }
             }
@@ -105,6 +120,8 @@ Item {
 
                     SettingsS5{
                         anchors.fill: parent
+                        notify: root.notify
+                        globalTopBar: root.globalTopBar
                     }
                 }
             }

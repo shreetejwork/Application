@@ -12,6 +12,9 @@ Item {
 
     property bool wifiEnabled: false
 
+    property var globalTopBar
+    property var notify
+
     ListModel {
         id: networkModel
         ListElement { name: "HomeNetwork_5G";  signal: 90; secured: true  }
@@ -31,22 +34,26 @@ Item {
         anchors.margins: 30 * root.scale
         spacing: 20 * root.scale
 
-        Text {
-            id: titleText
-            text: "Network Settings"
-            font.pixelSize: 26 * root.scale
-            font.bold: true
-            color: "#1A4DB5"
-            Layout.leftMargin: 25 * root.scale
-            Layout.topMargin: 20 * root.scale
-        }
+        // ===== FIXED TITLE BLOCK =====
+        Column {
+            Layout.fillWidth: true
+            Layout.alignment: Qt.AlignLeft
+            spacing: 6 * root.scale
 
-        Rectangle {
-            width: 80 * root.scale
-            height: 4 * root.scale
-            radius: 2 * root.scale
-            color: "#1A4DB5"
-            Layout.leftMargin: 25 * root.scale
+            Text {
+                text: "Network Settings"
+                font.pixelSize: 26 * root.scale
+                font.bold: true
+                font.letterSpacing: 0.5
+                color: "#1A4DB5"
+            }
+
+            Rectangle {
+                width: 90 * root.scale
+                height: 4 * root.scale
+                radius: 2 * root.scale
+                color: "#1A4DB5"
+            }
         }
 
         RowLayout {
@@ -68,7 +75,6 @@ Item {
                     anchors.margins: 20 * root.scale
                     spacing: 14 * root.scale
 
-                    // ---- Header: WIFI + Toggle (UNCHANGED) ----
                     RowLayout {
                         Layout.fillWidth: true
                         spacing: 16 * root.scale
@@ -99,7 +105,6 @@ Item {
                         }
                     }
 
-                    // ---- Content Area ----
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -109,7 +114,6 @@ Item {
                         border.width: 1
                         clip: true
 
-                        // WiFi OFF message
                         Column {
                             anchors.centerIn: parent
                             spacing: 10 * root.scale
@@ -131,7 +135,6 @@ Item {
                             }
                         }
 
-                        // WiFi ON — Network List
                         Column {
                             anchors.fill: parent
                             anchors.topMargin: 16 * root.scale
@@ -139,7 +142,6 @@ Item {
                             visible: root.wifiEnabled
                             spacing: 0
 
-                            // Section header
                             Item {
                                 width: parent.width
                                 height: 35 * root.scale
@@ -165,14 +167,12 @@ Item {
                                 }
                             }
 
-                            // Header separator
                             Rectangle {
                                 width: parent.width
                                 height: 2
                                 color: "#E8E8E8"
                             }
 
-                            // Network rows
                             Repeater {
                                 model: networkModel
 
@@ -192,8 +192,6 @@ Item {
                                             hoverEnabled: true
                                         }
 
-                                        // Fixed-position items using anchors for perfect alignment
-                                        // Lock icon — fixed left
                                         Text {
                                             id: lockIcon
                                             anchors.left: parent.left
@@ -203,7 +201,6 @@ Item {
                                             font.pixelSize: 20 * root.scale
                                         }
 
-                                        // Network name + status — fills middle space
                                         Column {
                                             anchors.left: lockIcon.right
                                             anchors.leftMargin: 10 * root.scale
@@ -228,7 +225,6 @@ Item {
                                             }
                                         }
 
-                                        // Signal bars — fixed right of name, left of button
                                         Row {
                                             id: signalRow
                                             anchors.right: connectBtn.left
@@ -252,7 +248,6 @@ Item {
                                             }
                                         }
 
-                                        // Connect button — fixed right edge
                                         Rectangle {
                                             id: connectBtn
                                             anchors.right: parent.right
@@ -278,7 +273,6 @@ Item {
                                         }
                                     }
 
-                                    // Row divider (skip last)
                                     Rectangle {
                                         visible: index < networkModel.count - 1
                                         width: parent.width - 28 * root.scale

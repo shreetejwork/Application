@@ -11,6 +11,9 @@ Item {
     property real baseHeight: 600
     property real scale: Math.max(0.85, Math.min(width / baseWidth, height / baseHeight))
 
+    property var globalTopBar
+    property var notify
+
     Rectangle {
         anchors.fill: parent
         color: "#F5F7FC"
@@ -59,21 +62,36 @@ Item {
             fieldLabel: "MACHINE ID"
             placeholderText: "Enter machine ID"
             initialValue: GlobalState.machineId ?? "PHMX"
-            onConfirmed: (val) => GlobalState.machineId = val
+            onConfirmed: (val) => {
+                    GlobalState.machineId = val
+
+                    if (root.notify)
+                        root.notify("✓ Machine ID Saved")
+                }
         }
 
         SettingsCard {
             fieldLabel: "USER"
             placeholderText: "Enter user"
             initialValue: GlobalState.userName ?? ""
-            onConfirmed: (val) => GlobalState.userName = val
+            onConfirmed: (val) => {
+                    GlobalState.userName = val
+
+                    if (root.notify)
+                        root.notify("✓ Username Saved")
+                }
         }
 
         SettingsCard {
             fieldLabel: "LOCATION"
             placeholderText: "Enter location"
             initialValue: GlobalState.location ?? ""
-            onConfirmed: (val) => GlobalState.location = val
+            onConfirmed: (val) => {
+                    GlobalState.location = val
+
+                    if (root.notify)
+                        root.notify("✓ Location Saved")
+                }
         }
     }
 

@@ -8,6 +8,7 @@ Item {
     anchors.fill: parent
 
     property var globalTopBar
+    property var notify
 
     property real baseWidth: 1024
     property real baseHeight: 600
