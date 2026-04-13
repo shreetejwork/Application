@@ -72,6 +72,7 @@ qt_add_qml_module(appApplication
             QML_FILES qml/components/SettingsS6.qml
             QML_FILES qml/screens/AuditTrailScreen.qml
             QML_FILES qml/screens/BatchReportScreen.qml
+            QML_FILES qml/screens/ProductLibraryScreen.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

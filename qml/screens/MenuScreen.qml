@@ -35,6 +35,7 @@ Item {
                     iconSource: "qrc:/qt/qml/Application/assets/images/ProductLib.png"
                     label: "Product\nLibrary"
                     iconSize: 100 * root.scale
+                    onTileClicked: navigateTo("ProductLibrary")
                 }
                 MenuTile {
                     iconSource: "qrc:/qt/qml/Application/assets/images/AuditTrail.png"
