@@ -16,6 +16,23 @@ Item {
     property string searchText: ""
     property date pickerDate: new Date()
 
+    property int visibleCount: {
+        var count = 0
+        var from = parseDate(root.fromDate)
+        var to   = parseDate(root.toDate)
+        for (var i = 0; i < tableList.count; i++) {
+            var m = tableList.model.get(i)
+            var d = parseDate(m.date)
+            if (!d) { count++; continue }
+            if (from && d < from) continue
+            if (to   && d > to)   continue
+            var userOk   = root.selectedUser === "All" || m.user === root.selectedUser
+            var searchOk = m.remark.toLowerCase().includes(root.searchText.toLowerCase())
+            if (userOk && searchOk) count++
+        }
+        return count
+    }
+
     // ===== HELPERS =====
     function daysInMonth(month, year) {
         return new Date(year, month + 1, 0).getDate()
@@ -41,6 +58,7 @@ Item {
         if (to   && d > to)   return false
         return true
     }
+
     function resetFilters() {
         root.fromDate     = ""
         root.toDate       = ""
@@ -207,10 +225,12 @@ Item {
                             Text { text: "🔍"; font.pixelSize: 18 * root.scale }
 
                             TextInput {
+                                id: searchInput
                                 Layout.fillWidth: true
                                 font.pixelSize: 18 * root.scale
                                 color: "#1A1A1A"
                                 clip: true
+                                text: root.searchText
                                 onTextChanged: root.searchText = text
 
                                 Text {
@@ -376,14 +396,7 @@ Item {
                         // ===== NO DATA OVERLAY =====
                         Item {
                             anchors.fill: parent
-                            visible: {
-                                var anyVisible = false
-                                for (var i = 0; i < tableList.count; i++) {
-                                    var item = tableList.itemAtIndex(i)
-                                    if (item && item.visible) { anyVisible = true; break }
-                                }
-                                return !anyVisible
-                            }
+                            visible: root.visibleCount === 0
 
                             Column {
                                 anchors.centerIn: parent
@@ -422,7 +435,10 @@ Item {
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.resetFilters()
+                                        onClicked: {
+                                            root.resetFilters()
+                                            searchInput.text = ""
+                                        }
                                     }
                                 }
                             }

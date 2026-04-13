@@ -46,6 +46,7 @@ Item {
                     iconSource: "qrc:/qt/qml/Application/assets/images/More.png"
                     label: "Product/Batch\nReport"
                     iconSize: 100 * root.scale
+                    onTileClicked: navigateTo("BatchReport")
                 }
             }
 
