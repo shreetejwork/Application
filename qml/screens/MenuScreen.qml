@@ -40,6 +40,7 @@ Item {
                     iconSource: "qrc:/qt/qml/Application/assets/images/AuditTrail.png"
                     label: "Audit Trial\nReport"
                     iconSize: 100 * root.scale
+                    onTileClicked: navigateTo("AuditTrail")
                 }
                 MenuTile {
                     iconSource: "qrc:/qt/qml/Application/assets/images/More.png"

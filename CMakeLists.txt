@@ -44,6 +44,7 @@ qt_add_qml_module(appApplication
             assets/images/coding.png
             assets/images/social.png
             assets//images//diagnosis.png
+            assets/images/calendar.png
             QML_FILES qml/components/ActionButton.qml
             QML_FILES qml/components/ValueControl.qml
             QML_FILES qml/components/CircleActionButton.qml
@@ -68,6 +69,8 @@ qt_add_qml_module(appApplication
             QML_FILES qml/components/SettingsS5.qml
             QML_FILES qml/screens/DiagnosisScreen.qml
             QML_FILES qml/components/DiagCard.qml
+            QML_FILES qml/components/SettingsS6.qml
+            QML_FILES qml/screens/AuditTrailScreen.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

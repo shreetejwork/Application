@@ -125,6 +125,22 @@ Item {
                     }
                 }
             }
+            // ===== SCREEN 6 =====
+            Rectangle {
+                color: "#F5F7FC"
+
+                Item {
+                    anchors.centerIn: parent
+                    width: Math.min(parent.width * 0.9, 900 * root.scale)
+                    height: Math.min(parent.height * 0.9, 520 * root.scale)
+
+                    SettingsS6{
+                        anchors.fill: parent
+                        // notify: root.notify
+                        // globalTopBar: root.globalTopBar
+                    }
+                }
+            }
 
             onCurrentIndexChanged: indicator.currentPage = currentIndex
         }
