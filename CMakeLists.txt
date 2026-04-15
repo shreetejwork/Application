@@ -45,6 +45,7 @@ qt_add_qml_module(appApplication
             assets/images/social.png
             assets//images//diagnosis.png
             assets/images/calendar.png
+            assets/images/filter.png
             QML_FILES qml/components/ActionButton.qml
             QML_FILES qml/components/ValueControl.qml
             QML_FILES qml/components/CircleActionButton.qml

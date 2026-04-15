@@ -64,39 +64,6 @@ Item {
                     anchors.margins: 10 * root.scale
                     spacing: 10 * root.scale
 
-                    Rectangle {
-                        width: 220 * root.scale
-                        height: 36 * root.scale
-                        radius: 6 * root.scale
-                        color: "#F0F4FF"
-                        border.color: "#B0BEE0"
-
-                        RowLayout {
-                            anchors.fill: parent
-                            anchors.margins: 6 * root.scale
-
-                            Text { text: "🔍"; font.pixelSize: 16 * root.scale }
-
-                            TextInput {
-                                id: searchInput
-                                Layout.fillWidth: true
-                                font.pixelSize: 16 * root.scale
-                                color: "#1A1A1A"
-                                clip: true
-                                text: root.searchText
-                                onTextChanged: root.searchText = text
-
-                                Text {
-                                    anchors.fill: parent
-                                    text: "Search batch..."
-                                    color: "#8896B0"
-                                    visible: parent.text === ""
-                                    verticalAlignment: Text.AlignVCenter
-                                }
-                            }
-                        }
-                    }
-
                     Item { Layout.fillWidth: true }
 
                     Repeater {

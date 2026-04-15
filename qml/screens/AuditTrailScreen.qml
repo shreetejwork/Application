@@ -15,6 +15,7 @@ Item {
     property string selectedUser: "All"
     property string searchText: ""
     property date pickerDate: new Date()
+    property var activeRemarkFilters: []
 
     property int visibleCount: {
         var count = 0
@@ -28,7 +29,11 @@ Item {
             if (to   && d > to)   continue
             var userOk   = root.selectedUser === "All" || m.user === root.selectedUser
             var searchOk = m.remark.toLowerCase().includes(root.searchText.toLowerCase())
-            if (userOk && searchOk) count++
+            var remarkOk = root.activeRemarkFilters.length === 0 ||
+                           root.activeRemarkFilters.some(function(f) {
+                               return m.remark.toLowerCase().includes(f.toLowerCase().replace(/\n/g, " "))
+                           })
+            if (userOk && searchOk && remarkOk) count++
         }
         return count
     }
@@ -59,11 +64,21 @@ Item {
         return true
     }
 
+    function remarkInFilter(remark) {
+        if (root.activeRemarkFilters.length === 0) return true
+        for (var i = 0; i < root.activeRemarkFilters.length; i++) {
+            var f = root.activeRemarkFilters[i].replace(/\n/g, " ").toLowerCase()
+            if (remark.toLowerCase().includes(f)) return true
+        }
+        return false
+    }
+
     function resetFilters() {
-        root.fromDate     = ""
-        root.toDate       = ""
-        root.selectedUser = "All"
-        root.searchText   = ""
+        root.fromDate            = ""
+        root.toDate              = ""
+        root.selectedUser        = "All"
+        root.searchText          = ""
+        root.activeRemarkFilters = []
     }
 
     Rectangle {
@@ -208,13 +223,13 @@ Item {
                         }
                     }
 
-                    // SEARCH
+                    // FILTER BUTTON
                     Rectangle {
-                        width: 180 * root.scale
+                        width: 150 * root.scale
                         height: 36 * root.scale
                         radius: 6 * root.scale
-                        color: "#F0F4FF"
-                        border.color: "#B0BEE0"
+                        color: root.activeRemarkFilters.length > 0 ? "#1A4DB5" : "#F0F4FF"
+                        border.color: "#1A4DB5"
                         border.width: 1
 
                         RowLayout {
@@ -222,26 +237,27 @@ Item {
                             anchors.margins: 6 * root.scale
                             spacing: 4 * root.scale
 
-                            Text { text: "🔍"; font.pixelSize: 18 * root.scale }
-
-                            TextInput {
-                                id: searchInput
-                                Layout.fillWidth: true
+                            Text {
+                                text: root.activeRemarkFilters.length > 0
+                                      ? "Filters (" + root.activeRemarkFilters.length + ")"
+                                      : "Filters"
                                 font.pixelSize: 18 * root.scale
-                                color: "#1A1A1A"
-                                clip: true
-                                text: root.searchText
-                                onTextChanged: root.searchText = text
-
-                                Text {
-                                    anchors.fill: parent
-                                    text: "Search remark..."
-                                    font.pixelSize: 18 * root.scale
-                                    color: "#8896B0"
-                                    visible: parent.text === ""
-                                    verticalAlignment: Text.AlignVCenter
-                                }
+                                color: root.activeRemarkFilters.length > 0 ? "#FFFFFF" : "#1A1A1A"
+                                Layout.fillWidth: true
+                                verticalAlignment: Text.AlignVCenter
                             }
+
+                            Text {
+                                text: "⚙"
+                                font.pixelSize: 20 * root.scale
+                                color: root.activeRemarkFilters.length > 0 ? "#FFFFFF" : "#1A1A1A"
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: filterPopup.open()
                         }
                     }
 
@@ -350,8 +366,9 @@ Item {
                             property bool userMatch:   root.selectedUser === "All" || user === root.selectedUser
                             property bool searchMatch: remark.toLowerCase().includes(root.searchText.toLowerCase())
                             property bool dateMatch:   root.dateInRange(date)
+                            property bool remarkMatch: root.remarkInFilter(remark)
 
-                            visible: userMatch && searchMatch && dateMatch
+                            visible: userMatch && searchMatch && dateMatch && remarkMatch
                             width: ListView.view.width
                             height: visible ? 42 * root.scale : 0
                             color: index % 2 === 0 ? "#FFFFFF" : "#F4F7FF"
@@ -438,6 +455,7 @@ Item {
                                         onClicked: {
                                             root.resetFilters()
                                             searchInput.text = ""
+                                            filterRepeater.resetAll()
                                         }
                                     }
                                 }
@@ -473,7 +491,6 @@ Item {
             anchors.margins: 14 * root.scale
             spacing: 10 * root.scale
 
-            // Popup title
             Column {
                 spacing: 4 * root.scale
                 Layout.alignment: Qt.AlignHCenter
@@ -495,7 +512,6 @@ Item {
                 }
             }
 
-            // ===== CALENDAR =====
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -513,7 +529,6 @@ Item {
                     property int displayMonth: new Date().getMonth()
                     property int displayYear:  new Date().getFullYear()
 
-                    // HEADER
                     Row {
                         width: parent.width
                         height: 38 * root.scale
@@ -522,12 +537,15 @@ Item {
                             width: 36 * root.scale
                             height: parent.height
                             radius: 8 * root.scale
-                            color: prevMouse.pressed ? "#D0D8EE" : "#E8ECF3"
+
+                            color: prevMouse.enabled
+                                   ? (prevMouse.pressed ? "#D0D8EE" : "#E8ECF3")
+                                   : "#F0F2F7"
 
                             Text {
                                 anchors.centerIn: parent
                                 text: "<"
-                                color: "#1A4DB5"
+                                color: prevMouse.enabled ? "#1A4DB5" : "#AAB3C5"
                                 font.bold: true
                                 font.pixelSize: 22 * root.scale
                             }
@@ -535,6 +553,15 @@ Item {
                             MouseArea {
                                 id: prevMouse
                                 anchors.fill: parent
+
+                                property bool isMinReached: (
+                                    datePickerPopup.isFrom &&
+                                    calendar.displayYear === 2026 &&
+                                    calendar.displayMonth === 0
+                                )
+
+                                enabled: !isMinReached
+
                                 onClicked: {
                                     if (calendar.displayMonth === 0) {
                                         calendar.displayMonth = 11
@@ -588,7 +615,6 @@ Item {
                         }
                     }
 
-                    // WEEKDAYS
                     Row {
                         width: parent.width
                         height: 24 * root.scale
@@ -611,7 +637,6 @@ Item {
                         }
                     }
 
-                    // DAY GRID
                     Grid {
                         id: dayGrid
                         width: parent.width
@@ -634,26 +659,45 @@ Item {
                                 property int  dayNum:   index - dayGrid.firstDay + 1
                                 property bool validDay: dayNum >= 1 && dayNum <= dayGrid.daysCount
 
+                                // ===== LIMITS =====
+                                property date currentDate: new Date(calendar.displayYear, calendar.displayMonth, dayNum)
+                                property date minDate: new Date(2026, 0, 1)
+                                property date today: new Date()
+
+                                property bool isBeforeMin: currentDate < minDate
+                                property bool isAfterToday: currentDate > today
+
+                                property bool isDisabled: {
+                                    if (!validDay) return true
+                                    if (datePickerPopup.isFrom)
+                                        return isBeforeMin
+                                    else
+                                        return isAfterToday
+                                }
+
                                 property bool isSelected:
                                     validDay &&
-                                    dayNum                === root.pickerDate.getDate()      &&
-                                    calendar.displayMonth === root.pickerDate.getMonth()     &&
+                                    !isDisabled &&
+                                    dayNum                === root.pickerDate.getDate() &&
+                                    calendar.displayMonth === root.pickerDate.getMonth() &&
                                     calendar.displayYear  === root.pickerDate.getFullYear()
 
                                 property bool isToday: {
                                     var t = new Date()
                                     return validDay &&
-                                           dayNum                === t.getDate()   &&
-                                           calendar.displayMonth === t.getMonth()  &&
+                                           dayNum                === t.getDate() &&
+                                           calendar.displayMonth === t.getMonth() &&
                                            calendar.displayYear  === t.getFullYear()
                                 }
 
-                                color: isSelected                          ? "#1A4DB5"
-                                     : cellMouse.containsMouse && validDay ? "#E8EEFB"
+                                color: isSelected ? "#1A4DB5"
+                                     : cellMouse.containsMouse && !isDisabled ? "#E8EEFB"
                                      : "transparent"
 
                                 border.width: isToday && !isSelected ? 2 : 0
                                 border.color: "#1A4DB5"
+
+                                opacity: isDisabled ? 0.3 : 1.0
 
                                 Text {
                                     anchors.centerIn: parent
@@ -667,9 +711,10 @@ Item {
                                     id: cellMouse
                                     anchors.fill: parent
                                     hoverEnabled: true
-                                    enabled: validDay
+                                    enabled: validDay && !isDisabled
+
                                     onClicked: {
-                                        root.pickerDate = new Date(calendar.displayYear, calendar.displayMonth, dayNum)
+                                        root.pickerDate = currentDate
                                     }
                                 }
                             }
@@ -678,7 +723,6 @@ Item {
                 }
             }
 
-            // OK / Cancel
             RowLayout {
                 Layout.fillWidth: true
                 spacing: 10 * root.scale
@@ -729,6 +773,236 @@ Item {
                             else
                                 root.toDate = formatted
                             datePickerPopup.close()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // ===== FILTER POPUP =====
+    Popup {
+        id: filterPopup
+        modal: true
+        focus: true
+        anchors.centerIn: parent
+        width: 720 * root.scale
+        height: 420 * root.scale
+        closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
+
+        // Temporary checked state storage (committed only on OK)
+        property var pendingChecked: []
+
+        onOpened: {
+            // Sync pending state from activeRemarkFilters
+            var list = grid.filterList
+            var pending = []
+            for (var i = 0; i < list.length; i++) {
+                var label = list[i].replace(/\n/g, " ").toLowerCase()
+                var found = false
+                for (var j = 0; j < root.activeRemarkFilters.length; j++) {
+                    if (root.activeRemarkFilters[j].replace(/\n/g, " ").toLowerCase() === label) {
+                        found = true
+                        break
+                    }
+                }
+                pending.push(found)
+            }
+            filterPopup.pendingChecked = pending
+        }
+
+        background: Rectangle {
+            color: "#FFFFFF"
+            border.color: "#D0D8EC"
+            border.width: 1.5
+            radius: 14 * root.scale
+        }
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 16 * root.scale
+            spacing: 12 * root.scale
+
+            // ===== TITLE =====
+            Column {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 4 * root.scale
+
+                Text {
+                    text: "Filters"
+                    font.pixelSize: 22 * root.scale
+                    font.bold: true
+                    color: "#1A4DB5"
+                }
+
+                Rectangle {
+                    width: 60 * root.scale
+                    height: 3 * root.scale
+                    radius: 2
+                    color: "#1A4DB5"
+                }
+            }
+
+            // ===== CHECKLIST GRID =====
+            Flickable {
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+                contentHeight: grid.height
+                clip: true
+
+                Grid {
+                    id: grid
+                    width: parent.width
+                    columns: 3
+
+                    rowSpacing: 14 * root.scale
+                    columnSpacing: 28 * root.scale
+
+                    property real cellWidth: (width / columns) - columnSpacing
+
+                    property var filterList: [
+                        "M/C Switch ON","M/C Switched OFF","RC/Total RC","User Added",
+                        "User PW Changed","User Deleted","Loged-in_FP","Loged-in",
+                        "Loged-out","THR-S Changed",
+
+                        "Customer Name\nChanged","Customer Location\nChanged","Machine-ID\nChanged",
+                        "THR-A Changed","MPHS Changed","Product Loaded",
+                        "Product Added","Product Deleted","DD Power\nChanged","DD Frequency\nChanged",
+
+                        "Auto Val-1\nEnabled","Auto Val-1\nDisable","Auto Val-2\nEnabled","Auto Val-2 Disable",
+                        "Auto Val-3\nEnabled","Auto Val-3\nDisable","Auto Val-4 Enabled","Auto Val-4\nDisable",
+                        "Last Active\nProduct Loaded",
+
+                        "Auto Val-1\nTime Change","Auto Val-2\nTime Change",
+                        "Auto Val-3\nTime Change","Auto Val-4\nTime Change"
+                    ]
+
+                    Repeater {
+                        id: filterRepeater
+                        model: grid.filterList
+
+                        function resetAll() {
+                            var blank = []
+                            for (var i = 0; i < grid.filterList.length; i++) blank.push(false)
+                            filterPopup.pendingChecked = blank
+                        }
+
+                        delegate: Rectangle {
+                            id: filterItem
+                            width: grid.cellWidth
+                            color: "transparent"
+                            implicitHeight: Math.max(labelText.implicitHeight + 12 * root.scale, 48 * root.scale)
+
+                            property bool isChecked: filterPopup.pendingChecked.length > index
+                                                     ? filterPopup.pendingChecked[index]
+                                                     : false
+
+                            Row {
+                                anchors.fill: parent
+                                anchors.margins: 6 * root.scale
+                                spacing: 12 * root.scale
+
+                                // Custom checkbox rectangle
+                                Rectangle {
+                                    id: checkRect
+                                    width: 22 * root.scale
+                                    height: 22 * root.scale
+                                    radius: 4 * root.scale
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    color: filterItem.isChecked ? "#1A4DB5" : "#FFFFFF"
+                                    border.color: filterItem.isChecked ? "#1A4DB5" : "#B0BEE0"
+                                    border.width: 1.5
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "✓"
+                                        color: "#FFFFFF"
+                                        font.pixelSize: 15 * root.scale
+                                        font.bold: true
+                                        visible: filterItem.isChecked
+                                    }
+                                }
+
+                                Text {
+                                    id: labelText
+                                    text: modelData
+                                    font.pixelSize: 20 * root.scale
+                                    color: "#2E2E2E"
+                                    wrapMode: Text.WordWrap
+                                    width: parent.width - (40 * root.scale)
+                                    anchors.verticalCenter: parent.verticalCenter
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    var arr = filterPopup.pendingChecked.slice()
+                                    while (arr.length <= index) arr.push(false)
+                                    arr[index] = !arr[index]
+                                    filterPopup.pendingChecked = arr
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ===== BUTTONS =====
+            RowLayout {
+                Layout.fillWidth: true
+                spacing: 10 * root.scale
+
+                // RESET
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 42 * root.scale
+                    radius: 6 * root.scale
+                    color: "#FFFFFF"
+                    border.color: "#1A4DB5"
+                    border.width: 1
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Reset"
+                        font.pixelSize: 18 * root.scale
+                        color: "#1A4DB5"
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: filterRepeater.resetAll()
+                    }
+                }
+
+                // OK — commits pending checkboxes to activeRemarkFilters
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: 42 * root.scale
+                    radius: 6 * root.scale
+                    color: "#1A4DB5"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "OK"
+                        font.pixelSize: 18 * root.scale
+                        color: "#FFFFFF"
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            var selected = []
+                            var list = grid.filterList
+                            for (var i = 0; i < list.length; i++) {
+                                if (filterPopup.pendingChecked.length > i && filterPopup.pendingChecked[i]) {
+                                    selected.push(list[i])
+                                }
+                            }
+                            root.activeRemarkFilters = selected
+                            filterPopup.close()
                         }
                     }
                 }
