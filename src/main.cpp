@@ -2,11 +2,17 @@
 #include <QQmlApplicationEngine>
 #include <QQmlEngine>
 
+#include "DatabaseManager.h"
+
 int main(int argc, char *argv[])
 {
     qputenv("QT_IM_MODULE", QByteArray("qtvirtualkeyboard"));
     QGuiApplication app(argc, argv);
 
+    DatabaseManager dbManager;
+    if (!dbManager.initialize()) {
+        return -1;
+    }
 
     qmlRegisterSingletonType(
         QUrl(QStringLiteral("qrc:/qt/qml/Application/qml/GlobalState.qml")),
