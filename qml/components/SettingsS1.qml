@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import AppState 1.0
 import "../components"
 
 Item {
@@ -78,6 +79,9 @@ Item {
     function openDialog(fieldId) {
         var item = getItem(fieldId)
         if (!item) return
+
+        GlobalState.loginKeyboardRequest = false
+        Qt.inputMethod.hide()
 
         numberPopup.open(
             item.title,
