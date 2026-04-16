@@ -76,6 +76,7 @@ qt_add_qml_module(appApplication
             QML_FILES qml/screens/ProductLibraryScreen.qml
             SOURCES src/DatabaseManager.h
             SOURCES src/DatabaseManager.cpp
+            QML_FILES qml/components/PowerOffPopup.qml
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.

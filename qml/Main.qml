@@ -15,6 +15,9 @@ Window {
     title: "Dashboard"
     color: "#F5F7FC"
 
+    // flags: Qt.FramelessWindowHint
+    // visibility: Window.FullScreen
+
     // Track current menu screen
     property string currentMenuScreen: ""
 
@@ -65,7 +68,7 @@ Window {
             onLoaded: {
                 if (item) {
                     if ("globalTopBar" in item)
-                                item.globalTopBar = mainTopBar
+                        item.globalTopBar = mainTopBar
                     item.navigateTo = function(screen) {
                         root.currentMenuScreen = screen
                         menuLoader.source = "screens/" + screen + "Screen.qml"
@@ -116,22 +119,25 @@ Window {
     }
 
 
-    InputPanel {
-        id: keyboard
+    // ===== VIRTUAL KEYBOARD =====
+        InputPanel {
+            id: keyboard
 
-        parent: Overlay.overlay
+            parent: root
 
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
 
-        z: 9999
+            z: 9999
 
-        visible: Qt.inputMethod.visible && GlobalState.loginKeyboardRequest
 
-        y: visible ? parent.height - height : parent.height
-        Behavior on y {
-            NumberAnimation { duration: 250 }
+            visible: GlobalState.loginKeyboardRequest
+
+            y: visible ? parent.height - height : parent.height
+
+            Behavior on y {
+                NumberAnimation { duration: 250 }
+            }
         }
-    }
 }

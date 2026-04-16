@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import AppState 1.0
 
+import "../components"
+
 Rectangle {
     id: root
     color: "#1A4DB5"
@@ -12,6 +14,10 @@ Rectangle {
 
     property string notificationText: ""
     property bool notificationVisible: false
+
+    PowerOffPopup {
+        id: powerPopup
+    }
 
     LoginPopup {
         id: loginPopup
@@ -196,6 +202,11 @@ Rectangle {
                     Layout.preferredHeight: root.height * 0.55
                     fillMode: Image.PreserveAspectFit
                     smooth: true
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: loginPopup.open()
+                    }
                 }
 
                 ColumnLayout {
@@ -293,11 +304,17 @@ Rectangle {
                 }
             }
 
+            // Power off
             Item {
+                id: powerItem
+
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: root.width * 0.01
                 Layout.preferredWidth: root.height * 0.65
                 Layout.preferredHeight: root.height * 0.65
+
+                property int longPressCount: 0
+                property bool longPressTriggered: false
 
                 Image {
                     anchors.fill: parent
@@ -308,7 +325,40 @@ Rectangle {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: loginPopup.open()
+
+                    Timer {
+                        id: longPressTimer
+                        interval: 3000
+                        repeat: false
+
+                        onTriggered: {
+                            powerItem.longPressCount++
+                            powerItem.longPressTriggered = true
+
+                            if (powerItem.longPressCount >= 2) {
+                                powerItem.longPressCount = 0
+
+                                console.log("Exiting to OS...")
+                                Qt.quit()
+                            }
+                        }
+                    }
+
+                    onPressed: {
+                        powerItem.longPressTriggered = false
+                        longPressTimer.start()
+                    }
+
+                    onReleased: {
+                        longPressTimer.stop()
+                    }
+
+                    onClicked: {
+
+                        if (!powerItem.longPressTriggered) {
+                            powerPopup.open()
+                        }
+                    }
                 }
             }
         }

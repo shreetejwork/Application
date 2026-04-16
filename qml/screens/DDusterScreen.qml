@@ -112,6 +112,7 @@ Item {
 
                                     onAccepted: {
                                         Qt.inputMethod.hide()
+                                        GlobalState.loginKeyboardRequest = false
 
                                         if (text.trim() === "") {
                                             text = "General Batch"
