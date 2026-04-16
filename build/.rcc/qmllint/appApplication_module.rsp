@@ -1,18 +1,18 @@
 -I
-/Users/shreetej721/Desktop/QT Projects/Application/build
+/Users/shreetej721/Desktop/QT/HomePage/build
 -I
-/Users/shreetej721/Desktop/QT Projects/Application/build/Application
+/Users/shreetej721/Desktop/QT/HomePage/build/Application
 -I
-/Users/shreetej721/Desktop/QT Projects/Application/build
+/Users/shreetej721/Desktop/QT/HomePage/build
 -I
-/opt/homebrew/share/qt/qml
+/Users/shreetej721/Qt/6.10.2/macos/qml
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qmake_Application.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/qmake_Application.qrc
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/appApplication_raw_qml_0.qrc
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_res_0.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/appApplication_raw_res_0.qrc
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
 --module
 Application

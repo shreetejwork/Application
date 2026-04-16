@@ -6,6 +6,8 @@
 #include <QFile>
 #include <QDebug>
 #include <QDate>
+#include <QDir>
+
 
 DatabaseManager::DatabaseManager(QObject *parent)
     : QObject(parent)
@@ -14,7 +16,10 @@ DatabaseManager::DatabaseManager(QObject *parent)
 
 bool DatabaseManager::initialize()
 {
-    QString dbPath = "NewDataBase.db";
+
+    QString dbPath = QDir::currentPath() + "/MyDataBase.db";
+
+    qDebug() << "DB Path:" << dbPath;
 
     bool firstRun = !QFile::exists(dbPath);
 

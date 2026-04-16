@@ -1,0 +1,20 @@
+[
+    {
+        "classes": [
+            {
+                "className": "DatabaseManager",
+                "lineNumber": 6,
+                "object": true,
+                "qualifiedClassName": "DatabaseManager",
+                "superClasses": [
+                    {
+                        "access": "public",
+                        "name": "QObject"
+                    }
+                ]
+            }
+        ],
+        "inputFile": "DatabaseManager.h",
+        "outputRevision": 69
+    }
+]

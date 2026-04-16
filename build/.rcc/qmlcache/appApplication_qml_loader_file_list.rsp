@@ -1,11 +1,11 @@
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qmake_Application.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/qmake_Application.qrc
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/appApplication_raw_qml_0.qrc
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_res_0.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/appApplication_raw_res_0.qrc
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
 /qt/qml/Application/qml/Main.qml
 /qt/qml/Application/qml/screens/HomeScreen.qml
 /qt/qml/Application/qml/screens/DDusterScreen.qml
@@ -22,3 +22,24 @@
 /qt/qml/Application/qml/components/CustomPopup.qml
 /qt/qml/Application/qml/GlobalState.qml
 /qt/qml/Application/qml/screens/SysDetailsScreen.qml
+/qt/qml/Application/qml/screens/MenuScreen.qml
+/qt/qml/Application/qml/components/MenuTile.qml
+/qt/qml/Application/qml/screens/UserScreen.qml
+/qt/qml/Application/qml/screens/FactorySettingsScreen.qml
+/qt/qml/Application/qml/components/LoginPopup.qml
+/qt/qml/Application/qml/components/CreateUserPopup.qml
+/qt/qml/Application/qml/components/DeleteUserPopup.qml
+/qt/qml/Application/qml/components/EditPasswordPopup.qml
+/qt/qml/Application/qml/screens/SysSettingsScreen.qml
+/qt/qml/Application/qml/components/SettingsS1.qml
+/qt/qml/Application/qml/components/SettingsS2.qml
+/qt/qml/Application/qml/components/SettingsS3.qml
+/qt/qml/Application/qml/components/SettingsS4.qml
+/qt/qml/Application/qml/components/CommonKeyboard.qml
+/qt/qml/Application/qml/components/SettingsS5.qml
+/qt/qml/Application/qml/screens/DiagnosisScreen.qml
+/qt/qml/Application/qml/components/DiagCard.qml
+/qt/qml/Application/qml/components/SettingsS6.qml
+/qt/qml/Application/qml/screens/AuditTrailScreen.qml
+/qt/qml/Application/qml/screens/BatchReportScreen.qml
+/qt/qml/Application/qml/screens/ProductLibraryScreen.qml

@@ -1,0 +1,8 @@
+<RCC>
+  <qresource prefix="/qt/qml/Application/">
+    <file alias="qml/qmldir">/Users/shreetej721/Desktop/QT/HomePage/build/Qt_6_10_2_for_macOS-Debug/Application/qml/qmldir</file>
+    <file alias="qml/screens/qmldir">/Users/shreetej721/Desktop/QT/HomePage/build/Qt_6_10_2_for_macOS-Debug/Application/qml/screens/qmldir</file>
+    <file alias="qml/components/qmldir">/Users/shreetej721/Desktop/QT/HomePage/build/Qt_6_10_2_for_macOS-Debug/Application/qml/components/qmldir</file>
+  </qresource>
+</RCC>
+

@@ -1,0 +1,18 @@
+-I
+/Users/shreetej721/Desktop/QT Projects/Application
+-I
+/Users/shreetej721/Desktop/QT Projects/Application/Application
+-I
+/Users/shreetej721/Desktop/QT Projects/Application
+-I
+/Users/shreetej721/Qt/6.10.2/macos/qml
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/.qt/rcc/qmake_Application.qrc
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/.qt/rcc/appApplication_raw_qml_0.qrc
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/.qt/rcc/appApplication_raw_res_0.qrc
+--resource
+/Users/shreetej721/Desktop/QT Projects/Application/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
+--module
+Application

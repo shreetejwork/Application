@@ -1,2 +1,2 @@
-set(__QT_DEPLOY_TARGET_appApplication_FILE /Users/shreetej721/Desktop/QT Projects/Application/build/appApplication.app/Contents/MacOS/appApplication)
+set(__QT_DEPLOY_TARGET_appApplication_FILE /Users/shreetej721/Desktop/QT/HomePage/build/appApplication.app/Contents/MacOS/appApplication)
 set(__QT_DEPLOY_TARGET_appApplication_TYPE EXECUTABLE)

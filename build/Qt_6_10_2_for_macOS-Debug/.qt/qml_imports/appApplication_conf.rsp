@@ -1,0 +1,16 @@
+-rootPath
+/Users/shreetej721/Desktop/QT Projects/Application
+-cmake-output
+-output-file
+/Users/shreetej721/Desktop/QT/HomePage/build/Qt_6_10_2_for_macOS-Debug/.qt/qml_imports/appApplication_conf.cmake
+-importPath
+/Users/shreetej721/Desktop/QT/HomePage/build/Qt_6_10_2_for_macOS-Debug
+-importPath
+/Users/shreetej721/Desktop/QT/HomePage/build/Qt_6_10_2_for_macOS-Debug/Application
+-importPath
+/Users/shreetej721/Qt/6.10.2/macos/qml
+-qrcFiles
+/Users/shreetej721/Desktop/QT/HomePage/build/Qt_6_10_2_for_macOS-Debug/.qt/rcc/qmake_Application.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/Qt_6_10_2_for_macOS-Debug/.qt/rcc/appApplication_raw_qml_0.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/Qt_6_10_2_for_macOS-Debug/.qt/rcc/appApplication_raw_res_0.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/Qt_6_10_2_for_macOS-Debug/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc

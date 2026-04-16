@@ -1,20 +1,20 @@
 --bare
 -I
-/Users/shreetej721/Desktop/QT Projects/Application/build
+/Users/shreetej721/Desktop/QT/HomePage/build
 -I
-/Users/shreetej721/Desktop/QT Projects/Application/build/Application
+/Users/shreetej721/Desktop/QT/HomePage/build/Application
 -I
-/Users/shreetej721/Desktop/QT Projects/Application/build
+/Users/shreetej721/Desktop/QT/HomePage/build
 -I
-/opt/homebrew/share/qt/qml
+/Users/shreetej721/Qt/6.10.2/macos/qml
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/qmake_Application.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/qmake_Application.qrc
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/appApplication_raw_qml_0.qrc
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_res_0.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/appApplication_raw_res_0.qrc
 --resource
-/Users/shreetej721/Desktop/QT Projects/Application/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
+/Users/shreetej721/Desktop/QT/HomePage/build/.qt/rcc/appApplication_raw_qml_0_extra_qmldirs.qrc
 /Users/shreetej721/Desktop/QT Projects/Application/qml/Main.qml
 /Users/shreetej721/Desktop/QT Projects/Application/qml/screens/HomeScreen.qml
 /Users/shreetej721/Desktop/QT Projects/Application/qml/screens/DDusterScreen.qml
@@ -31,5 +31,26 @@
 /Users/shreetej721/Desktop/QT Projects/Application/qml/components/CustomPopup.qml
 /Users/shreetej721/Desktop/QT Projects/Application/qml/GlobalState.qml
 /Users/shreetej721/Desktop/QT Projects/Application/qml/screens/SysDetailsScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/MenuScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/MenuTile.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/UserScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/FactorySettingsScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/LoginPopup.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CreateUserPopup.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/DeleteUserPopup.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/EditPasswordPopup.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/SysSettingsScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/SettingsS1.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/SettingsS2.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/SettingsS3.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/SettingsS4.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/CommonKeyboard.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/SettingsS5.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/DiagnosisScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/DiagCard.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/components/SettingsS6.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/AuditTrailScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/BatchReportScreen.qml
+/Users/shreetej721/Desktop/QT Projects/Application/qml/screens/ProductLibraryScreen.qml
 --json
-/Users/shreetej721/Desktop/QT Projects/Application/build/appApplication_qmllint.json
+/Users/shreetej721/Desktop/QT/HomePage/build/appApplication_qmllint.json
