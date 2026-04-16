@@ -17,7 +17,7 @@ DatabaseManager::DatabaseManager(QObject *parent)
 bool DatabaseManager::initialize()
 {
 
-    QString dbPath = QDir::currentPath() + "/MyDataBase.db";
+    QString dbPath = QDir::currentPath() + "/AppDataBase.db";
 
     qDebug() << "DB Path:" << dbPath;
 
