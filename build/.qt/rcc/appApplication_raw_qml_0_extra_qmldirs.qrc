@@ -1,8 +1,0 @@
-<RCC>
-  <qresource prefix="/qt/qml/Application/">
-    <file alias="qml/qmldir">/Users/shreetej721/Desktop/QT Projects/Application/build/Application/qml/qmldir</file>
-    <file alias="qml/screens/qmldir">/Users/shreetej721/Desktop/QT Projects/Application/build/Application/qml/screens/qmldir</file>
-    <file alias="qml/components/qmldir">/Users/shreetej721/Desktop/QT Projects/Application/build/Application/qml/components/qmldir</file>
-  </qresource>
-</RCC>
-
