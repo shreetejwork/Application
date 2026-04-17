@@ -18,6 +18,11 @@ Window {
     // flags: Qt.FramelessWindowHint
     // visibility: Window.FullScreen
 
+    Component.onCompleted: {
+        VirtualKeyboardSettings.styleName = "default"
+        VirtualKeyboardSettings.locale = "en_US"
+    }
+
     // Track current menu screen
     property string currentMenuScreen: ""
 
@@ -120,24 +125,33 @@ Window {
 
 
     // ===== VIRTUAL KEYBOARD =====
-        InputPanel {
-            id: keyboard
+    InputPanel {
+        id: keyboard
 
-            parent: root
+        parent: Overlay.overlay
 
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
+        anchors.left: parent.left
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
 
-            z: 9999
+        z: 9999
 
+        visible: GlobalState.loginKeyboardRequest || Qt.inputMethod.visible
 
-            visible: GlobalState.loginKeyboardRequest
+        y: visible ? parent.height - height : parent.height
 
-            y: visible ? parent.height - height : parent.height
+        Behavior on y {
+            NumberAnimation { duration: 250 }
+        }
 
-            Behavior on y {
-                NumberAnimation { duration: 250 }
+        Connections {
+            target: Qt.inputMethod
+
+            function onVisibleChanged() {
+                if (!Qt.inputMethod.visible) {
+                    GlobalState.loginKeyboardRequest = false
+                }
             }
         }
+    }
 }

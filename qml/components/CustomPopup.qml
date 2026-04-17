@@ -95,7 +95,10 @@ Item {
                     color: "#333"
                     horizontalAlignment: TextInput.AlignHCenter
                     verticalAlignment: TextInput.AlignVCenter
-                    inputMethodHints: Qt.ImhDigitsOnly
+
+                    readOnly: true
+                    focus: true
+                    inputMethodHints: Qt.ImhNoPredictiveText
 
                     onTextChanged: {
                         if (popup.hasError) {
