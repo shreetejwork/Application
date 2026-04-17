@@ -1,4 +1,4 @@
-#include "systemcontroller.h"
+#include "SystemController.h"
 #include <QProcess>
 
 SystemController::SystemController(QObject *parent)
@@ -8,6 +8,5 @@ SystemController::SystemController(QObject *parent)
 
 void SystemController::shutdown()
 {
-    // Shutdown command for Raspberry Pi (Linux)
-    QProcess::execute("sudo shutdown -h now");
+    QProcess::execute("/sbin/shutdown", QStringList() << "-h" << "now");
 }
