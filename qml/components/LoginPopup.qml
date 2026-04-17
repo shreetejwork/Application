@@ -316,14 +316,14 @@ Popup {
                     topPadding: 0
                     bottomPadding: 0
 
-                    font.pixelSize: Math.max(30, 21 * scale)
+                    font.pixelSize: Math.max(25, 21 * scale)
                     font.bold: true
                     color: "#000000"
 
                     inputMethodHints: Qt.ImhPreferLatin
                                       | Qt.ImhNoPredictiveText
                                       | Qt.ImhSensitiveData
-                                      | Qt.ImhNone   // ADD for Pi stability
+                                      | Qt.ImhNone   //  for Pi stability
 
                     onActiveFocusChanged: {
                         if (activeFocus) {

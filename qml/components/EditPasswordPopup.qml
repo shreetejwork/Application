@@ -287,7 +287,7 @@ Popup {
                     width: parent.width * 0.7
 
                     echoMode: TextInput.Password
-                    font.pixelSize: Math.max(30, 21 * scale)
+                    font.pixelSize: Math.max(25, 21 * scale)
                     font.bold: true
                     color: "#000000"
 
@@ -352,7 +352,7 @@ Popup {
 
                     echoMode: TextInput.Password
 
-                    font.pixelSize: Math.max(30, 21 * scale)
+                    font.pixelSize: Math.max(25, 21 * scale)
                     font.bold: true
                     color: "#000000"
 
