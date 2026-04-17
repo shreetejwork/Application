@@ -105,13 +105,7 @@ Popup {
                     anchors.fill: parent
                     onClicked: {
                         powerPopup.close()
-
-                        // 👉 Your shutdown logic
-                        console.log("Powering off...")
-
-                        // Example:
-                        // Qt.quit()
-                        // OR call C++ backend
+                        SystemController.shutdown()
                     }
                 }
             }
