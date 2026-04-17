@@ -25,20 +25,13 @@ Popup {
     height: 480 * scale
 
     x: (Overlay.overlay.width - width) / 2
-    y: {
-        //  Slightly above center even without keyboard
-        if (!Qt.inputMethod.visible)
-            return (Overlay.overlay.height - height) / 2 - (40 * scale)
+    property real baseY: (Overlay.overlay.height - height) / 2 - (40 * scale)
 
-        //  When keyboard is open (already good)
-        return Math.max(
-                    10 * scale,
-                    Overlay.overlay.height
-                    - height
-                    - keyboardHeight
-                    - (60 * scale)
-                    )
-    }
+    property real keyboardOffset: Qt.inputMethod.visible
+                                  ? (keyboardHeight / 2 + 40 * scale)
+                                  : 0
+
+    y: baseY - keyboardOffset
 
     // ── RESET STATE ──
     onOpened: {
@@ -212,7 +205,8 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width * 0.7
 
-                    font.pixelSize: Math.max(12, 18 * scale)
+                    font.pixelSize: Math.max(25, 18 * scale)
+                    font.bold: true
                     color: "#1A1A2E"
 
                     inputMethodHints: Qt.ImhNone   // important for Pi
@@ -235,8 +229,8 @@ Popup {
                     }
 
                     onAccepted: {
-                        card.confirmed(text.trim())
                         Qt.inputMethod.hide()
+                        GlobalState.loginKeyboardRequest = false
                         focus = false
                     }
                 }
@@ -277,8 +271,9 @@ Popup {
 
                     echoMode: TextInput.Password
 
-                    font.pixelSize: Math.max(15, 21 * scale)
+                    font.pixelSize: Math.max(30, 21 * scale)
                     font.bold: true
+                    color: "#000000"
 
                     background: null
                     padding: 0
@@ -300,8 +295,8 @@ Popup {
                         }
                     }
                     onAccepted: {
-                        card.confirmed(text.trim())
                         Qt.inputMethod.hide()
+                        GlobalState.loginKeyboardRequest = false
                         focus = false
                     }
                 }

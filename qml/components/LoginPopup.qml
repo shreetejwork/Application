@@ -29,16 +29,16 @@ Popup {
     closePolicy: Popup.CloseOnPressOutside
 
     width: 520 * scale
-    height: 460 * scale
+    height: 430 * scale
 
     x: (Overlay.overlay.width - width) / 2
-    y: Qt.inputMethod.visible
-       ? Math.max(20, (Overlay.overlay.height - height - keyboardHeight) / 2)
-       : (Overlay.overlay.height - height) / 2
+    property real baseY: (Overlay.overlay.height - height) / 2 + (20 * scale)
 
-    Behavior on y {
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
-    }
+    property real keyboardOffset: Qt.inputMethod.visible
+                                  ? (keyboardHeight / 2 + 40 * scale)
+                                  : 0
+
+    y: baseY - keyboardOffset
 
     onOpened: {
         userTypeValue.text = "--- Select ---"
@@ -316,8 +316,9 @@ Popup {
                     topPadding: 0
                     bottomPadding: 0
 
-                    font.pixelSize: Math.max(15, 21 * scale)
+                    font.pixelSize: Math.max(30, 21 * scale)
                     font.bold: true
+                    color: "#000000"
 
                     inputMethodHints: Qt.ImhPreferLatin
                                       | Qt.ImhNoPredictiveText
@@ -337,8 +338,8 @@ Popup {
 
                     //  TextField uses onAccepted
                     onAccepted: {
-                        card.confirmed(text.trim())
                         Qt.inputMethod.hide()
+                        GlobalState.loginKeyboardRequest = false
                         focus = false
                     }
 

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.VirtualKeyboard
+import QtQuick.VirtualKeyboard.Settings
 import AppState 1.0
 
 import "screens"
@@ -15,11 +16,12 @@ Window {
     title: "Dashboard"
     color: "#F5F7FC"
 
+
     // flags: Qt.FramelessWindowHint
     // visibility: Window.FullScreen
 
     Component.onCompleted: {
-        VirtualKeyboardSettings.styleName = "default"
+        VirtualKeyboardSettings.styleName = "basic"
         VirtualKeyboardSettings.locale = "en_US"
     }
 

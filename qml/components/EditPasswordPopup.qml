@@ -25,19 +25,13 @@ Popup {
 
     x: (Overlay.overlay.width - width) / 2
 
-    y: {
-        if (!Qt.inputMethod.visible)
-            return (Overlay.overlay.height - height) / 2 - (40 * scale)
+    property real baseY: (Overlay.overlay.height - height) / 2 - (40 * scale)
 
-        //  STRONG push above keyboard
-        return Math.max(
-            5 * scale,   // top safety margin
-            Overlay.overlay.height
-            - height
-            - keyboardHeight
-            - (500 * scale)
-        )
-    }
+    property real keyboardOffset: Qt.inputMethod.visible
+                                  ? (keyboardHeight / 2 + 40 * scale)
+                                  : 0
+
+    y: baseY - keyboardOffset
 
     onOpened: {
         userTypeValue.text = "--- Select ---"
@@ -293,8 +287,9 @@ Popup {
                     width: parent.width * 0.7
 
                     echoMode: TextInput.Password
-                    font.pixelSize: Math.max(15, 21 * scale)
+                    font.pixelSize: Math.max(30, 21 * scale)
                     font.bold: true
+                    color: "#000000"
 
                     inputMethodHints: Qt.ImhNone
 
@@ -318,8 +313,8 @@ Popup {
 
 
                     onAccepted: {
-                        card.confirmed(text.trim())
                         Qt.inputMethod.hide()
+                        GlobalState.loginKeyboardRequest = false
                         focus = false
                     }
                 }
@@ -357,8 +352,9 @@ Popup {
 
                     echoMode: TextInput.Password
 
-                    font.pixelSize: Math.max(15, 21 * scale)
+                    font.pixelSize: Math.max(30, 21 * scale)
                     font.bold: true
+                    color: "#000000"
 
                     inputMethodHints: Qt.ImhNone
 
@@ -381,8 +377,8 @@ Popup {
                     }
 
                     onAccepted: {
-                        card.confirmed(text.trim())
                         Qt.inputMethod.hide()
+                        GlobalState.loginKeyboardRequest = false
                         focus = false
                     }
                 }
