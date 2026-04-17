@@ -105,9 +105,17 @@ Item {
                                     focus: false
                                     activeFocusOnPress: false
 
-                                    readOnly: root.batchRunning   //  DISABLE WHILE RUNNING
+                                    readOnly: root.batchRunning   // DISABLE WHILE RUNNING
+
+                                    inputMethodHints: Qt.ImhNone// important for Pi
 
                                     background: null
+                                    padding: 0
+                                    leftPadding: 0
+                                    rightPadding: 0
+                                    topPadding: 0
+                                    bottomPadding: 0
+
                                     cursorVisible: activeFocus
 
                                     onAccepted: {

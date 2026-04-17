@@ -205,7 +205,7 @@ Popup {
                 color: "#F2F2F2"
                 border.color: "#1A4DB5"
 
-                TextInput {
+                TextField {
                     id: usernameInput
                     anchors.left: parent.left
                     anchors.leftMargin: 16 * scale
@@ -214,6 +214,14 @@ Popup {
 
                     font.pixelSize: Math.max(12, 18 * scale)
                     color: "#1A1A2E"
+
+                    inputMethodHints: Qt.ImhNone   // important for Pi
+                    background: null
+                    padding: 0
+                    leftPadding: 0
+                    rightPadding: 0
+                    topPadding: 0
+                    bottomPadding: 0
 
                     onActiveFocusChanged: {
                         if (activeFocus) {
@@ -225,12 +233,12 @@ Popup {
                             Qt.inputMethod.hide()
                         }
                     }
-                    Keys.onReturnPressed: {
+
+                    onAccepted: {
                         card.confirmed(text.trim())
                         Qt.inputMethod.hide()
                         focus = false
                     }
-
                 }
 
                 // IMPORTANT CLICK HANDLER
@@ -260,7 +268,7 @@ Popup {
                 color: "#F2F2F2"
                 border.color: "#1A4DB5"
 
-                TextInput {
+                TextField {
                     id: passwordInput
                     anchors.left: parent.left
                     anchors.leftMargin: 16 * scale
@@ -272,6 +280,15 @@ Popup {
                     font.pixelSize: Math.max(15, 21 * scale)
                     font.bold: true
 
+                    background: null
+                    padding: 0
+                    leftPadding: 0
+                    rightPadding: 0
+                    topPadding: 0
+                    bottomPadding: 0
+
+                    inputMethodHints: Qt.ImhNone
+
                     onActiveFocusChanged: {
                         if (activeFocus) {
                             GlobalState.loginKeyboardRequest = true
@@ -282,12 +299,11 @@ Popup {
                             Qt.inputMethod.hide()
                         }
                     }
-                    Keys.onReturnPressed: {
+                    onAccepted: {
                         card.confirmed(text.trim())
                         Qt.inputMethod.hide()
                         focus = false
                     }
-
                 }
 
                 // CLICK HANDLER

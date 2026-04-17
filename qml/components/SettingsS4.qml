@@ -63,11 +63,11 @@ Item {
             placeholderText: "Enter machine ID"
             initialValue: GlobalState.machineId ?? "PHMX"
             onConfirmed: (val) => {
-                    GlobalState.machineId = val
+                             GlobalState.machineId = val
 
-                    if (root.notify)
-                        root.notify("✓ Machine ID Saved")
-                }
+                             if (root.notify)
+                             root.notify("✓ Machine ID Saved")
+                         }
         }
 
         SettingsCard {
@@ -75,11 +75,11 @@ Item {
             placeholderText: "Enter user"
             initialValue: GlobalState.userName ?? ""
             onConfirmed: (val) => {
-                    GlobalState.userName = val
+                             GlobalState.userName = val
 
-                    if (root.notify)
-                        root.notify("✓ Username Saved")
-                }
+                             if (root.notify)
+                             root.notify("✓ Username Saved")
+                         }
         }
 
         SettingsCard {
@@ -87,11 +87,11 @@ Item {
             placeholderText: "Enter location"
             initialValue: GlobalState.location ?? ""
             onConfirmed: (val) => {
-                    GlobalState.location = val
+                             GlobalState.location = val
 
-                    if (root.notify)
-                        root.notify("✓ Location Saved")
-                }
+                             if (root.notify)
+                             root.notify("✓ Location Saved")
+                         }
         }
     }
 
@@ -132,7 +132,7 @@ Item {
                     width: parent.width - confirmBtn.width - 8 * root.scale
                     height: parent.height
 
-                    TextInput {
+                    TextField {
                         id: cardInput
                         anchors.fill: parent
 
@@ -140,7 +140,17 @@ Item {
                         font.pixelSize: 22 * root.scale
                         font.bold: true
                         color: "#1A4DB5"
-                        verticalAlignment: TextInput.AlignVCenter
+
+                        verticalAlignment: Text.AlignVCenter
+
+                        inputMethodHints: Qt.ImhNone
+
+                        background: null
+                        padding: 0
+                        leftPadding: 0
+                        rightPadding: 0
+                        topPadding: 0
+                        bottomPadding: 0
 
                         // AUTO OPEN KEYBOARD
                         onActiveFocusChanged: {
@@ -150,7 +160,7 @@ Item {
                             }
                         }
 
-                        Keys.onReturnPressed: {
+                        onAccepted: {
                             card.confirmed(text.trim())
                             Qt.inputMethod.hide()
                             focus = false

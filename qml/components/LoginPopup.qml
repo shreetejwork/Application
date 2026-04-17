@@ -300,7 +300,7 @@ Popup {
                 color: "#F2F2F2"
                 border.color: "#1A4DB5"
 
-                TextInput {
+                TextField {
                     id: passwordInput
                     anchors.left: parent.left
                     anchors.leftMargin: 18 * scale
@@ -309,12 +309,20 @@ Popup {
 
                     echoMode: TextInput.Password
 
+                    background: null
+                    padding: 0
+                    leftPadding: 0
+                    rightPadding: 0
+                    topPadding: 0
+                    bottomPadding: 0
+
                     font.pixelSize: Math.max(15, 21 * scale)
                     font.bold: true
 
                     inputMethodHints: Qt.ImhPreferLatin
                                       | Qt.ImhNoPredictiveText
                                       | Qt.ImhSensitiveData
+                                      | Qt.ImhNone   // ADD for Pi stability
 
                     onActiveFocusChanged: {
                         if (activeFocus) {
@@ -326,14 +334,15 @@ Popup {
                             Qt.inputMethod.hide()
                         }
                     }
-                    Keys.onReturnPressed: {
+
+                    //  TextField uses onAccepted
+                    onAccepted: {
                         card.confirmed(text.trim())
                         Qt.inputMethod.hide()
                         focus = false
                     }
 
-
-                    //  PASSWORD CHECK
+                    // PASSWORD CHECK
                     onTextChanged: {
                         if (!loginPopup.devModeActive)
                             return

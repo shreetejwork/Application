@@ -285,7 +285,7 @@ Popup {
                 color: "#F2F2F2"
                 border.color: "#1A4DB5"
 
-                TextInput {
+                TextField {
                     id: newPasswordInput
                     anchors.left: parent.left
                     anchors.leftMargin: 18 * scale
@@ -296,22 +296,32 @@ Popup {
                     font.pixelSize: Math.max(15, 21 * scale)
                     font.bold: true
 
+                    inputMethodHints: Qt.ImhNone
+
+                    background: null
+                    padding: 0
+                    leftPadding: 0
+                    rightPadding: 0
+                    topPadding: 0
+                    bottomPadding: 0
+
                     onActiveFocusChanged: {
                         if (activeFocus) {
                             Qt.inputMethod.show()
                             flick.adjustView(newPasswordInput)
                             GlobalState.loginKeyboardRequest = true
-                        }else {
+                        } else {
                             GlobalState.loginKeyboardRequest = false
                             Qt.inputMethod.hide()
                         }
                     }
-                    Keys.onReturnPressed: {
+
+
+                    onAccepted: {
                         card.confirmed(text.trim())
                         Qt.inputMethod.hide()
                         focus = false
                     }
-
                 }
 
                 MouseArea {
@@ -338,7 +348,7 @@ Popup {
                 color: "#F2F2F2"
                 border.color: "#1A4DB5"
 
-                TextInput {
+                TextField {
                     id: confirmPasswordInput
                     anchors.left: parent.left
                     anchors.leftMargin: 18 * scale
@@ -350,22 +360,31 @@ Popup {
                     font.pixelSize: Math.max(15, 21 * scale)
                     font.bold: true
 
+                    inputMethodHints: Qt.ImhNone
+
+                    background: null
+                    padding: 0
+                    leftPadding: 0
+                    rightPadding: 0
+                    topPadding: 0
+                    bottomPadding: 0
+
                     onActiveFocusChanged: {
                         if (activeFocus) {
                             Qt.inputMethod.show()
                             flick.adjustView(confirmPasswordInput)
                             GlobalState.loginKeyboardRequest = true
-                        }else {
+                        } else {
                             GlobalState.loginKeyboardRequest = false
                             Qt.inputMethod.hide()
                         }
                     }
-                    Keys.onReturnPressed: {
+
+                    onAccepted: {
                         card.confirmed(text.trim())
                         Qt.inputMethod.hide()
                         focus = false
                     }
-
                 }
 
                 MouseArea {
