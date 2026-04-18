@@ -202,9 +202,14 @@ Item {
                             }
 
                             // ===== SCROLLABLE LIST =====
+                            // ===== SCROLLABLE LIST =====
                             Flickable {
-                                anchors.fill: parent
-                                contentWidth: parent.width
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+                                anchors.bottom: parent.bottom
+                                anchors.top: divider.bottom   // 👈 IMPORTANT FIX
+
+                                contentWidth: width
                                 contentHeight: listColumn.height
                                 clip: true
 
