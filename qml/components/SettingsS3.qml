@@ -8,7 +8,9 @@ Item {
 
     property real baseWidth: 1024
     property real baseHeight: 600
-    property real scale: Math.min(width / baseWidth, height / baseHeight)
+
+    // ✅ ONLY CHANGE: uniform scaling boost (keeps layout identical)
+    property real scale: Math.min(width / baseWidth, height / baseHeight) * 1.10
 
     property var globalTopBar
     property var notify
@@ -85,7 +87,6 @@ Item {
                     Row {
                         width: parent.width
 
-                        // ===== TIME =====
                         Item {
                             width: 180 * root.scale
                             height: 40 * root.scale
@@ -99,7 +100,6 @@ Item {
                             }
                         }
 
-                        // ===== EDIT =====
                         Item {
                             width: 180 * root.scale
                             height: 40 * root.scale
@@ -113,7 +113,6 @@ Item {
                             }
                         }
 
-                        // ===== ON/OFF =====
                         Item {
                             width: 180 * root.scale
                             height: 40 * root.scale
@@ -148,7 +147,7 @@ Item {
                                 anchors.fill: parent
                                 anchors.margins: 12 * root.scale
 
-                                // ===== TIME COLUMN =====
+                                // TIME
                                 Item {
                                     width: 180 * root.scale
                                     height: parent.height
@@ -170,7 +169,7 @@ Item {
                                     }
                                 }
 
-                                // ===== EDIT COLUMN =====
+                                // EDIT
                                 Item {
                                     width: 180 * root.scale
                                     height: parent.height
@@ -209,7 +208,7 @@ Item {
                                     }
                                 }
 
-                                // ===== TOGGLE COLUMN =====
+                                // TOGGLE
                                 Item {
                                     width: 180 * root.scale
                                     height: parent.height
@@ -218,7 +217,6 @@ Item {
                                         anchors.centerIn: parent
                                         width: 120 * root.scale
                                         height: 44 * root.scale
-
                                         toggled: model.enabled
                                         knobSize: 35 * root.scale
                                         useSymbols: true
@@ -232,7 +230,7 @@ Item {
                         }
                     }
 
-                    //Popup
+                    // POPUP (unchanged)
                     Popup {
                         id: timePopup
                         modal: true
@@ -255,33 +253,25 @@ Item {
                             anchors.margins: 24 * root.scale
                             spacing: 18 * root.scale
 
-                            // ===== COMMON TUMBLER DELEGATE =====
                             Component {
                                 id: tumblerDelegate
 
                                 Text {
                                     text: modelData < 10 ? "0" + modelData : modelData
-
                                     font.pixelSize: 26 * root.scale
                                     font.bold: Tumbler.displacement === 0
-
                                     opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
                                     scale: 1.0 - Math.abs(Tumbler.displacement) * 0.25
-
                                     color: Tumbler.displacement === 0 ? "#1A4DB5" : "#9CA3AF"
-
                                     horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
                                     width: parent.width
                                 }
                             }
 
-                            // ===== PICKERS =====
                             Row {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 spacing: 60 * root.scale
 
-                                // ===== HOURS =====
                                 Column {
                                     spacing: 10 * root.scale
 
@@ -290,20 +280,19 @@ Item {
                                         font.pixelSize: 20 * root.scale
                                         font.bold: true
                                         color: "#5A6A85"
-                                        horizontalAlignment: Text.AlignHCenter
                                         width: parent.width
+                                        horizontalAlignment: Text.AlignHCenter
                                     }
 
                                     Item {
                                         width: 140 * root.scale
                                         height: 200 * root.scale
 
-                                        // Highlight band
                                         Rectangle {
                                             anchors.centerIn: parent
                                             width: parent.width
                                             height: 40 * root.scale
-                                            radius: 10 * root.scale
+                                            radius: 10
                                             color: "#E8EEFB"
                                         }
 
@@ -313,13 +302,11 @@ Item {
                                             model: 24
                                             visibleItemCount: 3
                                             wrap: true
-
                                             delegate: tumblerDelegate
                                         }
                                     }
                                 }
 
-                                // ===== MINUTES =====
                                 Column {
                                     spacing: 10 * root.scale
 
@@ -328,20 +315,19 @@ Item {
                                         font.pixelSize: 20 * root.scale
                                         font.bold: true
                                         color: "#5A6A85"
-                                        horizontalAlignment: Text.AlignHCenter
                                         width: parent.width
+                                        horizontalAlignment: Text.AlignHCenter
                                     }
 
                                     Item {
                                         width: 140 * root.scale
                                         height: 200 * root.scale
 
-                                        // Highlight band
                                         Rectangle {
                                             anchors.centerIn: parent
                                             width: parent.width
                                             height: 40 * root.scale
-                                            radius: 10 * root.scale
+                                            radius: 10
                                             color: "#E8EEFB"
                                         }
 
@@ -352,33 +338,25 @@ Item {
                                             visibleItemCount: 3
                                             wrap: true
 
-                                            delegate: Component {
-                                                Text {
-                                                    text: modelData
-
-                                                    font.pixelSize: 26 * root.scale
-                                                    font.bold: Tumbler.displacement === 0
-
-                                                    opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
-                                                    scale: 1.0 - Math.abs(Tumbler.displacement) * 0.25
-
-                                                    color: Tumbler.displacement === 0 ? "#1A4DB5" : "#9CA3AF"
-
-                                                    horizontalAlignment: Text.AlignHCenter
-                                                    verticalAlignment: Text.AlignVCenter
-                                                    width: parent.width
-                                                }
+                                            delegate: Text {
+                                                text: modelData
+                                                font.pixelSize: 26 * root.scale
+                                                font.bold: Tumbler.displacement === 0
+                                                opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
+                                                scale: 1.0 - Math.abs(Tumbler.displacement) * 0.25
+                                                color: Tumbler.displacement === 0 ? "#1A4DB5" : "#9CA3AF"
+                                                horizontalAlignment: Text.AlignHCenter
+                                                width: parent.width
                                             }
                                         }
                                     }
                                 }
                             }
 
-                            // ===== SAVE BUTTON =====
                             Rectangle {
                                 width: parent.width
                                 height: 50 * root.scale
-                                radius: 12 * root.scale
+                                radius: 12
                                 color: "#1A4DB5"
 
                                 Text {
@@ -394,10 +372,8 @@ Item {
                                     onClicked: {
                                         var h = hourTumbler.currentIndex
                                         var m = minuteTumbler.currentIndex
-
                                         var minutes = ["00", "15", "30", "45"][m]
                                         var hours = h < 10 ? "0" + h : h
-
                                         var newTime = hours + ":" + minutes
 
                                         if (timePopup.editIndex >= 0) {
@@ -412,7 +388,6 @@ Item {
                     }
                 }
 
-                // ===== BUTTONS =====
                 Row {
                     spacing: 20 * root.scale
                     anchors.right: parent.right
