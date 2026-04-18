@@ -1,10 +1,10 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QQmlEngine>
 #include <QQmlContext>
 
 #include "DatabaseManager.h"
 #include "SystemController.h"
+#include "WifiScanner.h"
 
 int main(int argc, char *argv[])
 {
@@ -24,10 +24,12 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
 
-
     SystemController systemController;
+    WiFiScanner wifi;
+
 
     engine.rootContext()->setContextProperty("SystemController", &systemController);
+    engine.rootContext()->setContextProperty("WiFiScanner", &wifi);
 
     QObject::connect(
         &engine,

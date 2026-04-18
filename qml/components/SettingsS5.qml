@@ -15,13 +15,30 @@ Item {
     property var globalTopBar
     property var notify
 
+    // ✅ UPDATED MODEL (EMPTY)
     ListModel {
         id: networkModel
-        ListElement { name: "HomeNetwork_5G";  signal: 90; secured: true  }
-        ListElement { name: "Office_WiFi";     signal: 75; secured: true  }
-        ListElement { name: "GuestNetwork";    signal: 60; secured: false }
-        ListElement { name: "Neighbor_2G";     signal: 45; secured: true  }
-        ListElement { name: "CoffeeShop_Free"; signal: 30; secured: false }
+    }
+
+    // ✅ FUNCTION TO LOAD REAL WIFI
+    function scanWifi() {
+        networkModel.clear()
+
+        var result = WiFiScanner.scanNetworks()
+
+        for (var i = 0; i < result.length; i++) {
+            if (result[i].name !== "") {   // ignore hidden SSIDs
+                networkModel.append(result[i])
+            }
+        }
+    }
+
+    // ✅ AUTO REFRESH
+    Timer {
+        interval: 10000
+        running: root.wifiEnabled
+        repeat: true
+        onTriggered: scanWifi()
     }
 
     Rectangle {
@@ -34,7 +51,6 @@ Item {
         anchors.margins: 30 * root.scale
         spacing: 20 * root.scale
 
-        // ===== FIXED TITLE BLOCK =====
         Column {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignLeft
@@ -98,8 +114,16 @@ Item {
                                 toggled: root.wifiEnabled
                                 knobSize: 35 * root.scale
                                 useSymbols: true
+
+                                // ✅ UPDATED TO TRIGGER SCAN
                                 onToggledChanged: {
                                     root.wifiEnabled = toggled
+
+                                    if (toggled) {
+                                        scanWifi()
+                                    } else {
+                                        networkModel.clear()
+                                    }
                                 }
                             }
                         }
@@ -173,27 +197,19 @@ Item {
                                 color: "#E8E8E8"
                             }
 
+                            // ✅ SAME UI — NOW FILLED WITH REAL DATA
                             Repeater {
                                 model: networkModel
 
                                 delegate: Column {
                                     width: parent ? parent.width : 0
-                                    spacing: 0
 
                                     Rectangle {
-                                        id: rowBg
                                         width: parent.width
                                         height: 50 * root.scale
-                                        color: rowMouse.containsMouse ? "#EEF3FF" : "transparent"
-
-                                        MouseArea {
-                                            id: rowMouse
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                        }
+                                        color: "transparent"
 
                                         Text {
-                                            id: lockIcon
                                             anchors.left: parent.left
                                             anchors.leftMargin: 14 * root.scale
                                             anchors.verticalCenter: parent.verticalCenter
@@ -201,84 +217,14 @@ Item {
                                             font.pixelSize: 20 * root.scale
                                         }
 
-                                        Column {
-                                            anchors.left: lockIcon.right
-                                            anchors.leftMargin: 10 * root.scale
-                                            anchors.right: signalRow.left
-                                            anchors.rightMargin: 10 * root.scale
+                                        Text {
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 50 * root.scale
                                             anchors.verticalCenter: parent.verticalCenter
-                                            spacing: 3 * root.scale
-
-                                            Text {
-                                                width: parent.width
-                                                text: model.name
-                                                font.pixelSize: 19 * root.scale
-                                                font.bold: true
-                                                color: "#1C1C1C"
-                                                elide: Text.ElideRight
-                                            }
-
-                                            Text {
-                                                text: model.secured ? "Secured" : "Open Network"
-                                                font.pixelSize: 18 * root.scale
-                                                color: model.secured ? "#4CAF50" : "#FF9800"
-                                            }
+                                            text: model.name
+                                            font.pixelSize: 18 * root.scale
+                                            font.bold: true
                                         }
-
-                                        Row {
-                                            id: signalRow
-                                            anchors.right: connectBtn.left
-                                            anchors.rightMargin: 12 * root.scale
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            spacing: 3 * root.scale
-
-                                            Repeater {
-                                                model: 4
-                                                delegate: Rectangle {
-                                                    property var thresholds: [25, 50, 70, 90]
-                                                    property int netSignal: model.signal
-
-                                                    width: 6 * root.scale
-                                                    height: (7 + index * 5) * root.scale
-                                                    radius: 2 * root.scale
-                                                    anchors.bottom: parent ? parent.bottom : undefined
-                                                    color: netSignal >= thresholds[index]
-                                                           ? "#1A4DB5" : "#DDDDDD"
-                                                }
-                                            }
-                                        }
-
-                                        Rectangle {
-                                            id: connectBtn
-                                            anchors.right: parent.right
-                                            anchors.rightMargin: 14 * root.scale
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            width: 78 * root.scale
-                                            height: 28 * root.scale
-                                            radius: 14 * root.scale
-                                            color: "#1A4DB5"
-
-                                            Text {
-                                                anchors.centerIn: parent
-                                                text: "Connect"
-                                                font.pixelSize: 16 * root.scale
-                                                font.bold: true
-                                                color: "#FFFFFF"
-                                            }
-
-                                            MouseArea {
-                                                anchors.fill: parent
-                                                cursorShape: Qt.PointingHandCursor
-                                            }
-                                        }
-                                    }
-
-                                    Rectangle {
-                                        visible: index < networkModel.count - 1
-                                        width: parent.width - 28 * root.scale
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        height: 2
-                                        color: "#EFEFEF"
                                     }
                                 }
                             }
@@ -542,6 +488,7 @@ Item {
                     }
                 }
             }
+
         }
     }
 }

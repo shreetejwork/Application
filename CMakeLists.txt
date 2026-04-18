@@ -79,6 +79,8 @@ qt_add_qml_module(appApplication
             QML_FILES qml/components/PowerOffPopup.qml
             SOURCES src/SystemController.h
             SOURCES src/SystemController.cpp
+            SOURCES src/WifiScanner.h
+            SOURCES src/WifiScanner.cpp
 )
 
 # Qt for iOS sets MACOSX_BUNDLE_GUI_IDENTIFIER automatically since Qt 6.1.
