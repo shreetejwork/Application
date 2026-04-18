@@ -11,34 +11,45 @@ Item {
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
     property bool wifiEnabled: false
+    property string connectedSSID: ""
 
     property var globalTopBar
     property var notify
 
-    // ✅ UPDATED MODEL (EMPTY)
     ListModel {
         id: networkModel
     }
 
-    // ✅ FUNCTION TO LOAD REAL WIFI
+    // ===== WIFI SCAN =====
     function scanWifi() {
         networkModel.clear()
 
         var result = WiFiScanner.scanNetworks()
 
         for (var i = 0; i < result.length; i++) {
-            if (result[i].name !== "") {   // ignore hidden SSIDs
+            if (result[i].name !== "")
                 networkModel.append(result[i])
-            }
         }
     }
 
-    // ✅ AUTO REFRESH
+    // ===== AUTO REFRESH =====
     Timer {
         interval: 10000
         running: root.wifiEnabled
         repeat: true
         onTriggered: scanWifi()
+    }
+
+    // ===== CONNECT =====
+    function connectWifi(ssid, secured) {
+        if (secured) {
+            passwordPopup.ssid = ssid
+            passwordPopup.open()
+        } else {
+            var res = WiFiScanner.connectToNetwork(ssid, "")
+            connectedSSID = ssid
+            if (notify) notify(res)
+        }
     }
 
     Rectangle {
@@ -53,14 +64,12 @@ Item {
 
         Column {
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignLeft
             spacing: 6 * root.scale
 
             Text {
                 text: "Network Settings"
                 font.pixelSize: 26 * root.scale
                 font.bold: true
-                font.letterSpacing: 0.5
                 color: "#1A4DB5"
             }
 
@@ -77,7 +86,7 @@ Item {
             Layout.fillHeight: true
             spacing: 50 * root.scale
 
-            // ===== WIFI CARD =====
+            // ================= WIFI CARD =================
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -115,15 +124,11 @@ Item {
                                 knobSize: 35 * root.scale
                                 useSymbols: true
 
-                                // ✅ UPDATED TO TRIGGER SCAN
                                 onToggledChanged: {
                                     root.wifiEnabled = toggled
 
-                                    if (toggled) {
-                                        scanWifi()
-                                    } else {
-                                        networkModel.clear()
-                                    }
+                                    if (toggled) scanWifi()
+                                    else networkModel.clear()
                                 }
                             }
                         }
@@ -138,13 +143,13 @@ Item {
                         border.width: 1
                         clip: true
 
+                        // ===== WIFI OFF =====
                         Column {
                             anchors.centerIn: parent
                             spacing: 10 * root.scale
                             visible: !root.wifiEnabled
 
                             Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
                                 text: "WiFi is Turned Off"
                                 font.pixelSize: 15 * root.scale
                                 font.bold: true
@@ -152,13 +157,13 @@ Item {
                             }
 
                             Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
                                 text: "Enable toggle to scan for networks"
                                 font.pixelSize: 12 * root.scale
                                 color: "#BBBBBB"
                             }
                         }
 
+                        // ===== WIFI LIST =====
                         Column {
                             anchors.fill: parent
                             anchors.topMargin: 16 * root.scale
@@ -177,7 +182,6 @@ Item {
                                     text: "Available Networks"
                                     font.pixelSize: 20 * root.scale
                                     font.bold: true
-                                    font.letterSpacing: 0.6
                                     color: "#1A4DB5"
                                 }
 
@@ -197,33 +201,133 @@ Item {
                                 color: "#E8E8E8"
                             }
 
-                            // ✅ SAME UI — NOW FILLED WITH REAL DATA
-                            Repeater {
-                                model: networkModel
+                            // ===== SCROLLABLE LIST =====
+                            Flickable {
+                                anchors.fill: parent
+                                contentWidth: parent.width
+                                contentHeight: listColumn.height
+                                clip: true
 
-                                delegate: Column {
-                                    width: parent ? parent.width : 0
+                                Column {
+                                    id: listColumn
+                                    width: parent.width
 
-                                    Rectangle {
-                                        width: parent.width
-                                        height: 50 * root.scale
-                                        color: "transparent"
+                                    Repeater {
+                                        model: networkModel
 
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 14 * root.scale
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: model.secured ? "🔒" : "🌐"
-                                            font.pixelSize: 20 * root.scale
-                                        }
+                                        delegate: Column {
+                                            width: parent.width
 
-                                        Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 50 * root.scale
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: model.name
-                                            font.pixelSize: 18 * root.scale
-                                            font.bold: true
+                                            Rectangle {
+                                                id: rowBg
+                                                width: parent.width
+                                                height: 50 * root.scale
+
+                                                color: model.name === root.connectedSSID
+                                                       ? "#DFF5E3"
+                                                       : (rowMouse.containsMouse ? "#EEF3FF" : "transparent")
+
+                                                MouseArea {
+                                                    id: rowMouse
+                                                    anchors.fill: parent
+                                                    hoverEnabled: true
+                                                }
+
+                                                Text {
+                                                    id: lockIcon
+                                                    anchors.left: parent.left
+                                                    anchors.leftMargin: 14 * root.scale
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    text: model.secured ? "🔒" : "🌐"
+                                                    font.pixelSize: 20 * root.scale
+                                                }
+
+                                                Column {
+                                                    anchors.left: lockIcon.right
+                                                    anchors.leftMargin: 10 * root.scale
+                                                    anchors.right: signalRow.left
+                                                    anchors.rightMargin: 10 * root.scale
+                                                    anchors.verticalCenter: parent.verticalCenter
+
+                                                    Text {
+                                                        width: parent.width
+                                                        text: model.name
+                                                        font.pixelSize: 19 * root.scale
+                                                        font.bold: true
+                                                        color: "#1C1C1C"
+                                                        elide: Text.ElideRight
+                                                    }
+
+                                                    Text {
+                                                        text: model.secured ? "Secured" : "Open Network"
+                                                        font.pixelSize: 18 * root.scale
+                                                        color: model.secured ? "#4CAF50" : "#FF9800"
+                                                    }
+                                                }
+
+                                                Row {
+                                                    id: signalRow
+                                                    anchors.right: connectBtn.left
+                                                    anchors.rightMargin: 12 * root.scale
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    spacing: 3 * root.scale
+
+                                                    Repeater {
+                                                        model: 4
+                                                        delegate: Rectangle {
+                                                            property var thresholds: [25, 50, 70, 90]
+
+                                                            width: 6 * root.scale
+                                                            height: (7 + index * 5) * root.scale
+                                                            radius: 2 * root.scale
+                                                            anchors.bottom: parent.bottom
+
+                                                            color: model.signal >= thresholds[index]
+                                                                   ? "#1A4DB5" : "#DDDDDD"
+                                                        }
+                                                    }
+                                                }
+
+                                                Rectangle {
+                                                    id: connectBtn
+                                                    anchors.right: parent.right
+                                                    anchors.rightMargin: 14 * root.scale
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    width: 78 * root.scale
+                                                    height: 28 * root.scale
+                                                    radius: 14 * root.scale
+
+                                                    color: model.name === root.connectedSSID
+                                                           ? "#4CAF50"
+                                                           : "#1A4DB5"
+
+                                                    Text {
+                                                        anchors.centerIn: parent
+                                                        text: model.name === root.connectedSSID
+                                                              ? "Connected"
+                                                              : "Connect"
+                                                        font.pixelSize: 16 * root.scale
+                                                        font.bold: true
+                                                        color: "#FFFFFF"
+                                                    }
+
+                                                    MouseArea {
+                                                        anchors.fill: parent
+                                                        onClicked: {
+                                                            if (model.name !== root.connectedSSID)
+                                                                connectWifi(model.name, model.secured)
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            Rectangle {
+                                                visible: index < networkModel.count - 1
+                                                width: parent.width - 28 * root.scale
+                                                anchors.horizontalCenter: parent.horizontalCenter
+                                                height: 2
+                                                color: "#EFEFEF"
+                                            }
                                         }
                                     }
                                 }
@@ -233,7 +337,7 @@ Item {
                 }
             }
 
-            // ===== LAN CARD =====
+            // ================= LAN CARD (UNCHANGED EXACTLY) =================
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -270,42 +374,42 @@ Item {
                             // ===== INPUT FIELD COMPONENT =====
                             function inputField(idRef, placeholder) {
                                 return Qt.createQmlObject(`
-                                    import QtQuick
-                                    Item {
-                                        width: parent.width
-                                        height: 40
+                                                          import QtQuick
+                                                          Item {
+                                                          width: parent.width
+                                                          height: 40
 
-                                        TextField {
-                                            id: input
-                                            anchors.fill: parent
+                                                          TextField {
+                                                          id: input
+                                                          anchors.fill: parent
 
-                                            font.pixelSize: ${22} * root.scale
-                                            font.bold: true
-                                            color: "#1A4DB5"
+                                                          font.pixelSize: ${22} * root.scale
+                                                          font.bold: true
+                                                          color: "#1A4DB5"
 
-                                            background: null
-                                            padding: 0
+                                                          background: null
+                                                          padding: 0
 
-                                            property bool showPlaceholder: text.length === 0 && !activeFocus
+                                                          property bool showPlaceholder: text.length === 0 && !activeFocus
 
-                                            Text {
-                                                anchors.fill: parent
-                                                verticalAlignment: Text.AlignVCenter
-                                                text: "${placeholder}"
-                                                color: "#A0AABF"
-                                                visible: input.showPlaceholder
-                                                font.pixelSize: ${22} * root.scale
-                                            }
-                                        }
+                                                          Text {
+                                                          anchors.fill: parent
+                                                          verticalAlignment: Text.AlignVCenter
+                                                          text: "${placeholder}"
+                                                          color: "#A0AABF"
+                                                          visible: input.showPlaceholder
+                                                          font.pixelSize: ${22} * root.scale
+                                                          }
+                                                          }
 
-                                        Rectangle {
-                                            anchors.bottom: parent.bottom
-                                            width: parent.width
-                                            height: 1.5 * root.scale
-                                            color: input.activeFocus ? "#1A4DB5" : "#E3E7F0"
-                                        }
-                                    }
-                                `, parent)
+                                                          Rectangle {
+                                                          anchors.bottom: parent.bottom
+                                                          width: parent.width
+                                                          height: 1.5 * root.scale
+                                                          color: input.activeFocus ? "#1A4DB5" : "#E3E7F0"
+                                                          }
+                                                          }
+                                                          `, parent)
                             }
 
                             // ===== FIELDS =====
@@ -462,12 +566,12 @@ Item {
                                     anchors.fill: parent
                                     onClicked: {
                                         var result = NetworkManager.setStaticIP(
-                                            "eth0",
-                                            ipField.text,
-                                            subnetField.text,
-                                            gatewayField.text,
-                                            dnsField.text
-                                        )
+                                                    "eth0",
+                                                    ipField.text,
+                                                    subnetField.text,
+                                                    gatewayField.text,
+                                                    dnsField.text
+                                                    )
 
                                         resultText.text = result
 
@@ -488,7 +592,58 @@ Item {
                     }
                 }
             }
+        }
+    }
 
+    // ===== PASSWORD POPUP =====
+    Popup {
+        id: passwordPopup
+        modal: true
+        focus: true
+        width: 320 * root.scale
+        height: 200 * root.scale
+
+        property string ssid: ""
+
+        Column {
+            anchors.centerIn: parent
+            spacing: 12 * root.scale
+
+            Text {
+                text: "Enter password for " + ssid
+                font.pixelSize: 16 * root.scale
+            }
+
+            TextField {
+                id: passwordField
+                width: 250 * root.scale
+                echoMode: TextInput.Password
+            }
+
+            Rectangle {
+                width: 120 * root.scale
+                height: 40 * root.scale
+                radius: 10 * root.scale
+                color: "#1A4DB5"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "Connect"
+                    color: "white"
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        var res = WiFiScanner.connectToNetwork(ssid, passwordField.text)
+                        root.connectedSSID = ssid
+
+                        if (notify) notify(res)
+
+                        passwordPopup.close()
+                    }
+                }
+            }
         }
     }
 }
