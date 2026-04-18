@@ -299,11 +299,11 @@ Item {
                 ColumnLayout {
                     anchors.fill: parent
                     anchors.margins: 20 * root.scale
-                    spacing: 10 * root.scale
+                    spacing: 18 * root.scale
 
                     Text {
                         text: "LAN"
-                        font.pixelSize: 24 * root.scale
+                        font.pixelSize: 26 * root.scale
                         font.bold: true
                         color: "#1A4DB5"
                     }
@@ -315,6 +315,230 @@ Item {
                         color: "#F8F9FB"
                         border.color: "#E0E0E0"
                         border.width: 1
+
+                        Column {
+                            anchors.fill: parent
+                            anchors.margins: 20 * root.scale
+                            spacing: 18 * root.scale
+
+                            // ===== INPUT FIELD COMPONENT =====
+                            function inputField(idRef, placeholder) {
+                                return Qt.createQmlObject(`
+                                    import QtQuick
+                                    Item {
+                                        width: parent.width
+                                        height: 40
+
+                                        TextField {
+                                            id: input
+                                            anchors.fill: parent
+
+                                            font.pixelSize: ${22} * root.scale
+                                            font.bold: true
+                                            color: "#1A4DB5"
+
+                                            background: null
+                                            padding: 0
+
+                                            property bool showPlaceholder: text.length === 0 && !activeFocus
+
+                                            Text {
+                                                anchors.fill: parent
+                                                verticalAlignment: Text.AlignVCenter
+                                                text: "${placeholder}"
+                                                color: "#A0AABF"
+                                                visible: input.showPlaceholder
+                                                font.pixelSize: ${22} * root.scale
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            anchors.bottom: parent.bottom
+                                            width: parent.width
+                                            height: 1.5 * root.scale
+                                            color: input.activeFocus ? "#1A4DB5" : "#E3E7F0"
+                                        }
+                                    }
+                                `, parent)
+                            }
+
+                            // ===== FIELDS =====
+                            Item {
+                                id: ipWrapper
+                                width: parent.width
+                                height: 40 * root.scale
+
+                                TextField {
+                                    id: ipField
+                                    anchors.fill: parent
+                                    font.pixelSize: 22 * root.scale
+                                    font.bold: true
+                                    color: "#1A4DB5"
+                                    background: null
+                                    padding: 0
+
+                                    property bool showPlaceholder: text.length === 0 && !activeFocus
+
+                                    Text {
+                                        anchors.fill: parent
+                                        verticalAlignment: Text.AlignVCenter
+                                        text: "IP Address (192.168.1.50)"
+                                        color: "#A0AABF"
+                                        visible: ipField.showPlaceholder
+                                        font.pixelSize: 22 * root.scale
+                                    }
+                                }
+
+                                Rectangle {
+                                    anchors.bottom: parent.bottom
+                                    width: parent.width
+                                    height: 1.5 * root.scale
+                                    color: ipField.activeFocus ? "#1A4DB5" : "#E3E7F0"
+                                }
+                            }
+
+                            Item {
+                                width: parent.width
+                                height: 40 * root.scale
+
+                                TextField {
+                                    id: subnetField
+                                    anchors.fill: parent
+                                    font.pixelSize: 22 * root.scale
+                                    font.bold: true
+                                    color: "#1A4DB5"
+                                    background: null
+                                    padding: 0
+
+                                    property bool showPlaceholder: text.length === 0 && !activeFocus
+
+                                    Text {
+                                        anchors.fill: parent
+                                        verticalAlignment: Text.AlignVCenter
+                                        text: "Subnet (24)"
+                                        color: "#A0AABF"
+                                        visible: subnetField.showPlaceholder
+                                        font.pixelSize: 22 * root.scale
+                                    }
+                                }
+
+                                Rectangle {
+                                    anchors.bottom: parent.bottom
+                                    width: parent.width
+                                    height: 1.5 * root.scale
+                                    color: subnetField.activeFocus ? "#1A4DB5" : "#E3E7F0"
+                                }
+                            }
+
+                            Item {
+                                width: parent.width
+                                height: 40 * root.scale
+
+                                TextField {
+                                    id: gatewayField
+                                    anchors.fill: parent
+                                    font.pixelSize: 22 * root.scale
+                                    font.bold: true
+                                    color: "#1A4DB5"
+                                    background: null
+                                    padding: 0
+
+                                    property bool showPlaceholder: text.length === 0 && !activeFocus
+
+                                    Text {
+                                        anchors.fill: parent
+                                        verticalAlignment: Text.AlignVCenter
+                                        text: "Gateway"
+                                        color: "#A0AABF"
+                                        visible: gatewayField.showPlaceholder
+                                        font.pixelSize: 22 * root.scale
+                                    }
+                                }
+
+                                Rectangle {
+                                    anchors.bottom: parent.bottom
+                                    width: parent.width
+                                    height: 1.5 * root.scale
+                                    color: gatewayField.activeFocus ? "#1A4DB5" : "#E3E7F0"
+                                }
+                            }
+
+                            Item {
+                                width: parent.width
+                                height: 40 * root.scale
+
+                                TextField {
+                                    id: dnsField
+                                    anchors.fill: parent
+                                    text: "8.8.8.8"
+                                    font.pixelSize: 22 * root.scale
+                                    font.bold: true
+                                    color: "#1A4DB5"
+                                    background: null
+                                    padding: 0
+
+                                    property bool showPlaceholder: text.length === 0 && !activeFocus
+
+                                    Text {
+                                        anchors.fill: parent
+                                        verticalAlignment: Text.AlignVCenter
+                                        text: "DNS"
+                                        color: "#A0AABF"
+                                        visible: dnsField.showPlaceholder
+                                        font.pixelSize: 22 * root.scale
+                                    }
+                                }
+
+                                Rectangle {
+                                    anchors.bottom: parent.bottom
+                                    width: parent.width
+                                    height: 1.5 * root.scale
+                                    color: dnsField.activeFocus ? "#1A4DB5" : "#E3E7F0"
+                                }
+                            }
+
+                            // ===== BUTTON =====
+                            Rectangle {
+                                width: parent.width
+                                height: 50 * root.scale
+                                radius: 12 * root.scale
+                                color: "#1A4DB5"
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: "Apply Static IP"
+                                    color: "#FFFFFF"
+                                    font.bold: true
+                                    font.pixelSize: 20 * root.scale
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    onClicked: {
+                                        var result = NetworkManager.setStaticIP(
+                                            "eth0",
+                                            ipField.text,
+                                            subnetField.text,
+                                            gatewayField.text,
+                                            dnsField.text
+                                        )
+
+                                        resultText.text = result
+
+                                        if (notify)
+                                            notify(result)
+                                    }
+                                }
+                            }
+
+                            Text {
+                                id: resultText
+                                text: ""
+                                color: "#1A4DB5"
+                                font.pixelSize: 16 * root.scale
+                                wrapMode: Text.Wrap
+                            }
+                        }
                     }
                 }
             }
