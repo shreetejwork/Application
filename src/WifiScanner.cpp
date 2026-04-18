@@ -1,4 +1,4 @@
-#include "wifiscanner.h"
+#include "WifiScanner.h"
 #include <QProcess>
 #include <QStringList>
 
