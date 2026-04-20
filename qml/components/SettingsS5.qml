@@ -20,6 +20,11 @@ Item {
         id: networkModel
     }
 
+    // ✅ Load current WiFi on start
+    Component.onCompleted: {
+        connectedSSID = WiFiScanner.currentConnection()
+    }
+
     // ===== WIFI SCAN =====
     function scanWifi() {
         networkModel.clear()
@@ -43,12 +48,16 @@ Item {
     // ===== CONNECT =====
     function connectWifi(ssid, secured) {
         if (secured) {
+            passwordField.text = ""
             passwordPopup.ssid = ssid
             passwordPopup.open()
         } else {
-            var res = WiFiScanner.connectToNetwork(ssid, "")
-            connectedSSID = ssid
+            var res = WiFiScanner.connectToWifi(ssid, "")
+
             if (notify) notify(res)
+
+            connectedSSID = WiFiScanner.currentConnection()
+            scanWifi()
         }
     }
 
@@ -164,16 +173,16 @@ Item {
                         }
 
                         // ===== WIFI LIST =====
-                        Column {
+                        ColumnLayout {
                             anchors.fill: parent
-                            anchors.topMargin: 16 * root.scale
-                            anchors.bottomMargin: 8 * root.scale
+                            anchors.margins: 12 * root.scale   // ✅ FIX: proper inner spacing
                             visible: root.wifiEnabled
                             spacing: 0
 
+                            // ===== HEADER =====
                             Item {
-                                width: parent.width
-                                height: 35 * root.scale
+                                Layout.fillWidth: true
+                                height: 45 * root.scale   // ✅ FIX: prevent text clipping
 
                                 Text {
                                     anchors.left: parent.left
@@ -195,145 +204,132 @@ Item {
                                 }
                             }
 
+                            // ===== DIVIDER =====
                             Rectangle {
-                                width: parent.width
+                                Layout.fillWidth: true
                                 height: 2
                                 color: "#E8E8E8"
                             }
 
-                            // ===== SCROLLABLE LIST =====
-                            // ===== SCROLLABLE LIST =====
-                            Flickable {
-                                anchors.left: parent.left
-                                anchors.right: parent.right
-                                anchors.bottom: parent.bottom
-                                anchors.top: divider.bottom   // 👈 IMPORTANT FIX
+                            // ===== LIST VIEW =====
+                            ListView {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
 
-                                contentWidth: width
-                                contentHeight: listColumn.height
+                                model: networkModel
                                 clip: true
+                                spacing: 0
 
-                                Column {
-                                    id: listColumn
-                                    width: parent.width
+                                delegate: Column {
+                                    width: ListView.view.width
 
-                                    Repeater {
-                                        model: networkModel
+                                    Rectangle {
+                                        id: rowBg
+                                        width: parent.width
+                                        height: 50 * root.scale
 
-                                        delegate: Column {
-                                            width: parent.width
+                                        color: model.connected
+                                               ? "#DFF5E3"
+                                               : (rowMouse.containsMouse ? "#EEF3FF" : "transparent")
 
-                                            Rectangle {
-                                                id: rowBg
+                                        MouseArea {
+                                            id: rowMouse
+                                            anchors.fill: parent
+                                            hoverEnabled: true
+                                        }
+
+                                        Text {
+                                            id: lockIcon
+                                            anchors.left: parent.left
+                                            anchors.leftMargin: 14 * root.scale
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            text: model.secured ? "🔒" : "🌐"
+                                            font.pixelSize: 20 * root.scale
+                                        }
+
+                                        Column {
+                                            anchors.left: lockIcon.right
+                                            anchors.leftMargin: 10 * root.scale
+                                            anchors.right: signalRow.left
+                                            anchors.rightMargin: 10 * root.scale
+                                            anchors.verticalCenter: parent.verticalCenter
+
+                                            Text {
                                                 width: parent.width
-                                                height: 50 * root.scale
-
-                                                color: model.name === root.connectedSSID
-                                                       ? "#DFF5E3"
-                                                       : (rowMouse.containsMouse ? "#EEF3FF" : "transparent")
-
-                                                MouseArea {
-                                                    id: rowMouse
-                                                    anchors.fill: parent
-                                                    hoverEnabled: true
-                                                }
-
-                                                Text {
-                                                    id: lockIcon
-                                                    anchors.left: parent.left
-                                                    anchors.leftMargin: 14 * root.scale
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    text: model.secured ? "🔒" : "🌐"
-                                                    font.pixelSize: 20 * root.scale
-                                                }
-
-                                                Column {
-                                                    anchors.left: lockIcon.right
-                                                    anchors.leftMargin: 10 * root.scale
-                                                    anchors.right: signalRow.left
-                                                    anchors.rightMargin: 10 * root.scale
-                                                    anchors.verticalCenter: parent.verticalCenter
-
-                                                    Text {
-                                                        width: parent.width
-                                                        text: model.name
-                                                        font.pixelSize: 19 * root.scale
-                                                        font.bold: true
-                                                        color: "#1C1C1C"
-                                                        elide: Text.ElideRight
-                                                    }
-
-                                                    Text {
-                                                        text: model.secured ? "Secured" : "Open Network"
-                                                        font.pixelSize: 18 * root.scale
-                                                        color: model.secured ? "#4CAF50" : "#FF9800"
-                                                    }
-                                                }
-
-                                                Row {
-                                                    id: signalRow
-                                                    anchors.right: connectBtn.left
-                                                    anchors.rightMargin: 12 * root.scale
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    spacing: 3 * root.scale
-
-                                                    Repeater {
-                                                        model: 4
-                                                        delegate: Rectangle {
-                                                            property var thresholds: [25, 50, 70, 90]
-
-                                                            width: 6 * root.scale
-                                                            height: (7 + index * 5) * root.scale
-                                                            radius: 2 * root.scale
-                                                            anchors.bottom: parent.bottom
-
-                                                            color: model.signal >= thresholds[index]
-                                                                   ? "#1A4DB5" : "#DDDDDD"
-                                                        }
-                                                    }
-                                                }
-
-                                                Rectangle {
-                                                    id: connectBtn
-                                                    anchors.right: parent.right
-                                                    anchors.rightMargin: 14 * root.scale
-                                                    anchors.verticalCenter: parent.verticalCenter
-                                                    width: 78 * root.scale
-                                                    height: 28 * root.scale
-                                                    radius: 14 * root.scale
-
-                                                    color: model.name === root.connectedSSID
-                                                           ? "#4CAF50"
-                                                           : "#1A4DB5"
-
-                                                    Text {
-                                                        anchors.centerIn: parent
-                                                        text: model.name === root.connectedSSID
-                                                              ? "Connected"
-                                                              : "Connect"
-                                                        font.pixelSize: 16 * root.scale
-                                                        font.bold: true
-                                                        color: "#FFFFFF"
-                                                    }
-
-                                                    MouseArea {
-                                                        anchors.fill: parent
-                                                        onClicked: {
-                                                            if (model.name !== root.connectedSSID)
-                                                                connectWifi(model.name, model.secured)
-                                                        }
-                                                    }
-                                                }
+                                                text: model.name
+                                                font.pixelSize: 19 * root.scale
+                                                font.bold: true
+                                                color: "#1C1C1C"
+                                                elide: Text.ElideRight
                                             }
 
-                                            Rectangle {
-                                                visible: index < networkModel.count - 1
-                                                width: parent.width - 28 * root.scale
-                                                anchors.horizontalCenter: parent.horizontalCenter
-                                                height: 2
-                                                color: "#EFEFEF"
+                                            Text {
+                                                text: model.secured ? "Secured" : "Open Network"
+                                                font.pixelSize: 18 * root.scale
+                                                color: model.secured ? "#4CAF50" : "#FF9800"
                                             }
                                         }
+
+                                        Row {
+                                            id: signalRow
+                                            anchors.right: connectBtn.left
+                                            anchors.rightMargin: 12 * root.scale
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            spacing: 3 * root.scale
+
+                                            Repeater {
+                                                model: 4
+                                                delegate: Rectangle {
+                                                    property var thresholds: [20, 40, 60, 80]
+
+                                                    width: 6 * root.scale
+                                                    height: (7 + index * 5) * root.scale
+                                                    radius: 2 * root.scale
+                                                    anchors.bottom: parent.bottom
+
+                                                    color: model.signal >= thresholds[index]
+                                                           ? "#1A4DB5" : "#DDDDDD"
+                                                }
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            id: connectBtn
+                                            anchors.right: parent.right
+                                            anchors.rightMargin: 14 * root.scale
+                                            anchors.verticalCenter: parent.verticalCenter
+                                            width: 78 * root.scale
+                                            height: 28 * root.scale
+                                            radius: 14 * root.scale
+
+                                            color: model.connected
+                                                   ? "#4CAF50"
+                                                   : "#1A4DB5"
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: model.connected ? "Connected" : "Connect"
+                                                font.pixelSize: 16 * root.scale
+                                                font.bold: true
+                                                color: "#FFFFFF"
+                                            }
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                onClicked: {
+                                                    if (!model.connected)
+                                                        connectWifi(model.name, model.secured)
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        visible: index < networkModel.count - 1
+                                        width: parent.width - 28 * root.scale
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        height: 2
+                                        color: "#EFEFEF"
                                     }
                                 }
                             }
@@ -342,7 +338,7 @@ Item {
                 }
             }
 
-            // ================= LAN CARD (UNCHANGED EXACTLY) =================
+            // ================= LAN CARD =================
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -640,10 +636,12 @@ Item {
                 MouseArea {
                     anchors.fill: parent
                     onClicked: {
-                        var res = WiFiScanner.connectToNetwork(ssid, passwordField.text)
-                        root.connectedSSID = ssid
+                        var res = WiFiScanner.connectToWifi(ssid, passwordField.text)
 
                         if (notify) notify(res)
+
+                        root.connectedSSID = WiFiScanner.currentConnection()
+                        scanWifi()
 
                         passwordPopup.close()
                     }

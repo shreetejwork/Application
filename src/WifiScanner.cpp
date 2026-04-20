@@ -1,6 +1,7 @@
 #include "WifiScanner.h"
 #include <QProcess>
 #include <QStringList>
+#include <QSet>
 
 WiFiScanner::WiFiScanner(QObject *parent) : QObject(parent) {}
 
@@ -13,7 +14,7 @@ QVariantList WiFiScanner::scanNetworks()
     QProcess process;
     process.start("nmcli", QStringList()
                                << "-t"
-                               << "-f" << "SSID,SIGNAL,SECURITY"
+                               << "-f" << "IN-USE,SSID,SIGNAL,SECURITY"
                                << "dev" << "wifi" << "list");
 
     process.waitForFinished();
@@ -21,19 +22,29 @@ QVariantList WiFiScanner::scanNetworks()
     QString output = process.readAllStandardOutput();
     QStringList lines = output.split("\n", Qt::SkipEmptyParts);
 
+    QSet<QString> seenSSIDs;
+
     for (const QString &line : lines) {
         QStringList parts = line.split(":");
 
-        if (parts.size() >= 3) {
-            QVariantMap net;
-            net["name"] = parts[0];
-            net["signal"] = parts[1].toInt();
-            net["secured"] = !parts[2].isEmpty();
+        if (parts.size() >= 4) {
+            QString inUse = parts[0];
+            QString ssid = parts[1];
+            int signal = parts[2].toInt();
+            QString security = parts[3];
 
-            // Avoid empty SSID entries
-            if (!net["name"].toString().isEmpty()) {
-                list.append(net);
-            }
+            if (ssid.isEmpty() || seenSSIDs.contains(ssid))
+                continue;
+
+            seenSSIDs.insert(ssid);
+
+            QVariantMap net;
+            net["name"] = ssid;
+            net["signal"] = signal;
+            net["secured"] = !security.isEmpty();
+            net["connected"] = (inUse == "*");
+
+            list.append(net);
         }
     }
 
@@ -62,7 +73,7 @@ QString WiFiScanner::connectToWifi(QString ssid, QString password)
     if (process.exitCode() == 0) {
         return "Connected to " + ssid;
     } else {
-        return "Failed: " + error;
+        return error.isEmpty() ? "Connection failed" : error;
     }
 }
 

@@ -10,13 +10,8 @@ class WiFiScanner : public QObject
 public:
     explicit WiFiScanner(QObject *parent = nullptr);
 
-
     Q_INVOKABLE QVariantList scanNetworks();
-
-
     Q_INVOKABLE QString connectToWifi(QString ssid, QString password);
-
-
     Q_INVOKABLE QString currentConnection();
 };
 
