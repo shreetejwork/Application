@@ -3,6 +3,7 @@
 #include <QSet>
 #include <QDebug>
 #include <QTimer>
+#include <QThread>
 
 WiFiScanner::WiFiScanner(QObject *parent) : QObject(parent) {}
 
@@ -208,6 +209,40 @@ bool WiFiScanner::isNmcliAvailable()
     }
 
     return process.exitCode() == 0;
+}
+
+void WiFiScanner::scanNetworksAsync()
+{
+    QThread *thread = new QThread(this);
+    QObject *worker = new QObject();
+    worker->moveToThread(thread);
+
+    connect(thread, &QThread::started, this, [this, worker, thread]() {
+        QVariantList networks = scanNetworks();
+        emit networksScanned(networks);
+        thread->quit();
+        worker->deleteLater();
+        thread->deleteLater();
+    });
+
+    thread->start();
+}
+
+void WiFiScanner::currentConnectionAsync()
+{
+    QThread *thread = new QThread(this);
+    QObject *worker = new QObject();
+    worker->moveToThread(thread);
+
+    connect(thread, &QThread::started, this, [this, worker, thread]() {
+        QString ssid = currentConnection();
+        emit currentConnectionReady(ssid);
+        thread->quit();
+        worker->deleteLater();
+        thread->deleteLater();
+    });
+
+    thread->start();
 }
 
 void WiFiScanner::enableWifi(bool enable)

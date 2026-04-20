@@ -30,18 +30,39 @@ Item {
     Component.onCompleted: {
         nmcliAvailable = WiFiScanner.isNmcliAvailable()
         if (nmcliAvailable) {
-            connectedSSID = WiFiScanner.currentConnection()
+            WiFiScanner.currentConnectionAsync()
+            WiFiScanner.scanNetworksAsync()
+        }
+    }
+
+    Connections {
+        target: WiFiScanner
+        onCurrentConnectionReady: function(ssid) {
+            connectedSSID = ssid
             updateConnectedSignal()
-            scanWifi()
+        }
+        onNetworksScanned: function(networks) {
+            networkModel.clear()
+            availableNetworkModel.clear()
+
+            for (var i = 0; i < networks.length; i++) {
+                if (networks[i].name === "")
+                    continue
+
+                networkModel.append(networks[i])
+                if (!networks[i].connected)
+                    availableNetworkModel.append(networks[i])
+            }
+
+            updateConnectedSignal()
         }
     }
 
     function updateConnectedSignal() {
         if (connectedSSID !== "") {
-            var networks = WiFiScanner.scanNetworks()
-            for (var i = 0; i < networks.length; i++) {
-                if (networks[i].name === connectedSSID) {
-                    connectedSignal = networks[i].signal
+            for (var i = 0; i < networkModel.count; i++) {
+                if (networkModel.get(i).name === connectedSSID) {
+                    connectedSignal = networkModel.get(i).signal
                     break
                 }
             }
@@ -57,21 +78,7 @@ Item {
             return
         }
 
-        networkModel.clear()
-        availableNetworkModel.clear()
-
-        var result = WiFiScanner.scanNetworks()
-
-        for (var i = 0; i < result.length; i++) {
-            if (result[i].name === "")
-                continue
-
-            networkModel.append(result[i])
-            if (!result[i].connected)
-                availableNetworkModel.append(result[i])
-        }
-
-        updateConnectedSignal()
+        WiFiScanner.scanNetworksAsync()
     }
 
     function startWifiConnect(ssid, password) {
@@ -341,7 +348,7 @@ Item {
                                     }
 
                                     Rectangle {
-                                        Layout.preferredWidth: 70 * root.scale
+                                        Layout.preferredWidth: 74 * root.scale
                                         Layout.preferredHeight: 32 * root.scale
                                         radius: 8 * root.scale
                                         color: "#4CAF50"
@@ -370,7 +377,7 @@ Item {
 
                                 Text {
                                     text: "(" + availableNetworkModel.count + ")"
-                                    font.pixelSize: 16 * root.scale
+                                    font.pixelSize: 20 * root.scale
                                     color: "#9CA3AF"
                                 }
                             }
@@ -402,7 +409,7 @@ Item {
                                         spacing: 12 * root.scale
 
                                         Text {
-                                            text: model.secured ? "🔒" : "📶"
+                                            text: model.secured ? "🔒" : ""
                                             font.pixelSize: 20 * root.scale
                                         }
 
@@ -419,8 +426,8 @@ Item {
                                             }
 
                                             Text {
-                                                text: model.secured ? "🔐 Secured" : "🌐 Open"
-                                                font.pixelSize: 11 * root.scale
+                                                text: model.secured ? "Secured" : "Open"
+                                                font.pixelSize: 15 * root.scale
                                                 color: model.secured ? "#6366F1" : "#F97316"
                                             }
                                         }
