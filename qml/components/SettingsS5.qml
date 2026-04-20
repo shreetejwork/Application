@@ -258,7 +258,7 @@ Item {
 
                             Text {
                                 text: root.nmcliAvailable ? "WiFi is Turned Off" : "WiFi Management Not Available"
-                                font.pixelSize: 15 * root.scale
+                                font.pixelSize: 20 * root.scale
                                 font.bold: true
                                 color: root.nmcliAvailable ? "#AAAAAA" : "#FF6B6B"
                             }
@@ -267,7 +267,7 @@ Item {
                                 text: root.nmcliAvailable
                                       ? "Enable toggle to scan for networks"
                                       : "NetworkManager (nmcli) is required for WiFi management"
-                                font.pixelSize: 12 * root.scale
+                                font.pixelSize: 15 * root.scale
                                 color: root.nmcliAvailable ? "#BBBBBB" : "#FF9999"
                             }
                         }
@@ -302,13 +302,13 @@ Item {
 
                                             Text {
                                                 text: "●"
-                                                font.pixelSize: 12 * root.scale
+                                                font.pixelSize: 15 * root.scale
                                                 color: "#4CAF50"
                                             }
 
                                             Text {
                                                 text: "Connected"
-                                                font.pixelSize: 13 * root.scale
+                                                font.pixelSize: 16 * root.scale
                                                 color: "#1F2937"
                                                 font.bold: true
                                             }
@@ -316,7 +316,7 @@ Item {
 
                                         Text {
                                             text: root.connectedSSID
-                                            font.pixelSize: 15 * root.scale
+                                            font.pixelSize: 20 * root.scale
                                             font.bold: true
                                             color: "#1A4DB5"
                                             elide: Text.ElideRight
@@ -349,7 +349,7 @@ Item {
                                         Text {
                                             anchors.centerIn: parent
                                             text: "Connected"
-                                            font.pixelSize: 13 * root.scale
+                                            font.pixelSize: 16 * root.scale
                                             font.bold: true
                                             color: "#FFFFFF"
                                         }
@@ -363,14 +363,14 @@ Item {
 
                                 Text {
                                     text: "Available Networks"
-                                    font.pixelSize: 15 * root.scale
+                                    font.pixelSize: 20 * root.scale
                                     font.bold: true
                                     color: "#1F2937"
                                 }
 
                                 Text {
                                     text: "(" + availableNetworkModel.count + ")"
-                                    font.pixelSize: 13 * root.scale
+                                    font.pixelSize: 16 * root.scale
                                     color: "#9CA3AF"
                                 }
                             }
@@ -412,7 +412,7 @@ Item {
 
                                             Text {
                                                 text: model.name
-                                                font.pixelSize: 15 * root.scale
+                                                font.pixelSize: 20 * root.scale
                                                 font.bold: true
                                                 color: "#1F2937"
                                                 elide: Text.ElideRight
@@ -451,7 +451,7 @@ Item {
                                             Text {
                                                 anchors.centerIn: parent
                                                 text: "Connect"
-                                                font.pixelSize: 13 * root.scale
+                                                font.pixelSize: 16 * root.scale
                                                 font.bold: true
                                                 color: "#FFFFFF"
                                             }
