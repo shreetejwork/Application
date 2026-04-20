@@ -67,9 +67,20 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
 {
     QProcess *process = new QProcess(this);
     QStringList args;
-    args << "dev" << "wifi" << "connect" << ssid;
+
+    // For secured networks, use connection settings with explicit key-mgmt
     if (!password.isEmpty()) {
-        args << "password" << password;
+        // Create/update connection with proper security settings
+        args << "connection" << "add" << "type" << "wifi" 
+             << "ifname" << "wlan0"
+             << "con-name" << ssid
+             << "autoconnect" << "yes"
+             << "ssid" << ssid
+             << "802-11-wireless-security.key-mgmt" << "wpa-psk"
+             << "802-11-wireless-security.psk" << password;
+    } else {
+        // For open networks, use simpler connect method
+        args << "dev" << "wifi" << "connect" << ssid;
     }
 
     QTimer *timeoutTimer = new QTimer(process);
@@ -85,7 +96,7 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
     });
 
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
-            [this, process, ssid, timeoutTimer](int exitCode, QProcess::ExitStatus) {
+            [this, process, ssid, timeoutTimer, password](int exitCode, QProcess::ExitStatus) {
                 timeoutTimer->stop();
                 timeoutTimer->deleteLater();
                 QString output = process->readAllStandardOutput();
@@ -97,11 +108,24 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
 
                 QString result;
                 if (exitCode == 0) {
-                    result = "Connected to " + ssid;
+                    // If we created a connection, activate it
+                    if (!password.isEmpty()) {
+                        QProcess activateProcess;
+                        activateProcess.start("nmcli", QStringList() << "connection" << "up" << ssid);
+                        activateProcess.waitForFinished(10000);
+                        if (activateProcess.exitCode() == 0) {
+                            result = "Connected to " + ssid;
+                        } else {
+                            result = "CONNECTION_FAILED";
+                        }
+                    } else {
+                        result = "Connected to " + ssid;
+                    }
                 } else {
-                    if (error.contains("Secrets were required, but not provided") ||
-                        error.contains("802-11-wireless-security.psk") ||
-                        error.contains("wpa_supplicant") ||
+                    if (error.contains("Secrets were required") ||
+                        error.contains("802-11-wireless-security") ||
+                        error.contains("key-mgmt") ||
+                        error.contains("psk") ||
                         error.contains("wrong key") ||
                         error.contains("invalid key") ||
                         error.contains("authentication failed") ||
