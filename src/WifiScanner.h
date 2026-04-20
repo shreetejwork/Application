@@ -2,22 +2,27 @@
 #define WIFISCANNER_H
 
 #include <QObject>
-#include <QVariantList>
+#include <QStringList>
 
 class WiFiScanner : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(QStringList networks READ networks NOTIFY networksChanged)
+
 public:
     explicit WiFiScanner(QObject *parent = nullptr);
 
-    Q_INVOKABLE QVariantList scanNetworks();
-    Q_INVOKABLE QString connectToWifi(QString ssid, QString password);
-    Q_INVOKABLE void connectToWifiAsync(QString ssid, QString password);
-    Q_INVOKABLE QString currentConnection();
-    Q_INVOKABLE bool isNmcliAvailable();
+    QStringList networks() const { return m_networks; }
+
+    Q_INVOKABLE void scan();
+    Q_INVOKABLE bool connectTo(const QString &ssid, const QString &password);
+    Q_INVOKABLE void enableWifi(bool enable);
 
 signals:
-    void connectionResult(QString ssid, QString result);
+    void networksChanged();
+
+private:
+    QStringList m_networks;
 };
 
 #endif // WIFISCANNER_H
