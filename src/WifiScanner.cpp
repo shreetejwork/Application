@@ -66,21 +66,13 @@ QVariantList WiFiScanner::scanNetworks()
 void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
 {
     QProcess *process = new QProcess(this);
+    process->setProcessChannelMode(QProcess::MergedChannels);
     QStringList args;
 
-    // For secured networks, use connection settings with explicit key-mgmt
+    // Use direct WiFi connect with password to avoid NetworkManager prompting for secrets
+    args << "-w" << "30" << "dev" << "wifi" << "connect" << ssid;
     if (!password.isEmpty()) {
-        // Create/update connection with proper security settings
-        args << "connection" << "add" << "type" << "wifi" 
-             << "ifname" << "wlan0"
-             << "con-name" << ssid
-             << "autoconnect" << "yes"
-             << "ssid" << ssid
-             << "802-11-wireless-security.key-mgmt" << "wpa-psk"
-             << "802-11-wireless-security.psk" << password;
-    } else {
-        // For open networks, use simpler connect method
-        args << "dev" << "wifi" << "connect" << ssid;
+        args << "password" << password;
     }
 
     QTimer *timeoutTimer = new QTimer(process);

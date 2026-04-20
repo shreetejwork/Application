@@ -731,6 +731,8 @@ Item {
         focus: true
         width: 400 * root.scale
         height: 320 * root.scale
+        x: (root.width - width) / 2
+        y: 60 * root.scale
         closePolicy: Popup.NoAutoClose
 
         property string ssid: ""
