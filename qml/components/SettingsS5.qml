@@ -228,18 +228,9 @@ Item {
                             // ===== CONNECTED WIFI SECTION =====
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 90 * root.scale
-                                radius: 12 * root.scale
+                                Layout.preferredHeight: 70 * root.scale
+                                radius: 10 * root.scale
                                 visible: root.connectedSSID !== ""
-
-                                // Outer shadow effect
-                                Rectangle {
-                                    anchors.fill: parent
-                                    anchors.margins: -2
-                                    radius: parent.radius
-                                    color: "#E0E8FF"
-                                    z: -1
-                                }
 
                                 color: "#FFFFFF"
                                 border.color: "#1A4DB5"
@@ -247,25 +238,25 @@ Item {
 
                                 RowLayout {
                                     anchors.fill: parent
-                                    anchors.margins: 14 * root.scale
-                                    spacing: 16 * root.scale
+                                    anchors.margins: 12 * root.scale
+                                    spacing: 12 * root.scale
 
                                     Column {
                                         Layout.fillWidth: true
-                                        spacing: 6 * root.scale
+                                        spacing: 3 * root.scale
 
                                         Row {
-                                            spacing: 8 * root.scale
+                                            spacing: 6 * root.scale
 
                                             Text {
                                                 text: "●"
-                                                font.pixelSize: 14 * root.scale
+                                                font.pixelSize: 12 * root.scale
                                                 color: "#4CAF50"
                                             }
 
                                             Text {
                                                 text: "Connected"
-                                                font.pixelSize: 14 * root.scale
+                                                font.pixelSize: 13 * root.scale
                                                 color: "#1F2937"
                                                 font.bold: true
                                             }
@@ -273,7 +264,7 @@ Item {
 
                                         Text {
                                             text: root.connectedSSID
-                                            font.pixelSize: 18 * root.scale
+                                            font.pixelSize: 15 * root.scale
                                             font.bold: true
                                             color: "#1A4DB5"
                                             elide: Text.ElideRight
@@ -288,14 +279,29 @@ Item {
                                             delegate: Rectangle {
                                                 property var thresholds: [20, 40, 60, 80]
 
-                                                width: 5 * root.scale
-                                                height: (6 + index * 4) * root.scale
-                                                radius: 1.5 * root.scale
+                                                width: 4 * root.scale
+                                                height: (5 + index * 3.5) * root.scale
+                                                radius: 1 * root.scale
                                                 anchors.bottom: parent.bottom
 
                                                 color: root.connectedSignal >= thresholds[index]
                                                        ? "#1A4DB5" : "#D1D5DB"
                                             }
+                                        }
+                                    }
+
+                                    Rectangle {
+                                        Layout.preferredWidth: 70 * root.scale
+                                        Layout.preferredHeight: 32 * root.scale
+                                        radius: 8 * root.scale
+                                        color: "#4CAF50"
+
+                                        Text {
+                                            anchors.centerIn: parent
+                                            text: "Connected"
+                                            font.pixelSize: 13 * root.scale
+                                            font.bold: true
+                                            color: "#FFFFFF"
                                         }
                                     }
                                 }
@@ -308,14 +314,14 @@ Item {
 
                                 Text {
                                     text: "Available Networks"
-                                    font.pixelSize: 16 * root.scale
+                                    font.pixelSize: 15 * root.scale
                                     font.bold: true
                                     color: "#1F2937"
                                 }
 
                                 Text {
-                                    text: "(" + networkModel.count + ")"
-                                    font.pixelSize: 14 * root.scale
+                                    text: "(" + (networkModel.count - (root.connectedSSID !== "" ? 1 : 0)) + ")"
+                                    font.pixelSize: 13 * root.scale
                                     color: "#9CA3AF"
                                 }
                             }
@@ -339,10 +345,11 @@ Item {
                                     width: ListView.view.width
                                     height: 70 * root.scale
                                     radius: 10 * root.scale
+                                    visible: !model.connected
 
-                                    color: model.connected ? "#FAFBFF" : "#FFFFFF"
-                                    border.color: model.connected ? "#1A4DB5" : "#E5E7EB"
-                                    border.width: model.connected ? 2 : 1
+                                    color: "#FFFFFF"
+                                    border.color: "#E5E7EB"
+                                    border.width: 1
 
                                     MouseArea {
                                         id: netMouseArea
@@ -358,7 +365,7 @@ Item {
                                         // Lock/Open Icon
                                         Text {
                                             text: model.secured ? "🔒" : "📶"
-                                            font.pixelSize: 22 * root.scale
+                                            font.pixelSize: 20 * root.scale
                                         }
 
                                         // Network Name and Security
@@ -368,15 +375,15 @@ Item {
 
                                             Text {
                                                 text: model.name
-                                                font.pixelSize: 16 * root.scale
+                                                font.pixelSize: 15 * root.scale
                                                 font.bold: true
                                                 color: "#1F2937"
                                                 elide: Text.ElideRight
                                             }
 
                                             Text {
-                                                text: model.secured ? "🔐 Secured Network" : "🌐 Open Network"
-                                                font.pixelSize: 12 * root.scale
+                                                text: model.secured ? "🔐 Secured" : "🌐 Open"
+                                                font.pixelSize: 11 * root.scale
                                                 color: model.secured ? "#6366F1" : "#F97316"
                                             }
                                         }
@@ -406,20 +413,19 @@ Item {
                                             Layout.preferredWidth: 70 * root.scale
                                             Layout.preferredHeight: 32 * root.scale
                                             radius: 8 * root.scale
-
-                                            color: model.connected ? "#F3F4F6" : "#1A4DB5"
+                                            color: "#1A4DB5"
 
                                             Text {
                                                 anchors.centerIn: parent
-                                                text: model.connected ? "Connected" : (root.isConnecting && false ? "..." : "Connect")
+                                                text: "Connect"
                                                 font.pixelSize: 13 * root.scale
                                                 font.bold: true
-                                                color: model.connected ? "#9CA3AF" : "#FFFFFF"
+                                                color: "#FFFFFF"
                                             }
 
                                             MouseArea {
                                                 anchors.fill: parent
-                                                enabled: !model.connected && !root.isConnecting
+                                                enabled: !root.isConnecting
                                                 onClicked: connectWifi(model.name, model.secured)
                                             }
                                         }
