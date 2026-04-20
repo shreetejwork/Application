@@ -11,34 +11,149 @@ Item {
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
     property bool wifiEnabled: false
+    property string connectedSSID: ""
+    property int connectedSignal: 0
     property bool isConnecting: false
+    property bool nmcliAvailable: false
 
     property var globalTopBar
     property var notify
 
-    // ✅ Load current WiFi on start
+    ListModel {
+        id: networkModel
+    }
+
+    ListModel {
+        id: availableNetworkModel
+    }
+
     Component.onCompleted: {
-        WiFiScanner.scan()
+        nmcliAvailable = WiFiScanner.isNmcliAvailable()
+        if (nmcliAvailable) {
+            connectedSSID = WiFiScanner.currentConnection()
+            updateConnectedSignal()
+            scanWifi()
+        }
+    }
+
+    function updateConnectedSignal() {
+        if (connectedSSID !== "") {
+            var networks = WiFiScanner.scanNetworks()
+            for (var i = 0; i < networks.length; i++) {
+                if (networks[i].name === connectedSSID) {
+                    connectedSignal = networks[i].signal
+                    break
+                }
+            }
+        } else {
+            connectedSignal = 0
+        }
     }
 
     function scanWifi() {
-        WiFiScanner.scan()
+        if (!nmcliAvailable) {
+            networkModel.clear()
+            availableNetworkModel.clear()
+            return
+        }
+
+        networkModel.clear()
+        availableNetworkModel.clear()
+
+        var result = WiFiScanner.scanNetworks()
+
+        for (var i = 0; i < result.length; i++) {
+            if (result[i].name === "")
+                continue
+
+            networkModel.append(result[i])
+            if (!result[i].connected)
+                availableNetworkModel.append(result[i])
+        }
+
+        updateConnectedSignal()
     }
 
-    function connectWifi(ssid) {
-        passwordField.text = ""
-        passwordPopup.ssid = ssid
+    function startWifiConnect(ssid, password) {
+        isConnecting = true
+        passwordPopup.isConnecting = true
         passwordPopup.errorMessage = ""
         passwordPopup.successMessage = ""
-        passwordPopup.isConnecting = false
-        passwordPopup.open()
+
+        WiFiScanner.connectToWifiAsync(ssid, password)
+    }
+
+    Timer {
+        interval: 10000
+        running: root.wifiEnabled
+        repeat: true
+        onTriggered: scanWifi()
+    }
+
+    function connectWifi(ssid, secured) {
+        if (!nmcliAvailable) {
+            if (notify) notify("WiFi management not available on this system")
+            return
+        }
+
+        if (secured) {
+            passwordField.text = ""
+            passwordPopup.ssid = ssid
+            passwordPopup.errorMessage = ""
+            passwordPopup.successMessage = ""
+            passwordPopup.isConnecting = false
+            passwordPopup.open()
+        } else {
+            startWifiConnect(ssid, "")
+        }
     }
 
     Connections {
         target: WiFiScanner
-        onNetworksChanged: {
-            // Update UI when networks are scanned
-            console.log("Networks updated:", WiFiScanner.networks.length)
+        onConnectionResult: function(resultSsid, result) {
+            isConnecting = false
+            passwordPopup.isConnecting = false
+
+            scanWifi()
+
+            if (result.startsWith("Connected to")) {
+                connectedSSID = resultSsid
+                updateConnectedSignal()
+                passwordPopup.successMessage = "✓ Connected successfully!"
+                passwordPopup.errorMessage = ""
+                if (notify) notify("Connected to " + resultSsid)
+
+                if (passwordPopup.visible && passwordPopup.ssid === resultSsid) {
+                    closeTimer.start()
+                }
+            } else {
+                var errorMsg = getErrorMessage(result)
+                if (passwordPopup.visible && passwordPopup.ssid === resultSsid) {
+                    passwordPopup.errorMessage = result === "WRONG_PASSWORD"
+                                               ? "✗ Incorrect password. Please try again."
+                                               : "✗ Connection failed: " + errorMsg
+                    passwordPopup.successMessage = ""
+                }
+
+                if (notify) notify("Connection failed: " + errorMsg)
+            }
+        }
+    }
+
+    function getErrorMessage(errorCode) {
+        switch (errorCode) {
+            case "WRONG_PASSWORD":
+                return "Incorrect password"
+            case "NETWORK_NOT_FOUND":
+                return "Network not found"
+            case "CONNECTION_TIMEOUT":
+                return "Connection timeout"
+            case "CONNECTION_FAILED":
+                return "Connection failed"
+            case "NO_WIFI_DEVICE":
+                return "No WiFi device found"
+            default:
+                return "Unknown error"
         }
     }
 
@@ -76,7 +191,6 @@ Item {
             Layout.fillHeight: true
             spacing: 50 * root.scale
 
-            // ================= WIFI CARD =================
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -116,7 +230,13 @@ Item {
 
                                 onToggledChanged: {
                                     root.wifiEnabled = toggled
-                                    WiFiScanner.enableWifi(toggled)
+
+                                    if (toggled && root.nmcliAvailable) {
+                                        scanWifi()
+                                    } else {
+                                        networkModel.clear()
+                                        availableNetworkModel.clear()
+                                    }
                                 }
                             }
                         }
@@ -131,105 +251,216 @@ Item {
                         border.width: 1
                         clip: true
 
-                        // ===== WIFI OFF =====
                         Column {
                             anchors.centerIn: parent
                             spacing: 10 * root.scale
                             visible: !root.wifiEnabled
 
                             Text {
-                                text: "WiFi is Turned Off"
+                                text: root.nmcliAvailable ? "WiFi is Turned Off" : "WiFi Management Not Available"
                                 font.pixelSize: 15 * root.scale
                                 font.bold: true
-                                color: "#AAAAAA"
+                                color: root.nmcliAvailable ? "#AAAAAA" : "#FF6B6B"
                             }
 
                             Text {
-                                text: "Enable toggle to scan for networks"
+                                text: root.nmcliAvailable
+                                      ? "Enable toggle to scan for networks"
+                                      : "NetworkManager (nmcli) is required for WiFi management"
                                 font.pixelSize: 12 * root.scale
-                                color: "#BBBBBB"
+                                color: root.nmcliAvailable ? "#BBBBBB" : "#FF9999"
                             }
                         }
 
-                        // ===== WIFI CONTENT =====
                         ColumnLayout {
                             anchors.fill: parent
                             anchors.margins: 16 * root.scale
-                            visible: root.wifiEnabled
+                            visible: root.wifiEnabled && root.nmcliAvailable
                             spacing: 14 * root.scale
 
-                            // ===== SCAN BUTTON =====
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 50 * root.scale
-                                radius: 8 * root.scale
-                                color: "#1A4DB5"
+                                Layout.preferredHeight: 70 * root.scale
+                                radius: 10 * root.scale
+                                visible: root.connectedSSID !== ""
 
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: "Scan Networks"
-                                    font.pixelSize: 16 * root.scale
-                                    font.bold: true
-                                    color: "#FFFFFF"
-                                }
+                                color: "#FFFFFF"
+                                border.color: "#1A4DB5"
+                                border.width: 2
 
-                                MouseArea {
+                                RowLayout {
                                     anchors.fill: parent
-                                    onClicked: scanWifi()
-                                }
-                            }
+                                    anchors.margins: 12 * root.scale
+                                    spacing: 12 * root.scale
 
-                            // ===== AVAILABLE NETWORKS LIST =====
-                            ListView {
-                                Layout.fillWidth: true
-                                Layout.fillHeight: true
-                                clip: true
+                                    Column {
+                                        Layout.fillWidth: true
+                                        spacing: 3 * root.scale
 
-                                model: WiFiScanner.networks
-                                spacing: 10 * root.scale
+                                        Row {
+                                            spacing: 6 * root.scale
 
-                                delegate: Rectangle {
-                                    width: ListView.view.width
-                                    height: 60 * root.scale
-                                    radius: 10 * root.scale
+                                            Text {
+                                                text: "●"
+                                                font.pixelSize: 12 * root.scale
+                                                color: "#4CAF50"
+                                            }
 
-                                    color: "#FFFFFF"
-                                    border.color: "#E5E7EB"
-                                    border.width: 1
+                                            Text {
+                                                text: "Connected"
+                                                font.pixelSize: 13 * root.scale
+                                                color: "#1F2937"
+                                                font.bold: true
+                                            }
+                                        }
 
-                                    Text {
-                                        anchors.left: parent.left
-                                        anchors.leftMargin: 12 * root.scale
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        text: modelData
-                                        font.pixelSize: 16 * root.scale
-                                        font.bold: true
-                                        color: "#1F2937"
-                                        elide: Text.ElideRight
-                                        width: parent.width - 100 * root.scale
+                                        Text {
+                                            text: root.connectedSSID
+                                            font.pixelSize: 15 * root.scale
+                                            font.bold: true
+                                            color: "#1A4DB5"
+                                            elide: Text.ElideRight
+                                        }
+                                    }
+
+                                    Row {
+                                        spacing: 2 * root.scale
+
+                                        Repeater {
+                                            model: 4
+                                            delegate: Rectangle {
+                                                property var thresholds: [20, 40, 60, 80]
+                                                width: 4 * root.scale
+                                                height: (5 + index * 3.5) * root.scale
+                                                radius: 1 * root.scale
+                                                anchors.bottom: parent.bottom
+                                                color: root.connectedSignal >= thresholds[index]
+                                                       ? "#1A4DB5" : "#D1D5DB"
+                                            }
+                                        }
                                     }
 
                                     Rectangle {
-                                        anchors.right: parent.right
-                                        anchors.rightMargin: 12 * root.scale
-                                        anchors.verticalCenter: parent.verticalCenter
-                                        width: 70 * root.scale
-                                        height: 32 * root.scale
+                                        Layout.preferredWidth: 70 * root.scale
+                                        Layout.preferredHeight: 32 * root.scale
                                         radius: 8 * root.scale
-                                        color: "#1A4DB5"
+                                        color: "#4CAF50"
 
                                         Text {
                                             anchors.centerIn: parent
-                                            text: "Connect"
+                                            text: "Connected"
                                             font.pixelSize: 13 * root.scale
                                             font.bold: true
                                             color: "#FFFFFF"
                                         }
+                                    }
+                                }
+                            }
 
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            enabled: !root.isConnecting
-                                            onClicked: connectWifi(modelData)
+                            Row {
+                                Layout.fillWidth: true
+                                spacing: 10 * root.scale
+
+                                Text {
+                                    text: "Available Networks"
+                                    font.pixelSize: 15 * root.scale
+                                    font.bold: true
+                                    color: "#1F2937"
+                                }
+
+                                Text {
+                                    text: "(" + availableNetworkModel.count + ")"
+                                    font.pixelSize: 13 * root.scale
+                                    color: "#9CA3AF"
+                                }
+                            }
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 1
+                                color: "#E5E7EB"
+                            }
+
+                            ListView {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                clip: true
+                                model: availableNetworkModel
+                                spacing: 10 * root.scale
+
+                                delegate: Rectangle {
+                                    width: ListView.view.width
+                                    height: 70 * root.scale
+                                    radius: 10 * root.scale
+                                    color: "#FFFFFF"
+                                    border.color: "#E5E7EB"
+                                    border.width: 1
+
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 12 * root.scale
+                                        spacing: 12 * root.scale
+
+                                        Text {
+                                            text: model.secured ? "🔒" : "📶"
+                                            font.pixelSize: 20 * root.scale
+                                        }
+
+                                        Column {
+                                            Layout.fillWidth: true
+                                            spacing: 3 * root.scale
+
+                                            Text {
+                                                text: model.name
+                                                font.pixelSize: 15 * root.scale
+                                                font.bold: true
+                                                color: "#1F2937"
+                                                elide: Text.ElideRight
+                                            }
+
+                                            Text {
+                                                text: model.secured ? "🔐 Secured" : "🌐 Open"
+                                                font.pixelSize: 11 * root.scale
+                                                color: model.secured ? "#6366F1" : "#F97316"
+                                            }
+                                        }
+
+                                        Row {
+                                            spacing: 2 * root.scale
+
+                                            Repeater {
+                                                model: 4
+                                                delegate: Rectangle {
+                                                    property var thresholds: [20, 40, 60, 80]
+                                                    width: 4 * root.scale
+                                                    height: (5 + index * 3.5) * root.scale
+                                                    radius: 1 * root.scale
+                                                    anchors.bottom: parent.bottom
+                                                    color: model.signal >= thresholds[index]
+                                                           ? "#1A4DB5" : "#D1D5DB"
+                                                }
+                                            }
+                                        }
+
+                                        Rectangle {
+                                            Layout.preferredWidth: 70 * root.scale
+                                            Layout.preferredHeight: 32 * root.scale
+                                            radius: 8 * root.scale
+                                            color: "#1A4DB5"
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "Connect"
+                                                font.pixelSize: 13 * root.scale
+                                                font.bold: true
+                                                color: "#FFFFFF"
+                                            }
+
+                                            MouseArea {
+                                                anchors.fill: parent
+                                                enabled: !root.isConnecting
+                                                onClicked: connectWifi(model.name, model.secured)
+                                            }
                                         }
                                     }
                                 }
@@ -239,7 +470,6 @@ Item {
                 }
             }
 
-            // ================= LAN CARD =================
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -273,7 +503,6 @@ Item {
                             anchors.margins: 20 * root.scale
                             spacing: 18 * root.scale
 
-                            // ===== INPUT FIELD COMPONENT =====
                             function inputField(idRef, placeholder) {
                                 return Qt.createQmlObject(`
                                                           import QtQuick
@@ -314,7 +543,6 @@ Item {
                                                           `, parent)
                             }
 
-                            // ===== FIELDS =====
                             Item {
                                 id: ipWrapper
                                 width: parent.width
@@ -449,7 +677,6 @@ Item {
                                 }
                             }
 
-                            // ===== BUTTON =====
                             Rectangle {
                                 width: parent.width
                                 height: 50 * root.scale
@@ -712,20 +939,7 @@ Item {
                             }
 
                             passwordPopup.isConnecting = true
-                            var success = WiFiScanner.connectTo(passwordPopup.ssid, passwordField.text)
-
-                            if (success) {
-                                passwordPopup.successMessage = "✓ Connected successfully!"
-                                passwordPopup.errorMessage = ""
-                                if (notify) notify("Connected to " + passwordPopup.ssid)
-                                closeTimer.start()
-                            } else {
-                                passwordPopup.errorMessage = "✗ Connection failed"
-                                passwordPopup.successMessage = ""
-                                if (notify) notify("Connection failed")
-                            }
-
-                            passwordPopup.isConnecting = false
+                            startWifiConnect(passwordPopup.ssid, passwordField.text)
                         }
                     }
                 }
