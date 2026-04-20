@@ -221,39 +221,54 @@ Item {
                         // ===== WIFI CONTENT =====
                         ColumnLayout {
                             anchors.fill: parent
-                            anchors.margins: 12 * root.scale
+                            anchors.margins: 16 * root.scale
                             visible: root.wifiEnabled
-                            spacing: 0
+                            spacing: 14 * root.scale
 
                             // ===== CONNECTED WIFI SECTION =====
                             Rectangle {
                                 Layout.fillWidth: true
-                                height: 80 * root.scale
+                                Layout.preferredHeight: 90 * root.scale
                                 radius: 12 * root.scale
-                                color: "#E8F5E8"
-                                border.color: "#4CAF50"
-                                border.width: 2
                                 visible: root.connectedSSID !== ""
+
+                                // Outer shadow effect
+                                Rectangle {
+                                    anchors.fill: parent
+                                    anchors.margins: -2
+                                    radius: parent.radius
+                                    color: "#E0E8FF"
+                                    z: -1
+                                }
+
+                                color: "#FFFFFF"
+                                border.color: "#1A4DB5"
+                                border.width: 2
 
                                 RowLayout {
                                     anchors.fill: parent
-                                    anchors.margins: 12 * root.scale
-                                    spacing: 12 * root.scale
-
-                                    Text {
-                                        text: "📶"
-                                        font.pixelSize: 24 * root.scale
-                                    }
+                                    anchors.margins: 14 * root.scale
+                                    spacing: 16 * root.scale
 
                                     Column {
                                         Layout.fillWidth: true
-                                        spacing: 4 * root.scale
+                                        spacing: 6 * root.scale
 
-                                        Text {
-                                            text: "Connected"
-                                            font.pixelSize: 14 * root.scale
-                                            color: "#4CAF50"
-                                            font.bold: true
+                                        Row {
+                                            spacing: 8 * root.scale
+
+                                            Text {
+                                                text: "●"
+                                                font.pixelSize: 14 * root.scale
+                                                color: "#4CAF50"
+                                            }
+
+                                            Text {
+                                                text: "Connected"
+                                                font.pixelSize: 14 * root.scale
+                                                color: "#1F2937"
+                                                font.bold: true
+                                            }
                                         }
 
                                         Text {
@@ -265,79 +280,50 @@ Item {
                                         }
                                     }
 
-                                    // Signal strength bars for connected network
                                     Row {
-                                        spacing: 3 * root.scale
+                                        spacing: 2 * root.scale
 
                                         Repeater {
                                             model: 4
                                             delegate: Rectangle {
                                                 property var thresholds: [20, 40, 60, 80]
 
-                                                width: 6 * root.scale
-                                                height: (7 + index * 5) * root.scale
-                                                radius: 2 * root.scale
+                                                width: 5 * root.scale
+                                                height: (6 + index * 4) * root.scale
+                                                radius: 1.5 * root.scale
                                                 anchors.bottom: parent.bottom
 
                                                 color: root.connectedSignal >= thresholds[index]
-                                                       ? "#4CAF50" : "#DDDDDD"
+                                                       ? "#1A4DB5" : "#D1D5DB"
                                             }
                                         }
                                     }
-
-                                    Rectangle {
-                                        width: 70 * root.scale
-                                        height: 24 * root.scale
-                                        radius: 12 * root.scale
-                                        color: "#4CAF50"
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: "Connected"
-                                            font.pixelSize: 12 * root.scale
-                                            font.bold: true
-                                            color: "#FFFFFF"
-                                        }
-                                    }
                                 }
                             }
 
-                            // Spacer between connected and available sections
-                            Item {
+                            // ===== AVAILABLE NETWORKS SECTION LABEL =====
+                            Row {
                                 Layout.fillWidth: true
-                                height: 16 * root.scale
-                                visible: root.connectedSSID !== ""
-                            }
-
-                            // ===== AVAILABLE NETWORKS HEADER =====
-                            Item {
-                                Layout.fillWidth: true
-                                height: 50 * root.scale
+                                spacing: 10 * root.scale
 
                                 Text {
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 20 * root.scale
-                                    anchors.verticalCenter: parent.verticalCenter
                                     text: "Available Networks"
-                                    font.pixelSize: 20 * root.scale
+                                    font.pixelSize: 16 * root.scale
                                     font.bold: true
-                                    color: "#1A4DB5"
+                                    color: "#1F2937"
                                 }
 
                                 Text {
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: 20 * root.scale
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: networkModel.count + " found"
-                                    font.pixelSize: 15 * root.scale
-                                    color: "#AAAAAA"
+                                    text: "(" + networkModel.count + ")"
+                                    font.pixelSize: 14 * root.scale
+                                    color: "#9CA3AF"
                                 }
                             }
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                height: 2
-                                color: "#E8E8E8"
+                                height: 1
+                                color: "#E5E7EB"
                             }
 
                             // ===== AVAILABLE NETWORKS LIST =====
@@ -347,112 +333,96 @@ Item {
                                 clip: true
 
                                 model: networkModel
-                                spacing: 0
+                                spacing: 10 * root.scale
 
-                                delegate: Column {
+                                delegate: Rectangle {
                                     width: ListView.view.width
+                                    height: 70 * root.scale
+                                    radius: 10 * root.scale
 
-                                    Rectangle {
-                                        width: parent.width
-                                        height: 50 * root.scale
+                                    color: model.connected ? "#FAFBFF" : "#FFFFFF"
+                                    border.color: model.connected ? "#1A4DB5" : "#E5E7EB"
+                                    border.width: model.connected ? 2 : 1
 
-                                        color: model.connected
-                                               ? "#DFF5E3"
-                                               : (mouseArea.containsMouse ? "#EEF3FF" : "transparent")
+                                    MouseArea {
+                                        id: netMouseArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                    }
 
-                                        MouseArea {
-                                            id: mouseArea
-                                            anchors.fill: parent
-                                            hoverEnabled: true
-                                        }
+                                    RowLayout {
+                                        anchors.fill: parent
+                                        anchors.margins: 12 * root.scale
+                                        spacing: 12 * root.scale
 
+                                        // Lock/Open Icon
                                         Text {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 14 * root.scale
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            text: model.secured ? "🔒" : "🌐"
-                                            font.pixelSize: 20 * root.scale
+                                            text: model.secured ? "🔒" : "📶"
+                                            font.pixelSize: 22 * root.scale
                                         }
 
+                                        // Network Name and Security
                                         Column {
-                                            anchors.left: parent.left
-                                            anchors.leftMargin: 40 * root.scale
-                                            anchors.right: signalRow.left
-                                            anchors.rightMargin: 10 * root.scale
-                                            anchors.verticalCenter: parent.verticalCenter
+                                            Layout.fillWidth: true
+                                            spacing: 3 * root.scale
 
                                             Text {
                                                 text: model.name
-                                                font.pixelSize: 19 * root.scale
+                                                font.pixelSize: 16 * root.scale
                                                 font.bold: true
+                                                color: "#1F2937"
                                                 elide: Text.ElideRight
                                             }
 
                                             Text {
-                                                text: model.secured ? "Secured" : "Open Network"
-                                                font.pixelSize: 16 * root.scale
-                                                color: model.secured ? "#4CAF50" : "#FF9800"
+                                                text: model.secured ? "🔐 Secured Network" : "🌐 Open Network"
+                                                font.pixelSize: 12 * root.scale
+                                                color: model.secured ? "#6366F1" : "#F97316"
                                             }
                                         }
 
+                                        // Signal Bars
                                         Row {
-                                            id: signalRow
-                                            anchors.right: connectBtn.left
-                                            anchors.rightMargin: 12 * root.scale
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            spacing: 3 * root.scale
+                                            spacing: 2 * root.scale
 
                                             Repeater {
                                                 model: 4
                                                 delegate: Rectangle {
                                                     property var thresholds: [20, 40, 60, 80]
 
-                                                    width: 6 * root.scale
-                                                    height: (7 + index * 5) * root.scale
-                                                    radius: 2 * root.scale
+                                                    width: 4 * root.scale
+                                                    height: (5 + index * 3.5) * root.scale
+                                                    radius: 1 * root.scale
                                                     anchors.bottom: parent.bottom
 
                                                     color: model.signal >= thresholds[index]
-                                                           ? "#1A4DB5" : "#DDDDDD"
+                                                           ? "#1A4DB5" : "#D1D5DB"
                                                 }
                                             }
                                         }
 
+                                        // Connect Button
                                         Rectangle {
-                                            id: connectBtn
-                                            anchors.right: parent.right
-                                            anchors.rightMargin: 14 * root.scale
-                                            anchors.verticalCenter: parent.verticalCenter
-                                            width: 78 * root.scale
-                                            height: 28 * root.scale
-                                            radius: 14 * root.scale
+                                            Layout.preferredWidth: 70 * root.scale
+                                            Layout.preferredHeight: 32 * root.scale
+                                            radius: 8 * root.scale
 
-                                            color: model.connected || root.isConnecting ? "#AAAAAA" : "#1A4DB5"
+                                            color: model.connected ? "#F3F4F6" : "#1A4DB5"
 
                                             Text {
                                                 anchors.centerIn: parent
-                                                text: model.connected ? "Connected" : (root.isConnecting ? "Connecting..." : "Connect")
-                                                font.pixelSize: 16 * root.scale
+                                                text: model.connected ? "Connected" : (root.isConnecting && false ? "..." : "Connect")
+                                                font.pixelSize: 13 * root.scale
                                                 font.bold: true
-                                                color: "#FFFFFF"
+                                                color: model.connected ? "#9CA3AF" : "#FFFFFF"
                                             }
 
                                             MouseArea {
                                                 anchors.fill: parent
                                                 enabled: !model.connected && !root.isConnecting
-                                                onClicked: {
-                                                    connectWifi(model.name, model.secured)
-                                                }
+                                                onClicked: connectWifi(model.name, model.secured)
                                             }
                                         }
-                                    }
-
-                                    Rectangle {
-                                        visible: index < networkModel.count - 1
-                                        width: parent.width - 28 * root.scale
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                        height: 2
-                                        color: "#EFEFEF"
                                     }
                                 }
                             }
@@ -724,8 +694,8 @@ Item {
         id: passwordPopup
         modal: true
         focus: true
-        width: 380 * root.scale
-        height: 280 * root.scale
+        width: 400 * root.scale
+        height: 320 * root.scale
         closePolicy: Popup.NoAutoClose
 
         property string ssid: ""
@@ -736,40 +706,62 @@ Item {
         background: Rectangle {
             radius: 16 * root.scale
             color: "#FFFFFF"
-            border.color: "#DADADA"
+            border.color: "#E5E7EB"
             border.width: 1
+
+            Rectangle {
+                anchors.fill: parent
+                anchors.margins: -3
+                radius: parent.radius
+                color: "#F8F9FE"
+                z: -1
+            }
         }
 
         Column {
             anchors.fill: parent
-            anchors.margins: 24 * root.scale
-            spacing: 16 * root.scale
+            anchors.margins: 28 * root.scale
+            spacing: 18 * root.scale
 
-            Text {
-                text: "Connect to WiFi Network"
-                font.pixelSize: 20 * root.scale
-                font.bold: true
-                color: "#1A4DB5"
-                anchors.horizontalCenter: parent.horizontalCenter
+            // ===== TITLE =====
+            Column {
+                spacing: 8 * root.scale
+
+                Text {
+                    text: "Connect to WiFi"
+                    font.pixelSize: 22 * root.scale
+                    font.bold: true
+                    color: "#1A4DB5"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
+
+                Text {
+                    text: "\"" + ssid + "\""
+                    font.pixelSize: 16 * root.scale
+                    color: "#1F2937"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                }
             }
 
-            Text {
-                text: "Enter password for \"" + ssid + "\""
-                font.pixelSize: 16 * root.scale
-                color: "#666666"
-                anchors.horizontalCenter: parent.horizontalCenter
-            }
-
-            // Password input field
+            // ===== PASSWORD INPUT =====
             Item {
                 width: parent.width
                 height: 50 * root.scale
 
+                Rectangle {
+                    anchors.fill: parent
+                    radius: 8 * root.scale
+                    color: "#F3F4F6"
+                    border.color: passwordField.activeFocus ? "#1A4DB5" : "#D1D5DB"
+                    border.width: passwordField.activeFocus ? 2 : 1
+                }
+
                 TextField {
                     id: passwordField
                     anchors.fill: parent
-                    font.pixelSize: 18 * root.scale
-                    color: "#1A4DB5"
+                    anchors.margins: 12 * root.scale
+                    font.pixelSize: 16 * root.scale
+                    color: "#1F2937"
                     echoMode: TextInput.Password
                     background: null
                     padding: 0
@@ -779,32 +771,26 @@ Item {
                     Text {
                         anchors.fill: parent
                         verticalAlignment: Text.AlignVCenter
-                        text: "Enter password"
-                        color: "#A0AABF"
+                        text: "Enter WiFi password"
+                        color: "#9CA3AF"
                         visible: passwordField.showPlaceholder
-                        font.pixelSize: 18 * root.scale
+                        font.pixelSize: 16 * root.scale
                     }
                 }
 
-                Rectangle {
-                    anchors.bottom: parent.bottom
-                    width: parent.width
-                    height: 2 * root.scale
-                    color: passwordField.activeFocus ? "#1A4DB5" : "#E3E7F0"
-                }
-
-                // Show/Hide password button
+                // Show/Hide toggle
                 Rectangle {
                     anchors.right: parent.right
+                    anchors.rightMargin: 12 * root.scale
                     anchors.verticalCenter: parent.verticalCenter
-                    width: 40 * root.scale
-                    height: 40 * root.scale
+                    width: 32 * root.scale
+                    height: 32 * root.scale
                     color: "transparent"
 
                     Text {
                         anchors.centerIn: parent
-                        text: passwordField.echoMode === TextInput.Password ? "👁️" : "🙈"
-                        font.pixelSize: 18 * root.scale
+                        text: passwordField.echoMode === TextInput.Password ? "👁" : "✓"
+                        font.pixelSize: 16 * root.scale
                     }
 
                     MouseArea {
@@ -817,66 +803,93 @@ Item {
                 }
             }
 
-            // Error message
-            Text {
-                id: errorText
-                text: passwordPopup.errorMessage
-                color: "#F44336"
-                font.pixelSize: 14 * root.scale
-                visible: text !== ""
-                wrapMode: Text.Wrap
+            // ===== ERROR MESSAGE =====
+            Rectangle {
                 width: parent.width
+                height: successText.visible ? 0 : (errorText.visible ? 38 * root.scale : 0)
+                radius: 6 * root.scale
+                color: "#FEE2E2"
+                border.color: "#FECACA"
+                border.width: 1
+                visible: errorText.visible
+                clip: true
+
+                Text {
+                    id: errorText
+                    anchors.fill: parent
+                    anchors.margins: 10 * root.scale
+                    text: passwordPopup.errorMessage
+                    color: "#DC2626"
+                    font.pixelSize: 13 * root.scale
+                    wrapMode: Text.Wrap
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
 
-            // Success message
-            Text {
-                id: successText
-                text: passwordPopup.successMessage
-                color: "#4CAF50"
-                font.pixelSize: 14 * root.scale
-                visible: text !== ""
-                wrapMode: Text.Wrap
+            // ===== SUCCESS MESSAGE =====
+            Rectangle {
                 width: parent.width
+                height: successText.visible ? 38 * root.scale : 0
+                radius: 6 * root.scale
+                color: "#DCFCE7"
+                border.color: "#86EFAC"
+                border.width: 1
+                visible: successText.visible
+                clip: true
+
+                Text {
+                    id: successText
+                    anchors.fill: parent
+                    anchors.margins: 10 * root.scale
+                    text: passwordPopup.successMessage
+                    color: "#16A34A"
+                    font.pixelSize: 13 * root.scale
+                    wrapMode: Text.Wrap
+                    verticalAlignment: Text.AlignVCenter
+                }
             }
 
-            // Buttons row
+            Item { Layout.fillHeight: true }
+
+            // ===== BUTTON ROW =====
             Row {
                 spacing: 12 * root.scale
                 anchors.horizontalCenter: parent.horizontalCenter
 
                 Rectangle {
-                    width: 100 * root.scale
+                    width: 110 * root.scale
                     height: 40 * root.scale
                     radius: 8 * root.scale
-                    color: "#EEEEEE"
+                    color: "#F3F4F6"
+                    border.color: "#D1D5DB"
+                    border.width: 1
 
                     Text {
                         anchors.centerIn: parent
                         text: "Cancel"
-                        color: "#666666"
-                        font.pixelSize: 16 * root.scale
+                        color: "#374151"
+                        font.pixelSize: 15 * root.scale
                         font.bold: true
                     }
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: {
-                            passwordPopup.close()
-                        }
+                        enabled: !passwordPopup.isConnecting
+                        onClicked: passwordPopup.close()
                     }
                 }
 
                 Rectangle {
-                    width: 100 * root.scale
+                    width: 110 * root.scale
                     height: 40 * root.scale
                     radius: 8 * root.scale
-                    color: passwordPopup.isConnecting ? "#AAAAAA" : "#1A4DB5"
+                    color: passwordPopup.isConnecting ? "#9CA3AF" : "#1A4DB5"
 
                     Text {
                         anchors.centerIn: parent
                         text: passwordPopup.isConnecting ? "Connecting..." : "Connect"
                         color: "#FFFFFF"
-                        font.pixelSize: 16 * root.scale
+                        font.pixelSize: 15 * root.scale
                         font.bold: true
                     }
 
@@ -899,19 +912,18 @@ Item {
                             passwordPopup.isConnecting = false
 
                             if (res.startsWith("Connected to")) {
-                                passwordPopup.successMessage = "Connected to " + ssid
+                                passwordPopup.successMessage = "✓ Connected successfully!"
                                 passwordPopup.errorMessage = ""
                                 root.connectedSSID = ssid
                                 updateConnectedSignal()
                                 scanWifi()
 
-                                // Auto-close after success
                                 closeTimer.start()
                             } else {
                                 var errorMsg = getErrorMessage(res)
                                 passwordPopup.errorMessage = res === "WRONG_PASSWORD"
-                                                       ? "Incorrect password, please try again"
-                                                       : "Connection failed: " + errorMsg
+                                                       ? "✗ Incorrect password. Please try again."
+                                                       : "✗ Connection failed: " + errorMsg
                                 passwordPopup.successMessage = ""
                             }
                         }
