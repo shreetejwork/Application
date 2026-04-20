@@ -22,10 +22,15 @@ Item {
         id: networkModel
     }
 
+    ListModel {
+        id: availableNetworkModel
+    }
+
     // ✅ Load current WiFi on start
     Component.onCompleted: {
         connectedSSID = WiFiScanner.currentConnection()
         updateConnectedSignal()
+        scanWifi()
     }
 
     // ===== UPDATE CONNECTED SIGNAL =====
@@ -44,15 +49,29 @@ Item {
     }
     function scanWifi() {
         networkModel.clear()
+        availableNetworkModel.clear()
 
         var result = WiFiScanner.scanNetworks()
 
         for (var i = 0; i < result.length; i++) {
-            if (result[i].name !== "")
-                networkModel.append(result[i])
+            if (result[i].name === "")
+                continue
+
+            networkModel.append(result[i])
+            if (!result[i].connected)
+                availableNetworkModel.append(result[i])
         }
 
         updateConnectedSignal()
+    }
+
+    function startWifiConnect(ssid, password) {
+        isConnecting = true
+        passwordPopup.isConnecting = true
+        passwordPopup.errorMessage = ""
+        passwordPopup.successMessage = ""
+
+        WiFiScanner.connectToWifiAsync(ssid, password)
     }
 
     // ===== AUTO REFRESH =====
@@ -73,21 +92,39 @@ Item {
             passwordPopup.isConnecting = false
             passwordPopup.open()
         } else {
-            isConnecting = true
-            var res = WiFiScanner.connectToWifi(ssid, "")
+            startWifiConnect(ssid, "")
+        }
+    }
 
+    Connections {
+        target: WiFiScanner
+        onConnectionResult: function(resultSsid, result) {
             isConnecting = false
-
-            if (res.startsWith("Connected to")) {
-                connectedSSID = ssid
-                updateConnectedSignal()
-                if (notify) notify("Connected to " + ssid)
-            } else {
-                var errorMsg = getErrorMessage(res)
-                if (notify) notify("Connection failed: " + errorMsg)
-            }
+            passwordPopup.isConnecting = false
 
             scanWifi()
+
+            if (result.startsWith("Connected to")) {
+                connectedSSID = resultSsid
+                updateConnectedSignal()
+                passwordPopup.successMessage = "✓ Connected successfully!"
+                passwordPopup.errorMessage = ""
+                if (notify) notify("Connected to " + resultSsid)
+
+                if (passwordPopup.visible && passwordPopup.ssid === resultSsid) {
+                    closeTimer.start()
+                }
+            } else {
+                var errorMsg = getErrorMessage(result)
+                if (passwordPopup.visible && passwordPopup.ssid === resultSsid) {
+                    passwordPopup.errorMessage = result === "WRONG_PASSWORD"
+                                               ? "✗ Incorrect password. Please try again."
+                                               : "✗ Connection failed: " + errorMsg
+                    passwordPopup.successMessage = ""
+                }
+
+                if (notify) notify("Connection failed: " + errorMsg)
+            }
         }
     }
 
@@ -320,7 +357,7 @@ Item {
                                 }
 
                                 Text {
-                                    text: "(" + (networkModel.count - (root.connectedSSID !== "" ? 1 : 0)) + ")"
+                                    text: "(" + availableNetworkModel.count + ")"
                                     font.pixelSize: 13 * root.scale
                                     color: "#9CA3AF"
                                 }
@@ -338,14 +375,13 @@ Item {
                                 Layout.fillHeight: true
                                 clip: true
 
-                                model: networkModel
+                                model: availableNetworkModel
                                 spacing: 10 * root.scale
 
                                 delegate: Rectangle {
                                     width: ListView.view.width
                                     height: 70 * root.scale
                                     radius: 10 * root.scale
-                                    visible: !model.connected
 
                                     color: "#FFFFFF"
                                     border.color: "#E5E7EB"
@@ -909,30 +945,8 @@ Item {
                                 return
                             }
 
-                            passwordPopup.isConnecting = true
-                            passwordPopup.errorMessage = ""
-                            passwordPopup.successMessage = ""
-
                             var selectedSSID = passwordPopup.ssid
-                            var res = WiFiScanner.connectToWifi(selectedSSID, passwordField.text)
-
-                            passwordPopup.isConnecting = false
-
-                            if (res.startsWith("Connected to")) {
-                                passwordPopup.successMessage = "✓ Connected successfully!"
-                                passwordPopup.errorMessage = ""
-                                root.connectedSSID = selectedSSID
-                                updateConnectedSignal()
-                                scanWifi()
-
-                                closeTimer.start()
-                            } else {
-                                var errorMsg = getErrorMessage(res)
-                                passwordPopup.errorMessage = res === "WRONG_PASSWORD"
-                                                       ? "✗ Incorrect password. Please try again."
-                                                       : "✗ Connection failed: " + errorMsg
-                                passwordPopup.successMessage = ""
-                            }
+                            startWifiConnect(selectedSSID, passwordField.text)
                         }
                     }
                 }

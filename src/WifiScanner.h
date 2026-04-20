@@ -12,7 +12,11 @@ public:
 
     Q_INVOKABLE QVariantList scanNetworks();
     Q_INVOKABLE QString connectToWifi(QString ssid, QString password);
+    Q_INVOKABLE void connectToWifiAsync(QString ssid, QString password);
     Q_INVOKABLE QString currentConnection();
+
+signals:
+    void connectionResult(QString ssid, QString result);
 };
 
 #endif // WIFISCANNER_H

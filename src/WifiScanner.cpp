@@ -93,6 +93,49 @@ QString WiFiScanner::connectToWifi(QString ssid, QString password)
     }
 }
 
+void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
+{
+    QProcess *process = new QProcess(this);
+    QStringList args;
+
+    if (password.isEmpty()) {
+        args << "dev" << "wifi" << "connect" << ssid;
+    } else {
+        args << "dev" << "wifi" << "connect" << ssid << "password" << password;
+    }
+
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
+            [this, process, ssid](int exitCode, QProcess::ExitStatus) {
+                QString error = process->readAllStandardError();
+                process->deleteLater();
+
+                QString result;
+                if (exitCode == 0) {
+                    result = "Connected to " + ssid;
+                } else {
+                    if (error.contains("Secrets were required, but not provided") ||
+                        error.contains("802-11-wireless-security.psk") ||
+                        error.contains("wpa_supplicant") ||
+                        error.contains("wrong key") ||
+                        error.contains("invalid key") ||
+                        error.contains("authentication failed")) {
+                        result = "WRONG_PASSWORD";
+                    } else if (error.contains("No such file or directory") ||
+                               error.contains("not found")) {
+                        result = "NETWORK_NOT_FOUND";
+                    } else if (error.contains("timeout") ||
+                               error.contains("Timeout")) {
+                        result = "CONNECTION_TIMEOUT";
+                    } else {
+                        result = "CONNECTION_FAILED";
+                    }
+                }
+
+                emit connectionResult(ssid, result);
+            });
+
+    process->start("nmcli", args);
+}
 
 // ===== CURRENT CONNECTED WIFI =====
 QString WiFiScanner::currentConnection()
