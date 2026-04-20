@@ -913,14 +913,15 @@ Item {
                             passwordPopup.errorMessage = ""
                             passwordPopup.successMessage = ""
 
-                            var res = WiFiScanner.connectToWifi(ssid, passwordField.text)
+                            var selectedSSID = passwordPopup.ssid
+                            var res = WiFiScanner.connectToWifi(selectedSSID, passwordField.text)
 
                             passwordPopup.isConnecting = false
 
                             if (res.startsWith("Connected to")) {
                                 passwordPopup.successMessage = "✓ Connected successfully!"
                                 passwordPopup.errorMessage = ""
-                                root.connectedSSID = ssid
+                                root.connectedSSID = selectedSSID
                                 updateConnectedSignal()
                                 scanWifi()
 
