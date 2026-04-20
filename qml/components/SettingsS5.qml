@@ -14,6 +14,7 @@ Item {
     property string connectedSSID: ""
     property int connectedSignal: 0
     property bool isConnecting: false
+    property bool nmcliAvailable: false
 
     property var globalTopBar
     property var notify
@@ -28,9 +29,12 @@ Item {
 
     // ✅ Load current WiFi on start
     Component.onCompleted: {
-        connectedSSID = WiFiScanner.currentConnection()
-        updateConnectedSignal()
-        scanWifi()
+        nmcliAvailable = WiFiScanner.isNmcliAvailable()
+        if (nmcliAvailable) {
+            connectedSSID = WiFiScanner.currentConnection()
+            updateConnectedSignal()
+            scanWifi()
+        }
     }
 
     // ===== UPDATE CONNECTED SIGNAL =====
@@ -48,6 +52,12 @@ Item {
         }
     }
     function scanWifi() {
+        if (!nmcliAvailable) {
+            networkModel.clear()
+            availableNetworkModel.clear()
+            return
+        }
+
         networkModel.clear()
         availableNetworkModel.clear()
 
@@ -84,6 +94,11 @@ Item {
 
     // ===== CONNECT =====
     function connectWifi(ssid, secured) {
+        if (!nmcliAvailable) {
+            if (notify) notify("WiFi management not available on this system")
+            return
+        }
+
         if (secured) {
             passwordField.text = ""
             passwordPopup.ssid = ssid
@@ -139,6 +154,8 @@ Item {
                 return "Connection timeout"
             case "CONNECTION_FAILED":
                 return "Connection failed"
+            case "NO_WIFI_DEVICE":
+                return "No WiFi device found"
             default:
                 return "Unknown error"
         }
@@ -219,8 +236,12 @@ Item {
                                 onToggledChanged: {
                                     root.wifiEnabled = toggled
 
-                                    if (toggled) scanWifi()
-                                    else networkModel.clear()
+                                    if (toggled && root.nmcliAvailable) {
+                                        scanWifi()
+                                    } else {
+                                        networkModel.clear()
+                                        availableNetworkModel.clear()
+                                    }
                                 }
                             }
                         }
@@ -242,16 +263,18 @@ Item {
                             visible: !root.wifiEnabled
 
                             Text {
-                                text: "WiFi is Turned Off"
+                                text: root.nmcliAvailable ? "WiFi is Turned Off" : "WiFi Management Not Available"
                                 font.pixelSize: 15 * root.scale
                                 font.bold: true
-                                color: "#AAAAAA"
+                                color: root.nmcliAvailable ? "#AAAAAA" : "#FF6B6B"
                             }
 
                             Text {
-                                text: "Enable toggle to scan for networks"
+                                text: root.nmcliAvailable
+                                      ? "Enable toggle to scan for networks"
+                                      : "WiFi management tools not found on this system"
                                 font.pixelSize: 12 * root.scale
-                                color: "#BBBBBB"
+                                color: root.nmcliAvailable ? "#BBBBBB" : "#FF9999"
                             }
                         }
 
@@ -262,12 +285,46 @@ Item {
                             visible: root.wifiEnabled
                             spacing: 14 * root.scale
 
+                            // ===== NO NMCLI MESSAGE =====
+                            Rectangle {
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+                                radius: 10 * root.scale
+                                visible: !root.nmcliAvailable
+                                color: "#FFF3CD"
+                                border.color: "#FFECB5"
+                                border.width: 1
+
+                                Column {
+                                    anchors.centerIn: parent
+                                    spacing: 8 * root.scale
+                                    width: parent.width * 0.8
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: "⚠️ WiFi Management Unavailable"
+                                        font.pixelSize: 16 * root.scale
+                                        font.bold: true
+                                        color: "#856404"
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text: "NetworkManager (nmcli) is not available on this system.\nThis feature requires Linux with NetworkManager."
+                                        font.pixelSize: 12 * root.scale
+                                        color: "#856404"
+                                        horizontalAlignment: Text.AlignHCenter
+                                        wrapMode: Text.Wrap
+                                    }
+                                }
+                            }
+
                             // ===== CONNECTED WIFI SECTION =====
                             Rectangle {
                                 Layout.fillWidth: true
                                 Layout.preferredHeight: 70 * root.scale
                                 radius: 10 * root.scale
-                                visible: root.connectedSSID !== ""
+                                visible: root.connectedSSID !== "" && root.nmcliAvailable
 
                                 color: "#FFFFFF"
                                 border.color: "#1A4DB5"
@@ -348,6 +405,7 @@ Item {
                             Row {
                                 Layout.fillWidth: true
                                 spacing: 10 * root.scale
+                                visible: root.nmcliAvailable
 
                                 Text {
                                     text: "Available Networks"
@@ -367,6 +425,7 @@ Item {
                                 Layout.fillWidth: true
                                 height: 1
                                 color: "#E5E7EB"
+                                visible: root.nmcliAvailable
                             }
 
                             // ===== AVAILABLE NETWORKS LIST =====
@@ -374,6 +433,7 @@ Item {
                                 Layout.fillWidth: true
                                 Layout.fillHeight: true
                                 clip: true
+                                visible: root.nmcliAvailable
 
                                 model: availableNetworkModel
                                 spacing: 10 * root.scale

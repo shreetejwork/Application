@@ -14,6 +14,7 @@ public:
     Q_INVOKABLE QString connectToWifi(QString ssid, QString password);
     Q_INVOKABLE void connectToWifiAsync(QString ssid, QString password);
     Q_INVOKABLE QString currentConnection();
+    Q_INVOKABLE bool isNmcliAvailable();
 
 signals:
     void connectionResult(QString ssid, QString result);
