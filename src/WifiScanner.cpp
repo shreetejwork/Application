@@ -73,7 +73,23 @@ QString WiFiScanner::connectToWifi(QString ssid, QString password)
     if (process.exitCode() == 0) {
         return "Connected to " + ssid;
     } else {
-        return error.isEmpty() ? "Connection failed" : error;
+        // Parse common nmcli error messages
+        if (error.contains("Secrets were required, but not provided") ||
+            error.contains("802-11-wireless-security.psk") ||
+            error.contains("wpa_supplicant") ||
+            error.contains("wrong key") ||
+            error.contains("invalid key") ||
+            error.contains("authentication failed")) {
+            return "WRONG_PASSWORD";
+        } else if (error.contains("No such file or directory") ||
+                   error.contains("not found")) {
+            return "NETWORK_NOT_FOUND";
+        } else if (error.contains("timeout") ||
+                   error.contains("Timeout")) {
+            return "CONNECTION_TIMEOUT";
+        } else {
+            return "CONNECTION_FAILED";
+        }
     }
 }
 
