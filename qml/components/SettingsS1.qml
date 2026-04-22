@@ -81,7 +81,6 @@ Item {
         if (!item) return
 
         GlobalState.loginKeyboardRequest = false
-        Qt.inputMethod.hide()
 
         numberPopup.open(
             item.title,

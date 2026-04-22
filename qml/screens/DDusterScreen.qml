@@ -1,7 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
-import QtQuick.VirtualKeyboard
+import AppState 1.0
 import "../components"
 
 Item {
@@ -103,11 +103,11 @@ Item {
                                     color: "#1A4DB5"
 
                                     focus: false
-                                    activeFocusOnPress: false
+                                    activeFocusOnPress: true
 
                                     readOnly: root.batchRunning   // DISABLE WHILE RUNNING
 
-                                    inputMethodHints: Qt.ImhNone// important for Pi
+                                    inputMethodHints: Qt.ImhNone  // important for Pi
 
                                     background: null
                                     padding: 0
@@ -118,8 +118,23 @@ Item {
 
                                     cursorVisible: activeFocus
 
+
+                                    onActiveFocusChanged: {
+                                        if (activeFocus) {
+                                            GlobalState.activeInputField = inputField
+                                            GlobalState.loginKeyboardRequest = true   // show keyboard
+                                        }
+                                    }
+
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onPressed: {
+                                            inputField.forceActiveFocus()
+                                        }
+                                    }
+
                                     onAccepted: {
-                                        Qt.inputMethod.hide()
                                         GlobalState.loginKeyboardRequest = false
 
                                         if (text.trim() === "") {
@@ -156,11 +171,9 @@ Item {
                                         inputField.selectAll()
 
                                         GlobalState.loginKeyboardRequest = true
-                                        Qt.inputMethod.show()
                                     }
                                     Keys.onReturnPressed: {
                                         card.confirmed(text.trim())
-                                        Qt.inputMethod.hide()
                                         focus = false
                                     }
 

@@ -10,6 +10,8 @@ QtObject {
 
     property bool loginKeyboardRequest: false
 
+    property var activeInputField: null
+
    property date globalDateTime: new Date()
 
 }

@@ -9,9 +9,7 @@ Popup {
     property real baseWidth: 1024
     property real baseHeight: 600
 
-    property real keyboardHeight: Qt.inputMethod.visible
-                                  ? Qt.inputMethod.keyboardRectangle.height
-                                  : 0
+
 
     signal updatePasswordRequested(string userType, string username, string newPassword)
     signal clearRequested()
@@ -27,7 +25,6 @@ Popup {
 
     property real baseY: (Overlay.overlay.height - height) / 2 - (40 * scale)
 
-    property real keyboardOffset: Qt.inputMethod.visible
                                   ? (keyboardHeight / 2 + 40 * scale)
                                   : 0
 
@@ -39,14 +36,12 @@ Popup {
         newPasswordInput.text = ""
         confirmPasswordInput.text = ""
 
-        Qt.inputMethod.hide()
 
         if (selectionPopup.visible)
             selectionPopup.close()
     }
 
     onClosed: {
-        Qt.inputMethod.hide()
         newPasswordInput.focus = false
         confirmPasswordInput.focus = false
     }
@@ -300,20 +295,29 @@ Popup {
                     topPadding: 0
                     bottomPadding: 0
 
+
+                    activeFocusOnPress: true
+
+
                     onActiveFocusChanged: {
                         if (activeFocus) {
-                            Qt.inputMethod.show()
-                            flick.adjustView(newPasswordInput)
+                            GlobalState.activeInputField = newPasswordInput
                             GlobalState.loginKeyboardRequest = true
+
+                            if (flick)
+                                flick.adjustView(newPasswordInput)
                         } else {
                             GlobalState.loginKeyboardRequest = false
-                            Qt.inputMethod.hide()
                         }
                     }
 
 
+                    MouseArea {
+                        anchors.fill: parent
+                        onPressed: newPasswordInput.forceActiveFocus()
+                    }
+
                     onAccepted: {
-                        Qt.inputMethod.hide()
                         GlobalState.loginKeyboardRequest = false
                         focus = false
                     }
@@ -365,19 +369,29 @@ Popup {
                     topPadding: 0
                     bottomPadding: 0
 
+
+                    activeFocusOnPress: true
+
+
                     onActiveFocusChanged: {
                         if (activeFocus) {
-                            Qt.inputMethod.show()
-                            flick.adjustView(confirmPasswordInput)
+                            GlobalState.activeInputField = confirmPasswordInput
                             GlobalState.loginKeyboardRequest = true
+
+                            if (flick)
+                                flick.adjustView(confirmPasswordInput)
                         } else {
                             GlobalState.loginKeyboardRequest = false
-                            Qt.inputMethod.hide()
                         }
                     }
 
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onPressed: confirmPasswordInput.forceActiveFocus()
+                    }
+
                     onAccepted: {
-                        Qt.inputMethod.hide()
                         GlobalState.loginKeyboardRequest = false
                         focus = false
                     }
@@ -430,7 +444,6 @@ Popup {
                             if (newPasswordInput.text !== confirmPasswordInput.text)
                                 return
 
-                            Qt.inputMethod.hide()
 
                             editPasswordPopup.updatePasswordRequested(
                                 userTypeValue.text,
@@ -466,7 +479,6 @@ Popup {
                             newPasswordInput.text = ""
                             confirmPasswordInput.text = ""
 
-                            Qt.inputMethod.hide()
                             editPasswordPopup.clearRequested()
                         }
                     }

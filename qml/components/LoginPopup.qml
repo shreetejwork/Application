@@ -56,12 +56,9 @@ Popup {
 
         if (selectionPopup.visible)
             selectionPopup.close()
-
-        Qt.inputMethod.hide()
     }
 
     onClosed: {
-        Qt.inputMethod.hide()
         passwordInput.focus = false
 
         loginPopup.devModeActive = false
@@ -323,27 +320,37 @@ Popup {
                     inputMethodHints: Qt.ImhPreferLatin
                                       | Qt.ImhNoPredictiveText
                                       | Qt.ImhSensitiveData
-                                      | Qt.ImhNone   //  for Pi stability
+                                      | Qt.ImhNone   // for Pi stability
+
+
+                    activeFocusOnPress: true
+
 
                     onActiveFocusChanged: {
                         if (activeFocus) {
+                            GlobalState.activeInputField = passwordInput
                             GlobalState.loginKeyboardRequest = true
-                            Qt.inputMethod.show()
-                            flick.adjustView()
+
+                            if (flick)
+                                flick.adjustView(passwordInput)
                         } else {
                             GlobalState.loginKeyboardRequest = false
-                            Qt.inputMethod.hide()
                         }
                     }
 
-                    //  TextField uses onAccepted
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onPressed: passwordInput.forceActiveFocus()
+                    }
+
+                    // TextField uses onAccepted
                     onAccepted: {
-                        Qt.inputMethod.hide()
                         GlobalState.loginKeyboardRequest = false
                         focus = false
                     }
 
-                    // PASSWORD CHECK
+                    // PASSWORD CHECK (unchanged)
                     onTextChanged: {
                         if (!loginPopup.devModeActive)
                             return
@@ -409,7 +416,6 @@ Popup {
 
                                     passwordInput.forceActiveFocus()
                                     GlobalState.loginKeyboardRequest = true
-                                    Qt.inputMethod.show()
 
                                     loginPopup.longPressCount = 0
                                 }
@@ -426,8 +432,6 @@ Popup {
 
                             if (loginPopup.devModeActive)
                                 return
-
-                            Qt.inputMethod.hide()
 
                             loginPopup.loginRequested(
                                 userTypeValue.text,
@@ -465,7 +469,6 @@ Popup {
                             loginPopup.devModeActive = false
                             loginPopup.fieldsLocked = false
 
-                            Qt.inputMethod.hide()
                             loginPopup.clearRequested()
                         }
                     }

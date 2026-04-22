@@ -152,18 +152,29 @@ Item {
                         topPadding: 0
                         bottomPadding: 0
 
-                        // AUTO OPEN KEYBOARD
+
+                        activeFocusOnPress: true
+
+
                         onActiveFocusChanged: {
                             if (activeFocus) {
+                                GlobalState.activeInputField = cardInput
                                 GlobalState.loginKeyboardRequest = true
-                                Qt.inputMethod.show()
+                            } else {
+                                GlobalState.loginKeyboardRequest = false
                             }
+                        }
+
+
+                        MouseArea {
+                            anchors.fill: parent
+                            onPressed: cardInput.forceActiveFocus()
                         }
 
                         onAccepted: {
                             card.confirmed(text.trim())
-                            Qt.inputMethod.hide()
                             focus = false
+                            GlobalState.loginKeyboardRequest = false
                         }
 
                         property bool showPlaceholder: text.length === 0 && !activeFocus
@@ -183,7 +194,6 @@ Item {
                         onClicked: {
                             cardInput.forceActiveFocus()
                             GlobalState.loginKeyboardRequest = true
-                            Qt.inputMethod.show()
                         }
                     }
                 }
@@ -207,7 +217,6 @@ Item {
                         anchors.fill: parent
                         onClicked: {
                             card.confirmed(cardInput.text.trim())
-                            Qt.inputMethod.hide()
                             cardInput.focus = false
                         }
                     }

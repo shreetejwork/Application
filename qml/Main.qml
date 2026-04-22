@@ -1,8 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.VirtualKeyboard
-import QtQuick.VirtualKeyboard.Settings
 import AppState 1.0
 
 import "screens"
@@ -21,8 +19,7 @@ Window {
     // visibility: Window.FullScreen
 
     Component.onCompleted: {
-        VirtualKeyboardSettings.styleName = "basic"
-        VirtualKeyboardSettings.locale = "en_US"
+        // Custom keyboard initialization
     }
 
     // Track current menu screen
@@ -125,33 +122,33 @@ Window {
         }
     }
 
-
-    // ===== VIRTUAL KEYBOARD =====
-    InputPanel {
-        id: keyboard
+    // ===== CUSTOM VIRTUAL KEYBOARD =====
+    CommonKeyboard {
+        id: customKeyboard
 
         parent: Overlay.overlay
-
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.bottom: parent.bottom
 
-        z: 9999
+        z: 10000
 
-        visible: GlobalState.loginKeyboardRequest || Qt.inputMethod.visible
+        visible: GlobalState.loginKeyboardRequest
 
         y: visible ? parent.height - height : parent.height
 
         Behavior on y {
-            NumberAnimation { duration: 250 }
+            NumberAnimation {
+                duration: 220
+                easing.type: Easing.OutCubic
+            }
         }
 
-        Connections {
-            target: Qt.inputMethod
-
-            function onVisibleChanged() {
-                if (!Qt.inputMethod.visible) {
-                    GlobalState.loginKeyboardRequest = false
+        onVisibleChanged: {
+            if (!visible) {
+                if (GlobalState.activeInputField) {
+                    GlobalState.activeInputField.focus = false
+                    GlobalState.activeInputField = null
                 }
             }
         }
