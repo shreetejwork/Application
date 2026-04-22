@@ -21,10 +21,16 @@ Rectangle {
     visible: GlobalState.loginKeyboardRequest
     z: 10000
 
-    property bool capsLock: false
+    //  SHIFT STATES (CLEAN)
+    property bool capsLock: false          // UI state
+    property bool shiftOnce: false         // single press
+    property bool capsPersistent: false    // double tap
+
     property bool numberMode: false
     property bool autoCapitalize: true
     property bool backspaceHeld: false
+
+    property int lastShiftTap: 0
 
     Timer {
         id: backspaceTimer
@@ -50,11 +56,28 @@ Rectangle {
     property var num2: ["!","@","#","$","%","&","*","(",")"]
     property var num3: ["-","/",";",":","'","\"",".",",","?","+"]
 
+    onVisibleChanged: {
+        if (visible) {
+            capsLock = true
+            autoCapitalize = true
+            capsPersistent = false
+            shiftOnce = false
+        }
+    }
+
+    function clearIfAllSelected(input) {
+        if (input.selectedText && input.selectedText.length === input.text.length) {
+            input.text = ""
+            input.cursorPosition = 0
+        }
+    }
+
     function sendKey(key) {
         let input = GlobalState.activeInputField
-
         if (!input || input.text === undefined)
             return
+
+        clearIfAllSelected(input)
 
         let text = input.text
         let pos = input.cursorPosition !== undefined ? input.cursorPosition : text.length
@@ -72,17 +95,19 @@ Rectangle {
             input.text = text.slice(0, pos) + " " + text.slice(pos)
             input.cursorPosition = pos + 1
             autoCapitalize = true
+            capsLock = true
+            shiftOnce = false
             break
 
         case "↩":
             if (input.accepted)
                 input.accepted()
+
             autoCapitalize = true
+            capsLock = true
+            shiftOnce = false
             break
 
-        case "⇧":
-            capsLock = !capsLock
-            break
 
         case "@123":
             numberMode = true
@@ -99,15 +124,23 @@ Rectangle {
         default:
             let charToInsert = key
 
-            if (!capsLock && autoCapitalize && key.length === 1) {
+            if (autoCapitalize && key.length === 1) {
                 charToInsert = key.toUpperCase()
                 autoCapitalize = false
-            } else if (capsLock) {
+                capsLock = false
+            }
+            else if (capsLock) {
                 charToInsert = key.toUpperCase()
             }
 
             input.text = text.slice(0, pos) + charToInsert + text.slice(pos)
             input.cursorPosition = pos + charToInsert.length
+
+            if (shiftOnce && !capsPersistent) {
+                capsLock = false
+                shiftOnce = false
+            }
+
             break
         }
     }
@@ -117,7 +150,6 @@ Rectangle {
         anchors.margins: 12 * scale
         spacing: 10 * scale
 
-        // ===== LETTER MODE =====
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -132,7 +164,41 @@ Rectangle {
                 Layout.preferredHeight: 1
                 spacing: 8 * scale
 
-                SpecialKey { text: "⇧"; active: capsLock; widthRatio: 2.2 }
+                SpecialKey {
+                    text: "⇧"
+                    active: capsLock
+                    widthRatio: 2.2
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+                            if (keyboard.capsPersistent) {
+                                //  CAPS LOCK → OFF
+                                keyboard.capsPersistent = false
+                                keyboard.capsLock = false
+                                keyboard.shiftOnce = false
+                            }
+                            else if (keyboard.shiftOnce) {
+                                //  SECOND TAP → CAPS LOCK
+                                keyboard.capsPersistent = true
+                                keyboard.capsLock = true
+                                keyboard.shiftOnce = false
+                            }
+                            else {
+                                //  FIRST TAP → SINGLE SHIFT
+                                keyboard.shiftOnce = true
+                                keyboard.capsLock = true
+                            }
+
+                            keyboard.autoCapitalize = false
+                        }
+
+                        onPressed: parent.scale = 0.92
+                        onReleased: parent.scale = 1.0
+                        onCanceled: parent.scale = 1.0
+                    }
+                }
 
                 Repeater {
                     model: capsLock ? upper[2] : lower[2]
@@ -174,7 +240,6 @@ Rectangle {
             }
         }
 
-        // ===== NUMBER MODE =====
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
@@ -225,7 +290,6 @@ Rectangle {
                 }
 
                 SpecialKey { text: "⌄"; widthRatio: 1.6 }
-
                 SpecialKey { text: "↩"; widthRatio: 2.0 }
             }
         }
