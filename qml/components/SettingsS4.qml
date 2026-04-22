@@ -50,7 +50,7 @@ Item {
         anchors.verticalCenter: parent.verticalCenter
 
         //  USE ACTUAL KEYBOARD HEIGHT
-        anchors.verticalCenterOffset: -(keyboard.visible ? keyboard.height / 2 : 0)
+        anchors.verticalCenterOffset: GlobalState.loginKeyboardRequest ? -130 * root.scale : 0
 
         spacing: 28 * root.scale
 
@@ -78,7 +78,7 @@ Item {
                              GlobalState.userName = val
 
                              if (root.notify)
-                             root.notify("✓ Username Saved")
+                             root.notify("✓ Machine User Saved")
                          }
         }
 
@@ -90,7 +90,7 @@ Item {
                              GlobalState.location = val
 
                              if (root.notify)
-                             root.notify("✓ Location Saved")
+                             root.notify("✓  Location Saved")
                          }
         }
     }

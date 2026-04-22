@@ -22,5 +22,3 @@ Item {
         color: "#333"   // change if needed
     }
 }
-
-

@@ -12,14 +12,20 @@ Popup {
     property bool isLongPress: false
     property int longPressCount: 0
 
-
     property bool devModeActive: false
     property bool fieldsLocked: false
 
     property string developerPassword: "dev123"
     property string engineerPassword: "eng123"
 
-    property real keyboardHeight: Qt.inputMethod.visible ? Qt.inputMethod.keyboardRectangle.height : 0
+
+    property real keyboardHeight: Qt.inputMethod.visible
+                                  ? Qt.inputMethod.keyboardRectangle.height
+                                  : 0
+
+    property real keyboardOffset: keyboardHeight > 0
+                                  ? (keyboardHeight / 2 + 40 * scale)
+                                  : 0
 
     signal loginRequested(string userType, string username, string password)
     signal clearRequested()
@@ -32,9 +38,8 @@ Popup {
     height: 430 * scale
 
     x: (Overlay.overlay.width - width) / 2
-    property real baseY: (Overlay.overlay.height - height) / 2 + (20 * scale)
+    property real baseY: (Overlay.overlay.height - height) / 2 - (40 * scale)
 
-    property real keyboardOffset: Qt.inputMethod.visible
                                   ? (keyboardHeight / 2 + 40 * scale)
                                   : 0
 
@@ -320,11 +325,9 @@ Popup {
                     inputMethodHints: Qt.ImhPreferLatin
                                       | Qt.ImhNoPredictiveText
                                       | Qt.ImhSensitiveData
-                                      | Qt.ImhNone   // for Pi stability
-
+                                      | Qt.ImhNone
 
                     activeFocusOnPress: true
-
 
                     onActiveFocusChanged: {
                         if (activeFocus) {
@@ -332,25 +335,25 @@ Popup {
                             GlobalState.loginKeyboardRequest = true
 
                             if (flick)
-                                flick.adjustView(passwordInput)
+                                flick.adjustView()
                         } else {
-                            GlobalState.loginKeyboardRequest = false
+                            Qt.callLater(() => {
+                                if (!passwordInput.activeFocus)
+                                    GlobalState.loginKeyboardRequest = false
+                            })
                         }
                     }
-
 
                     MouseArea {
                         anchors.fill: parent
                         onPressed: passwordInput.forceActiveFocus()
                     }
 
-                    // TextField uses onAccepted
                     onAccepted: {
                         GlobalState.loginKeyboardRequest = false
                         focus = false
                     }
 
-                    // PASSWORD CHECK (unchanged)
                     onTextChanged: {
                         if (!loginPopup.devModeActive)
                             return
@@ -380,7 +383,7 @@ Popup {
                 }
             }
 
-            // ================= BUTTONS =================
+            // BUTTONS (UNCHANGED)
             Row {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 20 * scale
