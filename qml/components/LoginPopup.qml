@@ -236,6 +236,8 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Usertype"
                     color: "#AAAAAA"
+                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.bold: true
                 }
 
                 MouseArea {
@@ -277,6 +279,8 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Username"
                     color: "#AAAAAA"
+                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.bold: true
                 }
 
                 MouseArea {
@@ -302,21 +306,22 @@ Popup {
                 color: "#F2F2F2"
                 border.color: "#1A4DB5"
 
+                //  PASSWORD INPUT
                 TextField {
                     id: passwordInput
+
                     anchors.left: parent.left
+                    anchors.right: parent.right
                     anchors.leftMargin: 18 * scale
+                    anchors.rightMargin: 18 * scale
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width * 0.75
+
+                    property bool isPasswordField: true
 
                     echoMode: TextInput.Password
 
                     background: null
                     padding: 0
-                    leftPadding: 0
-                    rightPadding: 0
-                    topPadding: 0
-                    bottomPadding: 0
 
                     font.pixelSize: Math.max(25, 21 * scale)
                     font.bold: true
@@ -353,37 +358,59 @@ Popup {
                         GlobalState.loginKeyboardRequest = false
                         focus = false
                     }
-
-                    onTextChanged: {
-                        if (!loginPopup.devModeActive)
-                            return
-
-                        if (text === loginPopup.developerPassword) {
-                            userTypeValue.text = "Developer"
-                            usernameValue.text = "Developer"
-                            loginPopup.fieldsLocked = true
-                            loginPopup.devModeActive = false
-                        }
-
-                        if (text === loginPopup.engineerPassword) {
-                            userTypeValue.text = "Engineer"
-                            usernameValue.text = "Engineer"
-                            loginPopup.fieldsLocked = true
-                            loginPopup.devModeActive = false
-                        }
-                    }
                 }
 
+                // PLACEHOLDER
                 Text {
+                    id: placeholderText
+
                     anchors.right: parent.right
                     anchors.rightMargin: 18 * scale
                     anchors.verticalCenter: parent.verticalCenter
+
                     text: "Password"
                     color: "#AAAAAA"
+                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.bold: true
+
+                    visible: passwordInput.text.length === 0
+                }
+
+                // 👁️ SHOW / HIDE (after typing)
+                Rectangle {
+                    id: toggle
+
+                    anchors.right: parent.right
+                    anchors.rightMargin: 12 * scale
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    width: 50 * scale
+                    height: 32 * scale
+                    color: "transparent"
+
+                    visible: passwordInput.text.length > 0
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: passwordInput.echoMode === TextInput.Password ? "Show" : "Hide"
+                        font.pixelSize: 14 * scale
+                        color: "#1A4DB5"
+                        font.bold: true
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            passwordInput.echoMode =
+                                    passwordInput.echoMode === TextInput.Password
+                                    ? TextInput.Normal
+                                    : TextInput.Password
+                        }
+                    }
                 }
             }
 
-            // BUTTONS (UNCHANGED)
+            // BUTTONS
             Row {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 20 * scale

@@ -833,7 +833,7 @@ Item {
 
                     Text {
                         anchors.centerIn: parent
-                        text: passwordField.echoMode === TextInput.Password ? "👁" : "✓"
+                        text: passwordField.echoMode === TextInput.Password ? "Show" : "Hide"
                         font.pixelSize: 16 * root.scale
                     }
 

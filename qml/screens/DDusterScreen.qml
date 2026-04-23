@@ -102,6 +102,8 @@ Item {
                                     font.pixelSize: 18
                                     color: "#1A4DB5"
 
+                                    property bool isPasswordField: false
+
                                     focus: false
                                     activeFocusOnPress: true
 

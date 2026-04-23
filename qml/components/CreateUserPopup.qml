@@ -200,6 +200,8 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width * 0.7
 
+                    property bool isPasswordField: false
+
                     font.pixelSize: Math.max(25, 18 * scale)
                     font.bold: true
                     color: "#1A1A2E"
@@ -269,10 +271,14 @@ Popup {
 
                 TextField {
                     id: passwordInput
+
                     anchors.left: parent.left
+                    anchors.right: toggle.left
                     anchors.leftMargin: 16 * scale
+                    anchors.rightMargin: 8 * scale
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width * 0.7
+
+                    property bool isPasswordField: true
 
                     echoMode: TextInput.Password
 
@@ -282,16 +288,9 @@ Popup {
 
                     background: null
                     padding: 0
-                    leftPadding: 0
-                    rightPadding: 0
-                    topPadding: 0
-                    bottomPadding: 0
 
                     inputMethodHints: Qt.ImhNone
-
-
                     activeFocusOnPress: true
-
 
                     onActiveFocusChanged: {
                         if (activeFocus) {
@@ -305,7 +304,6 @@ Popup {
                         }
                     }
 
-
                     MouseArea {
                         anchors.fill: parent
                         onPressed: passwordInput.forceActiveFocus()
@@ -317,23 +315,59 @@ Popup {
                     }
                 }
 
-                // CLICK HANDLER
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        passwordInput.forceActiveFocus()
-                    }
-                }
-
+                //  PLACEHOLDER
                 Text {
+                    id: placeholderText
+
                     anchors.right: parent.right
                     anchors.rightMargin: 25 * scale
                     anchors.verticalCenter: parent.verticalCenter
+
                     text: "Password"
                     color: "#AAAAAA"
                     font.pixelSize: Math.max(14, 18 * scale)
                     font.bold: true
 
+                    visible: passwordInput.text.length === 0
+                }
+
+                // SHOW / HIDE TOGGLE
+                Rectangle {
+                    id: toggle
+
+                    anchors.right: parent.right
+                    anchors.rightMargin: 12 * scale
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    width: 50 * scale
+                    height: 32 * scale
+                    color: "transparent"
+
+                    visible: passwordInput.text.length > 0
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: passwordInput.echoMode === TextInput.Password ? "Show" : "Hide"
+                        font.pixelSize: 14 * scale
+                        color: "#1A4DB5"
+                        font.bold: true
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            passwordInput.echoMode =
+                                    passwordInput.echoMode === TextInput.Password
+                                    ? TextInput.Normal
+                                    : TextInput.Password
+                        }
+                    }
+                }
+
+                // CLICK HANDLER (keep)
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: passwordInput.forceActiveFocus()
                 }
             }
 

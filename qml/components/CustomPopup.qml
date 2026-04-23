@@ -15,8 +15,8 @@ Item {
         id: popup
         visible: false
         z: 101
-        width: Math.min(parent.width * 0.35, 420)
-        height: Math.min(parent.height * 0.70, 650)
+        width: Math.min(parent.width * 0.40, 450)
+        height: Math.min(parent.height * 0.80, 700)
         radius: 16
         color: "#FFFFFF"
         anchors.centerIn: parent
@@ -278,8 +278,6 @@ Item {
                                 popupRoot.globalTopBar.showNotification(
                                     "✓ " + popup.fieldName + " updated to " + val
                                 )
-                            } else {
-                                console.log("Notification:", popup.fieldName, val)
                             }
 
                             popup.visible = false

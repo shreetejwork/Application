@@ -32,8 +32,8 @@ Item {
             id: popup
             visible: false
             z: 101
-            width: Math.min(parent.width * 0.35, 420)
-            height: Math.min(parent.height * 0.85, 650)
+            width: Math.min(parent.width * 0.40, 450)
+            height: Math.min(parent.height * 0.95, 730)
             radius: 16
             color: "#FFFFFF"
             anchors.centerIn: parent

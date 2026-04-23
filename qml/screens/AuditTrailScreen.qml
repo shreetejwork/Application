@@ -144,8 +144,6 @@ Item {
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
                             }
-
-                            Text { text: "📅"; font.pixelSize: 18 * root.scale }
                         }
 
                         MouseArea {
@@ -183,8 +181,6 @@ Item {
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
                             }
-
-                            Text { text: "📅"; font.pixelSize: 18 * root.scale }
                         }
 
                         MouseArea {
@@ -201,10 +197,15 @@ Item {
 
                     // USER FILTER
                     ComboBox {
-                        width: 110 * root.scale
+                        Layout.preferredWidth: 110 * root.scale
+                        Layout.minimumWidth: 110 * root.scale
+                        Layout.maximumWidth: 110 * root.scale
+
                         height: 36 * root.scale
+
                         model: ["All", "ADMIN", "USER"]
                         font.pixelSize: 18 * root.scale
+
                         onCurrentTextChanged: root.selectedUser = currentText
 
                         background: Rectangle {
@@ -245,12 +246,6 @@ Item {
                                 color: root.activeRemarkFilters.length > 0 ? "#FFFFFF" : "#1A1A1A"
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
-                            }
-
-                            Text {
-                                text: "⚙"
-                                font.pixelSize: 20 * root.scale
-                                color: root.activeRemarkFilters.length > 0 ? "#FFFFFF" : "#1A1A1A"
                             }
                         }
 

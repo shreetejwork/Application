@@ -141,6 +141,8 @@ Item {
                         font.bold: true
                         color: "#1A4DB5"
 
+                        property bool isPasswordField: false
+
                         verticalAlignment: Text.AlignVCenter
 
                         inputMethodHints: Qt.ImhNone

@@ -276,10 +276,14 @@ Popup {
 
                 TextField {
                     id: newPasswordInput
+
                     anchors.left: parent.left
+                    anchors.right: toggle.left
                     anchors.leftMargin: 18 * scale
+                    anchors.rightMargin: 8 * scale
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width * 0.7
+
+                    property bool isPasswordField: true
 
                     echoMode: TextInput.Password
                     font.pixelSize: Math.max(25, 21 * scale)
@@ -290,14 +294,8 @@ Popup {
 
                     background: null
                     padding: 0
-                    leftPadding: 0
-                    rightPadding: 0
-                    topPadding: 0
-                    bottomPadding: 0
-
 
                     activeFocusOnPress: true
-
 
                     onActiveFocusChanged: {
                         if (activeFocus) {
@@ -311,7 +309,6 @@ Popup {
                         }
                     }
 
-
                     MouseArea {
                         anchors.fill: parent
                         onPressed: newPasswordInput.forceActiveFocus()
@@ -323,19 +320,57 @@ Popup {
                     }
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: newPasswordInput.forceActiveFocus()
-                }
-
+                // PLACEHOLDER
                 Text {
                     anchors.right: parent.right
                     anchors.rightMargin: 18 * scale
                     anchors.verticalCenter: parent.verticalCenter
+
                     text: "New Password"
                     color: "#AAAAAA"
                     font.pixelSize: Math.max(14, 18 * scale)
                     font.bold: true
+
+                    visible: newPasswordInput.text.length === 0
+                }
+
+                //  SHOW / HIDE
+                Rectangle {
+                    id: toggle
+
+                    anchors.right: parent.right
+                    anchors.rightMargin: 12 * scale
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    width: 50 * scale
+                    height: 32 * scale
+                    color: "transparent"
+
+                    visible: newPasswordInput.text.length > 0
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: newPasswordInput.echoMode === TextInput.Password ? "Show" : "Hide"
+                        font.pixelSize: 16 * scale
+                        color: "#1A4DB5"
+                        font.bold: true
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            newPasswordInput.echoMode =
+                                    newPasswordInput.echoMode === TextInput.Password
+                                    ? TextInput.Normal
+                                    : TextInput.Password
+                        }
+                    }
+                }
+
+                // CLICK HANDLER
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: newPasswordInput.forceActiveFocus()
                 }
             }
 
@@ -349,10 +384,14 @@ Popup {
 
                 TextField {
                     id: confirmPasswordInput
+
                     anchors.left: parent.left
+                    anchors.right: toggle.left
                     anchors.leftMargin: 18 * scale
+                    anchors.rightMargin: 8 * scale
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width * 0.7
+
+                    property bool isPasswordField: true
 
                     echoMode: TextInput.Password
 
@@ -364,14 +403,8 @@ Popup {
 
                     background: null
                     padding: 0
-                    leftPadding: 0
-                    rightPadding: 0
-                    topPadding: 0
-                    bottomPadding: 0
-
 
                     activeFocusOnPress: true
-
 
                     onActiveFocusChanged: {
                         if (activeFocus) {
@@ -385,7 +418,6 @@ Popup {
                         }
                     }
 
-
                     MouseArea {
                         anchors.fill: parent
                         onPressed: confirmPasswordInput.forceActiveFocus()
@@ -397,19 +429,57 @@ Popup {
                     }
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: confirmPasswordInput.forceActiveFocus()
-                }
-
+                //  PLACEHOLDER
                 Text {
                     anchors.right: parent.right
                     anchors.rightMargin: 18 * scale
                     anchors.verticalCenter: parent.verticalCenter
+
                     text: "Confirm"
                     color: "#AAAAAA"
                     font.pixelSize: Math.max(14, 18 * scale)
                     font.bold: true
+
+                    visible: confirmPasswordInput.text.length === 0
+                }
+
+                //  SHOW / HIDE
+                Rectangle {
+                    id: toggle2
+
+                    anchors.right: parent.right
+                    anchors.rightMargin: 12 * scale
+                    anchors.verticalCenter: parent.verticalCenter
+
+                    width: 50 * scale
+                    height: 32 * scale
+                    color: "transparent"
+
+                    visible: confirmPasswordInput.text.length > 0
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: confirmPasswordInput.echoMode === TextInput.Password ? "Show" : "Hide"
+                        font.pixelSize: 16 * scale
+                        color: "#1A4DB5"
+                        font.bold: true
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: {
+                            confirmPasswordInput.echoMode =
+                                    confirmPasswordInput.echoMode === TextInput.Password
+                                    ? TextInput.Normal
+                                    : TextInput.Password
+                        }
+                    }
+                }
+
+                // CLICK HANDLER
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: confirmPasswordInput.forceActiveFocus()
                 }
             }
 

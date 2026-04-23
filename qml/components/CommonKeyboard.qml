@@ -58,8 +58,12 @@ Rectangle {
 
     onVisibleChanged: {
         if (visible) {
-            capsLock = true
-            autoCapitalize = true
+            let input = GlobalState.activeInputField
+            let isPassword = input && input.isPasswordField === true
+
+            capsLock = !isPassword
+            autoCapitalize = !isPassword
+
             capsPersistent = false
             shiftOnce = false
         }
@@ -124,7 +128,9 @@ Rectangle {
         default:
             let charToInsert = key
 
-            if (autoCapitalize && key.length === 1) {
+            let isPassword = input.isPasswordField === true
+
+            if (!isPassword && autoCapitalize && key.length === 1) {
                 charToInsert = key.toUpperCase()
                 autoCapitalize = false
                 capsLock = false
