@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import "../components"
+
 Item {
     id: root
     anchors.fill: parent
@@ -17,6 +19,36 @@ Item {
     property date pickerDate: new Date()
     property var activeRemarkFilters: []
 
+    // ===== COLUMN WIDTHS =====
+    property real colSpacing: 16 * scale
+
+    property real colSr: 50 * scale
+    property real colDate: 130 * scale
+    property real colTime: 110 * scale
+    property real colUser: 110 * scale
+    property real colOld: 150 * scale
+    property real colNew: 160 * scale
+
+    function getTableData() {
+        let arr = []
+
+        for (let i = 0; i < tableList.model.count; i++) {
+            let item = tableList.model.get(i)
+
+            arr.push({
+                sr: item.sr,
+                date: item.date,
+                time: item.time,
+                user: item.user,
+                old: item.old,
+                newVal: item.newVal,
+                remark: item.remark
+            })
+        }
+
+        return arr
+    }
+
     property int visibleCount: {
         var count = 0
         var from = parseDate(root.fromDate)
@@ -30,9 +62,9 @@ Item {
             var userOk   = root.selectedUser === "All" || m.user === root.selectedUser
             var searchOk = m.remark.toLowerCase().includes(root.searchText.toLowerCase())
             var remarkOk = root.activeRemarkFilters.length === 0 ||
-                           root.activeRemarkFilters.some(function(f) {
-                               return m.remark.toLowerCase().includes(f.toLowerCase().replace(/\n/g, " "))
-                           })
+                    root.activeRemarkFilters.some(function(f) {
+                        return m.remark.toLowerCase().includes(f.toLowerCase().replace(/\n/g, " "))
+                    })
             if (userOk && searchOk && remarkOk) count++
         }
         return count
@@ -203,7 +235,7 @@ Item {
 
                         height: 36 * root.scale
 
-                        model: ["All", "ADMIN", "USER"]
+                        model: ["All", "Admin","Supervisor","Operator"]
                         font.pixelSize: 18 * root.scale
 
                         onCurrentTextChanged: root.selectedUser = currentText
@@ -260,7 +292,7 @@ Item {
 
                     // ACTION BUTTONS
                     Repeater {
-                        model: ["TODAY", "COPY", "PRINT", "PDF"]
+                        model: ["TODAY", "PDF"]
 
                         delegate: Rectangle {
                             width: 72 * root.scale
@@ -281,11 +313,26 @@ Item {
                             MouseArea {
                                 anchors.fill: parent
                                 cursorShape: Qt.PointingHandCursor
+
                                 onClicked: {
                                     if (modelData === "TODAY") {
                                         let today = Qt.formatDate(new Date(), "dd/MM/yyyy")
                                         root.fromDate = today
                                         root.toDate   = today
+                                    }
+
+                                    if (modelData === "PDF") {
+
+                                        var data = root.getTableData()
+
+                                        var path = PdfExporter.exportTableToPdf(
+                                            data,
+                                            root.fromDate,
+                                            root.toDate
+                                        )
+
+                                        pdfPreview.filePath = "file://" + path
+                                        pdfPreview.open()
                                     }
                                 }
                             }
@@ -323,17 +370,28 @@ Item {
                             color: "#1A4DB5"
                         }
 
-                        RowLayout {
+                        Row {
                             anchors.fill: parent
-                            anchors.margins: 10 * root.scale
+                            anchors.margins: 12 * root.scale
+                            spacing: root.colSpacing
 
-                            Text { text: "Sr";     Layout.preferredWidth: 40 * root.scale;  font.bold: true; color: "#FFFFFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "Date";   Layout.preferredWidth: 110 * root.scale; font.bold: true; color: "#FFFFFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "Time";   Layout.preferredWidth: 90 * root.scale;  font.bold: true; color: "#FFFFFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "User";   Layout.preferredWidth: 90 * root.scale;  font.bold: true; color: "#FFFFFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "Old";    Layout.preferredWidth: 110 * root.scale; font.bold: true; color: "#FFFFFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "New";    Layout.preferredWidth: 110 * root.scale; font.bold: true; color: "#FFFFFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "Remark"; Layout.fillWidth: true;                  font.bold: true; color: "#FFFFFF"; font.pixelSize: 20 * root.scale }
+                            Text { text: "Sr";   width: root.colSr;   font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
+                            Text { text: "Date"; width: root.colDate; font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
+                            Text { text: "Time"; width: root.colTime; font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
+                            Text { text: "User"; width: root.colUser; font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
+                            Text { text: "Old";  width: root.colOld;  font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
+                            Text { text: "New";  width: root.colNew;  font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
+
+                            // remaining space
+                            Text {
+                                text: "Remark"
+                                width: parent.width
+                                       - (root.colSr + root.colDate + root.colTime + root.colUser + root.colOld + root.colNew)
+                                       - (root.colSpacing * 6)
+                                font.bold: true
+                                color: "#FFF"
+                                font.pixelSize: 20 * root.scale
+                            }
                         }
                     }
 
@@ -345,16 +403,21 @@ Item {
                         id: tableList
 
                         model: ListModel {
-                            ListElement { sr: "1";  date: "11/04/2026"; time: "02:22:06"; user: "----";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "2";  date: "11/04/2026"; time: "02:22:10"; user: "----";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "3";  date: "11/04/2026"; time: "13:27:16"; user: "ADMIN"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "4";  date: "11/04/2026"; time: "14:10:05"; user: "ADMIN"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "5";  date: "11/04/2026"; time: "15:45:30"; user: "USER";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "6";  date: "10/04/2026"; time: "02:22:06"; user: "----";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "7";  date: "10/04/2026"; time: "02:22:10"; user: "----";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "8";  date: "10/04/2026"; time: "13:27:16"; user: "ADMIN"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "9";  date: "10/04/2026"; time: "14:10:05"; user: "ADMIN"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "10"; date: "10/04/2026"; time: "15:45:30"; user: "USER";  old: "----"; newVal: "----";  remark: "Logged-in" }
+                            ListElement { sr: "1";  date: "1/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
+                            ListElement { sr: "2";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
+                            ListElement { sr: "3";  date: "11/03/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
+                            ListElement { sr: "4";  date: "11/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
+                            ListElement { sr: "5";  date: "11/04/2026"; time: "15:45:30"; user: "Operator";  old: "----"; newVal: "----";  remark: "Logged-in" }
+                            ListElement { sr: "6";  date: "10/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
+                            ListElement { sr: "7";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
+                            ListElement { sr: "8";  date: "10/04/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
+                            ListElement { sr: "9";  date: "10/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
+                            ListElement { sr: "10"; date: "10/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
+                            ListElement { sr: "11";  date: "14/04/2026"; time: "02:22:06"; user: "Operator";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
+                            ListElement { sr: "12";  date: "14/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
+                            ListElement { sr: "13";  date: "20/04/2026"; time: "13:27:16"; user: "Supervisor"; old: "----"; newVal: "----";  remark: "Logged-in" }
+                            ListElement { sr: "14";  date: "21/04/2026"; time: "14:10:05"; user: "Supervisor"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
+                            ListElement { sr: "15"; date: "13/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
                         }
 
                         delegate: Rectangle {
@@ -376,32 +439,50 @@ Item {
                                 color: "#E4EAF5"
                             }
 
-                            RowLayout {
+                            Row {
                                 anchors.fill: parent
-                                anchors.margins: 10 * root.scale
+                                anchors.margins: 12 * root.scale
+                                spacing: root.colSpacing   // 👈 MUST MATCH HEADER
 
-                                Text { text: sr;     Layout.preferredWidth: 40 * root.scale;  font.pixelSize: 18 * root.scale; color: "#3A3A3A" }
-                                Text { text: date;   Layout.preferredWidth: 110 * root.scale; font.pixelSize: 18 * root.scale; color: "#3A3A3A" }
-                                Text { text: time;   Layout.preferredWidth: 90 * root.scale;  font.pixelSize: 18 * root.scale; color: "#3A3A3A" }
+                                Text { text: sr;   width: root.colSr;   font.pixelSize: 18 * root.scale; color: "#3A3A3A" }
+                                Text { text: date; width: root.colDate; font.pixelSize: 18 * root.scale; color: "#3A3A3A" }
+                                Text { text: time; width: root.colTime; font.pixelSize: 18 * root.scale; color: "#3A3A3A" }
 
                                 Rectangle {
-                                    Layout.preferredWidth: 90 * root.scale
+                                    width: root.colUser
                                     height: 24 * root.scale
                                     radius: 4 * root.scale
-                                    color: user === "ADMIN" ? "#E8EEFF" : user === "USER" ? "#E8F5E9" : "transparent"
+
+                                    color: user === "Admin" ? "#E8EEFF"
+                                          : user === "Operator" ? "#E8F5E9"
+                                          : user === "Supervisor" ? "#FFF4E5"
+                                          : "transparent"
 
                                     Text {
                                         anchors.centerIn: parent
                                         text: user
                                         font.pixelSize: 18 * root.scale
                                         font.weight: Font.Medium
-                                        color: user === "ADMIN" ? "#1A4DB5" : user === "USER" ? "#2E7D32" : "#888888"
+                                        color: user === "Admin" ? "#1A4DB5"
+                                              : user === "Operator" ? "#2E7D32"
+                                              : user === "Supervisor" ? "#E65100"
+                                              : "#888888"
                                     }
                                 }
 
-                                Text { text: old;    Layout.preferredWidth: 110 * root.scale; font.pixelSize: 18 * root.scale; color: "#888888" }
-                                Text { text: newVal; Layout.preferredWidth: 110 * root.scale; font.pixelSize: 18 * root.scale; color: "#1A4DB5"; font.weight: Font.Medium }
-                                Text { text: remark; Layout.fillWidth: true;                  font.pixelSize: 18 * root.scale; color: "#3A3A3A" }
+
+
+                                Text { text: old;    width: root.colOld; font.pixelSize: 18 * root.scale; color: "#888888" }
+                                Text { text: newVal; width: root.colNew; font.pixelSize: 18 * root.scale; color: "#1A4DB5"; font.weight: Font.Medium }
+
+                                Text {
+                                    text: remark
+                                    width: parent.width
+                                           - (root.colSr + root.colDate + root.colTime + root.colUser + root.colOld + root.colNew)
+                                           - (root.colSpacing * 6)
+                                    font.pixelSize: 18 * root.scale
+                                    color: "#3A3A3A"
+                                }
                             }
                         }
 
@@ -550,10 +631,10 @@ Item {
                                 anchors.fill: parent
 
                                 property bool isMinReached: (
-                                    datePickerPopup.isFrom &&
-                                    calendar.displayYear === 2026 &&
-                                    calendar.displayMonth === 0
-                                )
+                                                                datePickerPopup.isFrom &&
+                                                                calendar.displayYear === 2026 &&
+                                                                calendar.displayMonth === 0
+                                                                )
 
                                 enabled: !isMinReached
 
@@ -680,14 +761,14 @@ Item {
                                 property bool isToday: {
                                     var t = new Date()
                                     return validDay &&
-                                           dayNum                === t.getDate() &&
-                                           calendar.displayMonth === t.getMonth() &&
-                                           calendar.displayYear  === t.getFullYear()
+                                            dayNum                === t.getDate() &&
+                                            calendar.displayMonth === t.getMonth() &&
+                                            calendar.displayYear  === t.getFullYear()
                                 }
 
                                 color: isSelected ? "#1A4DB5"
-                                     : cellMouse.containsMouse && !isDisabled ? "#E8EEFB"
-                                     : "transparent"
+                                                  : cellMouse.containsMouse && !isDisabled ? "#E8EEFB"
+                                                                                           : "transparent"
 
                                 border.width: isToday && !isSelected ? 2 : 0
                                 border.color: "#1A4DB5"
@@ -1003,5 +1084,12 @@ Item {
                 }
             }
         }
+    }
+
+    PdfPreview {
+        id: pdfPreview
+        anchors.centerIn: parent
+        width: parent.width * 0.9
+        height: parent.height * 0.9
     }
 }

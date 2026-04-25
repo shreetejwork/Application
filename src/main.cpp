@@ -5,6 +5,7 @@
 #include "DatabaseManager.h"
 #include "SystemController.h"
 #include "WifiScanner.h"
+#include "PdfExporter.h"
 
 int main(int argc, char *argv[])
 {
@@ -36,7 +37,10 @@ int main(int argc, char *argv[])
         &app,
         []() { QCoreApplication::exit(-1); },
         Qt::QueuedConnection
-        );
+    );
+
+    PdfExporter pdfExporter;
+    engine.rootContext()->setContextProperty("PdfExporter", &pdfExporter);
 
     engine.loadFromModule("Application", "Main");
 
