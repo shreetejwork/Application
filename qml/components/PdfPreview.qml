@@ -1,8 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtWebEngine
 import Qt.labs.platform
+
 
 Popup {
     id: root
@@ -14,15 +14,29 @@ Popup {
     anchors.centerIn: parent
 
     background: Rectangle { color: "transparent" }
-
     Overlay.modal: Rectangle { color: "#80000000" }
 
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
     property real scaleFactor: Math.min(width / 1024, height / 768)
 
-    // 🔥 PDF FILE PATH FROM C++
-    property string filePath: ""
+    // 🔥 DATA FROM MAIN SCREEN
+    ListModel {
+        id: internalModel
+    }
+    property alias dataModel: internalModel
+
+    property string fromDate: ""
+    property string toDate: ""
+
+    // ================= CONVERT MODEL =================
+    function modelToArray(model) {
+        var arr = []
+        for (var i = 0; i < model.count; i++) {
+            arr.push(model.get(i))
+        }
+        return arr
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -36,60 +50,69 @@ Popup {
             // ================= HEADER =================
             Rectangle {
                 Layout.fillWidth: true
-                height: Math.max(48, 54 * root.scaleFactor)
+                height: 54 * root.scaleFactor
                 color: "#1A4DB5"
                 radius: 12
 
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 16
-                    anchors.rightMargin: 16
-
-                    Text {
-                        Layout.fillWidth: true
-                        text: "PDF Preview"
-                        color: "white"
-                        font.pixelSize: Math.max(14, 18 * root.scaleFactor)
-                        font.bold: true
-                        verticalAlignment: Text.AlignVCenter
-                    }
+                Text {
+                    anchors.centerIn: parent
+                    text: "PDF Preview"
+                    color: "white"
+                    font.pixelSize: 18 * root.scaleFactor
+                    font.bold: true
                 }
             }
 
-            // ================= PDF VIEW =================
-            Rectangle {
+            // ================= HTML PREVIEW =================
+            Flickable {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: "#FFFFFF"
+                clip: true
 
-                WebEngineView {
-                    id: pdfViewer
-                    anchors.fill: parent
+                Rectangle {
+                    width: parent.width - 40
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    color: "white"
+                    radius: 4
+                    border.color: "#CCCCCC"
 
-                    // 🔥 IMPORTANT: loads generated PDF
-                    url: root.filePath
-                }
+                    Column {
+                        width: parent.width
+                        spacing: 6
 
-                // fallback message if no file
-                Text {
-                    anchors.centerIn: parent
-                    text: root.filePath === "" ? "No PDF loaded" : ""
-                    color: "#888888"
-                    font.pixelSize: 18
+                        Text {
+                            text: "<h2>Audit Trail Report</h2>" +
+                                  "<p><b>From:</b> " + root.fromDate +
+                                  " | <b>To:</b> " + root.toDate + "</p>"
+                            textFormat: Text.RichText
+                            wrapMode: Text.Wrap
+                            font.pixelSize: 16
+                        }
+
+                        Repeater {
+                            model: dataModel
+
+                            delegate: Text {
+                                text: sr + " | " + date + " | " + time + " | " + user +
+                                      " | " + old + " → " + newVal + " | " + remark
+                                font.pixelSize: 14
+                            }
+                        }
+                    }
                 }
             }
 
             // ================= FOOTER =================
             Rectangle {
                 Layout.fillWidth: true
-                height: Math.max(56, 62 * root.scaleFactor)
+                height: 60
                 color: "#FFFFFF"
 
                 RowLayout {
                     anchors.centerIn: parent
                     spacing: 14
 
-                    // ================= SAVE PDF =================
+                    // ===== SAVE PDF =====
                     Rectangle {
                         width: 140
                         height: 40
@@ -98,15 +121,13 @@ Popup {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "Download"
+                            text: "Save PDF"
                             color: "white"
                             font.bold: true
                         }
 
                         TapHandler {
                             onTapped: {
-                                // Just re-save same file (optional overwrite/download behavior)
-
                                 var now = new Date()
                                 var fileName = Qt.formatDateTime(now, "dd-MM-yyyy-HH-mm") + ".pdf"
 
@@ -115,18 +136,16 @@ Popup {
                                     + "/" + fileName
 
                                 PdfExporter.exportTableToPdf(
-                                    [],   // optional if you already passed data in C++
-                                    root.fromDate,
-                                    root.toDate,
+                                    modelToArray(dataModel),
+                                    fromDate,
+                                    toDate,
                                     filePath
                                 )
-
-                                root.filePath = "file://" + filePath
                             }
                         }
                     }
 
-                    // ================= CLOSE =================
+                    // ===== CLOSE =====
                     Rectangle {
                         width: 120
                         height: 40
