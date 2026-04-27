@@ -8,12 +8,20 @@
 #include <QFileInfo>
 #include <QDateTime>
 #include <QDebug>
+#include <QTemporaryFile>
+#include <QFile>
 
+// =======================================================
+// CONSTRUCTOR
+// =======================================================
 PdfExporter::PdfExporter(QObject *parent)
     : QObject(parent)
 {
 }
 
+// =======================================================
+// 🔴 YOUR ORIGINAL FUNCTION (UNCHANGED - DO NOT MODIFY)
+// =======================================================
 QString PdfExporter::exportTableToPdf(const QVariantList &data,
                                       const QString &fromDate,
                                       const QString &toDate,
@@ -37,7 +45,6 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
     QPainter painter(&writer);
 
     const int pageWidth  = writer.width();
-
     const int rowHeight = 20;
     const int yStart    = 160;
 
@@ -121,7 +128,6 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
         QRect pageRect = writer.pageLayout().paintRectPixels(writer.resolution());
         int footerTopY = pageRect.bottom() - 40;
 
-        // ===== TABLE HEADER =====
         QStringList headers = {"S/No","Date","Time","User","Old","New","Details"};
 
         painter.setFont(QFont("Arial", 9, QFont::Bold));
@@ -139,7 +145,6 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 
         painter.setFont(QFont("Arial", 9));
 
-        // ===== DATA ROWS (NO OVERLAP GUARANTEE) =====
         while (dataIndex < totalRows)
         {
             if (y + rowHeight > footerTopY)
@@ -162,11 +167,9 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
             for (int c = 0; c < row.size(); ++c)
             {
                 painter.drawRect(x, y, colWidths[c], rowHeight);
-
                 painter.drawText(QRect(x+4, y, colWidths[c]-8, rowHeight),
                                  Qt::AlignVCenter | Qt::AlignLeft,
                                  row[c]);
-
                 x += colWidths[c];
             }
 
@@ -180,6 +183,44 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 
     painter.end();
 
-    qDebug() << "PDF saved at:" << path;
+    qDebug() << "FINAL PDF saved at:" << path;
     return path;
+}
+
+
+
+//=======================================================
+   // 🟢 NEW: TEMP PREVIEW PDF
+   // =======================================================
+   QString PdfExporter::exportTempPreviewPdf(const QVariantList &data,
+                                             const QString &fromDate,
+                                             const QString &toDate)
+{
+    QString tempPath =
+        QStandardPaths::writableLocation(QStandardPaths::TempLocation)
+        + "/audit_preview_" +
+        QDateTime::currentDateTime().toString("hhmmsszzz") + ".pdf";
+
+    exportTableToPdf(data, fromDate, toDate, tempPath);
+
+    qDebug() << "TEMP PDF CREATED:" << tempPath;
+
+    return tempPath;
+}
+
+
+//=======================================================
+   // 🟢 NEW: DELETE TEMP FILE
+   // =======================================================
+   void PdfExporter::deleteTempPdf(const QString &filePath)
+{
+    if (filePath.isEmpty())
+        return;
+
+    QFile f(filePath);
+
+    if (f.exists()) {
+        f.remove();
+        qDebug() << "TEMP PDF DELETED:" << filePath;
+    }
 }

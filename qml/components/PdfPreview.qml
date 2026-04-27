@@ -2,7 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import Qt.labs.platform
-
+import QtQuick.Pdf   // ✅ REQUIRED FOR REAL PDF VIEW
 
 Popup {
     id: root
@@ -20,7 +20,7 @@ Popup {
 
     property real scaleFactor: Math.min(width / 1024, height / 768)
 
-    // 🔥 DATA FROM MAIN SCREEN
+    // ================= TEMP DATA =================
     ListModel {
         id: internalModel
     }
@@ -28,6 +28,9 @@ Popup {
 
     property string fromDate: ""
     property string toDate: ""
+
+    // 🔥 TEMP PDF FILE PATH (IMPORTANT)
+    property string filePath: ""
 
     // ================= CONVERT MODEL =================
     function modelToArray(model) {
@@ -63,42 +66,19 @@ Popup {
                 }
             }
 
-            // ================= HTML PREVIEW =================
-            Flickable {
+            // ================= REAL PDF VIEW =================
+            Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                clip: true
 
-                Rectangle {
-                    width: parent.width - 40
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: "white"
-                    radius: 4
-                    border.color: "#CCCCCC"
+                PdfDocument {
+                    id: pdfDoc
+                    source: root.filePath
+                }
 
-                    Column {
-                        width: parent.width
-                        spacing: 6
-
-                        Text {
-                            text: "<h2>Audit Trail Report</h2>" +
-                                  "<p><b>From:</b> " + root.fromDate +
-                                  " | <b>To:</b> " + root.toDate + "</p>"
-                            textFormat: Text.RichText
-                            wrapMode: Text.Wrap
-                            font.pixelSize: 16
-                        }
-
-                        Repeater {
-                            model: dataModel
-
-                            delegate: Text {
-                                text: sr + " | " + date + " | " + time + " | " + user +
-                                      " | " + old + " → " + newVal + " | " + remark
-                                font.pixelSize: 14
-                            }
-                        }
-                    }
+                PdfView {
+                    anchors.fill: parent
+                    document: pdfDoc
                 }
             }
 
@@ -112,7 +92,7 @@ Popup {
                     anchors.centerIn: parent
                     spacing: 14
 
-                    // ===== SAVE PDF =====
+                    // ================= SAVE PDF =================
                     Rectangle {
                         width: 140
                         height: 40
@@ -128,24 +108,32 @@ Popup {
 
                         TapHandler {
                             onTapped: {
+
                                 var now = new Date()
-                                var fileName = Qt.formatDateTime(now, "dd-MM-yyyy-HH-mm") + ".pdf"
+                                var fileName =
+                                    Qt.formatDateTime(now, "dd-MM-yyyy-HH-mm") + ".pdf"
 
                                 var filePath =
                                     StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
                                     + "/" + fileName
 
+                                // 🔥 FINAL EXPORT (REAL SAVE)
                                 PdfExporter.exportTableToPdf(
                                     modelToArray(dataModel),
                                     fromDate,
                                     toDate,
                                     filePath
                                 )
+
+                                // 🔥 CLEAN TEMP FILE
+                                PdfExporter.deleteTempPdf(root.filePath)
+
+                                root.close()
                             }
                         }
                     }
 
-                    // ===== CLOSE =====
+                    // ================= CLOSE =================
                     Rectangle {
                         width: 120
                         height: 40
@@ -160,7 +148,12 @@ Popup {
                         }
 
                         TapHandler {
-                            onTapped: root.close()
+                            onTapped: {
+                                // 🔥 DELETE TEMP FILE
+                                PdfExporter.deleteTempPdf(root.filePath)
+
+                                root.close()
+                            }
                         }
                     }
                 }
