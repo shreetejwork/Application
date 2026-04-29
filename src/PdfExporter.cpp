@@ -9,11 +9,65 @@
 #include <QDateTime>
 #include <QDebug>
 
+#include <QDesktopServices>
+#include <QUrl>
+#include <QFile>
+
 PdfExporter::PdfExporter(QObject *parent)
     : QObject(parent)
 {
 }
 
+// ================= GET / CREATE REPORTS FOLDER =================
+QString PdfExporter::getReportsFolderPath()
+{
+    QString basePath =
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+
+    QString folderPath = basePath + "/Reports Folder";
+
+    QDir dir(folderPath);
+    if (!dir.exists()) {
+        dir.mkpath(".");
+        qDebug() << "Reports Folder created at:" << folderPath;
+    }
+
+    return folderPath;
+}
+// ================= GET ALL PDFs =================
+QStringList PdfExporter::getAllPdfFiles()
+{
+    QString folder = getReportsFolderPath();
+
+    QDir dir(folder);
+    QStringList files = dir.entryList(QStringList() << "*.pdf",
+                                      QDir::Files,
+                                      QDir::Time); // latest first
+
+    QStringList fullPaths;
+    for (const QString &f : files)
+        fullPaths << dir.absoluteFilePath(f);
+
+    return fullPaths;
+}
+
+// ================= DELETE PDF =================
+bool PdfExporter::deletePdf(const QString &filePath)
+{
+    QFile file(filePath);
+    if (file.exists()) {
+        return file.remove();
+    }
+    return false;
+}
+
+// ================= OPEN PDF =================
+void PdfExporter::openPdf(const QString &filePath)
+{
+    QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
+}
+
+// ================= EXPORT PDF =================
 QString PdfExporter::exportTableToPdf(const QVariantList &data,
                                       const QString &fromDate,
                                       const QString &toDate,
@@ -21,10 +75,13 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 {
     QString path = filePath;
 
+    //  FORCE SAVE INSIDE REPORTS FOLDER
     if (path.isEmpty()) {
         QString ts = QDateTime::currentDateTime().toString("dd-MM-yyyy_HH-mm-ss");
-        path = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-               + "/Audit_Report_" + ts + ".pdf";
+
+        QString folder = getReportsFolderPath();
+
+        path = folder + "/Audit_Report_" + ts + ".pdf";
     }
 
     QDir().mkpath(QFileInfo(path).absolutePath());
@@ -139,7 +196,7 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 
         painter.setFont(QFont("Arial", 9));
 
-        // ===== DATA ROWS (NO OVERLAP GUARANTEE) =====
+        // ===== DATA ROWS =====
         while (dataIndex < totalRows)
         {
             if (y + rowHeight > footerTopY)

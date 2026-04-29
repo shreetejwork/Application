@@ -8,6 +8,8 @@ Item {
     id: root
     anchors.fill: parent
 
+    property var globalTopBar
+
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
@@ -166,20 +168,35 @@ Item {
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.margins: 6 * root.scale
-                            spacing: 4 * root.scale
+                            anchors.margins: 8 * root.scale
+                            spacing: 6 * root.scale
 
+                            // TEXT
                             Text {
                                 text: root.fromDate !== "" ? root.fromDate : "From Date"
                                 font.pixelSize: 18 * root.scale
                                 color: root.fromDate !== "" ? "#1A1A1A" : "#8896B0"
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
+                                elide: Text.ElideRight
+                            }
+
+                            // ICON
+                            Image {
+                                source: "qrc:/qt/qml/Application/assets/images/calendar.png"
+                                Layout.preferredWidth: 20 * root.scale
+                                Layout.preferredHeight: 20 * root.scale
+                                Layout.alignment: Qt.AlignVCenter
+
+                                fillMode: Image.PreserveAspectFit
+                                smooth: true
+                                mipmap: true
                             }
                         }
 
                         MouseArea {
                             anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 datePickerPopup.isFrom = true
                                 root.pickerDate = new Date()
@@ -190,7 +207,15 @@ Item {
                         }
                     }
 
-                    Text { text: "→"; color: "#8896B0"; font.pixelSize: 18 * root.scale }
+
+                    // ARROW
+                    Text {
+                        text: "→"
+                        color: "#8896B0"
+                        font.pixelSize: 18 * root.scale
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
 
                     // TO DATE
                     Rectangle {
@@ -203,20 +228,35 @@ Item {
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.margins: 6 * root.scale
-                            spacing: 4 * root.scale
+                            anchors.margins: 8 * root.scale
+                            spacing: 6 * root.scale
 
+                            // TEXT
                             Text {
                                 text: root.toDate !== "" ? root.toDate : "To Date"
                                 font.pixelSize: 18 * root.scale
                                 color: root.toDate !== "" ? "#1A1A1A" : "#8896B0"
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
+                                elide: Text.ElideRight
+                            }
+
+                            // ICON
+                            Image {
+                                source: "qrc:/qt/qml/Application/assets/images/calendar.png"
+                                Layout.preferredWidth: 20 * root.scale
+                                Layout.preferredHeight: 20 * root.scale
+                                Layout.alignment: Qt.AlignVCenter
+
+                                fillMode: Image.PreserveAspectFit
+                                smooth: true
+                                mipmap: true
                             }
                         }
 
                         MouseArea {
                             anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 datePickerPopup.isFrom = false
                                 root.pickerDate = new Date()
@@ -262,14 +302,15 @@ Item {
                         height: 36 * root.scale
                         radius: 6 * root.scale
                         color: root.activeRemarkFilters.length > 0 ? "#1A4DB5" : "#F0F4FF"
-                        border.color: "#1A4DB5"
+                        border.color: "#B0BEE0"
                         border.width: 1
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.margins: 6 * root.scale
-                            spacing: 4 * root.scale
+                            anchors.margins: 8 * root.scale
+                            spacing: 6 * root.scale
 
+                            // TEXT
                             Text {
                                 text: root.activeRemarkFilters.length > 0
                                       ? "Filters (" + root.activeRemarkFilters.length + ")"
@@ -278,12 +319,15 @@ Item {
                                 color: root.activeRemarkFilters.length > 0 ? "#FFFFFF" : "#1A1A1A"
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
+                                elide: Text.ElideRight
                             }
                         }
 
                         MouseArea {
+                            id: filterMouse
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
+                            hoverEnabled: true
                             onClicked: filterPopup.open()
                         }
                     }
@@ -336,7 +380,7 @@ Item {
 
                                             if (userOk && searchOk && dateOk && remarkOk) {
 
-                                                // 🔥 IMPORTANT FIX (PURE JS OBJECT)
+                                                // IMPORTANT FIX (PURE JS OBJECT)
                                                 filtered.push({
                                                     sr: item.sr,
                                                     date: item.date,
@@ -360,8 +404,9 @@ Item {
                                             root.toDate
                                         )
 
-                                        pdfPreview.filePath = path
-                                        pdfPreview.open()
+                                        if (globalTopBar && globalTopBar.showNotification) {
+                                            globalTopBar.showNotification("✓ PDF saved successfully")
+                                        }
                                     }
                                 }
                             }
@@ -432,96 +477,6 @@ Item {
                         id: tableList
 
                         model: ListModel {
-                            ListElement { sr: "1";  date: "1/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "2";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "3";  date: "11/03/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "4";  date: "11/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "5";  date: "11/04/2026"; time: "15:45:30"; user: "Operator";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "6";  date: "10/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "7";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "8";  date: "10/04/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "9";  date: "10/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "10"; date: "10/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "11";  date: "14/04/2026"; time: "02:22:06"; user: "Operator";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "12";  date: "14/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "13";  date: "20/04/2026"; time: "13:27:16"; user: "Supervisor"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "14";  date: "21/04/2026"; time: "14:10:05"; user: "Supervisor"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "15"; date: "13/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "1";  date: "1/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "2";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "3";  date: "11/03/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "4";  date: "11/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "5";  date: "11/04/2026"; time: "15:45:30"; user: "Operator";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "6";  date: "10/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "7";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "8";  date: "10/04/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "9";  date: "10/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "10"; date: "10/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "11";  date: "14/04/2026"; time: "02:22:06"; user: "Operator";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "12";  date: "14/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "13";  date: "20/04/2026"; time: "13:27:16"; user: "Supervisor"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "14";  date: "21/04/2026"; time: "14:10:05"; user: "Supervisor"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "15"; date: "13/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "1";  date: "1/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "2";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "3";  date: "11/03/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "4";  date: "11/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "5";  date: "11/04/2026"; time: "15:45:30"; user: "Operator";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "6";  date: "10/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "7";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "8";  date: "10/04/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "9";  date: "10/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "10"; date: "10/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "11";  date: "14/04/2026"; time: "02:22:06"; user: "Operator";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "12";  date: "14/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "13";  date: "20/04/2026"; time: "13:27:16"; user: "Supervisor"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "14";  date: "21/04/2026"; time: "14:10:05"; user: "Supervisor"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "15"; date: "13/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "1";  date: "1/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "2";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "3";  date: "11/03/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "4";  date: "11/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "5";  date: "11/04/2026"; time: "15:45:30"; user: "Operator";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "6";  date: "10/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "7";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "8";  date: "10/04/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "9";  date: "10/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "10"; date: "10/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "11";  date: "14/04/2026"; time: "02:22:06"; user: "Operator";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "12";  date: "14/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "13";  date: "20/04/2026"; time: "13:27:16"; user: "Supervisor"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "14";  date: "21/04/2026"; time: "14:10:05"; user: "Supervisor"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "15"; date: "13/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "1";  date: "1/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "2";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "3";  date: "11/03/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "4";  date: "11/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "5";  date: "11/04/2026"; time: "15:45:30"; user: "Operator";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "6";  date: "10/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "7";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "8";  date: "10/04/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "9";  date: "10/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "10"; date: "10/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "11";  date: "14/04/2026"; time: "02:22:06"; user: "Operator";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "12";  date: "14/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "13";  date: "20/04/2026"; time: "13:27:16"; user: "Supervisor"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "14";  date: "21/04/2026"; time: "14:10:05"; user: "Supervisor"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "15"; date: "13/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "1";  date: "1/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "2";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "3";  date: "11/03/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "4";  date: "11/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "5";  date: "11/04/2026"; time: "15:45:30"; user: "Operator";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "6";  date: "10/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "7";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "8";  date: "10/04/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "9";  date: "10/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "10"; date: "10/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "11";  date: "14/04/2026"; time: "02:22:06"; user: "Operator";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "12";  date: "14/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "13";  date: "20/04/2026"; time: "13:27:16"; user: "Supervisor"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "14";  date: "21/04/2026"; time: "14:10:05"; user: "Supervisor"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "15"; date: "13/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
                             ListElement { sr: "1";  date: "1/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
                             ListElement { sr: "2";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
                             ListElement { sr: "3";  date: "11/03/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }

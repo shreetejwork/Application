@@ -11,6 +11,11 @@ class PdfExporter : public QObject
 public:
     explicit PdfExporter(QObject *parent = nullptr);
 
+    Q_INVOKABLE QString getReportsFolderPath();
+    Q_INVOKABLE QStringList getAllPdfFiles();
+    Q_INVOKABLE bool deletePdf(const QString &filePath);
+    Q_INVOKABLE void openPdf(const QString &filePath);
+
     Q_INVOKABLE QString exportTableToPdf(const QVariantList &data,
                                          const QString &fromDate,
                                          const QString &toDate,

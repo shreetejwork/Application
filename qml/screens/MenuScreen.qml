@@ -74,6 +74,12 @@ Item {
                     iconSize: 100 * root.scale
                     onTileClicked: navigateTo("Diagnosis")
                 }
+                MenuTile {
+                    iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
+                    label: "Reports\nFolder"
+                    iconSize: 100 * root.scale
+                    onTileClicked: navigateTo("ReportsFolder")
+                }
             }
         }
     }

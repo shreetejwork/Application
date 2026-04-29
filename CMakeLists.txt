@@ -8,10 +8,10 @@ find_package(Qt6 REQUIRED COMPONENTS Quick Sql Svg PrintSupport)
 
 qt_standard_project_setup(REQUIRES 6.8)
 
-# ✅ FIX: Add PdfExporter.cpp to executable
+
 qt_add_executable(appApplication
     src/main.cpp
-    src/PdfExporter.cpp   # 👈 IMPORTANT FIX
+    src/PdfExporter.cpp
 )
 
 qt_add_qml_module(appApplication
@@ -81,8 +81,11 @@ qt_add_qml_module(appApplication
         assets/images/diagnosis.png
         assets/images/calendar.png
         assets/images/filter.png
+        assets/images/folder.png
+        assets/images/pdf.png
+        assets/images/people.png
 
-    # ✅ Keep other C++ sources here (optional but fine)
+
     SOURCES
         src/DatabaseManager.h
         src/DatabaseManager.cpp
@@ -90,10 +93,8 @@ qt_add_qml_module(appApplication
         src/SystemController.cpp
         src/WifiScanner.h
         src/WifiScanner.cpp
-
-        # ❌ REMOVED PdfExporter.cpp from here
-        # (THIS WAS CAUSING LINKER ISSUE)
         src/PdfExporter.h
+        QML_FILES qml/screens/ReportsFolderScreen.qml
 )
 
 set_target_properties(appApplication PROPERTIES

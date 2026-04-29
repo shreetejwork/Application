@@ -1,8 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import Qt.labs.platform
-
 
 Popup {
     id: root
@@ -20,23 +18,12 @@ Popup {
 
     property real scaleFactor: Math.min(width / 1024, height / 768)
 
-    // 🔥 DATA FROM MAIN SCREEN
-    ListModel {
-        id: internalModel
-    }
+    // ===== DATA =====
+    ListModel { id: internalModel }
     property alias dataModel: internalModel
 
     property string fromDate: ""
     property string toDate: ""
-
-    // ================= CONVERT MODEL =================
-    function modelToArray(model) {
-        var arr = []
-        for (var i = 0; i < model.count; i++) {
-            arr.push(model.get(i))
-        }
-        return arr
-    }
 
     Rectangle {
         anchors.fill: parent
@@ -47,7 +34,7 @@ Popup {
             anchors.fill: parent
             spacing: 0
 
-            // ================= HEADER =================
+            // ===== HEADER =====
             Rectangle {
                 Layout.fillWidth: true
                 height: 54 * root.scaleFactor
@@ -63,7 +50,7 @@ Popup {
                 }
             }
 
-            // ================= HTML PREVIEW =================
+            // ===== PREVIEW =====
             Flickable {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
@@ -102,7 +89,7 @@ Popup {
                 }
             }
 
-            // ================= FOOTER =================
+            // ===== FOOTER =====
             Rectangle {
                 Layout.fillWidth: true
                 height: 60
@@ -112,7 +99,7 @@ Popup {
                     anchors.centerIn: parent
                     spacing: 14
 
-                    // ===== SAVE PDF =====
+                    // SAVE PDF
                     Rectangle {
                         width: 140
                         height: 40
@@ -136,16 +123,16 @@ Popup {
                                     + "/" + fileName
 
                                 PdfExporter.exportTableToPdf(
-                                    modelToArray(dataModel),
-                                    fromDate,
-                                    toDate,
+                                    root.dataModel,   // already model
+                                    root.fromDate,
+                                    root.toDate,
                                     filePath
                                 )
                             }
                         }
                     }
 
-                    // ===== CLOSE =====
+                    // CLOSE
                     Rectangle {
                         width: 120
                         height: 40
