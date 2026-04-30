@@ -1,6 +1,5 @@
 import QtQuick
 import QtQuick.Controls
-import QtQuick.VirtualKeyboard
 import AppState 1.0
 
 Item {

@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Pdf
 
 Popup {
     id: root
@@ -16,19 +17,24 @@ Popup {
 
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
-    property real scaleFactor: Math.min(width / 1024, height / 768)
+    property url pdfSource: ""
 
-    // ===== DATA =====
-    ListModel { id: internalModel }
-    property alias dataModel: internalModel
+    onOpened: Qt.callLater(computeRenderScale)
 
-    property string fromDate: ""
-    property string toDate: ""
+    function computeRenderScale() {
+        if (pdfDoc.status === PdfDocument.Ready && pdfDoc.pageCount > 0) {
+            var pageSize = pdfDoc.pagePointSize(0)
+            // Fit page width exactly to container, no padding
+            var scale = pdfContainer.width / pageSize.width
+            pdfView.renderScale = scale
+        }
+    }
 
     Rectangle {
         anchors.fill: parent
         radius: 12
         color: "#F0F2F8"
+        clip: true
 
         ColumnLayout {
             anchors.fill: parent
@@ -37,102 +43,94 @@ Popup {
             // ===== HEADER =====
             Rectangle {
                 Layout.fillWidth: true
-                height: 54 * root.scaleFactor
+                height: 54
                 color: "#1A4DB5"
+                // Only top corners rounded
                 radius: 12
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    height: 12
+                    color: "#1A4DB5"
+                }
 
-                Text {
-                    anchors.centerIn: parent
-                    text: "PDF Preview"
-                    color: "white"
-                    font.pixelSize: 18 * root.scaleFactor
-                    font.bold: true
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 12
+
+                    Text {
+                        text: "PDF Preview"
+                        color: "white"
+                        font.pixelSize: 18
+                        font.bold: true
+                        Layout.alignment: Qt.AlignVCenter
+                    }
+
+                    Item { Layout.fillWidth: true }
                 }
             }
 
-            // ===== PREVIEW =====
-            Flickable {
+            // ===== PDF VIEWER =====
+            Rectangle {
+                id: pdfContainer
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+                color: "#ffffff"   // white bg like a real PDF viewer
                 clip: true
 
-                Rectangle {
-                    width: parent.width - 40
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    color: "white"
-                    radius: 4
-                    border.color: "#CCCCCC"
-
-                    Column {
-                        width: parent.width
-                        spacing: 6
-
-                        Text {
-                            text: "<h2>Audit Trail Report</h2>" +
-                                  "<p><b>From:</b> " + root.fromDate +
-                                  " | <b>To:</b> " + root.toDate + "</p>"
-                            textFormat: Text.RichText
-                            wrapMode: Text.Wrap
-                            font.pixelSize: 16
-                        }
-
-                        Repeater {
-                            model: dataModel
-
-                            delegate: Text {
-                                text: sr + " | " + date + " | " + time + " | " + user +
-                                      " | " + old + " → " + newVal + " | " + remark
-                                font.pixelSize: 14
-                            }
+                PdfDocument {
+                    id: pdfDoc
+                    source: root.pdfSource
+                    onStatusChanged: {
+                        if (status === PdfDocument.Ready) {
+                            Qt.callLater(root.computeRenderScale)
                         }
                     }
                 }
+
+                PdfMultiPageView {
+                    id: pdfView
+                    anchors.fill: parent
+                    document: pdfDoc
+
+                    Component.onCompleted: Qt.callLater(updateScale)
+
+                    function updateScale() {
+                        if (pdfDoc.status === PdfDocument.Ready && pdfDoc.pageCount > 0) {
+
+                            var pageSize = pdfDoc.pagePointSize(0)
+
+                            // ✅ correct conversion (points → pixels)
+                            var dpi = Screen.pixelDensity * 25.4
+                            var pageWidthPx = pageSize.width * dpi / 72.0
+
+                            // ✅ proper render scale
+                            pdfView.renderScale = pdfContainer.width / pageWidthPx
+                        }
+                    }
+                }
+
+                onWidthChanged: Qt.callLater(root.computeRenderScale)
             }
 
             // ===== FOOTER =====
             Rectangle {
                 Layout.fillWidth: true
-                height: 60
+                height: 50
                 color: "#FFFFFF"
+                // Only bottom corners rounded
+                radius: 12
+                Rectangle {
+                    anchors.top: parent.top
+                    width: parent.width
+                    height: 12
+                    color: "#FFFFFF"
+                }
 
                 RowLayout {
                     anchors.centerIn: parent
-                    spacing: 14
+                    spacing: 16
 
-                    // SAVE PDF
-                    Rectangle {
-                        width: 140
-                        height: 40
-                        radius: 6
-                        color: "#1A4DB5"
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Save PDF"
-                            color: "white"
-                            font.bold: true
-                        }
-
-                        TapHandler {
-                            onTapped: {
-                                var now = new Date()
-                                var fileName = Qt.formatDateTime(now, "dd-MM-yyyy-HH-mm") + ".pdf"
-
-                                var filePath =
-                                    StandardPaths.writableLocation(StandardPaths.DocumentsLocation)
-                                    + "/" + fileName
-
-                                PdfExporter.exportTableToPdf(
-                                    root.dataModel,   // already model
-                                    root.fromDate,
-                                    root.toDate,
-                                    filePath
-                                )
-                            }
-                        }
-                    }
-
-                    // CLOSE
                     Rectangle {
                         width: 120
                         height: 40
@@ -146,8 +144,9 @@ Popup {
                             font.bold: true
                         }
 
-                        TapHandler {
-                            onTapped: root.close()
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: root.close()
                         }
                     }
                 }

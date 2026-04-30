@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import "../components"
+
 Item {
     id: root
     anchors.fill: parent
@@ -428,7 +430,7 @@ Item {
                         delegate: Rectangle {
                             id: rowRect
                             width: ListView.view.width
-                            height: 48 * root.scale
+                            height: 60 * root.scale
 
                             property bool isSelected: model.selected === true
 
@@ -501,9 +503,9 @@ Item {
 
                                 // Type badge
                                 Rectangle {
-                                    width: typeLbl.implicitWidth + 16 * root.scale
-                                    height: 24 * root.scale
-                                    radius: 12 * root.scale
+                                    width: typeLbl.implicitWidth + 18 * root.scale
+                                    height: 26 * root.scale
+                                    radius: 14 * root.scale
                                     color: {
                                         var n = fileName.toLowerCase()
                                         if (n.indexOf("audit")   !== -1) return "#E8F5E9"
@@ -533,10 +535,10 @@ Item {
 
                                 Item { width: 8 * root.scale }
 
-                                // Open button
+                                // View button
                                 Rectangle {
-                                    width: 66 * root.scale
-                                    height: 32 * root.scale
+                                    width: 100 * root.scale
+                                    height: 38 * root.scale
                                     radius: 7 * root.scale
                                     color: "#FFFFFF"
                                     border.color: "#1A4DB5"
@@ -544,8 +546,8 @@ Item {
 
                                     Text {
                                         anchors.centerIn: parent
-                                        text: "Open"
-                                        font.pixelSize: 14 * root.scale
+                                        text: "View"
+                                        font.pixelSize: 15 * root.scale
                                         font.weight: Font.Medium
                                         color: "#1A4DB5"
                                     }
@@ -553,7 +555,10 @@ Item {
                                     MouseArea {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: PdfExporter.openPdf(filePath)
+                                        onClicked: {
+                                            pdfPreview.pdfSource = "file:///" + filePath
+                                            pdfPreview.open()
+                                        }
                                     }
                                 }
                             }
@@ -653,5 +658,9 @@ Item {
                 }
             }
         }
+    }
+
+    PdfPreview {
+        id: pdfPreview
     }
 }

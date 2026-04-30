@@ -1,0 +1,14 @@
+-rootPath
+/Users/shreetej721/Desktop/QT Projects/Application
+-cmake-output
+-output-file
+/Users/shreetej721/Desktop/QT Projects/Application/.qt_plugins/Qt6_QmlPlugins_Imports_appApplication.cmake
+-importPath
+/Users/shreetej721/Desktop/QT Projects/Application/Application
+-importPath
+/Users/shreetej721/Desktop/QT Projects/Application
+-importPath
+/Users/shreetej721/Qt/6.5.3/macos/./qml
+-qrcFiles
+/Users/shreetej721/Desktop/QT Projects/Application/.rcc/qmake_Application.qrc
+/Users/shreetej721/Desktop/QT Projects/Application/.rcc/appApplication_raw_qml_0.qrc

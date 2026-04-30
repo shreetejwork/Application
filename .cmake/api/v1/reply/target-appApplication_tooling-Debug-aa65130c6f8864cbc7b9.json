@@ -1,0 +1,987 @@
+{
+	"backtrace" : 4,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_library",
+			"qt6_target_qml_sources",
+			"qt6_add_qml_module",
+			"qt_add_qml_module",
+			"target_sources"
+		],
+		"files" : 
+		[
+			"/Users/shreetej721/Qt/6.5.3/macos/lib/cmake/Qt6Qml/Qt6QmlMacros.cmake",
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 1
+			},
+			{
+				"command" : 3,
+				"file" : 1,
+				"line" : 17,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 686,
+				"parent" : 1
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 610,
+				"parent" : 2
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 2288,
+				"parent" : 3
+			},
+			{
+				"command" : 4,
+				"file" : 0,
+				"line" : 2291,
+				"parent" : 3
+			}
+		]
+	},
+	"folder" : 
+	{
+		"name" : "QtInternalTargets"
+	},
+	"id" : "appApplication_tooling::@6890427a1f51a3e7e1df",
+	"name" : "appApplication_tooling",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6,
+				7,
+				8,
+				9,
+				10,
+				11,
+				12,
+				13,
+				14,
+				15,
+				16,
+				17,
+				18,
+				19,
+				20,
+				21,
+				22,
+				23,
+				24,
+				25,
+				26,
+				27,
+				28,
+				29,
+				30,
+				31,
+				32,
+				33,
+				34,
+				35,
+				36,
+				37,
+				38,
+				39
+			]
+		},
+		{
+			"name" : "Resources",
+			"sourceIndexes" : 
+			[
+				40,
+				41,
+				42,
+				43,
+				44,
+				45,
+				46,
+				47,
+				48,
+				49,
+				50,
+				51,
+				52,
+				53,
+				54,
+				55,
+				56,
+				57,
+				58,
+				59,
+				60,
+				61,
+				62,
+				63
+			]
+		},
+		{
+			"name" : "CMake Rules",
+			"sourceIndexes" : 
+			[
+				64,
+				65,
+				66,
+				67,
+				68,
+				69,
+				70,
+				71,
+				72,
+				73,
+				74,
+				75,
+				76,
+				77,
+				78,
+				79,
+				80,
+				81,
+				82,
+				83,
+				84,
+				85,
+				86,
+				87,
+				88,
+				89,
+				90,
+				91,
+				92,
+				93,
+				94,
+				95,
+				96,
+				97,
+				98,
+				99,
+				100,
+				101,
+				102,
+				103,
+				104,
+				105,
+				106,
+				107,
+				108,
+				109,
+				110,
+				111,
+				112,
+				113,
+				114,
+				115,
+				116,
+				117,
+				118,
+				119,
+				120,
+				121,
+				122,
+				123,
+				124,
+				125,
+				126,
+				127
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/Main.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/HomeScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/DDusterScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/TopBar.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/AnalogGauge.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CircularGauge.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CoilProgressBar.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/DDButton.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/NavPageIndicator.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/ActionButton.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/ValueControl.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CircleActionButton.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/AutoLearnScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CustomPopup.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/GlobalState.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/SysDetailsScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/MenuScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/MenuTile.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/UserScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/FactorySettingsScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/LoginPopup.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CreateUserPopup.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/DeleteUserPopup.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/EditPasswordPopup.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/SysSettingsScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS1.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS2.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS3.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS4.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CommonKeyboard.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS5.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/DiagnosisScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/DiagCard.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS6.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/AuditTrailScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/BatchReportScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/ProductLibraryScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/PowerOffPopup.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/PdfPreview.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/ReportsFolderScreen.qml",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/Bell.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/Menu.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/User.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/PowerOff.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/Back.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/AuditTrail.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/FactorySettings.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/More.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/ProductLib.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/Settings.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/UserCircle.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/userNew.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/updated.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/usbupdate.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/supplier.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/bug.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/coding.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/social.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/diagnosis.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/calendar.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/filter.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/folder.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/pdf.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 5,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/people.png",
+			"sourceGroupIndex" : 1
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/Main.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/HomeScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/DDusterScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/TopBar.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/AnalogGauge.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CircularGauge.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CoilProgressBar.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/DDButton.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/NavPageIndicator.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/ActionButton.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/ValueControl.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CircleActionButton.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/AutoLearnScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CustomPopup.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/GlobalState.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/SysDetailsScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/MenuScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/MenuTile.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/UserScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/FactorySettingsScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/LoginPopup.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CreateUserPopup.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/DeleteUserPopup.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/EditPasswordPopup.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/SysSettingsScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS1.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS2.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS3.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS4.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/CommonKeyboard.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS5.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/DiagnosisScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/DiagCard.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/SettingsS6.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/AuditTrailScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/BatchReportScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/ProductLibraryScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/PowerOffPopup.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/components/PdfPreview.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/qml/screens/ReportsFolderScreen.qml.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/Bell.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/Menu.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/User.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/PowerOff.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/Back.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/AuditTrail.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/FactorySettings.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/More.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/ProductLib.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/Settings.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/UserCircle.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/userNew.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/updated.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/usbupdate.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/supplier.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/bug.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/coding.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/social.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/diagnosis.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/calendar.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/filter.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/folder.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/pdf.png.rule",
+			"sourceGroupIndex" : 2
+		},
+		{
+			"backtrace" : 0,
+			"isGenerated" : true,
+			"path" : "Application/assets/images/people.png.rule",
+			"sourceGroupIndex" : 2
+		}
+	],
+	"type" : "INTERFACE_LIBRARY"
+}
