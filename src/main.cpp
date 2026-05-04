@@ -6,6 +6,7 @@
 #include "SystemController.h"
 #include "WifiScanner.h"
 #include "PdfExporter.h"
+#include "SystemDiagnosis.h"
 
 int main(int argc, char *argv[])
 {
@@ -41,6 +42,9 @@ int main(int argc, char *argv[])
 
     PdfExporter pdfExporter;
     engine.rootContext()->setContextProperty("PdfExporter", &pdfExporter);
+
+    SystemDiagnosis diag;
+    engine.rootContext()->setContextProperty("SystemDiag", &diag);
 
     engine.loadFromModule("Application", "Main");
 

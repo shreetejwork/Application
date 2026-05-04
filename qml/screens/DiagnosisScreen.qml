@@ -7,141 +7,233 @@ Item {
     id: root
     anchors.fill: parent
 
-    property real baseWidth: 1024
+    // ── Scale: never go below 0.72 so text stays readable ──────
+    property real baseWidth:  1024
     property real baseHeight: 600
-    property real scale: Math.min(width / baseWidth, height / baseHeight)
-    property var navigateTo
+    property real scale: Math.max(0.72, Math.min(width / baseWidth, height / baseHeight))
+
+    property bool isLoading: false
 
     Rectangle {
         anchors.fill: parent
-        color: "#F5F7FC"
+        color: "#F0F3FA"
 
         ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 30 * root.scale
-            spacing: 20 * root.scale
+            anchors.fill:    parent
+            anchors.margins: 24
+            spacing:         16
 
-            // ===== HEADER =====
+            // ── HEADER ────────────────────────────────────────────
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 16 * root.scale
+                spacing: 12
 
                 Column {
-                    spacing: 6 * root.scale
+                    spacing: 4
 
                     Text {
-                        text: "System Diagnosis"
-                        font.pixelSize: 26 * root.scale
-                        font.bold: true
-                        color: "#1A4DB5"
+                        text:           "System Diagnosis"
+                        font.pixelSize: 22
+                        font.bold:      true
+                        color:          "#1A4DB5"
                     }
 
                     Rectangle {
-                        width: 80 * root.scale
-                        height: 4 * root.scale
-                        radius: 2 * root.scale
+                        width: 44; height: 3; radius: 2
                         color: "#1A4DB5"
                     }
                 }
 
                 Item { Layout.fillWidth: true }
 
-                Rectangle {
-                    width: 110 * root.scale
-                    height: 38 * root.scale
-                    radius: 8 * root.scale
-                    color: "#1A4DB5"
+                Text {
+                    id:             lastUpdated
+                    text:           ""
+                    font.pixelSize: 12
+                    color:          "#9E9E9E"
+                    Layout.alignment: Qt.AlignVCenter
+                }
 
-                    Text {
+                Rectangle {
+                    width:  110
+                    height: 36
+                    radius: 8
+                    color:  isLoading ? "#1A4DB5" : "#1A4DB5"
+                    Layout.alignment: Qt.AlignVCenter
+
+                    Behavior on color { ColorAnimation { duration: 200 } }
+
+                    Row {
                         anchors.centerIn: parent
-                        text: "Run All"
-                        color: "#FFFFFF"
-                        font.pixelSize: 18 * root.scale
-                        font.weight: Font.Medium
+                        spacing: 6
+
+                        Text {
+                            text:           isLoading ? "..." : "▶"
+                            color:          "#FFFFFF"
+                            font.pixelSize: 13
+                        }
+
+                        Text {
+                            text:           isLoading ? "Running..." : "Run All"
+                            color:          "#FFFFFF"
+                            font.pixelSize: 14
+                            font.weight:    Font.Medium
+                        }
                     }
 
                     MouseArea {
                         anchors.fill: parent
-                        cursorShape: Qt.PointingHandCursor
+                        enabled:      !isLoading
+                        cursorShape:  Qt.PointingHandCursor
                         onClicked: {
-                            cpuStatus.status  = "Checking..."
-                            memStatus.status  = "Checking..."
-                            netStatus.status  = "Checking..."
-                            tempStatus.status = "Checking..."
-                            runTimer.restart()
+                            isLoading = true
+                            SystemDiag.update()
                         }
                     }
                 }
             }
 
-            // ===== DIVIDER =====
+            // ── DIVIDER ───────────────────────────────────────────
             Rectangle {
                 Layout.fillWidth: true
                 height: 1
-                color: "#DDDDDD"
+                color:  "#D8DFF0"
             }
 
-            // ===== CARDS GRID =====
+            // ── CARDS GRID ────────────────────────────────────────
             GridLayout {
-                Layout.fillWidth: true
+                Layout.fillWidth:  true
                 Layout.fillHeight: true
-                columns: 2
-                rowSpacing: 16 * root.scale
-                columnSpacing: 16 * root.scale
+                columns:       2
+                rowSpacing:    12
+                columnSpacing: 12
 
+                // RAM ─────────────────────────────────────────────
                 DiagCard {
-                    id: cpuStatus
-                    Layout.fillWidth: true
+                    id: ramCard
+                    Layout.fillWidth:  true
                     Layout.fillHeight: true
-                    title: "CPU"
-                    status: "OK"
-                    detail: "Usage: 24%"
-                    scale: root.scale
+
+                    title:    "RAM Usage"
+                    subtitle: "Active memory in use"
+                    uiScale:  root.scale
+
+                    property real usage: SystemDiag.ramTotal > 0
+                                         ? SystemDiag.ramUsed / SystemDiag.ramTotal : 0
+
+                    progress:  isLoading ? -1 : usage
+
+                    status: isLoading    ? "Checking..."
+                          : usage > 0.9  ? "Critical"
+                          : usage > 0.75 ? "Warning"
+                          : "OK"
+
+                    detail: isLoading ? "— GB / — GB" : SystemDiag.ramUsage
+
+                    cardColor: status === "Critical" ? "#FFF5F5"
+                             : status === "Warning"  ? "#FFFBF0"
+                             : "#F7FBF7"
                 }
 
+                // MEMORY ──────────────────────────────────────────
                 DiagCard {
-                    id: memStatus
-                    Layout.fillWidth: true
+                    id: memCard
+                    Layout.fillWidth:  true
                     Layout.fillHeight: true
-                    title: "Memory"
-                    status: "OK"
-                    detail: "Used: 1.2 GB / 4 GB"
-                    scale: root.scale
+
+                    title:    "Memory (Cache)"
+                    subtitle: "Buffers + cached pages"
+                    uiScale:  root.scale
+
+                    property real usage: SystemDiag.memTotal > 0
+                                         ? SystemDiag.memUsed / SystemDiag.memTotal : 0
+
+                    progress:  isLoading ? -1 : usage
+
+                    status: isLoading    ? "Checking..."
+                          : usage > 0.9  ? "Critical"
+                          : usage > 0.6  ? "Warning"
+                          : "OK"
+
+                    detail: isLoading ? "— GB / — GB" : SystemDiag.memoryUsage
+
+                    cardColor: status === "Critical" ? "#FFF5F5"
+                             : status === "Warning"  ? "#FFFBF0"
+                             : "#F7FBF7"
                 }
 
+                // TEMPERATURE ─────────────────────────────────────
                 DiagCard {
-                    id: netStatus
-                    Layout.fillWidth: true
+                    id: tempCard
+                    Layout.fillWidth:  true
                     Layout.fillHeight: true
-                    title: "Network"
-                    status: "OK"
-                    detail: "Ping: 12 ms"
-                    scale: root.scale
+
+                    title:    "CPU Temperature"
+                    subtitle: "Thermal zone 0"
+                    uiScale:  root.scale
+
+                    property real temp: SystemDiag.temperatureValue
+                    property real tempProgress: temp > 0 ? Math.min(temp / 100.0, 1.0) : -1
+
+                    progress: isLoading ? -1 : tempProgress
+
+                    status: isLoading ? "Checking..."
+                          : temp < 0  ? "Unknown"
+                          : temp > 75 ? "Critical"
+                          : temp > 60 ? "Warning"
+                          : "OK"
+
+                    detail: isLoading ? "— °C" : SystemDiag.temperature
+
+                    cardColor: status === "Critical" ? "#FFF5F5"
+                             : status === "Warning"  ? "#FFFBF0"
+                             : "#F7FBF7"
                 }
 
+                // OVERALL HEALTH ──────────────────────────────────
                 DiagCard {
-                    id: tempStatus
-                    Layout.fillWidth: true
+                    id: summaryCard
+                    Layout.fillWidth:  true
                     Layout.fillHeight: true
-                    title: "Temperature"
-                    status: "OK"
-                    detail: "Core: 42°C"
-                    scale: root.scale
+
+                    title:    "Overall Health"
+                    subtitle: "Aggregated system status"
+                    uiScale:  root.scale
+
+                    property string worstStatus: {
+                        var s = [ramCard.status, memCard.status, tempCard.status]
+                        if (s.indexOf("Critical")    >= 0) return "Critical"
+                        if (s.indexOf("Warning")     >= 0) return "Warning"
+                        if (s.indexOf("Checking...") >= 0) return "Checking..."
+                        return "OK"
+                    }
+
+                    status: worstStatus
+
+                    detail: worstStatus === "Critical"    ? "Action Required"
+                          : worstStatus === "Warning"     ? "Monitor Closely"
+                          : worstStatus === "Checking..." ? "Scanning..."
+                          : "All Systems Go"
+
+                    cardColor: status === "Critical" ? "#FFF5F5"
+                             : status === "Warning"  ? "#FFFBF0"
+                             : "#F7FBF7"
                 }
             }
         }
     }
 
-    // ===== TIMER =====
-    Timer {
-        id: runTimer
-        interval: 1500
-        repeat: false
-        onTriggered: {
-            cpuStatus.status  = "OK"
-            memStatus.status  = "OK"
-            netStatus.status  = "OK"
-            tempStatus.status = "Warning"
+    // ── BACKEND SIGNAL ────────────────────────────────────────────
+    Connections {
+        target: SystemDiag
+
+        function onDataChanged() {
+            isLoading = false
+            var now = new Date()
+            lastUpdated.text = "Updated " +
+                String(now.getHours())  .padStart(2, "0") + ":" +
+                String(now.getMinutes()).padStart(2, "0") + ":" +
+                String(now.getSeconds()).padStart(2, "0")
         }
     }
 }

@@ -4,84 +4,182 @@ import QtQuick.Layouts
 Rectangle {
     id: card
 
-    property string title: ""
-    property string status: "OK"
-    property string detail: ""
-    property real scale: 1
+    property string title:    ""
+    property string status:   "OK"
+    property string detail:   ""
+    property real   uiScale:  1.0
+    property color  cardColor: "#FFFFFF"
+    property real   progress:  -1
+    property string subtitle: ""
 
-    radius: 12 * scale
-    color: "#FFFFFF"
+    radius:       12 * uiScale
+    color:        cardColor
     border.color: statusBorderColor()
-    border.width: 1.5 * scale
+    border.width: 1
+
+    Behavior on color        { ColorAnimation { duration: 300 } }
+    Behavior on border.color { ColorAnimation { duration: 300 } }
 
     function statusBorderColor() {
-        if (status === "OK")           return "#4CAF50"
-        if (status === "Warning")      return "#FF9800"
-        if (status === "Checking...") return "#2196F3"
-        return "#F44336"
+        if (status === "OK")          return "#43A047"
+        if (status === "Warning")     return "#FB8C00"
+        if (status === "Checking...") return "#1E88E5"
+        return "#E53935"
     }
-
     function statusBadgeBg() {
-        if (status === "OK")           return "#E8F5E9"
-        if (status === "Warning")      return "#FFF3E0"
+        if (status === "OK")          return "#E3F2FD"
+        if (status === "Warning")     return "#FFF3E0"
         if (status === "Checking...") return "#E3F2FD"
         return "#FFEBEE"
     }
-
     function statusTextColor() {
-        if (status === "OK")           return "#2E7D32"
-        if (status === "Warning")      return "#E65100"
+        if (status === "OK")          return "#2E7D32"
+        if (status === "Warning")     return "#E65100"
         if (status === "Checking...") return "#1565C0"
         return "#B71C1C"
     }
+    function statusIcon() {
+        if (status === "OK")          return "✔"
+        if (status === "Warning")     return "⚠"
+        if (status === "Checking...") return "..."
+        return "✖"
+    }
 
     ColumnLayout {
-        anchors.centerIn: parent
-        spacing: 10 * card.scale
+        anchors.fill:    parent
+        anchors.margins: 16
+        spacing:         10
 
-        Rectangle {
-            Layout.alignment: Qt.AlignHCenter
-            width: 15 * card.scale
-            height: 15 * card.scale
-            radius: 8 * card.scale
-            color: card.statusBorderColor()
-        }
+        // ── header row ──────────────────────────────────────────
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: 8
 
-        // Title
-        Text {
-            Layout.alignment: Qt.AlignHCenter
-            text: card.title
-            font.pixelSize: 22 * card.scale
-            font.weight: Font.Bold
-            color: "#1A1A1A"
-            horizontalAlignment: Text.AlignHCenter
-        }
+            Rectangle {
+                width:  10; height: 10; radius: 5
+                color: card.statusBorderColor()
 
-        // Detail text
-        Text {
-            Layout.alignment: Qt.AlignHCenter
-            text: card.detail
-            font.pixelSize: 18 * card.scale
-            font.weight: Font.Normal
-            color: "#555555"
-            horizontalAlignment: Text.AlignHCenter
-        }
-
-        // Status badge
-        Rectangle {
-            Layout.alignment: Qt.AlignHCenter
-            width: statusLabel.implicitWidth + 24 * card.scale
-            height: 26 * card.scale
-            radius: 13 * card.scale
-            color: card.statusBadgeBg()
+                SequentialAnimation on opacity {
+                    running: card.status === "Checking..."
+                    loops:   Animation.Infinite
+                    NumberAnimation { to: 0.2; duration: 600 }
+                    NumberAnimation { to: 1.0; duration: 600 }
+                }
+            }
 
             Text {
-                id: statusLabel
+                text:             card.title
+                font.pixelSize:   Math.max(13, 15 * card.uiScale)
+                font.weight:      Font.Bold
+                color:            "#1A1A1A"
+                Layout.fillWidth: true
+                elide:            Text.ElideRight
+            }
+
+            Rectangle {
+                width:  Math.max(26, 28 * card.uiScale)
+                height: Math.max(26, 28 * card.uiScale)
+                radius: width / 2
+                color:  card.statusBadgeBg()
+
+                Text {
+                    anchors.centerIn: parent
+                    text:             card.statusIcon()
+                    font.pixelSize:   Math.max(11, 12 * card.uiScale)
+                    color:            card.statusTextColor()
+                }
+            }
+        }
+
+        // ── subtitle ────────────────────────────────────────────
+        Text {
+            visible:          card.subtitle !== ""
+            text:             card.subtitle
+            font.pixelSize:   Math.max(11, 12 * card.uiScale)
+            color:            "#757575"
+            Layout.fillWidth: true
+        }
+
+        // ── divider ─────────────────────────────────────────────
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: "#EEEEEE"
+        }
+
+        // ── main value ──────────────────────────────────────────
+        Text {
+            Layout.alignment:    Qt.AlignHCenter
+            text:                card.detail
+            font.pixelSize:      Math.max(15, 18 * card.uiScale)
+            font.weight:         Font.DemiBold
+            color:               "#111111"
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode:            Text.WordWrap
+            Layout.fillWidth:    true
+        }
+
+        // ── progress bar ────────────────────────────────────────
+        ColumnLayout {
+            visible:          card.progress >= 0
+            Layout.fillWidth: true
+            spacing:          4
+
+            Rectangle {
+                Layout.fillWidth: true
+                height:           8
+                radius:           4
+                color:            "#E0E0E0"
+
+                Rectangle {
+                    width:   parent.width * Math.max(0, Math.min(1, card.progress))
+                    height:  parent.height
+                    radius:  4
+                    color:   card.statusBorderColor()
+
+                    Behavior on width { NumberAnimation { duration: 500; easing.type: Easing.OutCubic } }
+                    Behavior on color { ColorAnimation  { duration: 300 } }
+                }
+            }
+
+            RowLayout {
+                Layout.fillWidth: true
+
+                Text {
+                    text:           "0"
+                    font.pixelSize: Math.max(10, 11 * card.uiScale)
+                    color:          "#9E9E9E"
+                }
+                Item { Layout.fillWidth: true }
+                Text {
+                    text:           card.progress >= 0
+                                    ? Math.round(card.progress * 100) + "% used"
+                                    : ""
+                    font.pixelSize: Math.max(10, 11 * card.uiScale)
+                    color:          "#9E9E9E"
+                }
+            }
+        }
+
+        Item { Layout.fillHeight: true }
+
+        // ── status badge ────────────────────────────────────────
+        Rectangle {
+            Layout.alignment: Qt.AlignHCenter
+            width:  statusLbl.implicitWidth + 24
+            height: 26
+            radius: 13
+            color:  card.statusBadgeBg()
+
+            Behavior on color { ColorAnimation { duration: 300 } }
+
+            Text {
+                id:              statusLbl
                 anchors.centerIn: parent
-                text: card.status
-                font.pixelSize: 16 * card.scale
-                font.weight: Font.Medium
-                color: card.statusTextColor()
+                text:             card.status
+                font.pixelSize:   Math.max(11, 12 * card.uiScale)
+                font.weight:      Font.Medium
+                color:            card.statusTextColor()
             }
         }
     }

@@ -110,19 +110,19 @@ Item {
             return
 
         if (PdfExporter.isUsbMounted()) {
-            notify("✓ USB Attached")
+            notify("✓ USB Connected")
         } else {
-            notify("⚠ USB not attached")
+            notify("⚠ USB not connected")
             return
         }
 
         var ok = PdfExporter.moveFilesToUsb(paths)
 
         if (ok) {
-            notify("✓ Files moved to USB")
+            notify("✓ File moved to USB")
             loadFiles()
         } else {
-            notify("⚠ Some files failed to move")
+            notify("⚠ Failed to move")
         }
     }
 
