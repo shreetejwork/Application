@@ -85,6 +85,7 @@ qt_add_qml_module(appApplication
         assets/images/folder.png
         assets/images/pdf.png
         assets/images/people.png
+        assets/images/USB.png
 
 
     SOURCES

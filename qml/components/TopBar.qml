@@ -15,6 +15,26 @@ Rectangle {
     property string notificationText: ""
     property bool notificationVisible: false
 
+    property bool usbConnected: false
+
+    Timer {
+        interval: 2000
+        running: true
+        repeat: true
+
+        onTriggered: {
+            var current = PdfExporter.isUsbMounted()
+
+            // Only trigger on transition: false -> true
+            if (current && !root.prevUsbConnected) {
+                root.showNotification("✓ USB Connected")
+            }
+
+            root.usbConnected = current
+            root.prevUsbConnected = current
+        }
+    }
+
     PowerOffPopup {
         id: powerPopup
     }
@@ -191,6 +211,30 @@ Rectangle {
         RowLayout {
             Layout.fillHeight: true
             spacing: Math.max(6, root.width * 0.012)
+
+            // ===== USB STATUS =====
+            Item {
+                id: usbItem
+                visible: root.usbConnected
+
+                Layout.alignment: Qt.AlignVCenter
+                Layout.preferredWidth: root.height * 0.55
+                Layout.preferredHeight: root.height * 0.55
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: width * 0.2
+
+                    Image {
+                        anchors.centerIn: parent
+                        source: "qrc:/qt/qml/Application/assets/images/USB.png"
+                        width: parent.width * 0.6
+                        height: parent.height * 0.6
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                    }
+                }
+            }
 
             RowLayout {
                 spacing: Math.max(4, root.width * 0.008)

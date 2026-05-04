@@ -117,10 +117,10 @@ Item {
         var ok = PdfExporter.moveFilesToUsb(paths)
 
         if (ok) {
-            console.log("✓ Files moved to USB")
+            notify("✓ Files moved to USB")
             loadFiles()
         } else {
-            console.log("⚠ Some files failed to move")
+            notify("⚠ Some files failed to move")
         }
     }
 
@@ -334,7 +334,7 @@ Item {
                     // ── Move to USB ───────────────────────────────────────
                     Rectangle {
                         visible: root.selectionMode
-                        width: 80 * root.scale
+                        width: 100 * root.scale
                         height: 38 * root.scale
                         radius: 8 * root.scale
                         color: "#FFFFFF"
