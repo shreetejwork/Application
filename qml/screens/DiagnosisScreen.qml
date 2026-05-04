@@ -115,7 +115,6 @@ Item {
                     Layout.fillHeight: true
 
                     title:    "RAM Usage"
-                    subtitle: "Active memory in use"
                     uiScale:  root.scale
 
                     property real usage: SystemDiag.ramTotal > 0
@@ -141,8 +140,7 @@ Item {
                     Layout.fillWidth:  true
                     Layout.fillHeight: true
 
-                    title:    "Memory (Cache)"
-                    subtitle: "Buffers + cached pages"
+                    title:    "Storage"
                     uiScale:  root.scale
 
                     property real usage: SystemDiag.memTotal > 0
@@ -169,7 +167,6 @@ Item {
                     Layout.fillHeight: true
 
                     title:    "CPU Temperature"
-                    subtitle: "Thermal zone 0"
                     uiScale:  root.scale
 
                     property real temp: SystemDiag.temperatureValue
