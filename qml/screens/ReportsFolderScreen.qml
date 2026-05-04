@@ -59,10 +59,10 @@ Item {
             var item = pdfModel.get(i)
             if (matchesFilter(item.fileName)) {
                 filteredModel.append({
-                    fileName: item.fileName,
-                    filePath: item.filePath,
-                    selected: false
-                })
+                                         fileName: item.fileName,
+                                         filePath: item.filePath,
+                                         selected: false
+                                     })
             }
         }
     }
@@ -114,11 +114,13 @@ Item {
             return
         }
 
+        var ok = PdfExporter.moveFilesToUsb(paths)
+
         if (ok) {
-            notify("✓ Files moved to USB")
+            console.log("✓ Files moved to USB")
             loadFiles()
         } else {
-            notify("⚠ Failed to move")
+            console.log("⚠ Some files failed to move")
         }
     }
 
