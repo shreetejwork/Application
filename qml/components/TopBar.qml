@@ -17,6 +17,16 @@ Rectangle {
 
     property bool usbConnected: false
 
+    Timer {
+        interval: 2000
+        running: true
+        repeat: true
+
+        onTriggered: {
+            root.usbConnected = PdfExporter.isUsbMounted()
+        }
+    }
+
 
     PowerOffPopup {
         id: powerPopup
@@ -205,10 +215,8 @@ Rectangle {
                 Layout.preferredHeight: root.height * 0.55
 
                 Image {
-                    anchors.centerIn: parent
+                    anchors.fill: parent
                     source: "qrc:/qt/qml/Application/assets/images/USB.png"
-                    width: parent.width * 0.6
-                    height: parent.height * 0.6
                     fillMode: Image.PreserveAspectFit
                     smooth: true
                 }
