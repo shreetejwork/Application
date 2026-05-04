@@ -9,9 +9,9 @@ QtObject {
     property real amplitudeThreshold: 400
 
     property bool loginKeyboardRequest: false
-
     property var activeInputField: null
 
-   property date globalDateTime: new Date()
+    property var globalDateTime: new Date()
 
+   property bool showDDuster: true
 }

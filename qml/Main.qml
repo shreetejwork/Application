@@ -22,6 +22,22 @@ Window {
         // Custom keyboard initialization
     }
 
+    Component {
+        id: ddusterComp
+        DDusterScreen {
+            showTopBar: false
+            globalTopBar: mainTopBar
+        }
+    }
+
+    Component {
+        id: batchComp
+        BatchMenuScreen {
+            showTopBar: false
+            globalTopBar: mainTopBar
+        }
+    }
+
     // Track current menu screen
     property string currentMenuScreen: ""
 
@@ -91,7 +107,12 @@ Window {
             currentIndex: 0
 
             HomeScreen { showTopBar: false; globalTopBar: mainTopBar }
-            DDusterScreen { showTopBar: false; globalTopBar: mainTopBar }
+
+            Loader {
+                property bool showDDuster: GlobalState.showDDuster
+                sourceComponent: showDDuster ? ddusterComp : batchComp
+            }
+
             AutoLearnScreen { showTopBar: false; globalTopBar: mainTopBar }
             SysDetailsScreen { showTopBar: false; globalTopBar: mainTopBar }
 

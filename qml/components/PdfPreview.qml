@@ -100,11 +100,9 @@ Popup {
 
                             var pageSize = pdfDoc.pagePointSize(0)
 
-                            // ✅ correct conversion (points → pixels)
                             var dpi = Screen.pixelDensity * 25.4
                             var pageWidthPx = pageSize.width * dpi / 72.0
 
-                            // ✅ proper render scale
                             pdfView.renderScale = pdfContainer.width / pageWidthPx
                         }
                     }

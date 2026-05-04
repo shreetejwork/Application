@@ -58,6 +58,7 @@ qt_add_qml_module(appApplication
         qml/screens/ProductLibraryScreen.qml
         qml/components/PowerOffPopup.qml
         qml/components/PdfPreview.qml
+        qml/screens/BatchMenuScreen.qml
 
     RESOURCES
         assets/images/Bell.png
@@ -95,6 +96,7 @@ qt_add_qml_module(appApplication
         src/WifiScanner.cpp
         src/PdfExporter.h
         QML_FILES qml/screens/ReportsFolderScreen.qml
+        QML_FILES qml/screens/DeveloperSettingsScreen.qml
 )
 
 set_target_properties(appApplication PROPERTIES

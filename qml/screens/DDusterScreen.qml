@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import AppState 1.0
+
+
 import "../components"
 
 Item {
@@ -11,6 +13,7 @@ Item {
     property var globalTopBar
 
     property string lastValidBatch: "General Batch"
+    property string lastValidProduct: "Default Product"
 
     property bool batchRunning: false
     property bool batchPaused: false
@@ -78,112 +81,197 @@ Item {
                         anchors.margins: 24
                         spacing: 20
 
-                        RowLayout {
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            Layout.topMargin: Math.max(10, 20 * root.scale)
-                            spacing: Math.max(6, 12 * root.scale)
 
-                            Rectangle {
+                            // ===== BATCH FIELD  =====
+                            RowLayout {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 48
-                                radius: 10
-                                color: "#F9FAFB"
-                                border.color: inputField.activeFocus ? "#1A4DB5" : "#D1D5DB"
-                                border.width: 1
+                                Layout.topMargin: Math.max(10, 20 * root.scale)
+                                spacing: Math.max(6, 12 * root.scale)
 
-                                Behavior on border.color { ColorAnimation { duration: 150 } }
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 48
+                                    radius: 10
+                                    color: "#F9FAFB"
+                                    border.color: inputField.activeFocus ? "#1A4DB5" : "#D1D5DB"
+                                    border.width: 1
 
-                                TextField {
-                                    id: inputField
-                                    anchors.fill: parent
-                                    anchors.margins: 10
+                                    Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                                    text: root.lastValidBatch
-                                    font.pixelSize: 18
-                                    color: "#1A4DB5"
+                                    TextField {
+                                        id: inputField
+                                        anchors.fill: parent
+                                        anchors.margins: 10
 
-                                    property bool isPasswordField: false
+                                        text: root.lastValidBatch
+                                        font.pixelSize: 18
+                                        color: "#1A4DB5"
 
-                                    focus: false
-                                    activeFocusOnPress: true
+                                        property bool isPasswordField: false
 
-                                    readOnly: root.batchRunning   // DISABLE WHILE RUNNING
+                                        focus: false
+                                        activeFocusOnPress: true
+                                        readOnly: root.batchRunning
+                                        inputMethodHints: Qt.ImhNone
 
-                                    inputMethodHints: Qt.ImhNone  // important for Pi
+                                        background: null
+                                        padding: 0
+                                        leftPadding: 0
+                                        rightPadding: 0
+                                        topPadding: 0
+                                        bottomPadding: 0
 
-                                    background: null
-                                    padding: 0
-                                    leftPadding: 0
-                                    rightPadding: 0
-                                    topPadding: 0
-                                    bottomPadding: 0
+                                        cursorVisible: activeFocus
 
-                                    cursorVisible: activeFocus
+                                        onActiveFocusChanged: {
+                                            if (activeFocus) {
+                                                GlobalState.activeInputField = inputField
+                                                GlobalState.loginKeyboardRequest = true
+                                            }
+                                        }
 
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onPressed: inputField.forceActiveFocus()
+                                        }
 
-                                    onActiveFocusChanged: {
-                                        if (activeFocus) {
-                                            GlobalState.activeInputField = inputField
-                                            GlobalState.loginKeyboardRequest = true   // show keyboard
+                                        onAccepted: {
+                                            GlobalState.loginKeyboardRequest = false
+
+                                            if (text.trim() === "") {
+                                                text = "General Batch"
+                                                root.notify("⚠ Empty not allowed")
+                                            } else {
+                                                root.lastValidBatch = text
+                                                root.notify("✓ Batch Updated")
+                                            }
+
+                                            inputField.focus = false
+                                            inputField.readOnly = true
                                         }
                                     }
+                                }
 
+                                Text {
+                                    text: "Edit"
+                                    font.pixelSize: 12
+                                    color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"
+
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
 
                                     MouseArea {
                                         anchors.fill: parent
-                                        onPressed: {
+                                        cursorShape: root.batchRunning ? Qt.ArrowCursor : Qt.PointingHandCursor
+                                        enabled: !root.batchRunning
+
+                                        onClicked: {
+                                            inputField.readOnly = false
                                             inputField.forceActiveFocus()
+                                            inputField.selectAll()
+                                            GlobalState.loginKeyboardRequest = true
                                         }
-                                    }
-
-                                    onAccepted: {
-                                        GlobalState.loginKeyboardRequest = false
-
-                                        if (text.trim() === "") {
-                                            text = "General Batch"
-                                            root.notify("⚠ Empty not allowed")
-                                        } else {
-                                            root.lastValidBatch = text
-                                            root.notify("✓ Batch Updated")
-                                        }
-
-                                        inputField.focus = false
-                                        inputField.readOnly = true
                                     }
                                 }
                             }
 
-                            Text {
-                                text: "Edit"
-                                font.pixelSize: 12
-                                color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"  // Visual feedback
+                            // ===== PRODUCT FIELD =====
+                            RowLayout {
+                                Layout.fillWidth: true
+                                Layout.topMargin: Math.max(20, 30 * root.scale)
+                                spacing: Math.max(6, 12 * root.scale)
 
-                                horizontalAlignment: Text.AlignHCenter
-                                verticalAlignment: Text.AlignVCenter
+                                Rectangle {
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 48
+                                    radius: 10
+                                    color: "#F9FAFB"
+                                    border.color: productField.activeFocus ? "#1A4DB5" : "#D1D5DB"
+                                    border.width: 1
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    cursorShape: root.batchRunning ? Qt.ArrowCursor : Qt.PointingHandCursor
+                                    Behavior on border.color { ColorAnimation { duration: 150 } }
 
-                                    enabled: !root.batchRunning   // DISABLE CLICK
+                                    TextField {
+                                        id: productField
+                                        anchors.fill: parent
+                                        anchors.margins: 10
 
-                                    onClicked: {
-                                        inputField.readOnly = false
-                                        inputField.forceActiveFocus()
-                                        inputField.selectAll()
+                                        text: root.lastValidProduct
+                                        font.pixelSize: 18
+                                        color: "#1A4DB5"
 
-                                        GlobalState.loginKeyboardRequest = true
+                                        property bool isPasswordField: false
+
+                                        focus: false
+                                        activeFocusOnPress: true
+                                        readOnly: root.batchRunning
+                                        inputMethodHints: Qt.ImhNone
+
+                                        background: null
+                                        padding: 0
+                                        leftPadding: 0
+                                        rightPadding: 0
+                                        topPadding: 0
+                                        bottomPadding: 0
+
+                                        cursorVisible: activeFocus
+
+                                        onActiveFocusChanged: {
+                                            if (activeFocus) {
+                                                GlobalState.activeInputField = productField
+                                                GlobalState.loginKeyboardRequest = true
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            onPressed: productField.forceActiveFocus()
+                                        }
+
+                                        onAccepted: {
+                                            GlobalState.loginKeyboardRequest = false
+
+                                            if (text.trim() === "") {
+                                                text = "Default Product"
+                                                root.notify("⚠ Empty not allowed")
+                                            } else {
+                                                root.lastValidProduct = text
+                                                root.notify("✓ Product Updated")
+                                            }
+
+                                            productField.focus = false
+                                            productField.readOnly = true
+                                        }
                                     }
-                                    Keys.onReturnPressed: {
-                                        card.confirmed(text.trim())
-                                        focus = false
-                                    }
+                                }
 
+                                Text {
+                                    text: "Edit"
+                                    font.pixelSize: 12
+                                    color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"
+
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        cursorShape: root.batchRunning ? Qt.ArrowCursor : Qt.PointingHandCursor
+                                        enabled: !root.batchRunning
+
+                                        onClicked: {
+                                            productField.readOnly = false
+                                            productField.forceActiveFocus()
+                                            productField.selectAll()
+                                            GlobalState.loginKeyboardRequest = true
+                                        }
+                                    }
                                 }
                             }
                         }
 
-                        Item { Layout.fillHeight: true }
+
 
                         // ================= BUTTONS =================
                         RowLayout {
@@ -243,47 +331,8 @@ Item {
                             }
 
                             Item { Layout.fillWidth: true }
+                            Item { Layout.fillHeight: true }
                         }
-
-                        // ================= REPORT BUTTONS =================
-                        RowLayout {
-                            Layout.fillWidth: true
-                            Layout.topMargin: 20
-                            spacing: 20
-
-                            Item { Layout.fillWidth: true }
-
-                            ActionButton {
-                                text: "View Report"
-                                width: 100
-                                height: 50
-                                bgColor: "#1A4DB5"
-                                hoverColor: "#123A8A"
-                                onClicked: root.notify("✓ View Report")
-                            }
-
-                            ActionButton {
-                                text: "PDF Report"
-                                width: 100
-                                height: 50
-                                bgColor: "#1A4DB5"
-                                hoverColor: "#123A8A"
-                                onClicked: root.notify("✓ PDF Report")
-                            }
-
-                            ActionButton {
-                                text: "Print Report"
-                                width: 100
-                                height: 50
-                                bgColor: "#1A4DB5"
-                                hoverColor: "#123A8A"
-                                onClicked: root.notify("✓ Print Report")
-                            }
-
-                            Item { Layout.fillWidth: true }
-                        }
-
-                        Item { Layout.fillHeight: true }
                     }
                 }
             }

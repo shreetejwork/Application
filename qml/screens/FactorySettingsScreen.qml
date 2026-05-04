@@ -70,10 +70,7 @@ Item {
                     iconSize:   100 * root.scale
                     visible: true
                     enabled: true
-                    onTileClicked: {
-                        console.log("Slot 1 tapped")
-                        // TODO: navigateTo("YourScreen1")
-                    }
+                    onTileClicked: navigateTo("DeveloperSettings")
                 }
 
                 // ── Col 2: USB Software Update ───────
@@ -81,10 +78,7 @@ Item {
                     iconSource: "qrc:/qt/qml/Application/assets/images/usbupdate.png"
                     label:      "Software Update \n(USB)"
                     iconSize:   100 * root.scale
-                    onTileClicked: {
-                        console.log("USB Software Update tapped")
-                        // TODO: navigateTo("UsbSoftwareUpdate")
-                    }
+                    onTileClicked: navigateTo("UsbSoftwareUpdate")
                 }
 
                 // ── SLOT 3: Add your future PNG here ───────

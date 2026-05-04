@@ -21,6 +21,7 @@ Rectangle {
     visible: GlobalState.loginKeyboardRequest
     z: 10000
 
+
     //  SHIFT STATES (CLEAN)
     property bool capsLock: false          // UI state
     property bool shiftOnce: false         // single press

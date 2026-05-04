@@ -8,6 +8,8 @@ Item {
     id: root
     anchors.fill: parent
 
+    property var globalTopBar
+
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
@@ -25,10 +27,15 @@ Item {
     ListModel { id: pdfModel }
     ListModel { id: filteredModel }
 
+    function notify(msg) {
+        if (root.globalTopBar && root.globalTopBar.showNotification)
+            root.globalTopBar.showNotification(msg)
+    }
+
     function matchesFilter(fileName) {
         if (activeFilter === "All") return true
-        if (activeFilter === "Audit Trail")    return fileName.toLowerCase().indexOf("audit")   !== -1
-        if (activeFilter === "Product Report") return fileName.toLowerCase().indexOf("product") !== -1
+        if (activeFilter === "Audit Report")    return fileName.toLowerCase().indexOf("audit")   !== -1
+        if (activeFilter === "Batch Report") return fileName.toLowerCase().indexOf("batch") !== -1
         return true
     }
 
@@ -92,12 +99,27 @@ Item {
     }
 
     function copySelected() {
-        var names = []
-        for (var i = 0; i < filteredModel.count; i++)
+        var paths = []
+
+        for (var i = 0; i < filteredModel.count; i++) {
             if (filteredModel.get(i).selected)
-                names.push(filteredModel.get(i).filePath)
-        if (names.length > 0)
-            PdfExporter.copyPaths(names.join("\n"))
+                paths.push(filteredModel.get(i).filePath)
+        }
+
+        if (paths.length === 0)
+            return
+
+        if (!PdfExporter.isUsbMounted()) {
+            notify("⚠ USB not attached")
+            return
+        }
+
+        if (ok) {
+            notify("✓ Files moved to USB")
+            loadFiles()
+        } else {
+            notify("⚠ Failed to move")
+        }
     }
 
     Component.onCompleted: loadFiles()
@@ -223,7 +245,7 @@ Item {
                             spacing: 4 * root.scale
 
                             Repeater {
-                                model: ["All", "Audit Trail Report", "Product Report"]
+                                model: ["All", "Audit Report", "Batch Report"]
 
                                 Rectangle {
                                     property bool active: root.activeFilter === modelData
@@ -307,7 +329,7 @@ Item {
                         }
                     }
 
-                    // ── COPY ───────────────────────────────────────
+                    // ── Move to USB ───────────────────────────────────────
                     Rectangle {
                         visible: root.selectionMode
                         width: 80 * root.scale
@@ -319,7 +341,7 @@ Item {
 
                         Text {
                             anchors.centerIn: parent
-                            text: "Copy"
+                            text: "Move to USB"
                             font.pixelSize: 15 * root.scale
                             font.weight: Font.Medium
                             color: "#2E7D32"
@@ -509,7 +531,7 @@ Item {
                                     color: {
                                         var n = fileName.toLowerCase()
                                         if (n.indexOf("audit")   !== -1) return "#E8F5E9"
-                                        if (n.indexOf("product") !== -1) return "#FFF3E0"
+                                        if (n.indexOf("batch") !== -1) return "#FFF3E0"
                                         return "#EDF1FA"
                                     }
 
@@ -521,13 +543,13 @@ Item {
                                         color: {
                                             var n = fileName.toLowerCase()
                                             if (n.indexOf("audit")   !== -1) return "#2E7D32"
-                                            if (n.indexOf("product") !== -1) return "#E65100"
+                                            if (n.indexOf("batch") !== -1) return "#E65100"
                                             return "#4A5E8A"
                                         }
                                         text: {
                                             var n = fileName.toLowerCase()
-                                            if (n.indexOf("audit")   !== -1) return "Audit Trail"
-                                            if (n.indexOf("product") !== -1) return "Product Report"
+                                            if (n.indexOf("audit")   !== -1) return "Audit Trail Report"
+                                            if (n.indexOf("batch") !== -1) return "Batch Report"
                                             return "General"
                                         }
                                     }
