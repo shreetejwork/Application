@@ -30,7 +30,7 @@ Rectangle {
         if (status === "OK")          return "#E3F2FD"
         if (status === "Warning")     return "#FFF3E0"
         if (status === "Checking...") return "#E3F2FD"
-        return "#FFEBEE"
+        return "#E3F2FD"
     }
     function statusTextColor() {
         if (status === "OK")          return "#2E7D32"
@@ -69,7 +69,7 @@ Rectangle {
 
             Text {
                 text:             card.title
-                font.pixelSize:   Math.max(13, 15 * card.uiScale)
+                font.pixelSize:   Math.max(16, 15 * card.uiScale)
                 font.weight:      Font.Bold
                 color:            "#1A1A1A"
                 Layout.fillWidth: true
@@ -85,25 +85,16 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     text:             card.statusIcon()
-                    font.pixelSize:   Math.max(11, 12 * card.uiScale)
+                    font.pixelSize:   Math.max(13, 12 * card.uiScale)
                     color:            card.statusTextColor()
                 }
             }
         }
 
-        // ── subtitle ────────────────────────────────────────────
-        Text {
-            visible:          card.subtitle !== ""
-            text:             card.subtitle
-            font.pixelSize:   Math.max(11, 12 * card.uiScale)
-            color:            "#757575"
-            Layout.fillWidth: true
-        }
-
         // ── divider ─────────────────────────────────────────────
         Rectangle {
             Layout.fillWidth: true
-            height: 1
+            height: 3
             color: "#EEEEEE"
         }
 
@@ -111,7 +102,7 @@ Rectangle {
         Text {
             Layout.alignment:    Qt.AlignHCenter
             text:                card.detail
-            font.pixelSize:      Math.max(15, 18 * card.uiScale)
+            font.pixelSize:      Math.max(20, 18 * card.uiScale)
             font.weight:         Font.DemiBold
             color:               "#111111"
             horizontalAlignment: Text.AlignHCenter
@@ -155,7 +146,7 @@ Rectangle {
                     text:           card.progress >= 0
                                     ? Math.round(card.progress * 100) + "% used"
                                     : ""
-                    font.pixelSize: Math.max(10, 11 * card.uiScale)
+                    font.pixelSize: Math.max(13, 11 * card.uiScale)
                     color:          "#9E9E9E"
                 }
             }
@@ -177,7 +168,7 @@ Rectangle {
                 id:              statusLbl
                 anchors.centerIn: parent
                 text:             card.status
-                font.pixelSize:   Math.max(11, 12 * card.uiScale)
+                font.pixelSize:   Math.max(15, 12 * card.uiScale)
                 font.weight:      Font.Medium
                 color:            card.statusTextColor()
             }
