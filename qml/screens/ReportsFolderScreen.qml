@@ -109,7 +109,9 @@ Item {
         if (paths.length === 0)
             return
 
-        if (!PdfExporter.isUsbMounted()) {
+        if (PdfExporter.isUsbMounted()) {
+            notify("✓ USB Attached")
+        } else {
             notify("⚠ USB not attached")
             return
         }
