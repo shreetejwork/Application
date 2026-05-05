@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import AppState 1.0
 
 import "../components"
 
@@ -336,10 +337,10 @@ Item {
 
                     // ACTION BUTTONS
                     Repeater {
-                        model: ["TODAY", "PDF"]
+                        model: ["TODAY", "Save PDF"]
 
                         delegate: Rectangle {
-                            width: 72 * root.scale
+                            width: 90 * root.scale
                             height: 36 * root.scale
                             radius: 6 * root.scale
                             color: modelData === "TODAY" ? "#1A4DB5" : "#FFFFFF"
@@ -365,7 +366,7 @@ Item {
                                         root.toDate   = today
                                     }
 
-                                    if (modelData === "PDF") {
+                                    if (modelData === "Save PDF") {
 
                                         var filtered = []
 
@@ -380,7 +381,6 @@ Item {
 
                                             if (userOk && searchOk && dateOk && remarkOk) {
 
-                                                // IMPORTANT FIX (PURE JS OBJECT)
                                                 filtered.push({
                                                     sr: item.sr,
                                                     date: item.date,
@@ -398,15 +398,31 @@ Item {
                                             return
                                         }
 
+                                        // EXPORT PDF
                                         var path = PdfExporter.exportTableToPdf(
                                             filtered,
                                             root.fromDate,
                                             root.toDate
                                         )
 
+                                        // NOTIFICATION
                                         if (globalTopBar && globalTopBar.showNotification) {
                                             globalTopBar.showNotification("✓ PDF saved successfully")
                                         }
+
+
+                                        // ADD ENTRY TO REPORT LOG
+                                        GlobalState.reportsLogModel.append({
+                                            sr: GlobalState.reportsLogModel.count + 1,
+                                            type: "Audit Trail",
+                                            date: Qt.formatDate(new Date(), "dd/MM/yyyy"),
+                                            from: root.fromDate === "" ? "-" : root.fromDate,
+                                            to: root.toDate === "" ? "-" : root.toDate,
+                                            by: root.selectedUser === "All" ? "System" : root.selectedUser,
+                                            filePath: path
+                                        })
+
+                                        GlobalState.saveLogs()
                                     }
                                 }
                             }

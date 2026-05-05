@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import AppState 1.0
+
 Item {
     id: root
     anchors.fill: parent
@@ -209,7 +211,7 @@ Item {
                                     Rectangle {
                                         anchors.centerIn: parent
                                         width: root.colPdf - 8 * root.scale
-                                        height: root.btnHeight         // 44px tap target
+                                        height: root.btnHeight
                                         radius: 8 * root.scale
                                         color: saveMouse.pressed ? "#1A4DB5" : "#FFFFFF"
                                         border.color: "#1A4DB5"
@@ -239,20 +241,29 @@ Item {
                                                     "productCode": "default code"
                                                 }
 
-                                                // Pass rejection rows for this batch — replace with real data from your model
+                                                // Pass rejection rows
                                                 var rejections = []
-                                                // Example: loop your rejection model filtered by batch
-                                                // for (var i = 0; i < rejectionModel.count; i++) {
-                                                //     var r = rejectionModel.get(i)
-                                                //     if (r.batchName === batch) {
-                                                //         rejections.push({ date: r.date, time: r.time, rejectCount: r.rejectCount })
-                                                //     }
-                                                // }
 
                                                 var savedPath = PdfExporter.exportBatchToPdf(batchInfo, rejections)
 
+
                                                 if (globalTopBar && globalTopBar.showNotification)
                                                     globalTopBar.showNotification("✓ Batch PDF saved")
+
+
+                                                // ADD TO REPORT LOG
+
+                                                GlobalState.reportsLogModel.append({
+                                                    sr: GlobalState.reportsLogModel.count + 1,
+                                                    type: "Batch Report",
+                                                    date: Qt.formatDate(new Date(), "dd/MM/yyyy"),
+                                                    from: started ? started : "-",
+                                                    to: ended ? ended : "-",
+                                                    by: "System",   // replace with logged-in user later
+                                                    filePath: savedPath
+                                                })
+
+                                                GlobalState.saveLogs()
                                             }
                                         }
                                     }

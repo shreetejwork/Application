@@ -41,6 +41,8 @@ Window {
     // Track current menu screen
     property string currentMenuScreen: ""
 
+    property var menuStack: []
+
     ColumnLayout {
         anchors.fill: parent
         spacing: 0
@@ -63,11 +65,11 @@ Window {
             }
 
             onBackClicked: {
-                if (currentMenuScreen !== "" && currentMenuScreen !== "Menu") {
-                    currentMenuScreen = "Menu"
-                    menuLoader.source = "screens/MenuScreen.qml"
-
-                } else if (currentMenuScreen === "Menu") {
+                if (menuStack.length > 0) {
+                    var previous = menuStack.pop()
+                    currentMenuScreen = previous
+                    menuLoader.source = "screens/" + previous + "Screen.qml"
+                } else {
                     currentMenuScreen = ""
                     menuLoader.visible = false
                     menuLoader.source = ""
@@ -90,6 +92,9 @@ Window {
                     if ("globalTopBar" in item)
                         item.globalTopBar = mainTopBar
                     item.navigateTo = function(screen) {
+                        if (root.currentMenuScreen !== "")
+                            root.menuStack.push(root.currentMenuScreen)
+
                         root.currentMenuScreen = screen
                         menuLoader.source = "screens/" + screen + "Screen.qml"
                     }

@@ -38,16 +38,10 @@ Item {
                     onTileClicked: navigateTo("ProductLibrary")
                 }
                 MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/AuditTrail.png"
-                    label: "Audit Trial\nReport"
+                    iconSource: "qrc:/qt/qml/Application/assets/images/Reports.png"
+                    label: "Reports"
                     iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("AuditTrail")
-                }
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/More.png"
-                    label: "Product/Batch\nReport"
-                    iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("BatchReport")
+                    onTileClicked: navigateTo("Reports")
                 }
             }
 
@@ -73,12 +67,6 @@ Item {
                     label: "System\nDiagnosis"
                     iconSize: 100 * root.scale
                     onTileClicked: navigateTo("Diagnosis")
-                }
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
-                    label: "Reports\nFolder"
-                    iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("ReportsFolder")
                 }
             }
         }

@@ -575,7 +575,7 @@ bool PdfExporter::moveFilesToUsb(const QStringList &filePaths)
         if (QFile::exists(dest))
             QFile::remove(dest);
 
-        if (!QFile::rename(file, dest))
+        if (!QFile::copy(file, dest))
             allOk = false;
     }
 

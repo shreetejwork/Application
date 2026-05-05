@@ -50,7 +50,7 @@ Item {
 
                 property real cardWidth: (width - (spacing * 2)) / 3
 
-                // ===== CARD 1 =====
+                // ===== Card 1 =====
                 Rectangle {
                     width: flow.cardWidth
                     height: 120 * root.scale
@@ -93,6 +93,7 @@ Item {
                         }
                     }
                 }
+                // ===== Card 2 =====
                 Rectangle {
                     width: flow.cardWidth
                     height: 120 * root.scale
@@ -135,22 +136,46 @@ Item {
                         }
                     }
                 }
+                // ===== Card 3 =====
+                Rectangle {
+                    width: flow.cardWidth
+                    height: 120 * root.scale
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.color: "#E5E7EB"
 
-                // ===== CARD TEMPLATE =====
-                Repeater {
-                    model: 8
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
 
-                    delegate: Rectangle {
-                        width: flow.cardWidth
-                        height: 120 * root.scale
-                        radius: 16
-                        color: "#FFFFFF"
-                        border.color: "#E5E7EB"
+                        ColumnLayout {
+                            Layout.fillWidth: true
 
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Card " + (index + 2)
-                            color: "#9CA3AF"
+                            Text {
+                                text: "Audit Trail Report"
+                                font.pixelSize: 20 * root.scale
+                                font.bold: true
+                                color: "#111827"
+                            }
+
+                            Text {
+                                text: GlobalState.showAuditTrail
+                                      ? "Audit Trail On"
+                                      : "Audit Trail Off"
+                                font.pixelSize: 16 * root.scale
+                                color: "#6B7280"
+                            }
+                        }
+
+                        DDButton {
+                            width: 90 * root.scale
+                            height: 36 * root.scale
+
+                            toggled: GlobalState.showAuditTrail
+
+                            onToggledChanged: {
+                                GlobalState.showAuditTrail = toggled
+                            }
                         }
                     }
                 }

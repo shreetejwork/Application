@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import AppState 1.0
+
 import "../components"
 
 Item {
@@ -119,10 +121,23 @@ Item {
         var ok = PdfExporter.moveFilesToUsb(paths)
 
         if (ok) {
+
+            for (var i = 0; i < paths.length; i++) {
+
+                var name = paths[i].split("/").pop()
+
+                GlobalState.reportsLogModel.insert(0, {
+                    fileName: name,
+                    action: "Copied",
+                    date: Qt.formatDate(new Date(), "dd/MM/yyyy"),
+                    by: "System"   // replace later with logged user
+                })
+            }
+
+            GlobalState.saveLogs()
+
             notify("✓ File moved to USB")
             loadFiles()
-        } else {
-            notify("⚠ Failed to move")
         }
     }
 

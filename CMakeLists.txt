@@ -86,6 +86,9 @@ qt_add_qml_module(appApplication
         assets/images/pdf.png
         assets/images/people.png
         assets/images/USB.png
+        assets/images/Reports.png
+        assets/images/BatchHistory.png
+        assets/images/log.png
 
 
     SOURCES
@@ -100,6 +103,8 @@ qt_add_qml_module(appApplication
         QML_FILES qml/screens/DeveloperSettingsScreen.qml
         SOURCES src/SystemDiagnosis.h
         SOURCES src/SystemDiagnosis.cpp
+        QML_FILES qml/screens/ReportsScreen.qml
+        QML_FILES qml/screens/ReportsLogScreen.qml
 )
 
 set_target_properties(appApplication PROPERTIES
