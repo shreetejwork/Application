@@ -93,6 +93,48 @@ Item {
                         }
                     }
                 }
+                Rectangle {
+                    width: flow.cardWidth
+                    height: 120 * root.scale
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.color: "#E5E7EB"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+
+                            Text {
+                                text: "N/W Settings screen"
+                                font.pixelSize: 20 * root.scale
+                                font.bold: true
+                                color: "#111827"
+                            }
+
+                            Text {
+                                text: GlobalState.showNetworkScreen
+                                      ? "N/W Screen On"
+                                      : "N/W Screen Off"
+                                font.pixelSize: 16 * root.scale
+                                color: "#6B7280"
+                            }
+                        }
+
+                        DDButton {
+                            width: 90 * root.scale
+                            height: 36 * root.scale
+
+                            toggled: GlobalState.showNetworkScreen
+
+                            onToggledChanged: {
+                                GlobalState.showNetworkScreen = toggled
+                            }
+                        }
+                    }
+                }
 
                 // ===== CARD TEMPLATE =====
                 Repeater {

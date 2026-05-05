@@ -12,6 +12,9 @@ int main(int argc, char *argv[])
 {
     QGuiApplication app(argc, argv);
 
+    QCoreApplication::setOrganizationName("Shreetej");
+    QCoreApplication::setApplicationName("MD_Application");
+
     DatabaseManager dbManager;
     if (!dbManager.initialize()) {
         return -1;

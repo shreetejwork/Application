@@ -29,17 +29,19 @@ Item {
                 spacing: 12
 
                 Column {
-                    spacing: 4
+                    spacing: 6 * root.scale
 
                     Text {
-                        text:           "System Diagnosis"
-                        font.pixelSize: 26
-                        font.bold:      true
-                        color:          "#1A4DB5"
+                        text: "System Diagnosis"
+                        font.pixelSize: 26 * root.scale
+                        font.bold: true
+                        color: "#1A4DB5"
                     }
 
                     Rectangle {
-                        width: 44; height: 3; radius: 2
+                        width: 80 * root.scale
+                        height: 4 * root.scale
+                        radius: 2 * root.scale
                         color: "#1A4DB5"
                     }
                 }
