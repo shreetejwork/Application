@@ -189,30 +189,26 @@ Item {
                              : "#F7FBF7"
                 }
 
-                // OVERALL HEALTH ──────────────────────────────────
+                // CPU USAGE ─────────────────────────────────────
                 DiagCard {
-                    id: summaryCard
+                    id: cpuCard
                     Layout.fillWidth:  true
                     Layout.fillHeight: true
 
-                    title:    "Overall Health"
-                    subtitle: "Aggregated system status"
-                    uiScale:  root.scale
+                    title:   "CPU Usage"
+                    uiScale: root.scale
 
-                    property string worstStatus: {
-                        var s = [ramCard.status, memCard.status, tempCard.status]
-                        if (s.indexOf("Critical")    >= 0) return "Critical"
-                        if (s.indexOf("Warning")     >= 0) return "Warning"
-                        if (s.indexOf("Checking...") >= 0) return "Checking..."
-                        return "OK"
-                    }
+                    property real cpu: SystemDiag.cpuUsageValue
+                    property real cpuProgress: cpu > 0 ? Math.min(cpu / 100.0, 1.0) : 0
 
-                    status: worstStatus
+                    progress: isLoading ? -1 : cpuProgress
 
-                    detail: worstStatus === "Critical"    ? "Action Required"
-                          : worstStatus === "Warning"     ? "Monitor Closely"
-                          : worstStatus === "Checking..." ? "Scanning..."
-                          : "All Systems Go"
+                    status: isLoading ? "Checking..."
+                          : cpu > 90 ? "Critical"
+                          : cpu > 70 ? "Warning"
+                          : "OK"
+
+                    detail: isLoading ? "— %" : SystemDiag.cpuUsage
 
                     cardColor: status === "Critical" ? "#FFF5F5"
                              : status === "Warning"  ? "#FFFBF0"

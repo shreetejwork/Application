@@ -7,6 +7,7 @@ SystemDiagnosis::SystemDiagnosis(QObject *parent) : QObject(parent) {}
 QString SystemDiagnosis::ramUsage()    const { return m_ram;  }
 QString SystemDiagnosis::memoryUsage() const { return m_mem;  }
 QString SystemDiagnosis::temperature() const { return m_temp; }
+QString SystemDiagnosis::cpuUsage()    const { return m_cpu;  }
 
 // ===== NUMERIC GETTERS =====
 double SystemDiagnosis::ramUsed()          const { return m_ramUsed;   }
@@ -14,6 +15,7 @@ double SystemDiagnosis::ramTotal()         const { return m_ramTotal;  }
 double SystemDiagnosis::memUsed()          const { return m_memUsed;   }
 double SystemDiagnosis::memTotal()         const { return m_memTotal;  }
 double SystemDiagnosis::temperatureValue() const { return m_tempValue; }
+double SystemDiagnosis::cpuUsageValue()    const { return m_cpuValue;  }
 
 // ===== HELPER: run a bash command and return trimmed stdout =====
 static QString runCommand(const QString &cmd)
@@ -42,13 +44,12 @@ void SystemDiagnosis::update()
         m_ramUsed  = ramParts[0].toDouble();
         m_ramTotal = ramParts[1].toDouble();
     }
+
     m_ram = QString::number(m_ramUsed,  'f', 2) + " GB / " +
             QString::number(m_ramTotal, 'f', 2) + " GB";
 
     // =========================================================
     // STORAGE  —  df -BG works on all Raspberry Pi OS versions
-    // Column layout:  Filesystem  1G-blocks  Used  Available  Use%  Mounted
-    //                 $1          $2         $3    $4         $5    $6
     // =========================================================
     QString storageOut = runCommand(
         "df -BG / | awk 'NR==2 {"
@@ -62,15 +63,28 @@ void SystemDiagnosis::update()
         m_memUsed  = storageParts[0].toDouble();
         m_memTotal = storageParts[1].toDouble();
     }
+
     m_mem = QString::number(m_memUsed,  'f', 2) + " GB / " +
             QString::number(m_memTotal, 'f', 2) + " GB";
 
     // =========================================================
+    // CPU USAGE
+    // =========================================================
+    QString cpuOut = runCommand(
+        "top -bn1 | grep 'Cpu(s)' | "
+        "sed 's/.*, *\\([0-9.]*\\)%* id.*/\\1/' | "
+        "awk '{printf \"%.1f\", 100 - $1}'"
+        );
+
+    m_cpuValue = cpuOut.toDouble();
+
+    if (m_cpuValue < 0)
+        m_cpu = "N/A";
+    else
+        m_cpu = QString::number(m_cpuValue, 'f', 1) + " %";
+
+    // =========================================================
     // TEMPERATURE
-    //   Priority 1 : vcgencmd  (Pi 1–4, needs video group permission)
-    //   Priority 2 : thermal_zone0  (Pi 5, all other Linux)
-    //   Priority 3 : thermal_zone1  (fallback if zone0 missing)
-    // sed used instead of grep -oP (Perl regex not guaranteed on Pi OS)
     // =========================================================
     QString tempOut = runCommand(
         "if command -v vcgencmd >/dev/null 2>&1; then "
@@ -87,6 +101,7 @@ void SystemDiagnosis::update()
         );
 
     m_tempValue = tempOut.toDouble();
+
     if (m_tempValue <= 0)
         m_temp = "N/A";
     else
@@ -109,29 +124,49 @@ void SystemDiagnosis::update()
         );
 
     QStringList ramParts = ramOut.split(" ");
+
     if (ramParts.size() >= 2) {
         m_ramUsed  = ramParts[0].toDouble();
         m_ramTotal = ramParts[1].toDouble();
     }
+
     m_ram = QString::number(m_ramUsed,  'f', 2) + " GB / " +
             QString::number(m_ramTotal, 'f', 2) + " GB";
 
     // =========================================================
-    // STORAGE  —  df -g gives 1G blocks on macOS
+    // STORAGE
     // =========================================================
     QString storageOut = runCommand(
         "df -g / | awk 'NR==2 { printf \"%.2f %.2f\", $3, $2 }'"
         );
 
     QStringList storageParts = storageOut.split(" ");
+
     if (storageParts.size() >= 2) {
         m_memUsed  = storageParts[0].toDouble();
         m_memTotal = storageParts[1].toDouble();
     }
+
     m_mem = QString::number(m_memUsed,  'f', 2) + " GB / " +
             QString::number(m_memTotal, 'f', 2) + " GB";
 
-    // Temperature not accessible via shell on macOS
+    // =========================================================
+    // CPU USAGE
+    // =========================================================
+    QString cpuOut = runCommand(
+        "top -l 1 | awk '/CPU usage/ {print 100 - $7}' | sed 's/%//'"
+        );
+
+    m_cpuValue = cpuOut.toDouble();
+
+    if (m_cpuValue < 0)
+        m_cpu = "N/A";
+    else
+        m_cpu = QString::number(m_cpuValue, 'f', 1) + " %";
+
+    // =========================================================
+    // TEMPERATURE
+    // =========================================================
     m_tempValue = -1;
     m_temp = "N/A";
 
