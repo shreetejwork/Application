@@ -18,7 +18,7 @@ Item {
 
     property real colSr: 60 * scale
     property real colType: 180 * scale
-    property real colFile: 260 * scale
+    property real colFile: 420 * scale
     property real colDate: 160 * scale
     property real colFrom: 140 * scale
     property real colTo: 140 * scale
@@ -52,43 +52,47 @@ Item {
                 }
             }
 
-            // ===== FILTER =====
+            // ===== FILTER BAR =====
             Rectangle {
-                height: 38 * root.scale
-                width: filterRow.implicitWidth + 8 * root.scale
-                color: "#EDF1FA"
-                radius: 8 * root.scale
-                border.color: "#C8D4EE"
+                height: 56 * root.scale
+                width: filterRow.implicitWidth + 20 * root.scale
+                color: "#FFFFFF"
+                radius: 10 * root.scale
+                border.color: "#D0D8EC"
                 border.width: 1
 
                 Row {
                     id: filterRow
                     anchors.centerIn: parent
-                    spacing: 4 * root.scale
+                    spacing: 8 * root.scale
 
                     Repeater {
                         model: ["Created", "Deleted", "Copied"]
 
-                        Rectangle {
+                        delegate: Rectangle {
                             property bool active: root.activeFilter === modelData
-                            width: flbl.implicitWidth + 20 * root.scale
-                            height: 30 * root.scale
+
+                            width: flbl.implicitWidth + 30 * root.scale
+                            height: 36 * root.scale
                             radius: 6 * root.scale
-                            color: active ? "#1A4DB5" : "transparent"
+
+                            color: active ? "#1A4DB5" : "#F0F4FF"
+                            border.color: active ? "#1A4DB5" : "#B0BEE0"
+                            border.width: 1
 
                             Text {
                                 id: flbl
                                 anchors.centerIn: parent
                                 text: modelData + " Files"
-                                font.pixelSize: 14 * root.scale
-                                font.weight: active ? Font.SemiBold : Font.Normal
-                                color: active ? "#FFFFFF" : "#4A5E8A"
+                                font.pixelSize: 18 * root.scale
+                                font.weight: Font.Medium
+                                color: active ? "#FFFFFF" : "#1A1A1A"
                             }
 
                             MouseArea {
                                 anchors.fill: parent
-                                onClicked: root.activeFilter = modelData
                                 cursorShape: Qt.PointingHandCursor
+                                onClicked: root.activeFilter = modelData
                             }
                         }
                     }
@@ -99,21 +103,35 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
                 radius: 10 * root.scale
                 color: "#FFFFFF"
+
                 border.color: "#D0D8EC"
                 border.width: 1
+
                 clip: true
 
                 ColumnLayout {
                     anchors.fill: parent
                     spacing: 0
 
-                    // ===== HEADER ROW =====
+                    // ===== TABLE HEADER =====
                     Rectangle {
                         Layout.fillWidth: true
                         height: 44 * root.scale
+
                         color: "#1A4DB5"
+                        radius: 10 * root.scale
+
+                        Rectangle {
+                            anchors.bottom: parent.bottom
+                            anchors.left: parent.left
+                            anchors.right: parent.right
+
+                            height: 10 * root.scale
+                            color: "#1A4DB5"
+                        }
 
                         Row {
                             anchors.fill: parent
@@ -123,8 +141,9 @@ Item {
                             Text {
                                 text: "Sr"
                                 width: root.colSr
-                                color: "#FFF"
                                 font.bold: true
+                                color: "#FFF"
+                                font.pixelSize: 20 * root.scale
                             }
 
                             Text {
@@ -136,8 +155,9 @@ Item {
                                        ? root.colType
                                        : root.colFile
 
-                                color: "#FFF"
                                 font.bold: true
+                                color: "#FFF"
+                                font.pixelSize: 20 * root.scale
                             }
 
                             Text {
@@ -148,8 +168,9 @@ Item {
                                         : "Generated Date"
 
                                 width: root.colDate
-                                color: "#FFF"
                                 font.bold: true
+                                color: "#FFF"
+                                font.pixelSize: 20 * root.scale
                             }
 
                             Text {
@@ -158,8 +179,9 @@ Item {
                                       : "By"
 
                                 width: root.colFrom
-                                color: "#FFF"
                                 font.bold: true
+                                color: "#FFF"
+                                font.pixelSize: 20 * root.scale
                             }
 
                             Text {
@@ -169,8 +191,10 @@ Item {
 
                                 width: root.colTo
                                 visible: root.activeFilter === "Created"
-                                color: "#FFF"
+
                                 font.bold: true
+                                color: "#FFF"
+                                font.pixelSize: 20 * root.scale
                             }
 
                             Text {
@@ -180,16 +204,21 @@ Item {
 
                                 width: root.colBy
                                 visible: root.activeFilter === "Created"
-                                color: "#FFF"
+
                                 font.bold: true
+                                color: "#FFF"
+                                font.pixelSize: 20 * root.scale
                             }
                         }
                     }
 
-                    // ===== DATA =====
+                    // ===== TABLE DATA =====
                     ListView {
+                        id: tableList
+
                         Layout.fillWidth: true
                         Layout.fillHeight: true
+
                         clip: true
 
                         model: {
@@ -210,6 +239,15 @@ Item {
                                    ? "#FFFFFF"
                                    : "#F4F7FF"
 
+                            Rectangle {
+                                anchors.bottom: parent.bottom
+                                anchors.left: parent.left
+                                anchors.right: parent.right
+
+                                height: 1
+                                color: "#E4EAF5"
+                            }
+
                             Row {
                                 anchors.fill: parent
                                 anchors.margins: 12 * root.scale
@@ -218,6 +256,8 @@ Item {
                                 Text {
                                     text: index + 1
                                     width: root.colSr
+                                    font.pixelSize: 18 * root.scale
+                                    color: "#3A3A3A"
                                 }
 
                                 Text {
@@ -228,32 +268,88 @@ Item {
                                     width: root.activeFilter === "Created"
                                            ? root.colType
                                            : root.colFile
+
+                                    font.pixelSize: 18 * root.scale
+                                    color: "#3A3A3A"
+
+                                    wrapMode: Text.NoWrap
                                 }
 
                                 Text {
                                     text: date || "-"
                                     width: root.colDate
+
+                                    font.pixelSize: 18 * root.scale
+                                    color: "#3A3A3A"
+
+                                    elide: Text.ElideRight
                                 }
 
                                 Text {
                                     text: root.activeFilter === "Created"
-                                          ? (from || "-")
+                                          ? ((from || "-").split(" ")[0])
                                           : (by || "-")
 
                                     width: root.colFrom
+
+                                    font.pixelSize: 18 * root.scale
+                                    color: "#3A3A3A"
+
+                                    elide: Text.ElideRight
                                 }
 
                                 Text {
                                     visible: root.activeFilter === "Created"
-                                    text: to || "-"
+                                    text: (to || "-").split(" ")[0]
                                     width: root.colTo
+
+                                    font.pixelSize: 18 * root.scale
+                                    color: "#3A3A3A"
+
+                                    elide: Text.ElideRight
                                 }
 
                                 Text {
                                     visible: root.activeFilter === "Created"
                                     text: by || "-"
                                     width: root.colBy
+
+                                    font.pixelSize: 18 * root.scale
+                                    color: "#1A4DB5"
+                                    font.weight: Font.Medium
+
+                                    elide: Text.ElideRight
                                 }
+                            }
+                        }
+                    }
+
+                    // ===== NO DATA =====
+                    Item {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+
+                        visible: tableList.count === 0
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 16 * root.scale
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "No data found"
+
+                                font.pixelSize: 24 * root.scale
+                                font.weight: Font.Medium
+                                color: "#8896B0"
+                            }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "No records available"
+
+                                font.pixelSize: 20 * root.scale
+                                color: "#B0BEE0"
                             }
                         }
                     }
