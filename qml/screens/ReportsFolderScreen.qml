@@ -93,10 +93,26 @@ Item {
     }
 
     function deleteSelected() {
+
         for (var i = filteredModel.count - 1; i >= 0; i--) {
-            if (filteredModel.get(i).selected)
-                PdfExporter.deletePdf(filteredModel.get(i).filePath)
+
+            if (filteredModel.get(i).selected) {
+
+                var path = filteredModel.get(i).filePath
+                var name = filteredModel.get(i).fileName
+
+                // DELETE FILE
+                PdfExporter.deletePdf(path)
+
+                // SAVE LOG
+                GlobalState.addDeletedFileLog(name, "System")
+            }
         }
+
+        GlobalState.saveLogs()
+
+        notify("✓ File deleted")
+
         loadFiles()
     }
 
@@ -126,12 +142,7 @@ Item {
 
                 var name = paths[i].split("/").pop()
 
-                GlobalState.reportsLogModel.insert(0, {
-                    fileName: name,
-                    action: "Copied",
-                    date: Qt.formatDate(new Date(), "dd/MM/yyyy"),
-                    by: "System"   // replace later with logged user
-                })
+                GlobalState.addCopiedFileLog(name, "System")
             }
 
             GlobalState.saveLogs()

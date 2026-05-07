@@ -128,12 +128,11 @@ QtObject {
 
         var now = new Date()
 
-        reportsLogModel.insert(0, {
-            sr: reportsLogModel.count + 1,
+        deletedFilesModel.insert(0, {
+            sr: deletedFilesModel.count + 1,
             fileName: fileName,
             action: "Deleted",
             date: Qt.formatDate(now, "dd/MM/yyyy"),
-            time: Qt.formatTime(now, "hh:mm:ss"),
             by: user || "System"
         })
 
@@ -144,12 +143,11 @@ QtObject {
 
         var now = new Date()
 
-        reportsLogModel.insert(0, {
-            sr: reportsLogModel.count + 1,
+        copiedFilesModel.insert(0, {
+            sr: copiedFilesModel.count + 1,
             fileName: fileName,
             action: "Copied",
             date: Qt.formatDate(now, "dd/MM/yyyy"),
-            time: Qt.formatTime(now, "hh:mm:ss"),
             by: user || "System"
         })
 
