@@ -72,6 +72,219 @@ Item {
                 }
             }
 
+            // ===== FILTER BAR =====
+            Rectangle {
+                Layout.fillWidth: true
+                height: root.filterHeight
+
+                radius: 10 * root.scale
+                color: "#FFFFFF"
+                border.color: "#D0D8EC"
+                border.width: 1
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.leftMargin: 16 * root.scale
+                    anchors.rightMargin: 16 * root.scale
+                    spacing: 14 * root.scale
+
+                    // SEARCH ICON + FIELD
+                    Rectangle {
+                        Layout.fillWidth: true
+                        height: 42 * root.scale
+                        radius: 8 * root.scale
+                        color: "#F5F7FC"
+                        border.color: searchInput.activeFocus ? "#1A4DB5" : "#D0D8EC"
+                        border.width: searchInput.activeFocus ? 2 : 1
+
+                        Behavior on border.color { ColorAnimation { duration: 150 } }
+                        Behavior on border.width { NumberAnimation { duration: 150 } }
+
+                        Row {
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.left: parent.left
+                            anchors.leftMargin: 12 * root.scale
+                            anchors.right: parent.right
+                            anchors.rightMargin: 12 * root.scale
+                            spacing: 8 * root.scale
+
+                            // Search icon (magnifier drawn with Canvas)
+                            Canvas {
+                                id: searchIcon
+                                width: 18 * root.scale
+                                height: 18 * root.scale
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+                                    ctx.strokeStyle = searchInput.activeFocus ? "#1A4DB5" : "#7A86A5"
+                                    ctx.lineWidth = 1.8 * root.scale
+                                    ctx.lineCap = "round"
+                                    var cx = 7 * root.scale
+                                    var cy = 7 * root.scale
+                                    var r  = 5 * root.scale
+                                    ctx.beginPath()
+                                    ctx.arc(cx, cy, r, 0, Math.PI * 2)
+                                    ctx.stroke()
+                                    ctx.beginPath()
+                                    ctx.moveTo(cx + r * 0.707, cy + r * 0.707)
+                                    ctx.lineTo(cx + r * 0.707 + 4 * root.scale, cy + r * 0.707 + 4 * root.scale)
+                                    ctx.stroke()
+                                }
+
+                                Connections {
+                                    target: searchInput
+                                    function onActiveFocusChanged() { searchIcon.requestPaint() }
+                                }
+                            }
+
+                            TextField {
+                                id: searchInput
+
+                                width: parent.width - 26 * root.scale - parent.spacing
+                                height: 42 * root.scale
+
+                                background: null
+
+                                placeholderText: "Search batch..."
+                                placeholderTextColor: "#9AA6C1"
+
+                                font.pixelSize: 15 * root.scale
+                                color: "#1A1A1A"
+
+                                verticalAlignment: TextInput.AlignVCenter
+
+                                focus: true
+
+                                property bool isPasswordField: false
+
+                                onPressed: {
+                                    GlobalState.activeInputField = searchInput
+                                    GlobalState.loginKeyboardRequest = true
+                                    forceActiveFocus()
+                                }
+
+                                onActiveFocusChanged: {
+                                    if (activeFocus)
+                                        GlobalState.activeInputField = searchInput
+                                }
+
+                                onTextChanged: {
+                                    root.searchText = text
+                                }
+
+                                // CLOSE KEYBOARD ON ENTER
+                                onAccepted: {
+                                    if (text.trim().length > 0) {
+                                        GlobalState.loginKeyboardRequest = false
+                                        focus = false
+                                    }
+                                }
+
+                                inputMethodHints: Qt.ImhNoPredictiveText
+                            }
+                        }
+                    }
+
+                    // RECORD COUNT BADGE
+                    Rectangle {
+                        width: 80 * root.scale
+                        height: 42 * root.scale
+                        radius: 8 * root.scale
+                        color: "#EEF2FF"
+                        border.color: "#C7D2F5"
+                        border.width: 1
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 0
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: root.visibleCount
+                                font.pixelSize: 17 * root.scale
+                                font.weight: Font.DemiBold
+                                color: "#1A4DB5"
+                            }
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "records"
+                                font.pixelSize: 11 * root.scale
+                                color: "#5B6FA8"
+                            }
+                        }
+                    }
+
+                    // CLEAR BUTTON
+                    Rectangle {
+                        width: 90 * root.scale
+                        height: 42 * root.scale
+                        radius: 8 * root.scale
+                        color: root.searchText.length > 0 ? "#1A4DB5" : "#EEF2FF"
+                        border.color: root.searchText.length > 0 ? "#1A4DB5" : "#C7D2F5"
+                        border.width: 1
+                        opacity: root.searchText.length > 0 ? 1.0 : 0.6
+
+                        Behavior on color   { ColorAnimation { duration: 150 } }
+                        Behavior on opacity { NumberAnimation { duration: 150 } }
+
+                        Row {
+                            anchors.centerIn: parent
+                            spacing: 6 * root.scale
+
+                            // X icon via Canvas
+                            Canvas {
+                                id: clearIcon
+                                width:  14 * root.scale
+                                height: 14 * root.scale
+                                anchors.verticalCenter: parent.verticalCenter
+
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+                                    ctx.strokeStyle = root.searchText.length > 0 ? "#FFFFFF" : "#1A4DB5"
+                                    ctx.lineWidth = 1.8 * root.scale
+                                    ctx.lineCap = "round"
+                                    var p = 2 * root.scale
+                                    ctx.beginPath()
+                                    ctx.moveTo(p, p)
+                                    ctx.lineTo(width - p, height - p)
+                                    ctx.stroke()
+                                    ctx.beginPath()
+                                    ctx.moveTo(width - p, p)
+                                    ctx.lineTo(p, height - p)
+                                    ctx.stroke()
+                                }
+
+                                Connections {
+                                    target: root
+                                    function onSearchTextChanged() { clearIcon.requestPaint() }
+                                }
+                            }
+
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                text: "Clear"
+                                font.pixelSize: 14 * root.scale
+                                font.weight: Font.Medium
+                                color: root.searchText.length > 0 ? "#FFFFFF" : "#1A4DB5"
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            enabled: root.searchText.length > 0
+                            onClicked: {
+                                searchInput.text = ""
+                                root.searchText = ""
+                            }
+                        }
+                    }
+                }
+            }
+
             // ===== TABLE =====
             Rectangle {
                 id: tableContainer
