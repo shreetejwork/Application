@@ -1,6 +1,9 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+
+import AppState 1.0
+
 import "../components"
 
 Item {
@@ -32,6 +35,9 @@ Item {
                     onTileClicked: navigateTo("User")
                 }
                 MenuTile {
+
+                    visible: GlobalState.showProductLib
+
                     iconSource: "qrc:/qt/qml/Application/assets/images/ProductLib.png"
                     label: "Product\nLibrary"
                     iconSize: 100 * root.scale

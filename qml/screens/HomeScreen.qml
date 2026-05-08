@@ -10,6 +10,7 @@ Item {
     id: homeScreen
     property bool showTopBar: true
     property var globalTopBar: null
+    property var navigateTo
 
     Rectangle {
         anchors.fill: parent
@@ -378,133 +379,322 @@ Item {
             // CENTER
             Item {
                 id: centerCol
+
                 anchors.left: leftCol.right
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
+
                 anchors.leftMargin: parent.width * 0.02
+
                 width: parent.width * 0.36
 
-                CircularGauge {
-                    id: signalGauge
-                    anchors.centerIn: parent
-                    width: parent.width * 0.85
-                    height: width
+                Column {
+                    width: parent.width
 
-                    // Signal Gauge Configuration
-                    value: 850
-                    label: "Signal"
-                    threshold: 500
-                    thresholdLabel: "Thr-S"
-                    maxValue: 1200
+                    // MOVE ENTIRE SECTION UP
+                    anchors.top: parent.top
+                    anchors.topMargin: 10
 
-                    onThresholdClicked: popup.open(
-                                            "Thr-S",
-                                            signalGauge.threshold,
-                                            function(val){ signalGauge.threshold = val },
-                                            100, 1500
-                                            )
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    spacing: 18
+
+                    // =====================================================
+                    // ACTIVE PRODUCT CARD
+                    // =====================================================
+
+                    Rectangle {
+                        width: parent.width * 0.50
+                        height: 65
+
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        radius: 14
+
+                        color: "#FFFFFF"
+
+                        border.color: "#D0D8EC"
+                        border.width: 1
+
+                        property bool hovered: false
+                        property bool pressed: false
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 4
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                text: "Active Product"
+
+                                font.pixelSize: 12
+                                font.bold: true
+
+                                color: "#6B7280"
+                            }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                // Replace with actual active product
+                                text: "Paracetamol 650"
+
+                                font.pixelSize: 18
+                                font.bold: true
+
+                                color: "#1A4DB5"
+                            }
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+
+                            onEntered: parent.hovered = true
+                            onExited: parent.hovered = false
+
+                            onPressed: parent.pressed = true
+                            onReleased: parent.pressed = false
+
+                            onClicked: {
+                                navigateTo("ProductLibrary")
+                            }
+                        }
+
+                        scale: pressed ? 0.96 : 1.0
+
+                        Behavior on scale {
+                            NumberAnimation {
+                                duration: 120
+                            }
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+
+                        states: [
+
+                            State {
+                                name: "hovered"
+                                when: parent.hovered && !parent.pressed
+
+                                PropertyChanges {
+                                    target: parent
+                                    color: "#F7F9FF"
+                                }
+                            },
+
+                            State {
+                                name: "pressed"
+                                when: parent.pressed
+
+                                PropertyChanges {
+                                    target: parent
+                                    color: "#EEF2FF"
+                                }
+                            }
+                        ]
+                    }
+
+                    // =====================================================
+                    // SIGNAL GAUGE
+                    // =====================================================
+
+                    CircularGauge {
+                        id: signalGauge
+
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        width: parent.width * 0.85
+                        height: width
+
+                        // Signal Gauge Configuration
+                        value: 850
+
+                        label: "Signal"
+
+                        threshold: 500
+                        thresholdLabel: "Thr-S"
+
+                        maxValue: 1200
+
+                        onThresholdClicked: {
+                            popup.open(
+                                "Thr-S",
+                                signalGauge.threshold,
+                                function(val) {
+                                    signalGauge.threshold = val
+                                },
+                                100,
+                                1500
+                            )
+                        }
+                    }
                 }
             }
 
             // RIGHT
             Item {
                 id: rightCol
+
                 anchors.left: centerCol.right
                 anchors.right: parent.right
                 anchors.top: parent.top
                 anchors.bottom: parent.bottom
+
                 anchors.leftMargin: parent.width * 0.02
 
                 Column {
-                    anchors.centerIn: parent
                     width: parent.width * 0.85
-                    spacing: 45   //  better spacing between button & gauge
 
-                    //  Manual Validation Button
+                    anchors.top: parent.top
+                    anchors.topMargin: 10
+
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    spacing: 40
+
+                    // =====================================================
+                    // MANUAL VALIDATION BUTTON
+                    // =====================================================
+
                     Rectangle {
-                        width: parent.width * 0.6
-                        height: 44
-                        radius: 10
+                        width: parent.width * 0.50
+                        height: 65
+
                         anchors.horizontalCenter: parent.horizontalCenter
-                        color: "#F5F7FC"
+
+                        radius: 14
+
+                        color: "#FFFFFF"
+
+                        border.color: "#D0D8EC"
+                        border.width: 1
 
                         property bool hovered: false
                         property bool pressed: false
 
-                        // Outer blue border
-                        border.color: "#1A4DB5"
-                        border.width: 1
-
-                        // Inner border (light blue for subtle effect)
-                        Rectangle {
-                            anchors.fill: parent
-                            anchors.margins: 2
-                            radius: parent.radius - 2
-                            color: "transparent"
-                            border.color: "#1A4DB5"
-                            border.width: 1
-                        }
-
-                        Text {
+                        Column {
                             anchors.centerIn: parent
-                            text: "Manual Validation"
-                            font.pixelSize: 13
-                            font.bold: true
-                            color: "#1A4DB5"
+                            spacing: 4
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                text: "Manual"
+
+                                font.pixelSize: 15
+                                font.bold: true
+
+                                color: "#1A4DB5"
+                            }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                text: "Validation"
+
+                                font.pixelSize: 15
+                                font.bold: true
+
+                                color: "#1A4DB5"
+                            }
                         }
 
                         MouseArea {
                             anchors.fill: parent
+
                             hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
 
                             onEntered: parent.hovered = true
                             onExited: parent.hovered = false
+
                             onPressed: parent.pressed = true
                             onReleased: parent.pressed = false
 
-                            onClicked: globalTopBar.showNotification("✓ Manual Validation ON")
+                            onClicked: {
+                                globalTopBar.showNotification(
+                                    "✓ Manual Validation ON"
+                                )
+                            }
                         }
 
-                        // Press animation
                         scale: pressed ? 0.96 : 1.0
-                        Behavior on scale { NumberAnimation { duration: 120 } }
 
-                        Behavior on color { ColorAnimation { duration: 150 } }
+                        Behavior on scale {
+                            NumberAnimation {
+                                duration: 120
+                            }
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
 
                         states: [
+
                             State {
                                 name: "hovered"
                                 when: parent.hovered && !parent.pressed
-                                PropertyChanges { target: parent; color: "#EEF2FF" }
+
+                                PropertyChanges {
+                                    target: parent
+                                    color: "#F7F9FF"
+                                }
                             },
+
                             State {
                                 name: "pressed"
                                 when: parent.pressed
-                                PropertyChanges { target: parent; color: "#E0E7FF" }
+
+                                PropertyChanges {
+                                    target: parent
+                                    color: "#EEF2FF"
+                                }
                             }
                         ]
                     }
 
-                    // Circular Gauge (bigger)
+                    // =====================================================
+                    // CIRCULAR GAUGE
+                    // =====================================================
+
                     CircularGauge {
                         id: ampGauge
+
                         width: parent.width
                         height: width
 
                         anchors.horizontalCenter: parent.horizontalCenter
 
                         value: 650
+
                         label: "Amplitude"
+
                         threshold: 400
                         thresholdLabel: "Thr-A"
+
                         maxValue: 1200
 
-                        onThresholdClicked: popup.open(
-                            "Thr-A",
-                            ampGauge.threshold,
-                            function(val){ ampGauge.threshold = val },
-                            50, 1500
-                        )
+                        onThresholdClicked: {
+                            popup.open(
+                                "Thr-A",
+                                ampGauge.threshold,
+                                function(val) {
+                                    ampGauge.threshold = val
+                                },
+                                50,
+                                1500
+                            )
+                        }
                     }
                 }
             }

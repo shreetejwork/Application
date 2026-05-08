@@ -1,6 +1,11 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Basic
 import QtQuick.Layouts
+
+import "../components"
+
+import AppState 1.0
 
 Item {
     id: root
@@ -23,11 +28,23 @@ Item {
     property real colSr: 90 * root.scale
     property real colCode: 170 * root.scale
 
+    // ===== SHARED LAYOUT HELPERS =====
+    property real rowFixedSpacing: 16 * root.scale * 3
+    property real rowSelectExtra:  root.colSelect + 16 * root.scale
+
+    function nameColWidth(totalWidth) {
+        return totalWidth
+                - root.colActive
+                - root.colSr
+                - root.colCode
+                - rowFixedSpacing
+                - (selectionMode ? rowSelectExtra : 0)
+    }
+
     // ================= MODELS =================
 
     ListModel {
         id: group01Model
-
         ListElement {
             selected: false
             active: true
@@ -49,16 +66,8 @@ Item {
     ListModel { id: group10Model }
 
     property var groupModels: [
-        group01Model,
-        group02Model,
-        group03Model,
-        group04Model,
-        group05Model,
-        group06Model,
-        group07Model,
-        group08Model,
-        group09Model,
-        group10Model
+        group01Model, group02Model, group03Model, group04Model, group05Model,
+        group06Model, group07Model, group08Model, group09Model, group10Model
     ]
 
     function currentModel() {
@@ -66,71 +75,48 @@ Item {
     }
 
     function getFreeSrNo(model) {
-
         for (var srNo = 1; srNo <= 100; srNo++) {
-
             var found = false
-
             for (var i = 0; i < model.count; i++) {
-
                 if (model.get(i).sr === srNo) {
                     found = true
                     break
                 }
             }
-
             if (!found)
                 return srNo
         }
-
         return -1
     }
 
     function addProduct() {
-
         var model = currentModel()
-
-        // find first empty SR number
         var srNo = getFreeSrNo(model)
-
-        // no free slot available
         if (srNo === -1)
             return
 
         model.append({
-            selected: false,
-            active: false,
-            sr: srNo,
-            name: "Product " + srNo,
-            code: "PRD-" + currentGroup + "-" + srNo,
-            fixedItem: false
-        })
+                         selected: false,
+                         active: false,
+                         sr: srNo,
+                         name: "Product " + srNo,
+                         code: "PRD-" + currentGroup + "-" + srNo,
+                         fixedItem: false
+                     })
 
-        // sort model by sr number
         for (var i = 0; i < model.count; i++) {
-
             for (var j = i + 1; j < model.count; j++) {
-
                 if (model.get(i).sr > model.get(j).sr) {
-
                     var tempI = {
-                        selected: model.get(i).selected,
-                        active: model.get(i).active,
-                        sr: model.get(i).sr,
-                        name: model.get(i).name,
-                        code: model.get(i).code,
-                        fixedItem: model.get(i).fixedItem
+                        selected: model.get(i).selected, active: model.get(i).active,
+                        sr: model.get(i).sr, name: model.get(i).name,
+                        code: model.get(i).code, fixedItem: model.get(i).fixedItem
                     }
-
                     var tempJ = {
-                        selected: model.get(j).selected,
-                        active: model.get(j).active,
-                        sr: model.get(j).sr,
-                        name: model.get(j).name,
-                        code: model.get(j).code,
-                        fixedItem: model.get(j).fixedItem
+                        selected: model.get(j).selected, active: model.get(j).active,
+                        sr: model.get(j).sr, name: model.get(j).name,
+                        code: model.get(j).code, fixedItem: model.get(j).fixedItem
                     }
-
                     model.set(i, tempJ)
                     model.set(j, tempI)
                 }
@@ -139,13 +125,9 @@ Item {
     }
 
     function deleteSelectedProducts() {
-
         var model = currentModel()
-
         for (var i = model.count - 1; i >= 0; i--) {
-
             var item = model.get(i)
-
             if (item.selected && !item.fixedItem) {
                 model.remove(i)
             }
@@ -153,18 +135,10 @@ Item {
     }
 
     function setActiveProduct(srNo) {
-
         activeSr = srNo
-
         var model = currentModel()
-
         for (var i = 0; i < model.count; i++) {
-
-            model.setProperty(
-                        i,
-                        "active",
-                        model.get(i).sr === srNo
-                        )
+            model.setProperty(i, "active", model.get(i).sr === srNo)
         }
     }
 
@@ -202,11 +176,8 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 height: 60 * root.scale
-
                 color: "#FFFFFF"
-
                 radius: 12 * root.scale
-
                 border.color: "#C8D4EE"
                 border.width: 1
 
@@ -214,22 +185,17 @@ Item {
                     anchors.top: parent.top
                     anchors.left: parent.left
                     anchors.right: parent.right
-
                     height: 2 * root.scale
-
                     radius: 12 * root.scale
-
                     color: "#E8EEF9"
                 }
 
                 RowLayout {
                     anchors.fill: parent
-
                     anchors.leftMargin: 14 * root.scale
                     anchors.rightMargin: 14 * root.scale
                     anchors.topMargin: 10 * root.scale
                     anchors.bottomMargin: 10 * root.scale
-
                     spacing: 10 * root.scale
 
                     // ================= GROUP COMBO =================
@@ -242,16 +208,8 @@ Item {
                         Layout.alignment: Qt.AlignVCenter
 
                         model: [
-                            "GROUP 01",
-                            "GROUP 02",
-                            "GROUP 03",
-                            "GROUP 04",
-                            "GROUP 05",
-                            "GROUP 06",
-                            "GROUP 07",
-                            "GROUP 08",
-                            "GROUP 09",
-                            "GROUP 10"
+                            "GROUP 01", "GROUP 02", "GROUP 03", "GROUP 04", "GROUP 05",
+                            "GROUP 06", "GROUP 07", "GROUP 08", "GROUP 09", "GROUP 10"
                         ]
 
                         currentIndex: 0
@@ -263,76 +221,52 @@ Item {
                         font.pixelSize: 15 * root.scale
 
                         delegate: ItemDelegate {
-
                             width: groupCombo.width
                             height: 40 * root.scale
 
                             background: Rectangle {
-                                color: highlighted
-                                       ? "#E3EDFF"
-                                       : "#FFFFFF"
+                                color: highlighted ? "#E3EDFF" : "#FFFFFF"
                             }
 
                             contentItem: Text {
                                 text: modelData
-
-                                color: highlighted
-                                       ? "#1A4DB5"
-                                       : "#2A3550"
-
+                                color: highlighted ? "#1A4DB5" : "#2A3550"
                                 font.pixelSize: 15 * root.scale
-                                font.weight: highlighted
-                                             ? Font.Medium
-                                             : Font.Normal
-
+                                font.weight: highlighted ? Font.Medium : Font.Normal
                                 verticalAlignment: Text.AlignVCenter
-
                                 leftPadding: 14 * root.scale
                             }
                         }
 
                         indicator: Text {
                             text: "▼"
-
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.right: parent.right
                             anchors.rightMargin: 14 * root.scale
-
                             font.pixelSize: 12 * root.scale
                             color: "#1A4DB5"
                         }
 
                         contentItem: Text {
                             text: groupCombo.displayText
-
                             color: "#2A3550"
-
                             font.pixelSize: 15 * root.scale
                             font.weight: Font.Medium
-
                             verticalAlignment: Text.AlignVCenter
-
                             leftPadding: 14 * root.scale
                             rightPadding: 34 * root.scale
                         }
 
                         background: Rectangle {
                             radius: 8 * root.scale
-
                             color: "#EDF1FA"
-
                             border.width: 1
-                            border.color: groupCombo.popup.visible
-                                          ? "#1A4DB5"
-                                          : "#C8D4EE"
+                            border.color: groupCombo.popup.visible ? "#1A4DB5" : "#C8D4EE"
                         }
 
                         popup: Popup {
-
                             y: groupCombo.height + 4 * root.scale
-
                             width: groupCombo.width
-
                             padding: 0
 
                             background: Rectangle {
@@ -344,90 +278,82 @@ Item {
 
                             contentItem: ListView {
                                 clip: true
-
                                 implicitHeight: contentHeight
-
-                                model: groupCombo.popup.visible
-                                       ? groupCombo.delegateModel
-                                       : null
-
+                                model: groupCombo.popup.visible ? groupCombo.delegateModel : null
                                 currentIndex: groupCombo.highlightedIndex
                             }
                         }
                     }
 
-                    Item {
-                        Layout.fillWidth: true
-                    }
+                    Item { Layout.fillWidth: true }
 
                     // ================= BUTTONS =================
 
                     Repeater {
-
                         model: ["LOAD", "ADD", "SELECT", "DELETE"]
 
                         delegate: Rectangle {
-
                             property bool isSelectButton: modelData === "SELECT"
                             property bool activeButton: isSelectButton && selectionMode
 
                             width: 100 * root.scale
                             height: 38 * root.scale
-
                             radius: 8 * root.scale
 
-                            color: activeButton
-                                   ? "#1A4DB5"
-                                   : "#FFFFFF"
-
+                            color: activeButton ? "#1A4DB5" : "#FFFFFF"
                             border.width: 1
+                            border.color: modelData === "DELETE" ? "#C62828" : "#1A4DB5"
 
-                            border.color: modelData === "DELETE"
-                                          ? "#C62828"
-                                          : "#1A4DB5"
-
-                            Behavior on color {
-                                ColorAnimation {
-                                    duration: 120
-                                }
-                            }
+                            Behavior on color { ColorAnimation { duration: 120 } }
 
                             Text {
                                 anchors.centerIn: parent
-
-                                text: activeButton
-                                      ? "Cancel"
-                                      : modelData
-
+                                text: activeButton ? "Cancel" : modelData
                                 font.pixelSize: 15 * root.scale
                                 font.weight: Font.Medium
-
-                                color: activeButton
-                                       ? "#FFFFFF"
-                                       : (modelData === "DELETE"
-                                          ? "#C62828"
-                                          : "#1A4DB5")
+                                color: activeButton ? "#FFFFFF" : (modelData === "DELETE" ? "#C62828" : "#1A4DB5")
                             }
 
                             MouseArea {
                                 anchors.fill: parent
-
                                 hoverEnabled: true
-
                                 cursorShape: Qt.PointingHandCursor
 
                                 onClicked: {
 
                                     if (modelData === "LOAD") {
-                                        // load logic
+
+                                        // add load logic
                                     }
+
                                     else if (modelData === "ADD") {
-                                        addProduct()
+
+                                        addProductPopup.open()
                                     }
+
                                     else if (modelData === "SELECT") {
-                                        selectionMode = !selectionMode
+
+                                        // CANCEL SELECTION
+                                        if (selectionMode) {
+
+                                            var model = currentModel()
+
+                                            for (var i = 0; i < model.count; i++) {
+
+                                                model.setProperty(i, "selected", false)
+                                            }
+
+                                            selectionMode = false
+                                        }
+                                        // ENABLE SELECTION
+                                        else {
+
+                                            selectionMode = true
+                                        }
                                     }
+
                                     else if (modelData === "DELETE") {
+
                                         deleteSelectedProducts()
                                     }
                                 }
@@ -449,13 +375,10 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-
-                    radius: 14 * root.scale
+                    radius: 10 * root.scale
                     color: "#FFFFFF"
-
-                    border.color: "#C8D4EE"
+                    border.color: "#D0D8EC"
                     border.width: 1
-
                     clip: true
 
                     ColumnLayout {
@@ -468,91 +391,81 @@ Item {
 
                         Rectangle {
                             Layout.fillWidth: true
-                            height: 48 * root.scale
-
+                            height: 44 * root.scale
                             color: "#1A4DB5"
-                            radius: 14 * root.scale
+                            radius: 10 * root.scale
 
                             Rectangle {
                                 anchors.bottom: parent.bottom
                                 anchors.left: parent.left
                                 anchors.right: parent.right
-
-                                height: 14 * root.scale
+                                height: 10 * root.scale
                                 color: "#1A4DB5"
                             }
 
-                            RowLayout {
+                            Row {
                                 anchors.fill: parent
-
-                                anchors.leftMargin: 16 * root.scale
-                                anchors.rightMargin: 16 * root.scale
-
-                                spacing: root.colSpacing
+                                anchors.leftMargin: 12 * root.scale
+                                anchors.rightMargin: 12 * root.scale
+                                anchors.topMargin: 12 * root.scale
+                                anchors.bottomMargin: 12 * root.scale
+                                spacing: 16 * root.scale
 
                                 // SELECT SPACE
                                 Item {
                                     visible: selectionMode
-                                    Layout.preferredWidth: root.colSelect
+                                    width: root.colSelect
+                                    height: 1
                                 }
 
                                 // ACTIVE
-                                Text {
-                                    text: "A"
+                                Item {
+                                    width: root.colActive
+                                    height: parent.height
 
-                                    Layout.preferredWidth: root.colActive
-
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-
-                                    color: "#FFFFFF"
-
-                                    font.bold: true
-                                    font.pixelSize: 16 * root.scale
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "A"
+                                        color: "#FFFFFF"
+                                        font.bold: true
+                                        font.pixelSize: 20 * root.scale
+                                    }
                                 }
 
                                 // SR
                                 Text {
                                     text: "SR No"
-
-                                    Layout.preferredWidth: root.colSr
-
+                                    width: root.colSr
                                     verticalAlignment: Text.AlignVCenter
-
                                     color: "#FFFFFF"
-
                                     font.bold: true
-                                    font.pixelSize: 16 * root.scale
+                                    font.pixelSize: 20 * root.scale
                                 }
 
                                 // PRODUCT NAME
                                 Text {
                                     text: "Product Name"
-
-                                    Layout.fillWidth: true
-
+                                    width: root.nameColWidth(
+                                               parent.width
+                                               - parent.anchors.leftMargin
+                                               - parent.anchors.rightMargin
+                                               )
                                     verticalAlignment: Text.AlignVCenter
-
                                     color: "#FFFFFF"
-
                                     font.bold: true
-                                    font.pixelSize: 16 * root.scale
+                                    font.pixelSize: 20 * root.scale
+                                    elide: Text.ElideRight
                                 }
 
                                 // PRODUCT CODE
-                                Item {
-                                    Layout.preferredWidth: root.colCode
-
-                                    Text {
-                                        anchors.centerIn: parent
-
-                                        text: "Product Code"
-
-                                        color: "#FFFFFF"
-
-                                        font.bold: true
-                                        font.pixelSize: 16 * root.scale
-                                    }
+                                Text {
+                                    text: "Product Code"
+                                    width: root.colCode
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                    color: "#FFFFFF"
+                                    font.bold: true
+                                    font.pixelSize: 20 * root.scale
                                 }
                             }
                         }
@@ -566,13 +479,9 @@ Item {
 
                             Layout.fillWidth: true
                             Layout.fillHeight: true
-
                             clip: true
-
                             spacing: 0
-
                             boundsBehavior: Flickable.StopAtBounds
-
                             model: currentModel()
 
                             ScrollBar.vertical: ScrollBar {
@@ -584,81 +493,56 @@ Item {
                                 id: rowRect
 
                                 width: productList.width
-                                height: 60 * root.scale
+                                height: visible ? 42 * root.scale : 0
 
                                 property bool isSelected: selected === true
 
                                 color: isSelected
                                        ? "#E3EDFF"
-                                       : (index % 2 === 0
-                                          ? "#FFFFFF"
-                                          : "#F7F9FF")
+                                       : (index % 2 === 0 ? "#FFFFFF" : "#F4F7FF")
 
-                                Behavior on color {
-                                    ColorAnimation {
-                                        duration: 120
-                                    }
+                                Behavior on color { ColorAnimation { duration: 120 } }
+
+                                Rectangle {
+                                    anchors.bottom: parent.bottom
+                                    anchors.left: parent.left
+                                    anchors.right: parent.right
+                                    height: 1
+                                    color: "#E4EAF5"
                                 }
 
-                                RowLayout {
+                                Row {
                                     anchors.fill: parent
-
-                                    anchors.leftMargin: 16 * root.scale
-                                    anchors.rightMargin: 16 * root.scale
-
-                                    spacing: root.colSpacing
+                                    anchors.leftMargin: 12 * root.scale
+                                    anchors.rightMargin: 12 * root.scale
+                                    anchors.topMargin: 10 * root.scale
+                                    anchors.bottomMargin: 10 * root.scale
+                                    spacing: 16 * root.scale
 
                                     // ═════════ SELECT ═════════
 
                                     Rectangle {
                                         visible: selectionMode
-
-                                        width: selectionMode
-                                               ? root.colSelect
-                                               : 0
-
+                                        width: root.colSelect
                                         height: root.colSelect
-
-                                        radius: 5 * root.scale
-
-                                        color: isSelected
-                                               ? "#1A4DB5"
-                                               : "#FFFFFF"
-
-                                        border.color: isSelected
-                                                      ? "#1A4DB5"
-                                                      : "#8BA0CC"
-
-                                        border.width: 2
-
-                                        Behavior on color {
-                                            ColorAnimation {
-                                                duration: 120
-                                            }
-                                        }
+                                        radius: 4 * root.scale
+                                        color: isSelected ? "#1A4DB5" : "#FFFFFF"
+                                        border.color: isSelected ? "#1A4DB5" : "#8BA0CC"
+                                        border.width: 1.5
 
                                         Text {
                                             anchors.centerIn: parent
-
                                             text: "✓"
-
                                             visible: isSelected
-
                                             color: "#FFFFFF"
-
                                             font.bold: true
-                                            font.pixelSize: 13 * root.scale
+                                            font.pixelSize: 12 * root.scale
                                         }
 
                                         MouseArea {
                                             anchors.fill: parent
-
                                             onClicked: {
-                                                currentModel().setProperty(
-                                                            index,
-                                                            "selected",
-                                                            !selected
-                                                            )
+                                                currentModel().setProperty(index, "selected", !selected)
                                             }
                                         }
                                     }
@@ -666,22 +550,15 @@ Item {
                                     // ═════════ ACTIVE ═════════
 
                                     Rectangle {
-                                        Layout.preferredWidth: root.colActive
-                                        Layout.preferredHeight: root.colActive
-
-                                        radius: root.colActive / 2
-
-                                        color: active
-                                               ? "#1A4DB5"
-                                               : "#D5DDEE"
+                                        width: root.colActive
+                                        height: root.colActive
+                                        radius: width / 2
+                                        color: active ? "#1A4DB5" : "#D5DDEE"
 
                                         Text {
                                             anchors.centerIn: parent
-
                                             text: active ? "A" : ""
-
                                             color: "#FFFFFF"
-
                                             font.bold: true
                                             font.pixelSize: 12 * root.scale
                                         }
@@ -690,38 +567,27 @@ Item {
                                     // ═════════ SR ═════════
 
                                     Text {
-                                        Layout.preferredWidth: root.colSr
-
                                         text: sr
-
+                                        width: root.colSr
                                         verticalAlignment: Text.AlignVCenter
-
-                                        font.pixelSize: 15 * root.scale
-
-                                        font.weight: active
-                                                     ? Font.Medium
-                                                     : Font.Normal
-
+                                        font.pixelSize: 18 * root.scale
+                                        font.weight: active ? Font.Medium : Font.Normal
                                         color: "#2A3550"
                                     }
 
                                     // ═════════ PRODUCT NAME ═════════
 
                                     Text {
-                                        Layout.fillWidth: true
-
                                         text: name
-
+                                        width: root.nameColWidth(
+                                                   rowRect.width
+                                                   - 12 * root.scale
+                                                   - 12 * root.scale
+                                                   )
                                         elide: Text.ElideRight
-
                                         verticalAlignment: Text.AlignVCenter
-
-                                        font.pixelSize: 15 * root.scale
-
-                                        font.weight: active
-                                                     ? Font.Medium
-                                                     : Font.Normal
-
+                                        font.pixelSize: 18 * root.scale
+                                        font.weight: active ? Font.Medium : Font.Normal
                                         color: "#2A3550"
                                     }
 
@@ -729,38 +595,18 @@ Item {
 
                                     Rectangle {
                                         width: root.colCode
-                                        height: 28 * root.scale
-
-                                        radius: 14 * root.scale
-
-                                        color: active
-                                               ? "#E8F0FF"
-                                               : "#EDF1FA"
+                                        height: 24 * root.scale
+                                        radius: 12 * root.scale
+                                        color: active ? "#E8F0FF" : "#EDF1FA"
 
                                         Text {
                                             anchors.centerIn: parent
-
                                             text: code
-
-                                            font.pixelSize: 13 * root.scale
+                                            font.pixelSize: 18 * root.scale
                                             font.weight: Font.Medium
-
-                                            color: active
-                                                   ? "#1A4DB5"
-                                                   : "#4A5E8A"
+                                            color: active ? "#1A4DB5" : "#4A5E8A"
                                         }
                                     }
-                                }
-
-                                // ═════════ ROW DIVIDER ═════════
-
-                                Rectangle {
-                                    anchors.bottom: parent.bottom
-
-                                    width: parent.width
-                                    height: 1
-
-                                    color: "#E4EAF5"
                                 }
 
                                 // ═════════ ROW CLICK ═════════
@@ -768,10 +614,21 @@ Item {
                                 MouseArea {
                                     anchors.fill: parent
 
-                                    enabled: !selectionMode
-
                                     onClicked: {
-                                        setActiveProduct(sr)
+
+                                        if (!selectionMode) {
+
+                                            setActiveProduct(sr)
+                                        }
+
+                                        // SELECTION MODE
+                                        else {
+
+                                        currentModel().setProperty(
+                                            index,
+                                            "selected",
+                                            !selected)
+                                        }
                                     }
                                 }
                             }
@@ -800,75 +657,26 @@ Item {
                             color: "#1A4DB5"
                         }
 
-                        Rectangle {
-                            width: parent.width
-                            height: 2
-                            color: "#E4EAF5"
-                        }
+                        Rectangle { width: parent.width; height: 2; color: "#E4EAF5" }
+
+                        Text { text: "Phase : 110";       font.pixelSize: 20 * root.scale; color: "#202020" }
+                        Text { text: "Signal : 500";      font.pixelSize: 20 * root.scale; color: "#202020" }
+                        Text { text: "Amplitude : 14000"; font.pixelSize: 20 * root.scale; color: "#202020" }
+                        Text { text: "Digital Gain : 1";  font.pixelSize: 20 * root.scale; color: "#202020" }
+                        Text { text: "Analog Gain : 1";   font.pixelSize: 20 * root.scale; color: "#202020" }
+                        Text { text: "DD Frequency : 18"; font.pixelSize: 20 * root.scale; color: "#202020" }
+                        Text { text: "DD Power : 50";     font.pixelSize: 20 * root.scale; color: "#202020" }
+
+                        Rectangle { width: parent.width; height: 1; color: "#E4EAF5" }
 
                         Text {
-                            text: "Phase : 110"
-                            font.pixelSize: 20 * root.scale
-                            color: "#202020"
-                        }
-
-                        Text {
-                            text: "Signal : 500"
-                            font.pixelSize: 20 * root.scale
-                            color: "#202020"
-                        }
-
-                        Text {
-                            text: "Amplitude : 14000"
-                            font.pixelSize: 20 * root.scale
-                            color: "#202020"
-                        }
-
-                        Text {
-                            text: "Digital Gain : 1"
-                            font.pixelSize: 20 * root.scale
-                            color: "#202020"
-                        }
-
-                        Text {
-                            text: "Analog Gain : 1"
-                            font.pixelSize: 20 * root.scale
-                            color: "#202020"
-                        }
-
-                        Text {
-                            text: "DD Frequency : 18"
-                            font.pixelSize: 20 * root.scale
-                            color: "#202020"
-                        }
-
-                        Text {
-                            text: "DD Power : 50"
-                            font.pixelSize: 20 * root.scale
-                            color: "#202020"
-                        }
-
-                        Rectangle {
-                            width: parent.width
-                            height: 1
-                            color: "#E4EAF5"
-                        }
-
-                        Text {
-                            text: "Current Group : "
-                                  + (currentGroup < 10
-                                     ? "0" + currentGroup
-                                     : currentGroup)
-
+                            text: "Current Group : " + (currentGroup < 10 ? "0" + currentGroup : currentGroup)
                             font.pixelSize: 18 * root.scale
                             color: "#1A1A1A"
                         }
 
                         Text {
-                            text: "Products : "
-                                  + currentModel().count
-                                  + " / 100"
-
+                            text: "Products : " + currentModel().count + " / 100"
                             font.pixelSize: 18 * root.scale
                             color: "#1A1A1A"
                         }
@@ -882,5 +690,17 @@ Item {
                 }
             }
         }
+    }
+
+    AddProductPopup {
+        id: addProductPopup
+
+        parent: Overlay.overlay
+
+        scaleFactor: root.scale
+
+        currentModelRef: currentModel()
+
+        getFreeSrNoFunc: getFreeSrNo
     }
 }

@@ -47,13 +47,10 @@ Item {
                 }
 
                 MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/bug.png"
-                    label:      "Debug Console"
+                    iconSource: "qrc:/qt/qml/Application/assets/images/usbupdate.png"
+                    label:      "Software Update \n(USB)"
                     iconSize:   100 * root.scale
-                    onTileClicked: {
-                        console.log("Debug Console tapped")
-                        // TODO: navigateTo("DebugConsole")
-                    }
+                    onTileClicked: navigateTo("UsbSoftwareUpdate")
                 }
             }
 
@@ -71,14 +68,6 @@ Item {
                     visible: true
                     enabled: true
                     onTileClicked: navigateTo("DeveloperSettings")
-                }
-
-                // ── Col 2: USB Software Update ───────
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/usbupdate.png"
-                    label:      "Software Update \n(USB)"
-                    iconSize:   100 * root.scale
-                    onTileClicked: navigateTo("UsbSoftwareUpdate")
                 }
 
                 // ── SLOT 3: Add your future PNG here ───────

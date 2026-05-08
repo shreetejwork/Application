@@ -111,7 +111,25 @@ Window {
 
             currentIndex: 0
 
-            HomeScreen { showTopBar: false; globalTopBar: mainTopBar }
+            HomeScreen {
+                showTopBar: false
+                globalTopBar: mainTopBar
+
+                navigateTo: function(screen) {
+
+                    if (root.currentMenuScreen !== "")
+                        root.menuStack.push(root.currentMenuScreen)
+
+                    root.currentMenuScreen = screen
+
+                    menuLoader.source = "screens/" + screen + "Screen.qml"
+                    menuLoader.visible = true
+
+                    swipeView.visible = false
+
+                    mainTopBar.showBackButton = true
+                }
+            }
 
             Loader {
                 property bool showDDuster: GlobalState.showDDuster

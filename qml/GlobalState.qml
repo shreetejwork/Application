@@ -14,6 +14,8 @@ QtObject {
         property bool showDDuster: true
         property bool showNetworkScreen: true
         property bool showAuditTrail: true
+        property bool showProductLib: true
+
     }
 
     property var reportSettings: Settings {
@@ -27,6 +29,7 @@ QtObject {
     property bool showDDuster: settings.showDDuster
     property bool showNetworkScreen: settings.showNetworkScreen
     property bool showAuditTrail: settings.showAuditTrail
+    property bool showProductLib: settings.showProductLib
 
     onShowDDusterChanged: settings.showDDuster = showDDuster
     onShowNetworkScreenChanged: settings.showNetworkScreen = showNetworkScreen
@@ -156,7 +159,7 @@ QtObject {
 
 
     // =========================================================
-    // OTHER PROPERTIES (UNCHANGED)
+    // OTHER PROPERTIES
     // =========================================================
     property real productPhase: 40
     property real machinePhase: 60

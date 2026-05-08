@@ -21,17 +21,14 @@ Rectangle {
     visible: GlobalState.loginKeyboardRequest
     z: 10000
 
-
-    //  SHIFT STATES (CLEAN)
-    property bool capsLock: false          // UI state
-    property bool shiftOnce: false         // single press
-    property bool capsPersistent: false    // double tap
+    // SHIFT STATES
+    property bool capsLock: false
+    property bool shiftOnce: false
+    property bool capsPersistent: false
 
     property bool numberMode: false
     property bool autoCapitalize: true
     property bool backspaceHeld: false
-
-    property int lastShiftTap: 0
 
     Timer {
         id: backspaceTimer
@@ -58,7 +55,9 @@ Rectangle {
     property var num3: ["-","/",";",":","'","\"",".",",","?","+"]
 
     onVisibleChanged: {
+
         if (visible) {
+
             let input = GlobalState.activeInputField
             let isPassword = input && input.isPasswordField === true
 
@@ -70,49 +69,100 @@ Rectangle {
         }
     }
 
-    function clearIfAllSelected(input) {
-        if (input.selectedText && input.selectedText.length === input.text.length) {
-            input.text = ""
-            input.cursorPosition = 0
-        }
+    function replaceSelection(input, textToInsert) {
+
+        let start = Math.min(input.selectionStart,
+                             input.selectionEnd)
+
+        let end = Math.max(input.selectionStart,
+                           input.selectionEnd)
+
+        input.remove(start, end)
+
+        input.insert(start, textToInsert)
+
+        input.cursorPosition = start + textToInsert.length
     }
 
     function sendKey(key) {
+
         let input = GlobalState.activeInputField
-        if (!input || input.text === undefined)
+
+        if (!input)
             return
 
-        clearIfAllSelected(input)
-
-        let text = input.text
-        let pos = input.cursorPosition !== undefined ? input.cursorPosition : text.length
+        input.forceActiveFocus()
 
         switch (key) {
 
+        // =====================================================
+        // BACKSPACE
+        // =====================================================
+
         case "⌫":
-            if (pos > 0) {
-                input.text = text.slice(0, pos - 1) + text.slice(pos)
-                input.cursorPosition = pos - 1
+
+            if (input.selectedText &&
+                input.selectedText.length > 0) {
+
+                let start = Math.min(input.selectionStart,
+                                     input.selectionEnd)
+
+                let end = Math.max(input.selectionStart,
+                                   input.selectionEnd)
+
+                input.remove(start, end)
+                input.cursorPosition = start
             }
+            else if (input.cursorPosition > 0) {
+
+                input.remove(input.cursorPosition - 1,
+                             input.cursorPosition)
+
+                input.cursorPosition--
+            }
+
             break
+
+        // =====================================================
+        // SPACE
+        // =====================================================
 
         case "Space":
-            input.text = text.slice(0, pos) + " " + text.slice(pos)
-            input.cursorPosition = pos + 1
+
+            if (input.selectedText &&
+                input.selectedText.length > 0) {
+
+                replaceSelection(input, " ")
+            }
+            else {
+
+                input.insert(input.cursorPosition, " ")
+                input.cursorPosition++
+            }
+
             autoCapitalize = true
             capsLock = true
             shiftOnce = false
+
             break
+
+        // =====================================================
+        // ENTER
+        // =====================================================
 
         case "↩":
-            if (input.accepted)
-                input.accepted()
+
+            input.accepted()
 
             autoCapitalize = true
             capsLock = true
             shiftOnce = false
+
             break
 
+        // =====================================================
+        // NUMBER MODE
+        // =====================================================
 
         case "@123":
             numberMode = true
@@ -122,28 +172,65 @@ Rectangle {
             numberMode = false
             break
 
+        // =====================================================
+        // HIDE KEYBOARD
+        // =====================================================
+
         case "⌄":
+
             GlobalState.loginKeyboardRequest = false
+            input.focus = false
+
             break
 
+        // =====================================================
+        // NORMAL KEYS
+        // =====================================================
+
         default:
+
             let charToInsert = key
 
             let isPassword = input.isPasswordField === true
 
-            if (!isPassword && autoCapitalize && key.length === 1) {
+            if (!isPassword &&
+                autoCapitalize &&
+                key.length === 1) {
+
                 charToInsert = key.toUpperCase()
+
                 autoCapitalize = false
                 capsLock = false
             }
             else if (capsLock) {
+
                 charToInsert = key.toUpperCase()
             }
 
-            input.text = text.slice(0, pos) + charToInsert + text.slice(pos)
-            input.cursorPosition = pos + charToInsert.length
+            // =========================================
+            // REPLACE SELECTED TEXT
+            // =========================================
+
+            if (input.selectedText &&
+                input.selectedText.length > 0) {
+
+                replaceSelection(input, charToInsert)
+            }
+            else {
+
+                input.insert(input.cursorPosition,
+                             charToInsert)
+
+                input.cursorPosition +=
+                        charToInsert.length
+            }
+
+            // =========================================
+            // SINGLE SHIFT RESET
+            // =========================================
 
             if (shiftOnce && !capsPersistent) {
+
                 capsLock = false
                 shiftOnce = false
             }
@@ -157,18 +244,30 @@ Rectangle {
         anchors.margins: 12 * scale
         spacing: 10 * scale
 
+        // =====================================================
+        // LETTER KEYBOARD
+        // =====================================================
+
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+
             visible: !numberMode
             spacing: 8 * scale
 
-            KeyRow { keys: capsLock ? upper[0] : lower[0] }
-            KeyRow { keys: capsLock ? upper[1] : lower[1]; sidePadding: 20 }
+            KeyRow {
+                keys: capsLock ? upper[0] : lower[0]
+            }
+
+            KeyRow {
+                keys: capsLock ? upper[1] : lower[1]
+                sidePadding: 20
+            }
 
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
+
                 spacing: 8 * scale
 
                 SpecialKey {
@@ -180,20 +279,21 @@ Rectangle {
                         anchors.fill: parent
 
                         onClicked: {
+
                             if (keyboard.capsPersistent) {
-                                //  CAPS LOCK → OFF
+
                                 keyboard.capsPersistent = false
                                 keyboard.capsLock = false
                                 keyboard.shiftOnce = false
                             }
                             else if (keyboard.shiftOnce) {
-                                //  SECOND TAP → CAPS LOCK
+
                                 keyboard.capsPersistent = true
                                 keyboard.capsLock = true
                                 keyboard.shiftOnce = false
                             }
                             else {
-                                //  FIRST TAP → SINGLE SHIFT
+
                                 keyboard.shiftOnce = true
                                 keyboard.capsLock = true
                             }
@@ -218,12 +318,17 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
+
                         onPressed: {
                             keyboard.backspaceHeld = true
                             keyboard.sendKey("⌫")
                         }
-                        onReleased: keyboard.backspaceHeld = false
-                        onCanceled: keyboard.backspaceHeld = false
+
+                        onReleased:
+                            keyboard.backspaceHeld = false
+
+                        onCanceled:
+                            keyboard.backspaceHeld = false
                     }
                 }
             }
@@ -231,25 +336,44 @@ Rectangle {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1.2
+
                 spacing: 8 * scale
 
-                SpecialKey { text: "@123"; widthRatio: 2.0 }
+                SpecialKey {
+                    text: "@123"
+                    widthRatio: 2.0
+                }
 
-                Item { Layout.fillWidth: true }
+                Item {
+                    Layout.fillWidth: true
+                }
 
                 Key {
                     text: "Space"
-                    Layout.preferredWidth: 160 * keyboard.scale
+                    Layout.preferredWidth:
+                        160 * keyboard.scale
                 }
 
-                SpecialKey { text: "⌄"; widthRatio: 1.6 }
-                SpecialKey { text: "↩"; widthRatio: 2.0 }
+                SpecialKey {
+                    text: "⌄"
+                    widthRatio: 1.6
+                }
+
+                SpecialKey {
+                    text: "↩"
+                    widthRatio: 2.0
+                }
             }
         }
+
+        // =====================================================
+        // NUMBER KEYBOARD
+        // =====================================================
 
         ColumnLayout {
             Layout.fillWidth: true
             Layout.fillHeight: true
+
             visible: numberMode
             spacing: 8 * scale
 
@@ -259,6 +383,7 @@ Rectangle {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1
+
                 spacing: 8 * scale
 
                 Repeater {
@@ -272,12 +397,17 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
+
                         onPressed: {
                             keyboard.backspaceHeld = true
                             keyboard.sendKey("⌫")
                         }
-                        onReleased: keyboard.backspaceHeld = false
-                        onCanceled: keyboard.backspaceHeld = false
+
+                        onReleased:
+                            keyboard.backspaceHeld = false
+
+                        onCanceled:
+                            keyboard.backspaceHeld = false
                     }
                 }
             }
@@ -285,110 +415,196 @@ Rectangle {
             RowLayout {
                 Layout.fillWidth: true
                 Layout.preferredHeight: 1.2
+
                 spacing: 8 * scale
 
-                SpecialKey { text: "ABC"; widthRatio: 2.0 }
+                SpecialKey {
+                    text: "ABC"
+                    widthRatio: 2.0
+                }
 
-                Item { Layout.fillWidth: true }
+                Item {
+                    Layout.fillWidth: true
+                }
 
                 Key {
                     text: "Space"
-                    Layout.preferredWidth: 160 * keyboard.scale
+                    Layout.preferredWidth:
+                        160 * keyboard.scale
                 }
 
-                SpecialKey { text: "⌄"; widthRatio: 1.6 }
-                SpecialKey { text: "↩"; widthRatio: 2.0 }
+                SpecialKey {
+                    text: "⌄"
+                    widthRatio: 1.6
+                }
+
+                SpecialKey {
+                    text: "↩"
+                    widthRatio: 2.0
+                }
             }
         }
     }
 
+    // =====================================================
+    // KEY ROW
+    // =====================================================
+
     component KeyRow: RowLayout {
+
         property var keys: []
         property real sidePadding: 0
 
         Layout.fillWidth: true
         Layout.preferredHeight: 1
+
         spacing: 8 * keyboard.scale
 
-        Item { width: sidePadding * keyboard.scale }
+        Item {
+            width: sidePadding * keyboard.scale
+        }
 
         Repeater {
             model: keys
             delegate: Key {}
         }
 
-        Item { width: sidePadding * keyboard.scale }
+        Item {
+            width: sidePadding * keyboard.scale
+        }
     }
 
+    // =====================================================
+    // NORMAL KEY
+    // =====================================================
+
     component Key: Rectangle {
+
         property string text: modelData
 
         Layout.fillWidth: true
         Layout.fillHeight: true
+
         implicitHeight: 70 * keyboard.scale
 
         radius: 10
-        color: mouse.pressed ? "#DCE5FF" : "#FFFFFF"
+
+        color: mouse.pressed
+               ? "#DCE5FF"
+               : "#FFFFFF"
+
         border.color: "#C9CED8"
 
         Text {
             anchors.centerIn: parent
+
             text: parent.text
-            font.pixelSize: keyboard.keyFontSize * keyboard.scale
+
+            font.pixelSize:
+                keyboard.keyFontSize * keyboard.scale
+
             font.bold: true
+
             color: "#1A4DB5"
         }
 
         MouseArea {
             id: mouse
+
             anchors.fill: parent
-            onClicked: keyboard.sendKey(parent.text)
-            onPressed: parent.scale = 0.92
-            onReleased: parent.scale = 1.0
-            onCanceled: parent.scale = 1.0
+
+            onClicked:
+                keyboard.sendKey(parent.text)
+
+            onPressed:
+                parent.scale = 0.92
+
+            onReleased:
+                parent.scale = 1.0
+
+            onCanceled:
+                parent.scale = 1.0
         }
 
-        Behavior on scale { NumberAnimation { duration: 70 } }
+        Behavior on scale {
+            NumberAnimation {
+                duration: 70
+            }
+        }
     }
 
+    // =====================================================
+    // SPECIAL KEY
+    // =====================================================
+
     component SpecialKey: Rectangle {
+
         property string text: ""
         property bool active: false
         property real widthRatio: 1
 
         Layout.fillHeight: true
-        Layout.preferredWidth: 110 * widthRatio * keyboard.scale
+
+        Layout.preferredWidth:
+            110 * widthRatio * keyboard.scale
+
         implicitHeight: 70 * keyboard.scale
 
         radius: 10
-        color: active ? "#CCD9FF" : "#E6EBF5"
+
+        color: active
+               ? "#CCD9FF"
+               : "#E6EBF5"
+
         border.color: "#C9CED8"
 
         Text {
             anchors.centerIn: parent
+
             text: parent.text
-            font.pixelSize: keyboard.specialKeyFontSize * keyboard.scale
+
+            font.pixelSize:
+                keyboard.specialKeyFontSize
+                * keyboard.scale
+
             font.bold: true
+
             color: "#1A4DB5"
         }
 
         Rectangle {
             visible: active
+
             anchors.fill: parent
+
             radius: parent.radius
+
             border.width: 2
             border.color: "#1A4DB5"
+
             color: "transparent"
         }
 
         MouseArea {
             anchors.fill: parent
-            onClicked: keyboard.sendKey(parent.text)
-            onPressed: parent.scale = 0.92
-            onReleased: parent.scale = 1.0
-            onCanceled: parent.scale = 1.0
+
+            onClicked:
+                keyboard.sendKey(parent.text)
+
+            onPressed:
+                parent.scale = 0.92
+
+            onReleased:
+                parent.scale = 1.0
+
+            onCanceled:
+                parent.scale = 1.0
         }
 
-        Behavior on scale { NumberAnimation { duration: 70 } }
+        Behavior on scale {
+            NumberAnimation {
+                duration: 70
+            }
+        }
     }
 }

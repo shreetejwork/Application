@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 
+
 #include "DatabaseManager.h"
 #include "SystemController.h"
 #include "WifiScanner.h"

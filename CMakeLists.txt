@@ -105,6 +105,8 @@ qt_add_qml_module(appApplication
         SOURCES src/SystemDiagnosis.cpp
         QML_FILES qml/screens/ReportsScreen.qml
         QML_FILES qml/screens/ReportsLogScreen.qml
+        QML_FILES qml/screens/BatchHistoryScreen.qml
+        QML_FILES qml/components/AddProductPopup.qml
 )
 
 set_target_properties(appApplication PROPERTIES
