@@ -18,6 +18,8 @@ Item {
     property int currentGroup: 1
     property int activeSr: 1
 
+    property var activeModel: group01Model
+
     // ===== COLUMN WIDTHS =====
 
     property real colSpacing: 15 * root.scale
@@ -165,13 +167,25 @@ Item {
 
     function addProduct() {
 
-        var model = currentModel()
+        var model = activeModel
+
         var srNo = getFreeSrNo(model)
 
         if (srNo === -1)
             return
 
-        model.append({
+        var insertIndex = model.count
+
+        for (var i = 0; i < model.count; i++) {
+
+            if (model.get(i).sr > srNo) {
+
+                insertIndex = i
+                break
+            }
+        }
+
+        model.insert(insertIndex, {
                          selected: false,
                          active: false,
                          sr: srNo,
@@ -179,36 +193,6 @@ Item {
                          code: "PRD-" + currentGroup + "-" + srNo,
                          fixedItem: false
                      })
-
-        for (var i = 0; i < model.count; i++) {
-
-            for (var j = i + 1; j < model.count; j++) {
-
-                if (model.get(i).sr > model.get(j).sr) {
-
-                    var tempI = {
-                        selected: model.get(i).selected,
-                        active: model.get(i).active,
-                        sr: model.get(i).sr,
-                        name: model.get(i).name,
-                        code: model.get(i).code,
-                        fixedItem: model.get(i).fixedItem
-                    }
-
-                    var tempJ = {
-                        selected: model.get(j).selected,
-                        active: model.get(j).active,
-                        sr: model.get(j).sr,
-                        name: model.get(j).name,
-                        code: model.get(j).code,
-                        fixedItem: model.get(j).fixedItem
-                    }
-
-                    model.set(i, tempJ)
-                    model.set(j, tempI)
-                }
-            }
-        }
 
         refreshSelectionCount()
     }
@@ -317,6 +301,8 @@ Item {
                         onCurrentIndexChanged: {
 
                             currentGroup = currentIndex + 1
+                            activeModel = currentModel()
+
                             refreshSelectionCount()
                         }
 
@@ -586,7 +572,7 @@ Item {
                             spacing: 0
                             boundsBehavior: Flickable.StopAtBounds
 
-                            model: currentModel()
+                            model: activeModel
 
                             ScrollBar.vertical: ScrollBar {
                                 policy: ScrollBar.AsNeeded
@@ -821,7 +807,7 @@ Item {
 
         scaleFactor: root.scale
 
-        currentModelRef: currentModel()
+        currentModelRef: activeModel
 
         getFreeSrNoFunc: getFreeSrNo
     }

@@ -451,7 +451,18 @@ Popup {
                         return
                     }
 
-                    popup.currentModelRef.append({
+                    var insertIndex = popup.currentModelRef.count
+
+                    for (var i = 0; i < popup.currentModelRef.count; i++) {
+
+                        if (popup.currentModelRef.get(i).sr > srNo) {
+
+                            insertIndex = i
+                            break
+                        }
+                    }
+
+                    popup.currentModelRef.insert(insertIndex, {
 
                                                      selected: false,
                                                      active: false,
