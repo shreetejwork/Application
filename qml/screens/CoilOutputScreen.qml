@@ -14,43 +14,28 @@ Item {
     property real baseHeight: 700
     property real scale: Math.max(0.9, Math.min(1.8, height / baseHeight))
 
-    // ── GENERATE DUMMY DATA (30 days × 288 readings per day at 5-min gap) ──
-    // We keep it manageable: 30 days × 48 readings (every 30 min) = 1440 points
-    // For demo: 5-minute gap as requested but capped at a reasonable count
-
-    ListModel {
-        id: histValues
-    }
+    ListModel { id: histValues }
 
     Component.onCompleted: {
-        // Generate 30 days of data with 5-minute intervals
-        // 30 days × 24 hours × 12 readings/hour = 8640 points
-        // For performance we use every 30 min = 1440 points
         var intervalMinutes = 30
-        var readingsPerDay  = (24 * 60) / intervalMinutes  // 48
+        var readingsPerDay  = (24 * 60) / intervalMinutes
         var totalDays       = 30
 
         for (var day = 1; day <= totalDays; day++) {
             for (var r = 0; r < readingsPerDay; r++) {
                 var totalMin = r * intervalMinutes
-                var hh       = Math.floor(totalMin / 60)
-                var mm       = totalMin % 60
+                var hh = Math.floor(totalMin / 60)
+                var mm = totalMin % 60
 
-                var dd  = String(day).length < 2 ? "0" + day : "" + day
-                var mmS = String(hh).length  < 2 ? "0" + hh  : "" + hh
-                var ssS = String(mm).length  < 2 ? "0" + mm  : "" + mm
-
-                // Month cycles: days 1-30 mapped across Jan(01)
-                var month = "01"
-
-                // Random value 0-10000
-                var yVal = Math.round(Math.random() * 10000)
+                var dd   = day  < 10 ? "0" + day : "" + day
+                var hhS  = hh   < 10 ? "0" + hh  : "" + hh
+                var mmS  = mm   < 10 ? "0" + mm   : "" + mm
 
                 histValues.append({
-                    dd:    dd,
-                    mon:   month,
-                    hhmm:  mmS + ":" + ssS,
-                    val:   yVal
+                    dd:   dd,
+                    mon:  "01",
+                    hhmm: hhS + ":" + mmS,
+                    val:  Math.round(Math.random() * 10000)
                 })
             }
         }
@@ -66,14 +51,19 @@ Item {
         color: "#FFFFFF"
         border.width: 2
         border.color: "#6F95D6"
+        clip: true
 
         // ── ZOOM ────────────────────────────────────────────
-        // Initial zoom = 0.4 so 8 days fit on screen at start
         property real zoomFactor:      0.4
         property real _pinchStartZoom: 0.4
-
-        // Threshold above which we show full DD/MM/HH:MM labels
         property real detailZoomThreshold: 1.2
+
+        // ── SELECTED BAR INFO (for overlay tooltip) ─────────
+        property int  selectedIndex: -1
+        property real selectedBarVal: 0
+        property real selectedBarX:   0   // absolute x inside histogramCard
+        property real selectedBarY:   0   // absolute y (top of bar) inside histogramCard
+        property real selectedBarW:   0
 
         PinchHandler {
             id: pinchHandler
@@ -83,10 +73,21 @@ Item {
                     histogramCard._pinchStartZoom = histogramCard.zoomFactor
             }
             onActiveScaleChanged: {
-                histogramCard.zoomFactor = Math.max(
-                    0.4, Math.min(8.0,
-                        histogramCard._pinchStartZoom * activeScale)
-                )
+                // ── ZOOM-ANCHOR FIX ──────────────────────────
+                // Anchor zoom to center of visible viewport
+                var oldZoom    = histogramCard.zoomFactor
+                var newZoom    = Math.max(0.4, Math.min(8.0,
+                                     histogramCard._pinchStartZoom * activeScale))
+
+                // Center of visible content in content-space
+                var visibleCenterX = flickArea.contentX + flickArea.width / 2
+
+                histogramCard.zoomFactor = newZoom
+
+                // Reposition so the same content point stays centered
+                var ratio = newZoom / oldZoom
+                flickArea.contentX = Math.max(0,
+                    visibleCenterX * ratio - flickArea.width / 2)
             }
         }
 
@@ -96,25 +97,23 @@ Item {
         property real barStride:  barWidth + barSpacing
         property int  barCount:   histValues.count
 
-        property real yAxisWidth:   10 * root.scale   // very thin — no labels shown
-        property real xAxisHeight:  histogramCard.zoomFactor >= histogramCard.detailZoomThreshold
-                                    ? 58 * root.scale   // 3 lines: DD / MM / HH:MM
-                                    : 28 * root.scale   // 1 line: DD only
+        property bool isDetail:   zoomFactor >= detailZoomThreshold
 
-        property real titleH: 52 * root.scale
-        property real padH:   20 * root.scale
-        property real padV:   16 * root.scale
+        property real yAxisWidth:  10 * root.scale
+        property real xAxisHeight: isDetail ? 64 * root.scale : 30 * root.scale
+        property real titleH:      52 * root.scale
+        property real padH:        20 * root.scale
+        property real padV:        16 * root.scale
 
         property real yMin: 0
         property real yMax: 10000
         property int  ySteps: 5
 
-        // Animate xAxisHeight change
         Behavior on xAxisHeight {
-            NumberAnimation { duration: 200; easing.type: Easing.OutCubic }
+            NumberAnimation { duration: 180; easing.type: Easing.OutCubic }
         }
 
-        // ── MAIN LAYOUT ─────────────────────────────────────
+        // ── LAYOUT ──────────────────────────────────────────
         Column {
             anchors.fill: parent
             anchors.leftMargin:   histogramCard.padH
@@ -123,7 +122,7 @@ Item {
             anchors.bottomMargin: histogramCard.padV
             spacing: 0
 
-            // ── TITLE ROW ────────────────────────────────────
+            // ── TITLE ────────────────────────────────────────
             Item {
                 width:  parent.width
                 height: histogramCard.titleH
@@ -136,7 +135,6 @@ Item {
                     color: "#1A4DB5"
                 }
 
-                // Zoom % indicator
                 Text {
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
@@ -145,7 +143,6 @@ Item {
                     color: "#8BA0CC"
                 }
 
-                // Reset button — only shows when not at default zoom
                 Rectangle {
                     anchors.right: parent.right
                     anchors.rightMargin: 52 * root.scale
@@ -171,7 +168,10 @@ Item {
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: histogramCard.zoomFactor = 0.4
+                        onClicked: {
+                            histogramCard.zoomFactor  = 0.4
+                            histogramCard.selectedIndex = -1
+                        }
                     }
                 }
             }
@@ -192,11 +192,10 @@ Item {
 
                 property real barAreaH: height - histogramCard.xAxisHeight
 
-                // ── THIN Y-AXIS SPINE (no labels) ────────────
+                // ── Y-AXIS SPINE ─────────────────────────────
                 Item {
                     id: yAxisPanel
-                    x: 0
-                    y: 0
+                    x: 0; y: 0
                     width:  histogramCard.yAxisWidth
                     height: graphArea.barAreaH
 
@@ -218,7 +217,6 @@ Item {
                     height: histogramCard.xAxisHeight
                     clip:   true
 
-                    // X-axis spine line
                     Rectangle {
                         anchors.top:   parent.top
                         anchors.left:  parent.left
@@ -227,7 +225,6 @@ Item {
                         color:  "#4A5E8A"
                     }
 
-                    // Sliding strip — tracks flickArea scroll
                     Item {
                         x:      -flickArea.contentX
                         y:      0
@@ -238,61 +235,69 @@ Item {
                             model: histValues
 
                             delegate: Item {
+                                // Center this label item on the bar center
                                 x: index * histogramCard.barStride
                                    + histogramCard.barSpacing
-                                   + histogramCard.barWidth / 2
-                                   - width / 2
                                 y: 0
-                                width:  Math.max(histogramCard.barWidth, 1)
+                                width:  histogramCard.barStride
                                 height: xAxisPanel.height
 
                                 // Tick
                                 Rectangle {
-                                    anchors.top:              parent.top
-                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    x:      parent.width / 2 - width / 2
+                                    y:      2
                                     width:  1
-                                    height: 4 * root.scale
+                                    height: 5 * root.scale
                                     color:  "#4A5E8A"
                                 }
 
-                                // ── LABEL: DD only at low zoom ──
-                                // ── LABEL: DD / MM / HH:MM at detail zoom ──
-                                Column {
+                                // Low zoom: show DD only on first bar of each day
+                                Text {
+                                    visible: !histogramCard.isDetail
+                                             && model.hhmm === "00:30"
                                     anchors.top:              parent.top
-                                    anchors.topMargin:        5 * root.scale
+                                    anchors.topMargin:        8 * root.scale
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    spacing: 1
+                                    text:  model.dd
+                                    font.pixelSize: Math.max(9, 12 * root.scale)
+                                    font.bold: true
+                                    color: "#2A3550"
+                                    horizontalAlignment: Text.AlignHCenter
+                                }
 
-                                    // Always show: DD
-                                    // Only show first reading of each day to avoid clutter
+                                // Detail zoom: 3-line label DD / MM / HH:MM
+                                Column {
+                                    visible: histogramCard.isDetail
+                                    anchors.top:              parent.top
+                                    anchors.topMargin:        4 * root.scale
+                                    anchors.horizontalCenter: parent.horizontalCenter
+                                    spacing: 2 * root.scale
+
                                     Text {
-                                        visible: model.hhmm === "00:00"
-                                                 || histogramCard.zoomFactor >= histogramCard.detailZoomThreshold
-                                        text: model.dd
-                                        font.pixelSize: Math.max(8, 11 * root.scale)
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text:  model.dd
+                                        font.pixelSize: Math.max(10, 13 * root.scale)
                                         font.bold: true
-                                        color: "#2A3550"
+                                        color: "#1A4DB5"
                                         horizontalAlignment: Text.AlignHCenter
-                                        anchors.horizontalCenter: parent.horizontalCenter
-                                    }
-
-                                    // Detail lines: MM and HH:MM
-                                    Text {
-                                        visible: histogramCard.zoomFactor >= histogramCard.detailZoomThreshold
-                                        text: model.mon
-                                        font.pixelSize: Math.max(7, 10 * root.scale)
-                                        color: "#5B6B8C"
-                                        horizontalAlignment: Text.AlignHCenter
-                                        anchors.horizontalCenter: parent.horizontalCenter
                                     }
 
                                     Text {
-                                        visible: histogramCard.zoomFactor >= histogramCard.detailZoomThreshold
-                                        text: model.hhmm
-                                        font.pixelSize: Math.max(7, 10 * root.scale)
-                                        color: "#8BA0CC"
-                                        horizontalAlignment: Text.AlignHCenter
                                         anchors.horizontalCenter: parent.horizontalCenter
+                                        text:  model.mon
+                                        font.pixelSize: Math.max(9, 12 * root.scale)
+                                        font.bold: false
+                                        color: "#4A5E8A"
+                                        horizontalAlignment: Text.AlignHCenter
+                                    }
+
+                                    Text {
+                                        anchors.horizontalCenter: parent.horizontalCenter
+                                        text:  model.hhmm
+                                        font.pixelSize: Math.max(8, 11 * root.scale)
+                                        font.bold: false
+                                        color: "#7B8FAD"
+                                        horizontalAlignment: Text.AlignHCenter
                                     }
                                 }
                             }
@@ -300,7 +305,7 @@ Item {
                     }
                 }
 
-                // ── SCROLLABLE BAR PLOT ───────────────────────
+                // ── SCROLLABLE BARS ───────────────────────────
                 Flickable {
                     id: flickArea
 
@@ -317,15 +322,19 @@ Item {
                     contentWidth:  graphArea.totalBarsW
                     contentHeight: height
 
-                    // Mouse-wheel zoom
+                    // ── MOUSE WHEEL ZOOM (anchor to cursor) ───
                     WheelHandler {
                         acceptedDevices: PointerDevice.Mouse
                         onWheel: function(event) {
-                            histogramCard.zoomFactor = Math.max(
-                                0.4, Math.min(8.0,
-                                    histogramCard.zoomFactor *
-                                    (event.angleDelta.y > 0 ? 1.12 : 0.9))
-                            )
+                            var oldZoom = histogramCard.zoomFactor
+                            var newZoom = Math.max(0.4, Math.min(8.0,
+                                oldZoom * (event.angleDelta.y > 0 ? 1.12 : 0.9)))
+
+                            // Anchor to mouse cursor x position
+                            var mouseContentX = flickArea.contentX + event.x
+                            histogramCard.zoomFactor = newZoom
+                            flickArea.contentX = Math.max(0,
+                                mouseContentX * (newZoom / oldZoom) - event.x)
                         }
                     }
 
@@ -350,19 +359,18 @@ Item {
 
                         // BARS
                         Repeater {
+                            id: barsRepeater
                             model: histValues
 
                             delegate: Item {
                                 id: barSlot
 
-                                x:      index * histogramCard.barStride
-                                        + histogramCard.barSpacing
+                                x:      index * histogramCard.barStride + histogramCard.barSpacing
                                 y:      0
                                 width:  histogramCard.barWidth
                                 height: plotItem.height
 
-                                // Track which bar is selected
-                                property bool isSelected: false
+                                property bool isSelected: histogramCard.selectedIndex === index
 
                                 Rectangle {
                                     id: bar
@@ -390,45 +398,13 @@ Item {
                                         }
                                     }
 
-                                    // Hover highlight
                                     Rectangle {
                                         anchors.fill: parent
                                         radius: parent.radius
-                                        color: barMouse.containsMouse
-                                               ? "#33FFFFFF" : "transparent"
-                                    }
-
-                                    // ── VALUE TOOLTIP ─────────────────────
-                                    // Visible only when:
-                                    //   (a) zoom >= detailThreshold AND
-                                    //   (b) bar is selected (tapped/clicked)
-                                    Rectangle {
-                                        visible: barSlot.isSelected
-                                                 && histogramCard.zoomFactor
-                                                    >= histogramCard.detailZoomThreshold
-
-                                        anchors.bottom:           parent.top
-                                        anchors.bottomMargin:     5 * root.scale
-                                        anchors.horizontalCenter: parent.horizontalCenter
-
-                                        width:  tipText.implicitWidth + 14 * root.scale
-                                        height: tipText.implicitHeight + 8 * root.scale
-                                        radius: 5 * root.scale
-                                        color:  "#F57C00"
-                                        z: 20
-
-                                        Text {
-                                            id: tipText
-                                            anchors.centerIn: parent
-                                            text: model.val
-                                            font.pixelSize: 12 * root.scale
-                                            font.bold: true
-                                            color: "#FFFFFF"
-                                        }
+                                        color: barMouse.containsMouse ? "#33FFFFFF" : "transparent"
                                     }
                                 }
 
-                                // Tap / click handler
                                 MouseArea {
                                     id: barMouse
                                     anchors.fill: parent
@@ -436,21 +412,36 @@ Item {
                                     propagateComposedEvents: true
 
                                     onClicked: {
-                                        // Deselect all others by toggling this one
-                                        var wasSelected = barSlot.isSelected
-                                        // Reset all — walk siblings via plotItem
-                                        for (var i = 0; i < plotItem.children.length; i++) {
-                                            var child = plotItem.children[i]
-                                            if (typeof child.isSelected !== "undefined")
-                                                child.isSelected = false
+                                        if (!histogramCard.isDetail) return
+
+                                        if (histogramCard.selectedIndex === index) {
+                                            histogramCard.selectedIndex = -1
+                                            return
                                         }
-                                        barSlot.isSelected = !wasSelected
+
+                                        histogramCard.selectedIndex = index
+                                        histogramCard.selectedBarVal = model.val
+
+                                        // Convert bar's top-of-bar position to
+                                        // histogramCard coordinate space for the overlay
+                                        var fraction = (model.val - histogramCard.yMin)
+                                                       / (histogramCard.yMax - histogramCard.yMin)
+                                        var barH     = Math.max(2, fraction * plotItem.height)
+
+                                        // bar top in plotItem space
+                                        var barTopInPlot = plotItem.height - barH
+
+                                        // map through flickArea → graphArea → histogramCard
+                                        var pt = plotItem.mapToItem(histogramCard,
+                                            barSlot.x + barSlot.width / 2,
+                                            barTopInPlot)
+
+                                        histogramCard.selectedBarX = pt.x
+                                        histogramCard.selectedBarY = pt.y
+                                        histogramCard.selectedBarW = barSlot.width
                                     }
 
                                     onPressed: {
-                                        if (!contains(Qt.point(mouse.x, mouse.y)))
-                                            return
-                                        // Allow Flickable to handle drag
                                         mouse.accepted = false
                                     }
                                 }
@@ -475,6 +466,60 @@ Item {
                         color:  "#4A5E8A"
                     }
                 }
+            }
+        }
+
+        // ── TOOLTIP OVERLAY (above everything, inside card) ──
+        // Rendered at histogramCard level so it's never clipped by plotItem
+        Rectangle {
+            id: tooltipOverlay
+
+            visible: histogramCard.selectedIndex >= 0
+                     && histogramCard.isDetail
+
+            // Position: centered on bar, just above bar top
+            x: Math.min(
+                   Math.max(0, histogramCard.selectedBarX - width / 2),
+                   histogramCard.width - width - 4 * root.scale)
+            y: histogramCard.selectedBarY - height - 6 * root.scale
+
+            width:  tooltipVal.implicitWidth + 18 * root.scale
+            height: tooltipVal.implicitHeight + 10 * root.scale
+
+            radius: 6 * root.scale
+            color:  "#F57C00"
+            z: 100
+
+            // Small triangle pointer
+            Canvas {
+                id: tipArrow
+                width:  12 * root.scale
+                height:  6 * root.scale
+                anchors.top:              parent.bottom
+                anchors.horizontalCenter: parent.horizontalCenter
+
+                onPaint: {
+                    var ctx = getContext("2d")
+                    ctx.clearRect(0, 0, width, height)
+                    ctx.fillStyle = "#F57C00"
+                    ctx.beginPath()
+                    ctx.moveTo(0, 0)
+                    ctx.lineTo(width / 2, height)
+                    ctx.lineTo(width, 0)
+                    ctx.closePath()
+                    ctx.fill()
+                }
+            }
+
+            Text {
+                id: tooltipVal
+                anchors.centerIn: parent
+                text: histogramCard.selectedIndex >= 0
+                      ? histValues.get(histogramCard.selectedIndex).val
+                      : ""
+                font.pixelSize: 14 * root.scale
+                font.bold: true
+                color: "#FFFFFF"
             }
         }
     }
