@@ -107,6 +107,7 @@ qt_add_qml_module(appApplication
         QML_FILES qml/screens/ReportsLogScreen.qml
         QML_FILES qml/screens/BatchHistoryScreen.qml
         QML_FILES qml/components/AddProductPopup.qml
+        QML_FILES qml/screens/CoilOutputScreen.qml
 )
 
 set_target_properties(appApplication PROPERTIES

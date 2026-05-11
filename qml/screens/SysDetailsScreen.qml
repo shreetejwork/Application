@@ -34,97 +34,85 @@ Item {
             height: contentColumn.implicitHeight
 
             Column {
-                id: contentColumn
-                width: parent.width
+                id: centerColumn
+
+                anchors.horizontalCenter: parent.horizontalCenter
+                anchors.verticalCenter: parent.verticalCenter
+
+                width: Math.min(parent.width * 0.9, 720 * root.scale)
                 spacing: 24 * root.scale
 
-                // ===== COIL OUTPUT =====
-                CoilProgressBar {
-                    id: coilOut
+                // ================= TITLE =================
+                Text {
+                    text: "About Machine"
                     anchors.horizontalCenter: parent.horizontalCenter
 
-                    width: Math.min(parent.width * 0.8, 540 * root.scale)
-                    height: 72 * root.scale
-
-                    label: "Coil Output"
-                    value: 2208
-                    maxValue: 10000
+                    font.pixelSize: 26 * root.scale
+                    font.bold: true
+                    color: "#1A4DB5"
                 }
 
-                // ===== CARD =====
+                // ================= CARD =================
                 Rectangle {
-                    id: card
-                    anchors.horizontalCenter: parent.horizontalCenter
-
-                    width: Math.min(parent.width * 0.85, 600 * root.scale)
-                    height: contentInner.implicitHeight + (66 * root.scale)
+                    width: parent.width
+                    height: gridContent.implicitHeight + (80 * root.scale)
 
                     radius: 24 * root.scale
-                    color: "white"
+                    color: "#FFFFFF"
+
                     border.width: 2
                     border.color: "#6F95D6"
 
+                    anchors.horizontalCenter: parent.horizontalCenter
+
                     Column {
-                        id: contentInner
+                        id: gridContent
+
                         anchors.centerIn: parent
-                        width: parent.width * 0.75
+                        width: parent.width * 0.9
+
                         spacing: 20 * root.scale
 
-                        // ===== TITLE =====
-                        Column {
-                            spacing: 10 * root.scale
-                            anchors.horizontalCenter: parent.horizontalCenter
-
-                            Text {
-                                text: "About Machine"
-                                font.pixelSize: 20 * root.scale
-                                font.bold: true
-                                color: "#1A4DB5"
-                            }
-                        }
-
-                        // ===== DETAILS =====
-                        Column {
+                        GridLayout {
                             width: parent.width
-                            spacing: 10 * root.scale
+                            columns: 2
+
+                            rowSpacing: 18 * root.scale
+                            columnSpacing: 18 * root.scale
 
                             Repeater {
                                 model: root.sysDetails
 
-                                delegate: Row {
-                                    width: parent.width
-                                    height: 34 * root.scale
+                                delegate: Rectangle {
 
-                                    property real labelW: parent.width * 0.42
-                                    property real colonW: 20 * root.scale
-                                    property real valueW: parent.width * 0.48
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 80 * root.scale
 
-                                    Text {
-                                        text: modelData.label
-                                        width: parent.labelW
-                                        font.pixelSize: 18 * root.scale
-                                        font.bold: true
-                                        color: "#000000"
-                                        verticalAlignment: Text.AlignVCenter
-                                    }
+                                    radius: 14 * root.scale
+                                    color: "#F7F9FF"
 
-                                    Text {
-                                        text: ":"
-                                        width: parent.colonW
-                                        font.pixelSize: 18 * root.scale
-                                        font.bold: true
-                                        color: "#000000"
-                                        horizontalAlignment: Text.AlignHCenter
-                                        verticalAlignment: Text.AlignVCenter
-                                    }
+                                    border.width: 1
+                                    border.color: "#D7E2F5"
 
-                                    Text {
-                                        text: modelData.value
-                                        width: parent.valueW
-                                        font.pixelSize: 18 * root.scale
-                                        font.bold: true
-                                        color: "#1A4DB5"
-                                        verticalAlignment: Text.AlignVCenter
+                                    Column {
+                                        anchors.fill: parent
+                                        anchors.margins: 14 * root.scale
+                                        spacing: 6 * root.scale
+
+                                        Text {
+                                            text: modelData.label
+                                            font.pixelSize: 15 * root.scale
+                                            font.bold: true
+                                            color: "#5B6B8C"
+                                        }
+
+                                        Text {
+                                            text: modelData.value
+                                            font.pixelSize: 19 * root.scale
+                                            font.bold: true
+                                            color: "#1A4DB5"
+                                            elide: Text.ElideRight
+                                        }
                                     }
                                 }
                             }

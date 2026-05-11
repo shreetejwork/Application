@@ -137,6 +137,7 @@ Window {
             }
 
             AutoLearnScreen { showTopBar: false; globalTopBar: mainTopBar }
+            CoilOutputScreen { showTopBar: false; globalTopBar: mainTopBar}
             SysDetailsScreen { showTopBar: false; globalTopBar: mainTopBar }
 
             onCurrentIndexChanged: navigator.currentPage = currentIndex
@@ -149,7 +150,7 @@ Window {
             Layout.fillWidth: true
             Layout.preferredHeight: Math.max(32, root.height * 0.015)
 
-            pageCount: 4
+            pageCount: 5
             currentPage: swipeView.currentIndex
 
             onPreviousClicked: if (swipeView.currentIndex > 0) swipeView.currentIndex--
