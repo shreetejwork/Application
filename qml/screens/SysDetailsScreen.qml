@@ -42,14 +42,23 @@ Item {
                 width: Math.min(parent.width * 0.9, 720 * root.scale)
                 spacing: 24 * root.scale
 
-                // ================= TITLE =================
-                Text {
-                    text: "About Machine"
-                    anchors.horizontalCenter: parent.horizontalCenter
+                // ===== HEADER =====
+                Column {
+                    spacing: 6 * root.scale
 
-                    font.pixelSize: 26 * root.scale
-                    font.bold: true
-                    color: "#1A4DB5"
+                    Text {
+                        text: "About Machine"
+                        font.pixelSize: 26 * root.scale
+                        font.bold: true
+                        color: "#1A4DB5"
+                    }
+
+                    Rectangle {
+                        width: 80 * root.scale
+                        height: 4 * root.scale
+                        radius: 2 * root.scale
+                        color: "#1A4DB5"
+                    }
                 }
 
                 // ================= CARD =================
