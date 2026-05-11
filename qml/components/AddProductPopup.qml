@@ -9,8 +9,15 @@ Popup {
 
     parent: Overlay.overlay
 
-    modal: true
-    focus: true
+    // =====================================================
+    // QT 6.5 FIX
+    // =====================================================
+
+    modal: false
+    focus: false
+    dim: true
+
+    closePolicy: Popup.NoAutoClose
 
     anchors.centerIn: parent
 
@@ -19,11 +26,9 @@ Popup {
 
     padding: 0
 
-    closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
-
-    // =========================================================
+    // =====================================================
     // EXTERNAL PROPERTIES
-    // =========================================================
+    // =====================================================
 
     property real scaleFactor: 1.0
 
@@ -35,20 +40,34 @@ Popup {
 
     signal productSaved()
 
-    // =========================================================
-    // OPEN KEYBOARD AUTOMATICALLY
-    // =========================================================
+    // =====================================================
+    // OPENED
+    // =====================================================
 
     onOpened: {
-        productNameField.forceActiveFocus()
+
+        GlobalState.loginKeyboardRequest = false
+        GlobalState.activeInputField = null
     }
 
-    // =========================================================
+    // =====================================================
+    // CLOSED
+    // =====================================================
+
+    onClosed: {
+
+        GlobalState.loginKeyboardRequest = false
+        GlobalState.activeInputField = null
+    }
+
+    // =====================================================
     // BACKGROUND
-    // =========================================================
+    // =====================================================
 
     background: Rectangle {
+
         radius: 18 * popup.scaleFactor
+
         color: "#FFFFFF"
 
         border.color: "#C8D4EE"
@@ -57,11 +76,12 @@ Popup {
         layer.enabled: true
     }
 
-    // =========================================================
+    // =====================================================
     // CONTENT
-    // =========================================================
+    // =====================================================
 
     Column {
+
         anchors.fill: parent
 
         anchors.leftMargin: 28 * popup.scaleFactor
@@ -71,37 +91,47 @@ Popup {
 
         spacing: 22 * popup.scaleFactor
 
-        // =====================================================
+        // =================================================
         // TITLE
-        // =====================================================
+        // =================================================
 
         Column {
+
             spacing: 6 * popup.scaleFactor
 
             Text {
+
                 text: "Add Product"
+
                 font.pixelSize: 26 * popup.scaleFactor
                 font.bold: true
+
                 color: "#1A4DB5"
             }
 
             Rectangle {
+
                 width: 80 * popup.scaleFactor
                 height: 4 * popup.scaleFactor
+
                 radius: 2 * popup.scaleFactor
+
                 color: "#1A4DB5"
             }
         }
 
-        // =====================================================
+        // =================================================
         // PRODUCT NAME
-        // =====================================================
+        // =================================================
 
         Column {
+
             width: parent.width
+
             spacing: 8 * popup.scaleFactor
 
             Rectangle {
+
                 width: parent.width
                 height: 60 * popup.scaleFactor
 
@@ -115,7 +145,8 @@ Popup {
                               ? "#1A4DB5"
                               : "#C8D4EE"
 
-                border.width: productNameField.activeFocus ? 2 : 1
+                border.width:
+                    productNameField.activeFocus ? 2 : 1
 
                 Behavior on border.color {
                     ColorAnimation { duration: 120 }
@@ -129,7 +160,6 @@ Popup {
                     id: productNameField
 
                     anchors.fill: parent
-
 
                     anchors.leftMargin: 16 * popup.scaleFactor
                     anchors.rightMargin: 16 * popup.scaleFactor
@@ -152,40 +182,50 @@ Popup {
 
                     focus: true
 
-                    onPressed: {
-                        GlobalState.activeInputField = productNameField
-                        GlobalState.loginKeyboardRequest = true
-                        forceActiveFocus()
-                    }
-
-                    onActiveFocusChanged: {
-                        if (activeFocus)
-                            GlobalState.activeInputField = productNameField
-                    }
-
-                    onAccepted: {
-                        GlobalState.loginKeyboardRequest = false
-                        productCodeField.forceActiveFocus()
-                    }
+                    activeFocusOnTab: true
 
                     inputMethodHints: Qt.ImhNoPredictiveText
 
+                    onAccepted: {
+
+                        productCodeField.forceActiveFocus()
+                    }
+
                     onTextChanged: {
+
                         popup.productName = text
+                    }
+                }
+                MouseArea {
+                    anchors.fill: parent
+
+                    acceptedButtons: Qt.LeftButton
+
+                    onPressed: {
+
+                        productNameField.forceActiveFocus()
+
+                        GlobalState.activeInputField = productNameField
+                        GlobalState.loginKeyboardRequest = true
+
+                        mouse.accepted = false
                     }
                 }
             }
         }
 
-        // =====================================================
+        // =================================================
         // PRODUCT CODE
-        // =====================================================
+        // =================================================
 
         Column {
+
             width: parent.width
+
             spacing: 8 * popup.scaleFactor
 
             Rectangle {
+
                 width: parent.width
                 height: 60 * popup.scaleFactor
 
@@ -199,7 +239,8 @@ Popup {
                               ? "#1A4DB5"
                               : "#C8D4EE"
 
-                border.width: productCodeField.activeFocus ? 2 : 1
+                border.width:
+                    productCodeField.activeFocus ? 2 : 1
 
                 Behavior on border.color {
                     ColorAnimation { duration: 120 }
@@ -233,34 +274,41 @@ Popup {
 
                     property bool isPasswordField: false
 
-                    onPressed: {
-                        GlobalState.activeInputField = productCodeField
-                        GlobalState.loginKeyboardRequest = true
-                        forceActiveFocus()
-                    }
-
-                    onActiveFocusChanged: {
-                        if (activeFocus)
-                            GlobalState.activeInputField = productCodeField
-                    }
-
-                    onAccepted: {
-                        GlobalState.loginKeyboardRequest = false
-                        focus = false
-                    }
+                    activeFocusOnTab: true
 
                     inputMethodHints: Qt.ImhNoPredictiveText
 
+                    onAccepted: {
+
+                        saveButton.clicked()
+                    }
+
                     onTextChanged: {
+
                         popup.productCode = text
+                    }
+                }
+                MouseArea {
+                    anchors.fill: parent
+
+                    acceptedButtons: Qt.LeftButton
+
+                    onPressed: {
+
+                        productCodeField.forceActiveFocus()
+
+                        GlobalState.activeInputField = productCodeField
+                        GlobalState.loginKeyboardRequest = true
+
+                        mouse.accepted = false
                     }
                 }
             }
         }
 
-        // =====================================================
+        // =================================================
         // VALIDATION
-        // =====================================================
+        // =================================================
 
         Text {
             id: validationMsg
@@ -284,18 +332,22 @@ Popup {
             height: 1
         }
 
-        // =====================================================
+        // =================================================
         // BUTTONS
-        // =====================================================
+        // =================================================
 
         Row {
+
             width: parent.width
 
             spacing: 16 * popup.scaleFactor
 
-            // ================= CANCEL =================
+            // =============================================
+            // CANCEL
+            // =============================================
 
             Rectangle {
+
                 width: (parent.width - parent.spacing) / 2
                 height: 56 * popup.scaleFactor
 
@@ -309,6 +361,7 @@ Popup {
                 border.width: 1.5
 
                 Text {
+
                     anchors.centerIn: parent
 
                     text: "Cancel"
@@ -338,14 +391,22 @@ Popup {
 
                         validationMsg.text = ""
 
+                        GlobalState.loginKeyboardRequest = false
+                        GlobalState.activeInputField = null
+
                         popup.close()
                     }
                 }
             }
 
-            // ================= SAVE =================
+            // =============================================
+            // SAVE
+            // =============================================
 
             Rectangle {
+
+                id: saveButton
+
                 width: (parent.width - parent.spacing) / 2
                 height: 56 * popup.scaleFactor
 
@@ -355,7 +416,72 @@ Popup {
                        ? "#1640A0"
                        : "#1A4DB5"
 
+                signal clicked()
+
+                onClicked: {
+
+                    if (popup.productName.trim() === "") {
+
+                        validationMsg.text =
+                                "Product name is required."
+
+                        productNameField.forceActiveFocus()
+
+                        return
+                    }
+
+                    if (popup.productCode.trim() === "") {
+
+                        validationMsg.text =
+                                "Product code is required."
+
+                        productCodeField.forceActiveFocus()
+
+                        return
+                    }
+
+                    var srNo = popup.getFreeSrNoFunc(
+                                popup.currentModelRef)
+
+                    if (srNo === -1) {
+
+                        validationMsg.text =
+                                "No free slot available (Max 100 products)."
+
+                        return
+                    }
+
+                    popup.currentModelRef.append({
+
+                                                     selected: false,
+                                                     active: false,
+
+                                                     sr: srNo,
+
+                                                     name: popup.productName.trim(),
+                                                     code: popup.productCode.trim(),
+
+                                                     fixedItem: false
+                                                 })
+
+                    GlobalState.loginKeyboardRequest = false
+                    GlobalState.activeInputField = null
+
+                    popup.productName = ""
+                    popup.productCode = ""
+
+                    productNameField.text = ""
+                    productCodeField.text = ""
+
+                    validationMsg.text = ""
+
+                    popup.productSaved()
+
+                    popup.close()
+                }
+
                 Text {
+
                     anchors.centerIn: parent
 
                     text: "Save"
@@ -375,52 +501,7 @@ Popup {
 
                     cursorShape: Qt.PointingHandCursor
 
-                    onClicked: {
-
-                        if (popup.productName.trim() === "") {
-                            validationMsg.text = "Product name is required."
-                            productNameField.forceActiveFocus()
-                            return
-                        }
-
-                        if (popup.productCode.trim() === "") {
-                            validationMsg.text = "Product code is required."
-                            productCodeField.forceActiveFocus()
-                            return
-                        }
-
-                        var srNo = popup.getFreeSrNoFunc(
-                                       popup.currentModelRef)
-
-                        if (srNo === -1) {
-                            validationMsg.text =
-                                    "No free slot available (Max 100 products)."
-                            return
-                        }
-
-                        popup.currentModelRef.append({
-                            selected: false,
-                            active: false,
-                            sr: srNo,
-                            name: popup.productName.trim(),
-                            code: popup.productCode.trim(),
-                            fixedItem: false
-                        })
-
-                        GlobalState.loginKeyboardRequest = false
-
-                        popup.productName = ""
-                        popup.productCode = ""
-
-                        productNameField.text = ""
-                        productCodeField.text = ""
-
-                        validationMsg.text = ""
-
-                        popup.productSaved()
-
-                        popup.close()
-                    }
+                    onClicked: saveButton.clicked()
                 }
             }
         }
