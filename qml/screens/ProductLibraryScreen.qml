@@ -17,34 +17,100 @@ Item {
 
     property int currentGroup: 1
     property int activeSr: 1
-    property bool selectionMode: false
 
     // ===== COLUMN WIDTHS =====
 
-    property real colSpacing: 12 * root.scale
+    property real colSpacing: 15 * root.scale
 
     property real colSelect: 22 * root.scale
     property real colActive: 22 * root.scale
-    property real colSr: 90 * root.scale
+    property real colSr: 100 * root.scale
     property real colCode: 170 * root.scale
 
+    property real colStatus: 80 * root.scale
+
+    property real tableHorizontalMargin: 12 * root.scale
+    property real tableSpacing: 14 * root.scale
+
+    property real dynamicNameWidth:
+        productList.width
+        - (tableHorizontalMargin * 2)
+        - (tableSpacing * 4)
+        - colSelect
+        - colStatus
+        - colSr
+        - colCode
+
+
+
     // ===== SHARED LAYOUT HELPERS =====
+
     property real rowFixedSpacing: 16 * root.scale * 3
-    property real rowSelectExtra:  root.colSelect + 16 * root.scale
+    property real rowSelectExtra: root.colSelect + 16 * root.scale
+
+    // ===== SELECTION STATE =====
+
+    property int selectedCount: getSelectedCount()
+
+    function getSelectedCount() {
+
+        var model = currentModel()
+        var count = 0
+
+        for (var i = 0; i < model.count; i++) {
+
+            if (model.get(i).selected)
+                count++
+        }
+
+        return count
+    }
+
+    function clearSelection() {
+
+        var model = currentModel()
+
+        for (var i = 0; i < model.count; i++) {
+
+            model.setProperty(i, "selected", false)
+        }
+
+        selectedCount = 0
+    }
+
+    function refreshSelectionCount() {
+
+        selectedCount = getSelectedCount()
+    }
+
+    function getSingleSelectedSr() {
+
+        var model = currentModel()
+
+        for (var i = 0; i < model.count; i++) {
+
+            if (model.get(i).selected)
+                return model.get(i).sr
+        }
+
+        return -1
+    }
 
     function nameColWidth(totalWidth) {
+
         return totalWidth
                 - root.colActive
                 - root.colSr
                 - root.colCode
                 - rowFixedSpacing
-                - (selectionMode ? rowSelectExtra : 0)
+                - rowSelectExtra
     }
 
     // ================= MODELS =================
 
     ListModel {
         id: group01Model
+
         ListElement {
             selected: false
             active: true
@@ -71,27 +137,37 @@ Item {
     ]
 
     function currentModel() {
+
         return groupModels[currentGroup - 1]
     }
 
     function getFreeSrNo(model) {
+
         for (var srNo = 1; srNo <= 100; srNo++) {
+
             var found = false
+
             for (var i = 0; i < model.count; i++) {
+
                 if (model.get(i).sr === srNo) {
+
                     found = true
                     break
                 }
             }
+
             if (!found)
                 return srNo
         }
+
         return -1
     }
 
     function addProduct() {
+
         var model = currentModel()
         var srNo = getFreeSrNo(model)
+
         if (srNo === -1)
             return
 
@@ -105,39 +181,63 @@ Item {
                      })
 
         for (var i = 0; i < model.count; i++) {
+
             for (var j = i + 1; j < model.count; j++) {
+
                 if (model.get(i).sr > model.get(j).sr) {
+
                     var tempI = {
-                        selected: model.get(i).selected, active: model.get(i).active,
-                        sr: model.get(i).sr, name: model.get(i).name,
-                        code: model.get(i).code, fixedItem: model.get(i).fixedItem
+                        selected: model.get(i).selected,
+                        active: model.get(i).active,
+                        sr: model.get(i).sr,
+                        name: model.get(i).name,
+                        code: model.get(i).code,
+                        fixedItem: model.get(i).fixedItem
                     }
+
                     var tempJ = {
-                        selected: model.get(j).selected, active: model.get(j).active,
-                        sr: model.get(j).sr, name: model.get(j).name,
-                        code: model.get(j).code, fixedItem: model.get(j).fixedItem
+                        selected: model.get(j).selected,
+                        active: model.get(j).active,
+                        sr: model.get(j).sr,
+                        name: model.get(j).name,
+                        code: model.get(j).code,
+                        fixedItem: model.get(j).fixedItem
                     }
+
                     model.set(i, tempJ)
                     model.set(j, tempI)
                 }
             }
         }
+
+        refreshSelectionCount()
     }
 
     function deleteSelectedProducts() {
+
         var model = currentModel()
+
         for (var i = model.count - 1; i >= 0; i--) {
+
             var item = model.get(i)
+
             if (item.selected && !item.fixedItem) {
+
                 model.remove(i)
             }
         }
+
+        refreshSelectionCount()
     }
 
     function setActiveProduct(srNo) {
+
         activeSr = srNo
+
         var model = currentModel()
+
         for (var i = 0; i < model.count; i++) {
+
             model.setProperty(i, "active", model.get(i).sr === srNo)
         }
     }
@@ -215,7 +315,9 @@ Item {
                         currentIndex: 0
 
                         onCurrentIndexChanged: {
+
                             currentGroup = currentIndex + 1
+                            refreshSelectionCount()
                         }
 
                         font.pixelSize: 15 * root.scale
@@ -290,32 +392,52 @@ Item {
                     // ================= BUTTONS =================
 
                     Repeater {
-                        model: ["LOAD", "ADD", "SELECT", "DELETE"]
+                        model: ["LOAD", "ADD", "DELETE"]
 
                         delegate: Rectangle {
-                            property bool isSelectButton: modelData === "SELECT"
-                            property bool activeButton: isSelectButton && selectionMode
+
+                            property bool loadDisabled:
+                                modelData === "LOAD"
+                                && selectedCount !== 1
+
+                            property bool deleteDisabled:
+                                modelData === "DELETE"
+                                && selectedCount === 0
 
                             width: 100 * root.scale
                             height: 38 * root.scale
                             radius: 8 * root.scale
 
-                            color: activeButton ? "#1A4DB5" : "#FFFFFF"
-                            border.width: 1
-                            border.color: modelData === "DELETE" ? "#C62828" : "#1A4DB5"
+                            color: (loadDisabled || deleteDisabled)
+                                   ? "#E4EAF5"
+                                   : "#FFFFFF"
 
-                            Behavior on color { ColorAnimation { duration: 120 } }
+                            border.width: 1
+
+                            border.color:
+                                modelData === "DELETE"
+                                ? "#C62828"
+                                : "#1A4DB5"
+
+                            opacity: (loadDisabled || deleteDisabled) ? 0.5 : 1.0
 
                             Text {
                                 anchors.centerIn: parent
-                                text: activeButton ? "Cancel" : modelData
+                                text: modelData
                                 font.pixelSize: 15 * root.scale
                                 font.weight: Font.Medium
-                                color: activeButton ? "#FFFFFF" : (modelData === "DELETE" ? "#C62828" : "#1A4DB5")
+
+                                color:
+                                    modelData === "DELETE"
+                                    ? "#C62828"
+                                    : "#1A4DB5"
                             }
 
                             MouseArea {
                                 anchors.fill: parent
+
+                                enabled: !(loadDisabled || deleteDisabled)
+
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
 
@@ -323,33 +445,18 @@ Item {
 
                                     if (modelData === "LOAD") {
 
-                                        // add load logic
+                                        var srNo = getSingleSelectedSr()
+
+                                        if (srNo !== -1) {
+
+                                            setActiveProduct(srNo)
+                                            clearSelection()
+                                        }
                                     }
 
                                     else if (modelData === "ADD") {
 
                                         addProductPopup.open()
-                                    }
-
-                                    else if (modelData === "SELECT") {
-
-                                        // CANCEL SELECTION
-                                        if (selectionMode) {
-
-                                            var model = currentModel()
-
-                                            for (var i = 0; i < model.count; i++) {
-
-                                                model.setProperty(i, "selected", false)
-                                            }
-
-                                            selectionMode = false
-                                        }
-                                        // ENABLE SELECTION
-                                        else {
-
-                                            selectionMode = true
-                                        }
                                     }
 
                                     else if (modelData === "DELETE") {
@@ -385,9 +492,7 @@ Item {
                         anchors.fill: parent
                         spacing: 0
 
-                        // ══════════════════════════════════════════════════════
-                        // TABLE HEADER
-                        // ══════════════════════════════════════════════════════
+                        // ================= HEADER =================
 
                         Rectangle {
                             Layout.fillWidth: true
@@ -403,85 +508,84 @@ Item {
                                 color: "#1A4DB5"
                             }
 
-                            Row {
+                            RowLayout {
                                 anchors.fill: parent
-                                anchors.leftMargin: 12 * root.scale
-                                anchors.rightMargin: 12 * root.scale
-                                anchors.topMargin: 12 * root.scale
-                                anchors.bottomMargin: 12 * root.scale
-                                spacing: 16 * root.scale
 
-                                // SELECT SPACE
+                                anchors.leftMargin: root.tableHorizontalMargin
+                                anchors.rightMargin: root.tableHorizontalMargin
+                                spacing: root.tableSpacing
+
                                 Item {
-                                    visible: selectionMode
-                                    width: root.colSelect
-                                    height: 1
+                                    Layout.preferredWidth: root.colSelect
                                 }
 
-                                // ACTIVE
-                                Item {
-                                    width: root.colActive
-                                    height: parent.height
+                                Text {
+                                    text: "Status"
 
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "A"
-                                        color: "#FFFFFF"
-                                        font.bold: true
-                                        font.pixelSize: 20 * root.scale
-                                    }
+                                    Layout.preferredWidth: root.colStatus
+
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+
+                                    color: "#FFFFFF"
+                                    font.bold: true
+                                    font.pixelSize: 18 * root.scale
                                 }
 
-                                // SR
                                 Text {
                                     text: "SR No"
-                                    width: root.colSr
+
+                                    Layout.preferredWidth: root.colSr
+
+                                    horizontalAlignment: Text.AlignLeft
                                     verticalAlignment: Text.AlignVCenter
+
                                     color: "#FFFFFF"
                                     font.bold: true
-                                    font.pixelSize: 20 * root.scale
+                                    font.pixelSize: 18 * root.scale
                                 }
 
-                                // PRODUCT NAME
                                 Text {
                                     text: "Product Name"
-                                    width: root.nameColWidth(
-                                               parent.width
-                                               - parent.anchors.leftMargin
-                                               - parent.anchors.rightMargin
-                                               )
+
+                                    Layout.preferredWidth: root.dynamicNameWidth
+
                                     verticalAlignment: Text.AlignVCenter
+
                                     color: "#FFFFFF"
                                     font.bold: true
-                                    font.pixelSize: 20 * root.scale
+                                    font.pixelSize: 18 * root.scale
+
                                     elide: Text.ElideRight
                                 }
 
-                                // PRODUCT CODE
                                 Text {
                                     text: "Product Code"
-                                    width: root.colCode
+
+                                    Layout.preferredWidth: root.colCode
+
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
+
                                     color: "#FFFFFF"
                                     font.bold: true
-                                    font.pixelSize: 20 * root.scale
+                                    font.pixelSize: 18 * root.scale
                                 }
                             }
                         }
 
-                        // ══════════════════════════════════════════════════════
-                        // LIST
-                        // ══════════════════════════════════════════════════════
+                        // ================= LIST =================
 
                         ListView {
                             id: productList
 
                             Layout.fillWidth: true
                             Layout.fillHeight: true
+
                             clip: true
                             spacing: 0
                             boundsBehavior: Flickable.StopAtBounds
+
                             model: currentModel()
 
                             ScrollBar.vertical: ScrollBar {
@@ -501,8 +605,6 @@ Item {
                                        ? "#E3EDFF"
                                        : (index % 2 === 0 ? "#FFFFFF" : "#F4F7FF")
 
-                                Behavior on color { ColorAnimation { duration: 120 } }
-
                                 Rectangle {
                                     anchors.bottom: parent.bottom
                                     anchors.left: parent.left
@@ -511,23 +613,27 @@ Item {
                                     color: "#E4EAF5"
                                 }
 
-                                Row {
+                                RowLayout {
                                     anchors.fill: parent
-                                    anchors.leftMargin: 12 * root.scale
-                                    anchors.rightMargin: 12 * root.scale
-                                    anchors.topMargin: 10 * root.scale
-                                    anchors.bottomMargin: 10 * root.scale
-                                    spacing: 16 * root.scale
 
-                                    // ═════════ SELECT ═════════
+                                    anchors.leftMargin: root.tableHorizontalMargin
+                                    anchors.rightMargin: root.tableHorizontalMargin
+                                    spacing: root.tableSpacing
+
+                                    // CHECKBOX
 
                                     Rectangle {
-                                        visible: selectionMode
-                                        width: root.colSelect
-                                        height: root.colSelect
+                                        Layout.preferredWidth: root.colSelect
+                                        Layout.preferredHeight: root.colSelect
+
                                         radius: 4 * root.scale
+
                                         color: isSelected ? "#1A4DB5" : "#FFFFFF"
-                                        border.color: isSelected ? "#1A4DB5" : "#8BA0CC"
+
+                                        border.color: isSelected
+                                                      ? "#1A4DB5"
+                                                      : "#8BA0CC"
+
                                         border.width: 1.5
 
                                         Text {
@@ -541,18 +647,27 @@ Item {
 
                                         MouseArea {
                                             anchors.fill: parent
+
                                             onClicked: {
-                                                currentModel().setProperty(index, "selected", !selected)
+
+                                                currentModel().setProperty(
+                                                            index,
+                                                            "selected",
+                                                            !selected)
+
+                                                refreshSelectionCount()
                                             }
                                         }
                                     }
 
-                                    // ═════════ ACTIVE ═════════
+                                    // STATUS
 
                                     Rectangle {
-                                        width: root.colActive
-                                        height: root.colActive
-                                        radius: width / 2
+                                        Layout.preferredWidth: root.colStatus
+                                        Layout.preferredHeight: root.colActive
+
+                                        radius: root.colActive / 2
+
                                         color: active ? "#1A4DB5" : "#D5DDEE"
 
                                         Text {
@@ -564,70 +679,56 @@ Item {
                                         }
                                     }
 
-                                    // ═════════ SR ═════════
+                                    // SR
 
                                     Text {
                                         text: sr
-                                        width: root.colSr
+
+                                        Layout.preferredWidth: root.colSr
+
                                         verticalAlignment: Text.AlignVCenter
-                                        font.pixelSize: 18 * root.scale
+
+                                        font.pixelSize: 17 * root.scale
                                         font.weight: active ? Font.Medium : Font.Normal
+
                                         color: "#2A3550"
                                     }
 
-                                    // ═════════ PRODUCT NAME ═════════
+                                    // PRODUCT NAME
 
                                     Text {
                                         text: name
-                                        width: root.nameColWidth(
-                                                   rowRect.width
-                                                   - 12 * root.scale
-                                                   - 12 * root.scale
-                                                   )
+
+                                        Layout.preferredWidth: root.dynamicNameWidth
+
                                         elide: Text.ElideRight
+
                                         verticalAlignment: Text.AlignVCenter
-                                        font.pixelSize: 18 * root.scale
+
+                                        font.pixelSize: 17 * root.scale
                                         font.weight: active ? Font.Medium : Font.Normal
+
                                         color: "#2A3550"
                                     }
 
-                                    // ═════════ PRODUCT CODE ═════════
+                                    // PRODUCT CODE
 
                                     Rectangle {
-                                        width: root.colCode
-                                        height: 24 * root.scale
+                                        Layout.preferredWidth: root.colCode
+                                        Layout.preferredHeight: 24 * root.scale
+
                                         radius: 12 * root.scale
+
                                         color: active ? "#E8F0FF" : "#EDF1FA"
 
                                         Text {
                                             anchors.centerIn: parent
                                             text: code
-                                            font.pixelSize: 18 * root.scale
+
+                                            font.pixelSize: 16 * root.scale
                                             font.weight: Font.Medium
+
                                             color: active ? "#1A4DB5" : "#4A5E8A"
-                                        }
-                                    }
-                                }
-
-                                // ═════════ ROW CLICK ═════════
-
-                                MouseArea {
-                                    anchors.fill: parent
-
-                                    onClicked: {
-
-                                        if (!selectionMode) {
-
-                                            setActiveProduct(sr)
-                                        }
-
-                                        // SELECTION MODE
-                                        else {
-
-                                        currentModel().setProperty(
-                                            index,
-                                            "selected",
-                                            !selected)
                                         }
                                     }
                                 }
@@ -657,7 +758,11 @@ Item {
                             color: "#1A4DB5"
                         }
 
-                        Rectangle { width: parent.width; height: 2; color: "#E4EAF5" }
+                        Rectangle {
+                            width: parent.width
+                            height: 2
+                            color: "#E4EAF5"
+                        }
 
                         Text { text: "Phase : 110";       font.pixelSize: 20 * root.scale; color: "#202020" }
                         Text { text: "Signal : 500";      font.pixelSize: 20 * root.scale; color: "#202020" }
@@ -667,22 +772,39 @@ Item {
                         Text { text: "DD Frequency : 18"; font.pixelSize: 20 * root.scale; color: "#202020" }
                         Text { text: "DD Power : 50";     font.pixelSize: 20 * root.scale; color: "#202020" }
 
-                        Rectangle { width: parent.width; height: 1; color: "#E4EAF5" }
+                        Rectangle {
+                            width: parent.width
+                            height: 1
+                            color: "#E4EAF5"
+                        }
 
                         Text {
-                            text: "Current Group : " + (currentGroup < 10 ? "0" + currentGroup : currentGroup)
+                            text: "Current Group : "
+                                  + (currentGroup < 10
+                                     ? "0" + currentGroup
+                                     : currentGroup)
+
                             font.pixelSize: 18 * root.scale
                             color: "#1A1A1A"
                         }
 
                         Text {
-                            text: "Products : " + currentModel().count + " / 100"
+                            text: "Products : "
+                                  + currentModel().count
+                                  + " / 100"
+
                             font.pixelSize: 18 * root.scale
                             color: "#1A1A1A"
                         }
 
                         Text {
                             text: "Active SR : " + activeSr
+                            font.pixelSize: 18 * root.scale
+                            color: "#1A1A1A"
+                        }
+
+                        Text {
+                            text: "Selected : " + selectedCount
                             font.pixelSize: 18 * root.scale
                             color: "#1A1A1A"
                         }

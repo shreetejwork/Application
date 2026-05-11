@@ -9,7 +9,7 @@ Item {
     property int minValue: 0
     property int maxValue: 100
 
-    // ================= RESPONSIVE SCALE (NO VISUAL CHANGE) =================
+    // ================= RESPONSIVE SCALE  =================
     property real minScale: 0.75
     property real maxScale: 1.0
     property real s: Math.max(minScale, Math.min(maxScale, Math.min(width, height) / 200))
