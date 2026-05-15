@@ -98,17 +98,18 @@ Item {
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            spacing: 24 * root.scale
+            spacing: 16 * root.scale
 
             // =================================================
-            // GRAPH AREA
+            // GRAPH AREA (LARGER)
             // =================================================
 
             Rectangle {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                Layout.preferredWidth: 1050 * root.scale
+                // Graph gets most of the screen
+                Layout.horizontalStretchFactor: 6
 
                 radius: 26 * root.scale
 
@@ -121,9 +122,9 @@ Item {
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 14 * root.scale
+                    anchors.margins: 12 * root.scale
 
-                    spacing: 14 * root.scale
+                    spacing: 10 * root.scale
 
                     Rectangle {
                         Layout.fillWidth: true
@@ -140,7 +141,12 @@ Item {
                             id: plot
 
                             anchors.fill: parent
-                            anchors.margins: 24 * root.scale
+
+                            // Reduced margins so graph uses more space
+                            anchors.leftMargin: 5 * root.scale
+                            anchors.rightMargin: 5 * root.scale
+                            anchors.topMargin: 5 * root.scale
+                            anchors.bottomMargin: 5 * root.scale
 
                             fieldData: root.magneticFieldData
 
@@ -155,8 +161,12 @@ Item {
             // =================================================
 
             Rectangle {
-                Layout.preferredWidth: 320 * root.scale
+                Layout.preferredWidth: 250 * root.scale
+                Layout.maximumWidth: 280 * root.scale
                 Layout.fillHeight: true
+
+                // Smaller than graph
+                Layout.horizontalStretchFactor: 1
 
                 radius: 28 * root.scale
 
@@ -172,10 +182,6 @@ Item {
                     anchors.margins: 14 * root.scale
 
                     spacing: 18 * root.scale
-
-                    // =========================================
-                    // VALUES LIST
-                    // =========================================
 
                     Flickable {
                         Layout.fillWidth: true

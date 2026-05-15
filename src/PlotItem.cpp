@@ -275,8 +275,8 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
 
         painter->drawEllipse(
             p,
-            8,
-            8
+            4,
+            4
             );
     }
 }
