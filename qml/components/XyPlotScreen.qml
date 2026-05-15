@@ -57,12 +57,12 @@ Item {
     ColumnLayout {
         anchors.fill: parent
 
-        anchors.leftMargin: 28 * root.scale
-        anchors.rightMargin: 28 * root.scale
+        anchors.leftMargin: 8 * root.scale
+        anchors.rightMargin: 8 * root.scale
         anchors.topMargin: 22 * root.scale
         anchors.bottomMargin: 22 * root.scale
 
-        spacing: 20 * root.scale
+        spacing: 10 * root.scale
 
         // =====================================================
         // HEADING
@@ -72,7 +72,7 @@ Item {
             spacing: 6 * root.scale
 
             Text {
-                text: "XY Plot"
+                text: "X,Y Plot"
 
                 font.pixelSize: 26 * root.scale
                 font.bold: true
@@ -108,7 +108,7 @@ Item {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
 
-                Layout.preferredWidth: 860 * root.scale
+                Layout.preferredWidth: 1050 * root.scale
 
                 radius: 26 * root.scale
 
@@ -121,7 +121,7 @@ Item {
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 22 * root.scale
+                    anchors.margins: 14 * root.scale
 
                     spacing: 14 * root.scale
 
@@ -155,10 +155,10 @@ Item {
             // =================================================
 
             Rectangle {
-                Layout.preferredWidth: 300 * root.scale
+                Layout.preferredWidth: 320 * root.scale
                 Layout.fillHeight: true
 
-                radius: 26 * root.scale
+                radius: 28 * root.scale
 
                 color: "#FFFFFF"
 
@@ -169,42 +169,13 @@ Item {
 
                 ColumnLayout {
                     anchors.fill: parent
-                    anchors.margins: 22 * root.scale
+                    anchors.margins: 14 * root.scale
 
                     spacing: 18 * root.scale
 
-                    RowLayout {
-                        Layout.fillWidth: true
-
-                        Text {
-                            text: "Field Values"
-
-                            font.pixelSize: 22 * root.scale
-                            font.bold: true
-
-                            color: "#1B365D"
-                        }
-
-                        Item {
-                            Layout.fillWidth: true
-                        }
-
-                        Rectangle {
-                            width: 14 * root.scale
-                            height: 14 * root.scale
-
-                            radius: width / 2
-
-                            color: "#3B6FD8"
-                        }
-                    }
-
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 1
-
-                        color: "#DCE6F5"
-                    }
+                    // =========================================
+                    // VALUES LIST
+                    // =========================================
 
                     Flickable {
                         Layout.fillWidth: true
@@ -228,9 +199,9 @@ Item {
                                 delegate: Rectangle {
 
                                     width: valuesColumn.width
-                                    height: 78 * root.scale
+                                    height: 92 * root.scale
 
-                                    radius: 18 * root.scale
+                                    radius: 20 * root.scale
 
                                     color: "#F8FAFE"
 
@@ -239,13 +210,13 @@ Item {
 
                                     RowLayout {
                                         anchors.fill: parent
-                                        anchors.margins: 16 * root.scale
+                                        anchors.margins: 18 * root.scale
 
-                                        spacing: 14 * root.scale
+                                        spacing: 16 * root.scale
 
                                         Rectangle {
-                                            width: 16 * root.scale
-                                            height: 16 * root.scale
+                                            width: 18 * root.scale
+                                            height: 18 * root.scale
 
                                             radius: width / 2
 
@@ -253,34 +224,40 @@ Item {
                                         }
 
                                         ColumnLayout {
-                                            spacing: 4 * root.scale
+                                            spacing: 6 * root.scale
 
                                             Text {
                                                 text: "Point "
                                                       + (index + 1)
 
-                                                font.pixelSize: 16 * root.scale
+                                                font.pixelSize: root.bodyFont
                                                 font.bold: true
 
                                                 color: "#1B365D"
                                             }
 
-                                            Text {
-                                                text: "X : "
-                                                      + modelData.x
+                                            RowLayout {
+                                                spacing: 16 * root.scale
 
-                                                font.pixelSize: 15 * root.scale
+                                                Text {
+                                                    text: "X : "
+                                                          + modelData.x
 
-                                                color: "#6B7A90"
-                                            }
+                                                    font.pixelSize: root.smallFont
+                                                    font.bold: true
 
-                                            Text {
-                                                text: "Y : "
-                                                      + modelData.y
+                                                    color: "#4E5F78"
+                                                }
 
-                                                font.pixelSize: 15 * root.scale
+                                                Text {
+                                                    text: "Y : "
+                                                          + modelData.y
 
-                                                color: "#6B7A90"
+                                                    font.pixelSize: root.smallFont
+                                                    font.bold: true
+
+                                                    color: "#4E5F78"
+                                                }
                                             }
                                         }
                                     }
