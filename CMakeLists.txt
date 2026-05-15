@@ -108,6 +108,9 @@ qt_add_qml_module(appApplication
         QML_FILES qml/screens/BatchHistoryScreen.qml
         QML_FILES qml/components/AddProductPopup.qml
         QML_FILES qml/screens/CoilOutputScreen.qml
+        QML_FILES qml/components/XyPlotScreen.qml
+        SOURCES src/PlotItem.h
+        SOURCES src/PlotItem.cpp
 )
 
 set_target_properties(appApplication PROPERTIES

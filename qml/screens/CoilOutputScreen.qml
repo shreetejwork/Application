@@ -96,12 +96,10 @@ Item {
         // ── y scale – dynamic from real data ──────────────────────────────────
         property real yMin: 0
         property real yMax: {
-            if (root.statMax <= 0) return 10000
-            // round up to a "nice" ceiling
-            var raw = root.statMax
-            var mag  = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10))
-            var step = mag >= 1000 ? mag / 2 : mag
-            return Math.ceil(raw / step) * step
+            if (root.statMax <= 0)
+                return 100
+
+            return root.statMax * 1.1
         }
         property int ySteps: 5
 
@@ -109,10 +107,10 @@ Item {
         property real padH:          20 * root.scale
         property real padV:          16 * root.scale
         property real headerH:       78 * root.scale
-        property real yAxisW:        62 * root.scale   // wide enough for "10.0k"
-        property real xAxisH:        52 * root.scale   // fixed height for x-axis label area
+        property real yAxisW:        62 * root.scale
+        property real xAxisH:        52 * root.scale
         property real navRowH:       54 * root.scale
-        property real topPad:        28 * root.scale   // space above bars for value labels
+        property real topPad:        28 * root.scale
 
         // navigation pill visibility
         property bool needsNav: {
@@ -140,11 +138,6 @@ Item {
                 flickArea.contentX = Math.max(0, cx * (newZ / oldZ) - flickArea.width / 2)
             }
         }
-
-        // ═════════════════════════════════════════════════════════════════════
-        // LAYOUT: use absolute positioning inside the card so nothing
-        // accidentally resizes the graph area.
-        // ═════════════════════════════════════════════════════════════════════
 
         // ── HEADER ────────────────────────────────────────────────────────────
         Item {
@@ -194,7 +187,7 @@ Item {
                 // Title
                 Item {
                     Layout.fillWidth: true; Layout.fillHeight: true
-                    Text { anchors.centerIn: parent; text: "Coil Output Histogram"; font.pixelSize: 30 * root.scale; font.bold: true; color: "#0E4AB8" }
+                    Text { anchors.centerIn: parent; text: "Coil Output"; font.pixelSize: 30 * root.scale; font.bold: true; color: "#0E4AB8" }
                 }
 
                 // Zoom toolbar
@@ -407,8 +400,7 @@ Item {
         }
 
         // ── GRAPH BLOCK ───────────────────────────────────────────────────────
-        // Compute the top of the graph area from fixed anchors above
-        // graphTop = padV + headerH + 1(sep) + navRowH(if nav) + 1(navSep) + spacer
+
         property real graphTop: {
             var t = padV + headerH + 1
             if (needsNav) t += navRowH + 1
@@ -570,7 +562,7 @@ Item {
         }
 
         // ── X-AXIS LABEL AREA ─────────────────────────────────────────────────
-        // Fixed position: sits directly below the bar flickable
+
         Item {
             id: xAxisItem
             x: histogramCard.padH + histogramCard.yAxisW

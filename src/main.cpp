@@ -8,6 +8,7 @@
 #include "WifiScanner.h"
 #include "PdfExporter.h"
 #include "SystemDiagnosis.h"
+#include "PlotItem.h"
 
 int main(int argc, char *argv[])
 {
@@ -25,6 +26,13 @@ int main(int argc, char *argv[])
         QUrl(QStringLiteral("qrc:/qt/qml/Application/qml/GlobalState.qml")),
         "AppState", 1, 0,
         "GlobalState"
+        );
+
+    qmlRegisterType<MagneticFieldPlotItem>(
+        "CustomComponents",
+        1,
+        0,
+        "MagneticFieldPlotItem"
         );
 
     QQmlApplicationEngine engine;
