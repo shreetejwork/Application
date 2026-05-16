@@ -12,8 +12,8 @@ Item {
     property string label: "Signal"
     property string thresholdLabel: "Thr-S"
 
-    property color signalColor: "#6D5BD0"
-    property color thresholdColor: "#F39AAC"
+    property color signalColor: "#F39AAC"
+    property color thresholdColor: "#6D5BD0"
     property color overColor: "#FF4D4D"
     property color bgColor: "#EEF1F6"
 

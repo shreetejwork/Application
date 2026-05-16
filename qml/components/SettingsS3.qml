@@ -9,7 +9,7 @@ Item {
     property real baseWidth: 1024
     property real baseHeight: 600
 
-    // ✅ ONLY CHANGE: uniform scaling boost (keeps layout identical)
+    // ONLY CHANGE: uniform scaling boost (keeps layout identical)
     property real scale: Math.min(width / baseWidth, height / baseHeight) * 1.10
 
     property var globalTopBar
@@ -230,7 +230,7 @@ Item {
                         }
                     }
 
-                    // POPUP (unchanged)
+                    // POPUP
                     Popup {
                         id: timePopup
                         modal: true
@@ -258,13 +258,22 @@ Item {
 
                                 Text {
                                     text: modelData < 10 ? "0" + modelData : modelData
+
+                                    width: parent.width
+                                    height: 48 * root.scale
+
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+
                                     font.pixelSize: 26 * root.scale
                                     font.bold: Tumbler.displacement === 0
+
                                     opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
-                                    scale: 1.0 - Math.abs(Tumbler.displacement) * 0.25
-                                    color: Tumbler.displacement === 0 ? "#1A4DB5" : "#9CA3AF"
-                                    horizontalAlignment: Text.AlignHCenter
-                                    width: parent.width
+                                    scale: 1.0 - Math.abs(Tumbler.displacement) * 0.15
+
+                                    color: Tumbler.displacement === 0
+                                           ? "#1A4DB5"
+                                           : "#C5CAD3"
                                 }
                             }
 
@@ -291,17 +300,20 @@ Item {
                                         Rectangle {
                                             anchors.centerIn: parent
                                             width: parent.width
-                                            height: 40 * root.scale
-                                            radius: 10
+                                            height: 50 * root.scale
+                                            radius: 12 * root.scale
                                             color: "#E8EEFB"
                                         }
 
                                         Tumbler {
                                             id: hourTumbler
+
                                             anchors.fill: parent
+
                                             model: 24
                                             visibleItemCount: 3
                                             wrap: true
+
                                             delegate: tumblerDelegate
                                         }
                                     }
@@ -326,27 +338,38 @@ Item {
                                         Rectangle {
                                             anchors.centerIn: parent
                                             width: parent.width
-                                            height: 40 * root.scale
-                                            radius: 10
+                                            height: 50 * root.scale
+                                            radius: 12 * root.scale
                                             color: "#E8EEFB"
                                         }
 
                                         Tumbler {
                                             id: minuteTumbler
+
                                             anchors.fill: parent
+
                                             model: ["00", "15", "30", "45"]
                                             visibleItemCount: 3
                                             wrap: true
 
                                             delegate: Text {
                                                 text: modelData
+
+                                                width: parent.width
+                                                height: 48 * root.scale
+
+                                                horizontalAlignment: Text.AlignHCenter
+                                                verticalAlignment: Text.AlignVCenter
+
                                                 font.pixelSize: 26 * root.scale
                                                 font.bold: Tumbler.displacement === 0
+
                                                 opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
-                                                scale: 1.0 - Math.abs(Tumbler.displacement) * 0.25
-                                                color: Tumbler.displacement === 0 ? "#1A4DB5" : "#9CA3AF"
-                                                horizontalAlignment: Text.AlignHCenter
-                                                width: parent.width
+                                                scale: 1.0 - Math.abs(Tumbler.displacement) * 0.15
+
+                                                color: Tumbler.displacement === 0
+                                                       ? "#1A4DB5"
+                                                       : "#C5CAD3"
                                             }
                                         }
                                     }
@@ -369,15 +392,21 @@ Item {
 
                                 MouseArea {
                                     anchors.fill: parent
+
                                     onClicked: {
                                         var h = hourTumbler.currentIndex
                                         var m = minuteTumbler.currentIndex
+
                                         var minutes = ["00", "15", "30", "45"][m]
                                         var hours = h < 10 ? "0" + h : h
+
                                         var newTime = hours + ":" + minutes
 
                                         if (timePopup.editIndex >= 0) {
-                                            timeModel.setProperty(timePopup.editIndex, "time", newTime)
+                                            timeModel.setProperty(
+                                                        timePopup.editIndex,
+                                                        "time",
+                                                        newTime)
                                         }
 
                                         timePopup.close()
