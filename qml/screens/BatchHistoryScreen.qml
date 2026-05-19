@@ -11,6 +11,8 @@ Item {
     property real scale: Math.min(width / baseWidth,
                                   height / baseHeight)
 
+
+
     property real colSpacing: 16 * scale
 
     property real colSr: 80 * scale

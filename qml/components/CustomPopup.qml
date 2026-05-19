@@ -4,6 +4,7 @@ import QtQuick.Layouts
 
 Item {
     id: popupRoot
+
     anchors.fill: parent
     visible: true
     z: 999
@@ -13,13 +14,58 @@ Item {
     // ===== MAIN POPUP =====
     Rectangle {
         id: popup
-        visible: false
+        visible: animScale > 0.01
         z: 101
         width: Math.min(parent.width * 0.40, 450)
         height: Math.min(parent.height * 0.80, 700)
         radius: 16
         color: "#FFFFFF"
         anchors.centerIn: parent
+
+        // =====================================================
+        // ANIMATION PROPERTIES
+        // =====================================================
+
+        property real animScale: 0.0
+        property real animOpacity: 0.0
+        property bool isOpen: false
+
+        transform: Scale {
+            origin.x: popup.width / 2
+            origin.y: popup.height / 2
+            xScale: popup.animScale
+            yScale: popup.animScale
+        }
+
+        opacity: popup.animOpacity
+
+        Behavior on animScale {
+            NumberAnimation {
+                duration: popup.isOpen ? 350 : 280
+                easing.type: popup.isOpen ? Easing.OutQuad : Easing.InQuad
+            }
+        }
+
+        Behavior on animOpacity {
+            NumberAnimation {
+                duration: popup.isOpen ? 350 : 280
+                easing.type: popup.isOpen ? Easing.OutQuad : Easing.InQuad
+            }
+        }
+
+        function openPopup() {
+            isOpen = true
+            animScale = 1.0
+            animOpacity = 1.0
+        }
+
+        function closePopup() {
+            isOpen = false
+            animScale = 0.0
+            animOpacity = 0.0
+        }
+
+        // =====================================================
 
         Rectangle {
             anchors.fill: popup
@@ -40,25 +86,18 @@ Item {
 
         function open(title, value, callback, minVal = 0, maxVal = 100) {
             fieldName = title
-
             inputField.text = ""
-
             onSaveCallback = callback
             minValue = minVal
             maxValue = maxVal
             errorText = ""
             hasError = false
-            visible = true
+
+            openPopup()
 
             inputField.forceActiveFocus()
             inputField.cursorPosition = inputField.text.length
         }
-
-        scale: visible ? 1 : 0.95
-        opacity: visible ? 1 : 0
-
-        Behavior on scale { NumberAnimation { duration: 150 } }
-        Behavior on opacity { NumberAnimation { duration: 150 } }
 
         ColumnLayout {
             anchors.fill: parent
@@ -217,7 +256,7 @@ Item {
                     MouseArea {
                         id: cancelMouseArea
                         anchors.fill: parent
-                        onClicked: popup.visible = false
+                        onClicked: popup.closePopup()
                     }
                 }
 
@@ -268,19 +307,17 @@ Item {
                                 return
                             }
 
-                            // ===== UPDATE VALUE =====
                             if (popup.onSaveCallback) {
                                 popup.onSaveCallback(val)
                             }
 
-                            // ===== NOTIFICATION =====
                             if (popupRoot.globalTopBar && popupRoot.globalTopBar.showNotification) {
                                 popupRoot.globalTopBar.showNotification(
                                     "✓ " + popup.fieldName + " updated to " + val
                                 )
                             }
 
-                            popup.visible = false
+                            popup.closePopup()
                             popup.errorText = ""
                             popup.hasError = false
                         }
@@ -294,16 +331,16 @@ Item {
     Rectangle {
         anchors.fill: parent
         color: "#000000"
-        visible: popup.visible
-        opacity: popup.visible ? 0.4 : 0
+        visible: popup.animOpacity > 0
+        opacity: popup.animOpacity * 0.4
         z: 100
 
         Behavior on opacity { NumberAnimation { duration: 200 } }
 
         MouseArea {
             anchors.fill: parent
-            enabled: popup.visible
-            onClicked: popup.visible = false
+            enabled: popup.isOpen
+            onClicked: popup.closePopup()
         }
     }
 

@@ -31,7 +31,8 @@ Item {
         // ================= POPUP =================
         Rectangle {
             id: popup
-            visible: false
+
+            visible: animScale > 0.01
             z: 101
             width: Math.min(parent.width * 0.40, 450)
             height: Math.min(parent.height * 0.95, 730)
@@ -39,7 +40,51 @@ Item {
             color: "#FFFFFF"
             anchors.centerIn: parent
 
-            // Simple shadow effect using opacity layers
+            // =====================================================
+            // ANIMATION
+            // =====================================================
+
+            property real animScale: 0.0
+            property real animOpacity: 0.0
+            property bool isOpen: false
+
+            transform: Scale {
+                origin.x: popup.width / 2
+                origin.y: popup.height / 2
+                xScale: popup.animScale
+                yScale: popup.animScale
+            }
+
+            opacity: popup.animOpacity
+
+            Behavior on animScale {
+                NumberAnimation {
+                    duration: popup.isOpen ? 350 : 280
+                    easing.type: popup.isOpen ? Easing.OutQuad : Easing.InQuad
+                }
+            }
+
+            Behavior on animOpacity {
+                NumberAnimation {
+                    duration: popup.isOpen ? 350 : 280
+                    easing.type: popup.isOpen ? Easing.OutQuad : Easing.InQuad
+                }
+            }
+
+            function openPopup() {
+                isOpen = true
+                animScale = 1.0
+                animOpacity = 1.0
+            }
+
+            function closePopup() {
+                isOpen = false
+                animScale = 0.0
+                animOpacity = 0.0
+            }
+
+            // =====================================================
+
             Rectangle {
                 anchors.fill: popup
                 anchors.margins: -4
@@ -65,23 +110,19 @@ Item {
                 maxValue = maxVal
                 errorText = ""
                 hasError = false
-                visible = true
+
+                openPopup()
+
                 inputField.forceActiveFocus()
                 inputField.selectAll()
             }
-
-            scale: visible ? 1 : 0.95
-            opacity: visible ? 1 : 0
-
-            Behavior on scale { NumberAnimation { duration: 150 } }
-            Behavior on opacity { NumberAnimation { duration: 150 } }
 
             ColumnLayout {
                 anchors.fill: parent
                 anchors.margins: 20
                 spacing: 12
 
-                // Title
+                // ===== TITLE =====
                 Text {
                     text: popup.fieldName
                     font.pixelSize: 22
@@ -91,7 +132,7 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                // Input Field
+                // ===== INPUT =====
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 60
@@ -124,7 +165,7 @@ Item {
                     }
                 }
 
-                // Min/Max Display
+                // ===== MIN MAX =====
                 Rectangle {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 35
@@ -156,7 +197,7 @@ Item {
                     }
                 }
 
-                // Error Text
+                // ===== ERROR =====
                 Text {
                     text: popup.errorText
                     color: "#FF5252"
@@ -168,7 +209,7 @@ Item {
                     Layout.preferredHeight: visible ? 20 : 0
                 }
 
-                // KEYPAD
+                // ===== KEYPAD =====
                 GridLayout {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 160
@@ -183,8 +224,9 @@ Item {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             radius: 10
-                            color: mouseArea.pressed ? (modelData === "C" ? "#FF9999" : modelData === "⌫" ? "#FFCC99" : "#CCCCCC")
-                                                     : (modelData === "C" ? "#FFCDD2" : modelData === "⌫" ? "#FFE0B2" : "#F0F0F0")
+                            color: mouseArea.pressed
+                                   ? (modelData === "C" ? "#FF9999" : modelData === "⌫" ? "#FFCC99" : "#CCCCCC")
+                                   : (modelData === "C" ? "#FFCDD2" : modelData === "⌫" ? "#FFE0B2" : "#F0F0F0")
                             border.color: "#E0E0E0"
                             border.width: 1
 
@@ -206,9 +248,8 @@ Item {
                                         popup.errorText = ""
                                         popup.hasError = false
                                     } else if (modelData === "⌫") {
-                                        if (inputField.text.length > 0) {
+                                        if (inputField.text.length > 0)
                                             inputField.text = inputField.text.slice(0, -1)
-                                        }
                                     } else {
                                         inputField.text += modelData
                                     }
@@ -218,13 +259,14 @@ Item {
                     }
                 }
 
-                // BUTTONS
+                // ===== BUTTONS =====
                 RowLayout {
                     Layout.fillWidth: true
                     Layout.preferredHeight: 48
                     Layout.topMargin: 5
                     spacing: 10
 
+                    // CANCEL
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -247,13 +289,14 @@ Item {
                             id: cancelMouseArea
                             anchors.fill: parent
                             onClicked: {
-                                popup.visible = false
+                                popup.closePopup()
                                 popup.errorText = ""
                                 popup.hasError = false
                             }
                         }
                     }
 
+                    // SAVE
                     Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
@@ -277,7 +320,6 @@ Item {
                             onClicked: {
                                 var inputText = inputField.text.trim()
 
-                                // Validation
                                 if (inputText === "") {
                                     popup.errorText = "Please enter a value"
                                     popup.hasError = true
@@ -304,22 +346,15 @@ Item {
                                     return
                                 }
 
-                                // Save successful - call callback to update value
-                                if (popup.onSaveCallback) {
+                                if (popup.onSaveCallback)
                                     popup.onSaveCallback(val)
-                                }
 
-                                // Show notifications via global top bar if available
-                                if (globalTopBar) {
+                                if (globalTopBar)
                                     globalTopBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
-                                } else {
+                                else
                                     topBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
-                                }
 
-                                // Close popup
-                                popup.visible = false
-
-                                // Reset error state
+                                popup.closePopup()
                                 popup.errorText = ""
                                 popup.hasError = false
                             }

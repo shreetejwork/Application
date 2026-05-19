@@ -16,6 +16,115 @@ Item {
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
+    // =====================================================
+    // PAGE OPEN / CLOSE ANIMATION
+    // =====================================================
+
+    opacity: 0.0
+
+    property real animationScale: 0.88
+    property real animationY: 40 * root.scale
+
+    transform: [
+        Scale {
+            origin.x: root.width / 2
+            origin.y: root.height / 2
+
+            xScale: root.animationScale
+            yScale: root.animationScale
+        },
+
+        Translate {
+            y: root.animationY
+        }
+    ]
+
+    Component.onCompleted: {
+        openAnimation.start()
+        loadFiles()
+    }
+
+    ParallelAnimation {
+        id: openAnimation
+
+        NumberAnimation {
+            target: root
+            property: "opacity"
+
+            from: 0.0
+            to: 1.0
+
+            duration: 550
+            easing.type: Easing.OutCubic
+        }
+
+        NumberAnimation {
+            target: root
+            property: "animationScale"
+
+            from: 0.88
+            to: 1.0
+
+            duration: 650
+            easing.type: Easing.OutBack
+            easing.overshoot: 1.08
+        }
+
+        NumberAnimation {
+            target: root
+            property: "animationY"
+
+            from: 40 * root.scale
+            to: 0
+
+            duration: 600
+            easing.type: Easing.OutCubic
+        }
+    }
+
+    ParallelAnimation {
+        id: closeAnimation
+
+        NumberAnimation {
+            target: root
+            property: "opacity"
+
+            from: 1.0
+            to: 0.0
+
+            duration: 300
+            easing.type: Easing.InCubic
+        }
+
+        NumberAnimation {
+            target: root
+            property: "animationScale"
+
+            from: 1.0
+            to: 0.92
+
+            duration: 300
+            easing.type: Easing.InCubic
+        }
+
+        NumberAnimation {
+            target: root
+            property: "animationY"
+
+            from: 0
+            to: 25 * root.scale
+
+            duration: 300
+            easing.type: Easing.InCubic
+        }
+    }
+
+    function closePage() {
+        closeAnimation.start()
+    }
+
+
+
     property string folderPath: PdfExporter.getReportsFolderPath()
     property string activeFilter: "All"
     property bool selectionMode: false
@@ -151,8 +260,6 @@ Item {
             loadFiles()
         }
     }
-
-    Component.onCompleted: loadFiles()
 
     Rectangle {
         anchors.fill: parent
@@ -290,7 +397,6 @@ Item {
                                         anchors.centerIn: parent
                                         text: modelData
                                         font.pixelSize: 14 * root.scale
-                                        font.weight: active ? Font.SemiBold : Font.Normal
                                         color: active ? "#FFFFFF" : "#4A5E8A"
                                     }
 

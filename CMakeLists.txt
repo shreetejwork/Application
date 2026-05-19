@@ -111,6 +111,7 @@ qt_add_qml_module(appApplication
         QML_FILES qml/components/XyPlotScreen.qml
         SOURCES src/PlotItem.h
         SOURCES src/PlotItem.cpp
+        QML_FILES qml/components/AnimationEffect.qml
 )
 
 set_target_properties(appApplication PROPERTIES

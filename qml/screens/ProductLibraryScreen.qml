@@ -15,6 +15,96 @@ Item {
     property real baseHeight: 600
     property real scale: Math.max(0.75, Math.min(width / baseWidth, height / baseHeight))
 
+    // =====================================================
+    // PAGE OPEN ANIMATION
+    // =====================================================
+
+    opacity: 0.0
+
+    property real pageScale: 0.85
+
+    transform: Scale {
+        origin.x: root.width / 2
+        origin.y: root.height / 2
+
+        xScale: root.pageScale
+        yScale: root.pageScale
+    }
+
+    Component.onCompleted: {
+        openAnimation.start()
+    }
+
+    // =====================================================
+    // OPEN
+    // =====================================================
+
+    ParallelAnimation {
+        id: openAnimation
+
+        NumberAnimation {
+            target: root
+            property: "opacity"
+
+            from: 0.0
+            to: 1.0
+
+            duration: 650
+
+            easing.type: Easing.OutCubic
+        }
+
+        NumberAnimation {
+            target: root
+            property: "pageScale"
+
+            from: 0.85
+            to: 1.0
+
+            duration: 650
+
+            easing.type: Easing.OutBack
+
+            easing.overshoot: 1.05
+        }
+    }
+
+    // =====================================================
+    // CLOSE
+    // =====================================================
+
+    ParallelAnimation {
+        id: closeAnimation
+
+        NumberAnimation {
+            target: root
+            property: "opacity"
+
+            from: 1.0
+            to: 0.0
+
+            duration: 500
+
+            easing.type: Easing.InOutCubic
+        }
+
+        NumberAnimation {
+            target: root
+            property: "pageScale"
+
+            from: 1.0
+            to: 0.85
+
+            duration: 500
+
+            easing.type: Easing.InOutCubic
+        }
+    }
+
+    function closePage() {
+        closeAnimation.start()
+    }
+
     property int currentGroup: 1
     property int activeSr: 1
 

@@ -6,6 +6,50 @@ import AppState 1.0
 Popup {
     id: deleteUserPopup
 
+    // =====================================================
+    // ANIMATION
+    // =====================================================
+
+    enter: Transition {
+        ParallelAnimation {
+            NumberAnimation {
+                property: "opacity"
+                from: 0.0
+                to: 1.0
+                duration: 350
+                easing.type: Easing.OutQuad
+            }
+            NumberAnimation {
+                property: "scale"
+                from: 0.0
+                to: 1.0
+                duration: 350
+                easing.type: Easing.OutQuad
+            }
+        }
+    }
+
+    exit: Transition {
+        ParallelAnimation {
+            NumberAnimation {
+                property: "opacity"
+                from: 1.0
+                to: 0.0
+                duration: 280
+                easing.type: Easing.InQuad
+            }
+            NumberAnimation {
+                property: "scale"
+                from: 1.0
+                to: 0.0
+                duration: 280
+                easing.type: Easing.InQuad
+            }
+        }
+    }
+
+    transformOrigin: Item.Center
+
     property real baseWidth: 1024
     property real baseHeight: 600
 
@@ -28,9 +72,9 @@ Popup {
     x: (Overlay.overlay.width - width) / 2
     y: (Overlay.overlay.height - height) / 2 - (60 * scale)
 
-    Behavior on y {
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
-    }
+    // =====================================================
+    // NO Behavior on y HERE — it was the problem
+    // =====================================================
 
     onOpened: {
         userTypeValue.text = "--- Select ---"
@@ -58,6 +102,55 @@ Popup {
         border.width: 1
     }
 
+    // =====================================================
+    // CLOSE BUTTON
+    // =====================================================
+
+    Rectangle {
+        width: 34 * scale
+        height: 34 * scale
+
+        radius: width / 2
+
+        color: closeMouse.containsMouse ? "#1A4DB5" : "#1A4DB5"
+
+        anchors.top: parent.top
+        anchors.right: parent.right
+
+        anchors.topMargin: 2 * scale
+        anchors.rightMargin: 12 * scale
+
+        z: 999
+
+        Text {
+            anchors.centerIn: parent
+
+            text: "✕"
+
+            color: "white"
+
+            font.bold: true
+            font.pixelSize: 18 * scale
+        }
+
+        MouseArea {
+            id: closeMouse
+
+            anchors.fill: parent
+
+            hoverEnabled: true
+            cursorShape: Qt.PointingHandCursor
+
+            onClicked: {
+
+                GlobalState.loginKeyboardRequest = false
+                GlobalState.activeInputField = null
+
+                deleteUserPopup.close()
+            }
+        }
+    }
+
     // ================= SELECTION POPUP =================
     Popup {
         id: selectionPopup
@@ -71,6 +164,46 @@ Popup {
 
         width: 340 * scale
         height: (4 * 64 * scale) + (64 * scale)
+
+        enter: Transition {
+            ParallelAnimation {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 0.0
+                    to: 1.0
+                    duration: 350
+                    easing.type: Easing.OutQuad
+                }
+                NumberAnimation {
+                    property: "scale"
+                    from: 0.0
+                    to: 1.0
+                    duration: 350
+                    easing.type: Easing.OutQuad
+                }
+            }
+        }
+
+        exit: Transition {
+            ParallelAnimation {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 1.0
+                    to: 0.0
+                    duration: 280
+                    easing.type: Easing.InQuad
+                }
+                NumberAnimation {
+                    property: "scale"
+                    from: 1.0
+                    to: 0.0
+                    duration: 280
+                    easing.type: Easing.InQuad
+                }
+            }
+        }
+
+        transformOrigin: Item.Center
 
         background: Rectangle {
             radius: 18 * scale
@@ -124,7 +257,6 @@ Popup {
                             width: parent.width
                             height: 64 * scale
 
-
                             color: mouse.pressed
                                    ? "#E8EDFF"
                                    : (index % 2 === 0 ? "#FFFFFF" : "#FAFBFF")
@@ -174,7 +306,6 @@ Popup {
             anchors.fill: parent
             spacing: 14 * scale
 
-            // Title row with warning icon
             Row {
                 spacing: 10 * scale
                 Layout.fillWidth: true
@@ -283,7 +414,6 @@ Popup {
                 Layout.alignment: Qt.AlignHCenter
                 spacing: 20 * scale
 
-                // DELETE USER button
                 Rectangle {
                     width: 160 * scale
                     height: 52 * scale
@@ -315,7 +445,6 @@ Popup {
                     }
                 }
 
-                // CLEAR button
                 Rectangle {
                     width: 160 * scale
                     height: 52 * scale

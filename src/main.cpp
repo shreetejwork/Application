@@ -1,7 +1,7 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
-
+#include <QQuickWindow>
 
 #include "DatabaseManager.h"
 #include "SystemController.h"
@@ -12,21 +12,48 @@
 
 int main(int argc, char *argv[])
 {
+    // =========================================================
+    // QT SCALING FIX FOR QT 6.5
+    // =========================================================
+
+    QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
+        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough
+        );
+
     QGuiApplication app(argc, argv);
+
+    // =========================================================
+    // APP INFO
+    // =========================================================
 
     QCoreApplication::setOrganizationName("Shreetej");
     QCoreApplication::setApplicationName("MD_Application");
 
+    // =========================================================
+    // DATABASE
+    // =========================================================
+
     DatabaseManager dbManager;
+
     if (!dbManager.initialize()) {
         return -1;
     }
 
+    // =========================================================
+    // GLOBAL STATE
+    // =========================================================
+
     qmlRegisterSingletonType(
         QUrl(QStringLiteral("qrc:/qt/qml/Application/qml/GlobalState.qml")),
-        "AppState", 1, 0,
+        "AppState",
+        1,
+        0,
         "GlobalState"
         );
+
+    // =========================================================
+    // CUSTOM COMPONENTS
+    // =========================================================
 
     qmlRegisterType<MagneticFieldPlotItem>(
         "CustomComponents",
@@ -35,30 +62,82 @@ int main(int argc, char *argv[])
         "MagneticFieldPlotItem"
         );
 
+    // =========================================================
+    // ENGINE
+    // =========================================================
+
     QQmlApplicationEngine engine;
+
+    // =========================================================
+    // BACKEND OBJECTS
+    // =========================================================
 
     SystemController systemController;
     WiFiScanner wifi;
+    PdfExporter pdfExporter;
+    SystemDiagnosis diag;
 
+    engine.rootContext()->setContextProperty(
+        "SystemController",
+        &systemController
+        );
 
-    engine.rootContext()->setContextProperty("SystemController", &systemController);
-    engine.rootContext()->setContextProperty("WiFiScanner", &wifi);
+    engine.rootContext()->setContextProperty(
+        "WiFiScanner",
+        &wifi
+        );
+
+    engine.rootContext()->setContextProperty(
+        "PdfExporter",
+        &pdfExporter
+        );
+
+    engine.rootContext()->setContextProperty(
+        "SystemDiag",
+        &diag
+        );
+
+    // =========================================================
+    // ERROR HANDLING
+    // =========================================================
 
     QObject::connect(
         &engine,
         &QQmlApplicationEngine::objectCreationFailed,
         &app,
-        []() { QCoreApplication::exit(-1); },
+        []() {
+            QCoreApplication::exit(-1);
+        },
         Qt::QueuedConnection
-    );
+        );
 
-    PdfExporter pdfExporter;
-    engine.rootContext()->setContextProperty("PdfExporter", &pdfExporter);
-
-    SystemDiagnosis diag;
-    engine.rootContext()->setContextProperty("SystemDiag", &diag);
+    // =========================================================
+    // LOAD MAIN QML
+    // =========================================================
 
     engine.loadFromModule("Application", "Main");
+
+    // =========================================================
+    // FORCE WINDOW SIZE
+    // =========================================================
+
+    if (!engine.rootObjects().isEmpty()) {
+
+        QObject *root = engine.rootObjects().first();
+
+        QQuickWindow *window = qobject_cast<QQuickWindow *>(root);
+
+        if (window) {
+
+            // KEEP YOUR ORIGINAL DESIGN SIZE
+            window->setWidth(1024);
+            window->setHeight(600);
+
+            // IMPORTANT FOR EMBEDDED DEVICES
+            window->setMinimumSize(QSize(1024, 600));
+            window->setMaximumSize(QSize(1024, 600));
+        }
+    }
 
     return app.exec();
 }

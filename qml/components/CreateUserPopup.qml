@@ -6,6 +6,48 @@ import AppState 1.0
 Popup {
     id: createUserPopup
 
+    enter: Transition {
+        ParallelAnimation {
+
+            NumberAnimation {
+                property: "opacity"
+                from: 0.0
+                to: 1.0
+                duration: 350
+                easing.type: Easing.OutQuad
+            }
+
+            NumberAnimation {
+                property: "scale"
+                from: 0.0
+                to: 1.0
+                duration: 350
+                easing.type: Easing.OutQuad
+            }
+        }
+    }
+
+    exit: Transition {
+        ParallelAnimation {
+
+            NumberAnimation {
+                property: "opacity"
+                from: 1.0
+                to: 0.0
+                duration: 280
+                easing.type: Easing.InQuad
+            }
+
+            NumberAnimation {
+                property: "scale"
+                from: 1.0
+                to: 0.0
+                duration: 280
+                easing.type: Easing.InQuad
+            }
+        }
+    }
+
     // ── Responsive Base ──
     property real baseWidth: 1024
     property real baseHeight: 600
@@ -25,8 +67,8 @@ Popup {
 
     closePolicy: Popup.NoAutoClose
 
-    width: 600 * scale
-    height: 480 * scale
+    width: 520 * scale
+    height: 460 * scale
 
     x: (Overlay.overlay.width - width) / 2
 
