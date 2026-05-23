@@ -18,6 +18,7 @@ Item {
     property int statAvg: 0
     property int statMin: 0
     property int statMax: 0
+    property int visualMax: 100
 
     property int readingsPerDay: 288
     property int totalDays: 30
@@ -57,14 +58,18 @@ Item {
     Component.onCompleted: { loadData() }
 
     function loadData() {
+
         var arr = []
         var sum = 0
         var mn  = 999999999
         var mx  = 0
 
         for (var day = 1; day <= totalDays; day++) {
+
             for (var r = 0; r < readingsPerDay; r++) {
+
                 var totalMin = r * 5
+
                 var hh = Math.floor(totalMin / 60)
                 var mm = totalMin % 60
 
@@ -72,26 +77,108 @@ Item {
                 var mmS = mm < 10 ? "0" + mm : "" + mm
                 var dd  = day < 10 ? "0" + day : "" + day
 
-                var v = Math.round(Math.random() * 10000)
-                sum += v
-                if (v < mn) mn = v
-                if (v > mx) mx = v
+                // -------------------------------------------------
+                // REALISTIC LIVE-LIKE VALUES (0 → 2k)
+                // -------------------------------------------------
 
-                arr.push({ dd: dd, mon: 1, hhmm: hhS + ":" + mmS,
-                           val: v, dayIndex: day - 1 })
+                var rand = Math.random()
+
+                var baseMax = 0
+
+                // 80% → low range
+                if (rand < 0.80) {
+
+                    baseMax = 300 + Math.random() * 900
+                    // 300 → 1200
+                }
+
+                // 18% → medium range
+                else if (rand < 0.98) {
+
+                    baseMax = 1200 + Math.random() * 500
+                    // 1200 → 1700
+                }
+
+                // 2% → high spikes
+                else {
+
+                    baseMax = 1700 + Math.random() * 300
+                    // 1700 → 2000
+                }
+
+                // smooth movement
+                var wave =
+                        (Math.sin(r / 10) * 0.35) +
+                        (Math.sin(r / 22) * 0.22) +
+                        0.50
+
+                // random noise
+                var noise = Math.random() * 0.25
+
+                // final factor
+                var factor = Math.max(0.05, wave + noise)
+
+                // raw value
+                var base = factor * baseMax
+
+                // occasional dips
+                if (Math.random() < 0.05)
+                    base *= 0.15
+
+                // tiny spikes
+                if (Math.random() < 0.01)
+                    base *= 1.15
+
+                // final clamp
+                var v = Math.max(
+                            0,
+                            Math.min(2000, Math.round(base))
+                            )
+
+                sum += v
+
+                if (v < mn)
+                    mn = v
+
+                if (v > mx)
+                    mx = v
+
+                arr.push({
+                    dd: dd,
+                    mon: 1,
+                    hhmm: hhS + ":" + mmS,
+                    val: v,
+                    dayIndex: day - 1
+                })
             }
         }
 
         rawValues = arr
-        statAvg   = Math.round(sum / arr.length)
-        statMin   = mn
-        statMax   = mx
 
-        // Reset window; actual content placed after layout pass
+        statAvg = Math.round(sum / arr.length)
+        statMin = mn
+        statMax = mx
+
+        // -------------------------------------------------
+        // SMART VISUAL MAX
+        // -------------------------------------------------
+
+        function nextNiceStep(v) {
+
+            if (v <= 500)
+                return 500
+
+            return Math.ceil(v / 500) * 500
+        }
+
+        visualMax = nextNiceStep(statMax)
+
+        // Reset window
         windowStart = 0
         windowEnd   = 0
         windowSize  = 0
         tooltipItem = null
+
         updateVisibleWindow()
     }
 
@@ -160,7 +247,7 @@ Item {
         property real zoomFactor:    minZoomFactor
         property real _pinchZoom:    minZoomFactor
 
-        property real detailThresh: 0.8
+        property real detailThresh: 0.6
         property bool isDetail:     zoomFactor >= detailThresh
 
         // ─── Bar geometry ────────────────────────────────────────────────────
@@ -170,7 +257,9 @@ Item {
 
         // ─── Y range ─────────────────────────────────────────────────────────
         property real yMin: 0
-        property real yMax: root.statMax > 0 ? root.statMax * 1.1 : 100
+        property real yMax: root.visualMax > 0
+                             ? root.visualMax * 0.92
+                             : 100
         property int  ySteps: 5
 
         // ─── Layout constants ─────────────────────────────────────────────────
@@ -560,9 +649,16 @@ Item {
                         property real frac:     1.0 - index / histogramCard.ySteps
                         property real labelVal: histogramCard.yMin + frac * (histogramCard.yMax - histogramCard.yMin)
                         text: {
-                            if (labelVal >= 1000000) return (labelVal / 1000000).toFixed(1) + "M"
-                            if (labelVal >= 1000)    return (labelVal / 1000).toFixed(1) + "k"
-                            return Math.round(labelVal).toString()
+
+                            var v = Math.round(labelVal)
+
+                            if (v >= 1000000)
+                                return Math.round(v / 1000000) + "M"
+
+                            if (v >= 1000)
+                                return Math.round(v / 1000) + "k"
+
+                            return v.toString()
                         }
                         font.pixelSize: Math.max(9, 10 * root.scale); color: "#4A5E8A"
                     }
@@ -636,7 +732,10 @@ Item {
                             ? (barData.val - histogramCard.yMin) / (histogramCard.yMax - histogramCard.yMin)
                             : 0
 
-                        readonly property real barH: Math.max(2, fraction * plotItem.height)
+                        readonly property real barH: Math.max(
+                            6 * root.scale,
+                            fraction * (plotItem.height * 0.96)
+                        )
 
                         x: globalIdx * histogramCard.barStride + histogramCard.barSpacing
                         width:  histogramCard.barWidth
