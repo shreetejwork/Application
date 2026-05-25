@@ -84,11 +84,24 @@ Rectangle {
             let input = GlobalState.activeInputField
             let isPassword = input && input.isPasswordField === true
 
+            // ALWAYS START WITH ALPHABET KEYBOARD
+            numberMode = false
+
             capsLock = !isPassword
             autoCapitalize = !isPassword
 
             capsPersistent = false
             shiftOnce = false
+        }
+
+        else {
+
+            // RESET STATES WHEN CLOSED
+            numberMode = false
+
+            capsPersistent = false
+            shiftOnce = false
+            backspaceHeld = false
         }
     }
 

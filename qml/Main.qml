@@ -146,15 +146,35 @@ Window {
         // ===== NAV INDICATOR =====
         NavPageIndicator {
             id: navigator
+
             visible: !menuLoader.visible
+
             Layout.fillWidth: true
             Layout.preferredHeight: Math.max(32, root.height * 0.015)
 
-            pageCount: 5
+            pageNames: [
+                "Dashboard",
+                "Batch & DD",
+                "Tracking Phase",
+                "Coil Output",
+                "About Machine"
+            ]
+
             currentPage: swipeView.currentIndex
 
-            onPreviousClicked: if (swipeView.currentIndex > 0) swipeView.currentIndex--
-            onNextClicked: if (swipeView.currentIndex < pageCount - 1) swipeView.currentIndex++
+            onPreviousClicked: {
+                if (swipeView.currentIndex > 0)
+                    swipeView.currentIndex--
+            }
+
+            onNextClicked: {
+                if (swipeView.currentIndex < pageCount - 1)
+                    swipeView.currentIndex++
+            }
+
+            onPageSelected: function(index) {
+                swipeView.currentIndex = index
+            }
         }
     }
 

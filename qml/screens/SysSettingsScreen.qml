@@ -188,20 +188,44 @@ Item {
             Layout.fillWidth: true
 
             Layout.preferredHeight:
-                Math.max(32,
-                         root.height * 0.015)
+                Math.max(
+                    50,
+                    root.height * 0.07)
 
-            pageCount: pageModel.length
+            // =========================================
+            // PASS SCREEN NAMES HERE
+            // =========================================
+
+            pageNames: [
+                "Parameters",
+                "X-Y Plot",
+                "Time & Date",
+                "Validation Time",
+                "Machine ID",
+                "Version"
+            ]
+
             currentPage: swipeView.currentIndex
 
+            // =========================================
+            // NAVIGATION
+            // =========================================
+
             onPreviousClicked: {
+
                 if (swipeView.currentIndex > 0)
                     swipeView.currentIndex--
             }
 
             onNextClicked: {
+
                 if (swipeView.currentIndex < pageCount - 1)
                     swipeView.currentIndex++
+            }
+
+            onPageSelected: function(index) {
+
+                swipeView.currentIndex = index
             }
         }
     }

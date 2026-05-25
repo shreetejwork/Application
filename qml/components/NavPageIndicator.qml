@@ -4,119 +4,251 @@ import QtQuick.Layouts
 Item {
     id: root
 
-    // ✅ SAFE SCALE (no visual change)
-    property real baseHeight: 60
-    property real scale: Math.max(0.6, height / baseHeight)
+    // =====================================================
+    // RESPONSIVE SCALE
+    // =====================================================
 
-    property int pageCount: 3
-    property int currentPage: 1
+    property real baseHeight: 60
+
+    property real scale:
+        Math.max(0.65, height / baseHeight)
+
+    // =====================================================
+    // NAVIGATION
+    // =====================================================
+
+    property int currentPage: 0
+
+    property var pageNames: []
+
+    property int pageCount: pageNames.length
 
     signal previousClicked()
     signal nextClicked()
+    signal pageSelected(int index)
+
+    // =====================================================
+    // SWIPE SUPPORT
+    // =====================================================
 
     property real swipeStartX: 0
 
     MultiPointTouchArea {
+
         anchors.fill: parent
+
         maximumTouchPoints: 1
-        onPressed:  { swipeStartX = touchPoints[0].x }
+
+        onPressed: {
+            swipeStartX = touchPoints[0].x
+        }
+
         onReleased: {
-            var delta = touchPoints[0].x - swipeStartX
 
-            // SCALE SAFE SWIPE DISTANCE
-            var threshold = 40 * root.scale
+            var delta =
+                    touchPoints[0].x - swipeStartX
 
-            if (delta < -threshold) root.nextClicked()
-            else if (delta > threshold) root.previousClicked()
+            var threshold =
+                    40 * root.scale
+
+            if (delta < -threshold)
+                root.nextClicked()
+
+            else if (delta > threshold)
+                root.previousClicked()
         }
     }
 
-    RowLayout {
+    // =====================================================
+    // MAIN NAV BAR
+    // =====================================================
+
+    Rectangle {
+        id: navBar
+
         anchors.centerIn: parent
 
-        //  SAFE SPACING
-        spacing: Math.max(6, parent.width * 0.02)
+        // =============================================
+        // DYNAMIC WIDTH
+        // =============================================
 
-        Item {
-            width: Math.max(48 * root.scale, root.height * 1.2)
-            height: Math.max(48 * root.scale, root.height)
+        width:
+            Math.min(
+                navRow.width + (56 * root.scale),
+                parent.width * 0.92)
 
-            Rectangle {
-                id: leftHighlight
-                anchors.fill: parent
-                radius: 6 * root.scale
-                color: "#1A4DB5"
-                opacity: 0
-            }
+        height:
+            Math.max(
+                50 * root.scale,
+                parent.height * 0.90)
 
-            Text {
-                anchors.centerIn: parent
-                text: "❮"
+        color: "#F5F7FC"
 
-                //  SAME DESIGN + SAFE MIN
-                font.pixelSize: Math.max(14, root.height * 0.55)
-                font.bold: true
-                color: "#1A4DB5"
-            }
-
-            MultiPointTouchArea {
-                anchors.fill: parent
-                maximumTouchPoints: 1
-                onPressed:  { leftHighlight.opacity = 0.15 }
-                onReleased: { leftHighlight.opacity = 0; root.previousClicked() }
-                onCanceled: { leftHighlight.opacity = 0 }
-            }
-        }
+        // =============================================
+        // CENTERED NAV CONTENT
+        // =============================================
 
         Row {
-            spacing: Math.max(4, root.width * 0.020)
+            id: navRow
+
+            anchors.centerIn: parent
+
+            spacing: 22 * root.scale
 
             Repeater {
                 model: root.pageCount
 
-                Rectangle {
-                    width: Math.max(16 * root.scale, root.height * 0.45)
-                    height: Math.max(16 * root.scale, root.height * 0.45)
-                    radius: width / 2
+                delegate: Row {
 
-                    color: index === root.currentPage ? "#1A4DB5" : "transparent"
+                    spacing: 22 * root.scale
 
-                    border.color: "#1A4DB5"
+                    // =====================================
+                    // PAGE BUTTON
+                    // =====================================
 
-                    // SCALE SAFE BORDER
-                    border.width: Math.max(1, root.height * 0.06)
+                    Item {
+                        id: pageButton
+
+                        width:
+                            textItem.implicitWidth
+                            + (18 * root.scale)
+
+                        height:
+                            navBar.height
+
+                        Column {
+                            anchors.centerIn: parent
+
+                            spacing: 7 * root.scale
+
+                            // =============================
+                            // PAGE TITLE
+                            // =============================
+
+                            Text {
+                                id: textItem
+
+                                anchors.horizontalCenter:
+                                    parent.horizontalCenter
+
+                                text:
+                                    root.pageNames[index]
+                                    || ("Page " + (index + 1))
+
+                                font.pixelSize:
+                                    Math.max(
+                                        13,
+                                        15 * root.scale)
+
+                                font.weight:
+                                    index === root.currentPage
+                                    ? Font.Bold
+                                    : Font.DemiBold
+
+                                color:
+                                    index === root.currentPage
+                                    ? "#1450C8"
+                                    : "#7B88A8"
+
+                                horizontalAlignment:
+                                    Text.AlignHCenter
+
+                                elide: Text.ElideRight
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 180
+                                    }
+                                }
+                            }
+
+                            // =============================
+                            // ACTIVE INDICATOR
+                            // =============================
+
+                            Rectangle {
+
+                                anchors.horizontalCenter:
+                                    parent.horizontalCenter
+
+                                width:
+                                    index === root.currentPage
+                                    ? 55 * root.scale
+                                    : 8 * root.scale
+
+                                height:
+                                    5 * root.scale
+
+                                radius:
+                                    height / 2
+
+                                color:
+                                    index === root.currentPage
+                                    ? "#1450C8"
+                                    : "#C8D3EA"
+
+                                Behavior on width {
+                                    NumberAnimation {
+                                        duration: 220
+
+                                        easing.type:
+                                            Easing.OutCubic
+                                    }
+                                }
+
+                                Behavior on color {
+                                    ColorAnimation {
+                                        duration: 180
+                                    }
+                                }
+                            }
+                        }
+
+                        // =============================
+                        // TOUCH
+                        // =============================
+
+                        MultiPointTouchArea {
+
+                            anchors.fill: parent
+
+                            maximumTouchPoints: 1
+
+                            onReleased: {
+
+                                root.currentPage = index
+
+                                root.pageSelected(index)
+                            }
+                        }
+                    }
+
+                    // =====================================
+                    // SEPARATOR
+                    // =====================================
+
+                    Rectangle {
+
+                        visible:
+                            index < root.pageCount - 1
+
+                        width:
+                            1.5 * root.scale
+
+                        height:
+                            20 * root.scale
+
+                        radius:
+                            width / 2
+
+                        anchors.verticalCenter:
+                            parent.verticalCenter
+
+                        color: "#C7D2E8"
+
+                        opacity: 0.9
+                    }
                 }
-            }
-        }
-
-        Item {
-            width: Math.max(48 * root.scale, root.height * 1.2)
-            height: Math.max(48 * root.scale, root.height)
-
-            Rectangle {
-                id: rightHighlight
-                anchors.fill: parent
-                radius: 6 * root.scale
-                color: "#1A4DB5"
-                opacity: 0
-            }
-
-            Text {
-                anchors.centerIn: parent
-                text: "❯"
-
-                //  SAME DESIGN + SAFE MIN
-                font.pixelSize: Math.max(14, root.height * 0.55)
-                font.bold: true
-                color: "#1A4DB5"
-            }
-
-            MultiPointTouchArea {
-                anchors.fill: parent
-                maximumTouchPoints: 1
-                onPressed:  { rightHighlight.opacity = 0.15 }
-                onReleased: { rightHighlight.opacity = 0; root.nextClicked() }
-                onCanceled: { rightHighlight.opacity = 0 }
             }
         }
     }

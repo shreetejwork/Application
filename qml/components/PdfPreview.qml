@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Pdf
+import QtQuick.Window
 
 Popup {
     id: root
@@ -90,13 +91,21 @@ Popup {
 
                 PdfMultiPageView {
                     id: pdfView
+
                     anchors.fill: parent
+
                     document: pdfDoc
+
+                    focus: true
+
+                    renderScale: 1.0
 
                     Component.onCompleted: Qt.callLater(updateScale)
 
                     function updateScale() {
-                        if (pdfDoc.status === PdfDocument.Ready && pdfDoc.pageCount > 0) {
+
+                        if (pdfDoc.status === PdfDocument.Ready
+                                && pdfDoc.pageCount > 0) {
 
                             var pageSize = pdfDoc.pagePointSize(0)
 
@@ -105,6 +114,19 @@ Popup {
 
                             pdfView.renderScale = pdfContainer.width / pageWidthPx
                         }
+                    }
+
+                    // IMPORTANT FOR TOUCHSCREEN
+                    TapHandler {
+                        acceptedDevices: PointerDevice.TouchScreen
+                    }
+
+                    DragHandler {
+                        acceptedDevices: PointerDevice.TouchScreen
+                    }
+
+                    WheelHandler {
+                        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                     }
                 }
 

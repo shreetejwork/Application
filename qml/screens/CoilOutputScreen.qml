@@ -247,7 +247,7 @@ Item {
         property real zoomFactor:    minZoomFactor
         property real _pinchZoom:    minZoomFactor
 
-        property real detailThresh: 0.6
+        property real detailThresh: 0.5
         property bool isDetail:     zoomFactor >= detailThresh
 
         // ─── Bar geometry ────────────────────────────────────────────────────

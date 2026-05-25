@@ -32,7 +32,7 @@ Item {
         Rectangle {
             id: popup
 
-            visible: animScale > 0.01
+            visible: isOpen || animScale > 0.01
             z: 101
             width: Math.min(parent.width * 0.40, 450)
             height: Math.min(parent.height * 0.95, 730)
@@ -71,18 +71,29 @@ Item {
                 }
             }
 
+            onAnimOpacityChanged: {
+
+                if (animOpacity <= 0.01 && !isOpen)
+                    visible = false
+            }
+
             function openPopup() {
+
+                visible = true
+
                 isOpen = true
+
                 animScale = 1.0
                 animOpacity = 1.0
             }
 
             function closePopup() {
+
                 isOpen = false
+
                 animScale = 0.0
                 animOpacity = 0.0
             }
-
             // =====================================================
 
             Rectangle {
