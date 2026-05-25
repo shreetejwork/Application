@@ -6,13 +6,26 @@ import AppState 1.0
 import "screens"
 import "components"
 
-Window {
+ApplicationWindow {
     id: root
     visible: true
     width: 1024
     height: 600
     title: "Dashboard"
     color: "#F5F7FC"
+
+    FontLoader {
+        id: robotoRegular
+        source: "qrc:/assets/global/RobotoCondensed-Regular.ttf"
+    }
+
+    FontLoader {
+        id: robotoBold
+        source: "qrc:/assets/global/RobotoCondensed-Bold.ttf"
+    }
+
+    // GLOBAL APPLICATION FONT
+    font.family: robotoRegular.name
 
 
     // flags: Qt.FramelessWindowHint

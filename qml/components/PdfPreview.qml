@@ -25,8 +25,10 @@ Popup {
     function computeRenderScale() {
         if (pdfDoc.status === PdfDocument.Ready && pdfDoc.pageCount > 0) {
             var pageSize = pdfDoc.pagePointSize(0)
-            // Fit page width exactly to container, no padding
+
+            // Fit page width exactly to container
             var scale = pdfContainer.width / pageSize.width
+
             pdfView.renderScale = scale
         }
     }
@@ -100,33 +102,16 @@ Popup {
 
                     renderScale: 1.0
 
-                    Component.onCompleted: Qt.callLater(updateScale)
+                    PinchHandler {
+                        id: pinch
+                        target: null
 
-                    function updateScale() {
-
-                        if (pdfDoc.status === PdfDocument.Ready
-                                && pdfDoc.pageCount > 0) {
-
-                            var pageSize = pdfDoc.pagePointSize(0)
-
-                            var dpi = Screen.pixelDensity * 25.4
-                            var pageWidthPx = pageSize.width * dpi / 72.0
-
-                            pdfView.renderScale = pdfContainer.width / pageWidthPx
+                        onScaleChanged: {
+                            pdfView.renderScale = Math.max(
+                                        0.5,
+                                        Math.min(4.0,
+                                                 pdfView.renderScale * pinch.scale))
                         }
-                    }
-
-                    // IMPORTANT FOR TOUCHSCREEN
-                    TapHandler {
-                        acceptedDevices: PointerDevice.TouchScreen
-                    }
-
-                    DragHandler {
-                        acceptedDevices: PointerDevice.TouchScreen
-                    }
-
-                    WheelHandler {
-                        acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
                     }
                 }
 
