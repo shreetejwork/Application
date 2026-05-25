@@ -101,18 +101,6 @@ Popup {
                     focus: true
 
                     renderScale: 1.0
-
-                    PinchHandler {
-                        id: pinch
-                        target: null
-
-                        onScaleChanged: {
-                            pdfView.renderScale = Math.max(
-                                        0.5,
-                                        Math.min(4.0,
-                                                 pdfView.renderScale * pinch.scale))
-                        }
-                    }
                 }
 
                 onWidthChanged: Qt.callLater(root.computeRenderScale)
