@@ -14,20 +14,29 @@ ApplicationWindow {
     title: "Dashboard"
     color: "#F5F7FC"
 
-    FontLoader {
-        id: robotoRegular
-        source: "qrc:/assets/global/RobotoCondensed-Regular.ttf"
-    }
+    // =========================================================
+        // FONT LOADING
+        // =========================================================
 
-    FontLoader {
-        id: robotoBold
-        source: "qrc:/assets/global/RobotoCondensed-Bold.ttf"
-    }
+        FontLoader {
+            id: robotoRegular
+            source: "qrc:/assets/global/RobotoCondensed-Regular.ttf"
 
-    // GLOBAL APPLICATION FONT
-    font: Qt.font({
-        family: robotoRegular.name,
-    })
+            onStatusChanged: {
+                console.log("Roboto Regular Status:", status)
+                console.log("Roboto Regular Name:", name)
+            }
+        }
+
+        FontLoader {
+            id: robotoBold
+            source: "qrc:/assets/global/RobotoCondensed-Bold.ttf"
+
+            onStatusChanged: {
+                console.log("Roboto Bold Status:", status)
+                console.log("Roboto Bold Name:", name)
+            }
+        }
 
 
     // flags: Qt.FramelessWindowHint
