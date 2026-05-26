@@ -15,29 +15,81 @@ ApplicationWindow {
     color: "#F5F7FC"
 
     // =========================================================
-        // FONT LOADING
-        // =========================================================
+    // FONT LOADING (RASPBERRY PI SAFE)
+    // =========================================================
 
-        FontLoader {
-            id: robotoRegular
-            source: "qrc:/assets/global/RobotoCondensed-Regular.ttf"
+    FontLoader {
+        id: appRegularFont
+        source: "qrc:/qt/qml/Application/assets/images/RobotoCondensed-Regular.ttf"
+    }
 
-            onStatusChanged: {
-                console.log("Roboto Regular Status:", status)
-                console.log("Roboto Regular Name:", name)
-            }
+    FontLoader {
+        id: appBoldFont
+        source: "qrc:/qt/qml/Application/assets/images/RobotoCondensed-Bold.ttf"
+    }
+
+    // =========================================================
+    // GLOBAL FONT
+    // =========================================================
+
+    property string regularFontFamily:
+        appRegularFont.status === FontLoader.Ready
+        && appRegularFont.name !== ""
+        ? appRegularFont.name
+        : "Sans Serif"
+
+    property string boldFontFamily:
+        appBoldFont.status === FontLoader.Ready
+        && appBoldFont.name !== ""
+        ? appBoldFont.name
+        : "Sans Serif"
+
+    font.family: regularFontFamily
+
+    // =========================================================
+    // FONT DEBUG
+    // =========================================================
+
+    Timer {
+        interval: 1000
+        running: true
+        repeat: false
+
+        onTriggered: {
+
+            console.log("===== FONT DEBUG =====")
+
+            console.log("Regular Status:",
+                        appRegularFont.status)
+
+            console.log("Regular Name:",
+                        appRegularFont.name)
+
+            console.log("Bold Status:",
+                        appBoldFont.status)
+
+            console.log("Bold Name:",
+                        appBoldFont.name)
+
+            console.log("Applied Font:",
+                        root.font.family)
         }
+    }
 
-        FontLoader {
-            id: robotoBold
-            source: "qrc:/assets/global/RobotoCondensed-Bold.ttf"
+    // =========================================================
+    // TEST TEXT
+    // =========================================================
 
-            onStatusChanged: {
-                console.log("Roboto Bold Status:", status)
-                console.log("Roboto Bold Name:", name)
-            }
-        }
+    Text {
+        anchors.centerIn: parent
 
+        text: "FONT TEST"
+
+        font.family: root.regularFontFamily
+        font.pixelSize: 40
+
+        color: "#111111"
+    }
 
     // flags: Qt.FramelessWindowHint
     // visibility: Window.FullScreen

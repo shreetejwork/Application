@@ -89,8 +89,8 @@ qt_add_qml_module(appApplication
         assets/images/Reports.png
         assets/images/BatchHistory.png
         assets/images/log.png
-        assets/global/RobotoCondensed-Bold.ttf
-        assets/global/RobotoCondensed-Regular.ttf
+        assets/images/RobotoCondensed-Bold.ttf
+        assets/images/RobotoCondensed-Regular.ttf
 
 
     SOURCES
