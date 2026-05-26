@@ -15,7 +15,7 @@ ApplicationWindow {
     color: "#F5F7FC"
 
     // =========================================================
-    // FONT LOADING (RASPBERRY PI SAFE)
+    // FONT LOADING
     // =========================================================
 
     FontLoader {
@@ -217,7 +217,7 @@ ApplicationWindow {
 
             pageNames: [
                 "Dashboard",
-                "Batch & DD",
+                GlobalState.showDDuster ? "Batch & DD" : "Batch Menu",
                 "Tracking Phase",
                 "Coil Output",
                 "About Machine"

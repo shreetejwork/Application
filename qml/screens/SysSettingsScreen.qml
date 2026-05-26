@@ -193,17 +193,27 @@ Item {
                     root.height * 0.07)
 
             // =========================================
-            // PASS SCREEN NAMES HERE
+            // DYNAMIC SCREEN NAMES
             // =========================================
 
-            pageNames: [
-                "Parameters",
-                "X-Y Plot",
-                "Time & Date",
-                "Validation Time",
-                "Machine ID",
-                "Version"
-            ]
+            pageNames: GlobalState.showNetworkScreen
+                       ? [
+                             "Parameters",
+                             "X-Y Plot",
+                             "Time & Date",
+                             "Validation Time",
+                             "Machine ID",
+                             "Network",
+                             "Version"
+                         ]
+                       : [
+                             "Parameters",
+                             "X-Y Plot",
+                             "Time & Date",
+                             "Validation Time",
+                             "Machine ID",
+                             "Version"
+                         ]
 
             currentPage: swipeView.currentIndex
 
