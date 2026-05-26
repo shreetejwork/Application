@@ -45,57 +45,41 @@ ApplicationWindow {
         : "Sans Serif"
 
     font.family: regularFontFamily
+    font.pixelSize: 20  // Set default base size for entire app
 
     // =========================================================
-    // FONT DEBUG
+    // RECURSIVE FONT APPLICATION TO ALL CHILDREN
     // =========================================================
+    // This ensures all Text and Controls inherit the root font
 
-    Timer {
-        interval: 1000
-        running: true
-        repeat: false
+    function applyFontToAllChildren(item) {
+        if (item === null) return
 
-        onTriggered: {
+        if (item.font !== undefined) {
+            item.font.family = root.regularFontFamily
+        }
 
-            console.log("===== FONT DEBUG =====")
-
-            console.log("Regular Status:",
-                        appRegularFont.status)
-
-            console.log("Regular Name:",
-                        appRegularFont.name)
-
-            console.log("Bold Status:",
-                        appBoldFont.status)
-
-            console.log("Bold Name:",
-                        appBoldFont.name)
-
-            console.log("Applied Font:",
-                        root.font.family)
+        if (item.children !== undefined) {
+            for (var i = 0; i < item.children.length; i++) {
+                applyFontToAllChildren(item.children[i])
+            }
         }
     }
 
-    // =========================================================
-    // TEST TEXT
-    // =========================================================
-
-    Text {
-        anchors.centerIn: parent
-
-        text: "FONT TEST"
-
-        font.family: root.regularFontFamily
-        font.pixelSize: 40
-
-        color: "#111111"
+    // Apply fonts whenever regularFontFamily changes
+    onRegularFontFamilyChanged: {
+        applyFontToAllChildren(contentItem)
     }
+
 
     // flags: Qt.FramelessWindowHint
     // visibility: Window.FullScreen
 
     Component.onCompleted: {
         // Custom keyboard initialization
+        
+        // Apply fonts to all loaded children
+        applyFontToAllChildren(root.contentItem)
     }
 
     Component {
@@ -165,6 +149,9 @@ ApplicationWindow {
 
             onLoaded: {
                 if (item) {
+                    // Apply fonts to newly loaded screen
+                    root.applyFontToAllChildren(item)
+                    
                     if ("globalTopBar" in item)
                         item.globalTopBar = mainTopBar
                     item.navigateTo = function(screen) {

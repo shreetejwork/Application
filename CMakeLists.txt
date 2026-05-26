@@ -19,6 +19,7 @@ qt_add_qml_module(appApplication
 
     QML_FILES
         qml/Main.qml
+        qml/GlobalState.qml
         qml/screens/HomeScreen.qml
         qml/screens/DDusterScreen.qml
         qml/components/TopBar.qml
@@ -33,7 +34,6 @@ qt_add_qml_module(appApplication
         qml/components/CircleActionButton.qml
         qml/screens/AutoLearnScreen.qml
         qml/components/CustomPopup.qml
-        qml/GlobalState.qml
         qml/screens/SysDetailsScreen.qml
         qml/screens/MenuScreen.qml
         qml/components/MenuTile.qml
