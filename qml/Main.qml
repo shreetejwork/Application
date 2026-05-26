@@ -47,6 +47,8 @@ ApplicationWindow {
     font.family: regularFontFamily
     font.pixelSize: 20  // Set default base size for entire app
 
+
+
     // =========================================================
     // RECURSIVE FONT APPLICATION TO ALL CHILDREN
     // =========================================================
@@ -69,18 +71,23 @@ ApplicationWindow {
     // Apply fonts whenever regularFontFamily changes
     onRegularFontFamilyChanged: {
         applyFontToAllChildren(contentItem)
+
+        if (Overlay.overlay)
+                applyFontToAllChildren(Overlay.overlay)
+    }
+
+    Component.onCompleted: {
+
+        applyFontToAllChildren(root.contentItem)
+
+        if (Overlay.overlay)
+            applyFontToAllChildren(Overlay.overlay)
     }
 
 
     // flags: Qt.FramelessWindowHint
     // visibility: Window.FullScreen
 
-    Component.onCompleted: {
-        // Custom keyboard initialization
-        
-        // Apply fonts to all loaded children
-        applyFontToAllChildren(root.contentItem)
-    }
 
     Component {
         id: ddusterComp

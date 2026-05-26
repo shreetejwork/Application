@@ -69,6 +69,8 @@ Popup {
 
     parent: Overlay.overlay
 
+    font.family: Application.font.family
+
     modal: false
     focus: false
     dim: true
@@ -208,6 +210,8 @@ Popup {
     // ================= SELECTION POPUP =================
     Popup {
         id: selectionPopup
+
+        font.family: Application.font.family
 
         modal: true
         focus: true

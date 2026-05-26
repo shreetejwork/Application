@@ -301,6 +301,9 @@ Item {
 
         // ─── Pinch zoom ───────────────────────────────────────────────────────
         PinchHandler {
+
+            enabled: histogramCard.interactionUnlocked
+
             target: null
 
             onActiveChanged: {
@@ -671,11 +674,16 @@ Item {
         // =====================================================================
         Flickable {
             id: flickArea
+
+            interactive: histogramCard.interactionUnlocked
+
             x: histogramCard.padH + histogramCard.yAxisW
             y: histogramCard.graphTop + histogramCard.topPad
             width:  histogramCard.plotW
             height: histogramCard.barAreaH
             clip:   true
+
+
 
             boundsBehavior:    Flickable.StopAtBounds
             flickableDirection: Flickable.HorizontalFlick
@@ -837,6 +845,244 @@ Item {
             height: histogramCard.xAxisH
             color:  "#FFFFFF"
             Rectangle { anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; height: 2; color: "#4A5E8A" }
+        }
+
+        // ==========================================================
+        // INTERACTION LOCK
+        // ==========================================================
+
+        property bool interactionUnlocked: false
+
+        // Smooth unlock animation
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 220
+                easing.type: Easing.OutCubic
+            }
+        }
+
+        // ==========================================================
+        // DISABLED OVERLAY
+        // ==========================================================
+
+        Rectangle {
+            id: lockOverlay
+
+            anchors.fill: parent
+
+            z: 999999
+
+            visible: !histogramCard.interactionUnlocked
+
+            color: "#F5F7FC"
+
+            opacity: overlayTap.pressed ? 0.92 : 0.96
+
+            radius: histogramCard.radius
+
+            border.width: 2
+            border.color: "#6F95D6"
+
+            // Smooth fade
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 160
+                }
+            }
+
+            // ======================================================
+            // BACKGROUND GLOW
+            // ======================================================
+
+            Rectangle {
+                width: 220 * root.scale
+                height: 220 * root.scale
+
+                radius: width / 2
+
+                anchors.centerIn: parent
+
+                color: "#DCE9FF"
+
+                opacity: pulseAnim.running ? 0.48 : 0.38
+
+                scale: pulseAnim.running ? 1.08 : 0.95
+
+                SequentialAnimation on scale {
+                    id: pulseAnim
+
+                    running: true
+                    loops: Animation.Infinite
+
+                    NumberAnimation {
+                        to: 1.08
+                        duration: 1200
+                        easing.type: Easing.OutQuad
+                    }
+
+                    NumberAnimation {
+                        to: 0.95
+                        duration: 1200
+                        easing.type: Easing.InOutQuad
+                    }
+                }
+
+                Behavior on opacity {
+                    NumberAnimation { duration: 300 }
+                }
+            }
+
+            // ======================================================
+            // CENTER CONTENT
+            // ======================================================
+
+            Column {
+                anchors.centerIn: parent
+
+                spacing: 18 * root.scale
+
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    text: "Coil Output Window"
+
+                    font.pixelSize: 26 * root.scale
+                    font.bold: true
+
+                    color: "#1A4DB5"
+                }
+
+                // Lock Icon Circle
+                Rectangle {
+                    width: 90 * root.scale
+                    height: 90 * root.scale
+
+                    radius: width / 2
+
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    color: "#FFFFFF"
+
+                    border.width: 2
+                    border.color: "#6F95D6"
+
+                    scale: overlayTap.pressed ? 0.94 : 1.0
+
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutQuad
+                        }
+                    }
+
+                    Text {
+                        anchors.centerIn: parent
+
+                        text: "🔒"
+
+                        font.pixelSize: 38 * root.scale
+                    }
+                }
+
+                // Main Text
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    text: "Tap Here to Unlock"
+
+                    font.pixelSize: 26 * root.scale
+                    font.bold: true
+
+                    color: "#1A4DB5"
+                }
+
+                // Subtitle
+                Text {
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    text: "Enable zoom, scroll & interaction"
+
+                    font.pixelSize: 18 * root.scale
+
+                    color: "#6B7A99"
+                }
+            }
+
+            // ======================================================
+            // TAP AREA
+            // ======================================================
+
+            MouseArea {
+                id: overlayTap
+
+                anchors.fill: parent
+
+                hoverEnabled: true
+
+                cursorShape: Qt.PointingHandCursor
+
+                onClicked: {
+
+                    unlockAnim.start()
+                }
+            }
+
+            // ======================================================
+            // UNLOCK ANIMATION
+            // ======================================================
+
+            SequentialAnimation {
+                id: unlockAnim
+
+                PropertyAnimation {
+                    target: lockOverlay
+                    property: "scale"
+
+                    from: 1.0
+                    to: 0.96
+
+                    duration: 100
+                }
+
+                PropertyAnimation {
+                    target: lockOverlay
+                    property: "scale"
+
+                    from: 0.96
+                    to: 1.04
+
+                    duration: 140
+                }
+
+                ParallelAnimation {
+
+                    PropertyAnimation {
+                        target: lockOverlay
+                        property: "opacity"
+
+                        to: 0.0
+
+                        duration: 260
+                        easing.type: Easing.OutQuad
+                    }
+
+                    PropertyAnimation {
+                        target: lockOverlay
+                        property: "scale"
+
+                        to: 1.08
+
+                        duration: 260
+                        easing.type: Easing.OutQuad
+                    }
+                }
+
+                ScriptAction {
+                    script: {
+                        histogramCard.interactionUnlocked = true
+                    }
+                }
+            }
         }
     }
 }

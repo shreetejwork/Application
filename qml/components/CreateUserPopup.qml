@@ -6,6 +6,10 @@ import AppState 1.0
 Popup {
     id: createUserPopup
 
+    Component.onCompleted: {
+        root.applyFontToAllChildren(this)
+    }
+
     enter: Transition {
         ParallelAnimation {
 
