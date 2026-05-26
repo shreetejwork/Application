@@ -25,7 +25,9 @@ ApplicationWindow {
     }
 
     // GLOBAL APPLICATION FONT
-    font.family: robotoRegular.name
+    font: Qt.font({
+        family: robotoRegular.name,
+    })
 
 
     // flags: Qt.FramelessWindowHint
