@@ -244,7 +244,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: modelData
-                                font.pixelSize: 14
+                                font.pixelSize: 18
                                 font.bold: true
                                 color: "#333"
                             }
@@ -292,7 +292,7 @@ Item {
                             anchors.centerIn: parent
                             text: "Cancel"
                             font.bold: true
-                            font.pixelSize: 14
+                            font.pixelSize: 23
                             color: "#333"
                         }
 
@@ -321,7 +321,7 @@ Item {
                             text: "Save"
                             color: "white"
                             font.bold: true
-                            font.pixelSize: 14
+                            font.pixelSize: 23
                         }
 
                         MouseArea {

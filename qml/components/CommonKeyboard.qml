@@ -14,8 +14,8 @@ Rectangle {
     property real baseHeight: 600
     property real scale: height / baseHeight
 
-    property int keyFontSize: 35
-    property int specialKeyFontSize: 40
+    property int keyFontSize: 40
+    property int specialKeyFontSize: 45
 
     color: "#F4F6FB"
     border.color: "#DADDE5"

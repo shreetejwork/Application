@@ -233,10 +233,10 @@ Item {
                             index < root.pageCount - 1
 
                         width:
-                            1.5 * root.scale
+                            2.5 * root.scale
 
                         height:
-                            20 * root.scale
+                            26 * root.scale
 
                         radius:
                             width / 2
@@ -246,7 +246,7 @@ Item {
 
                         color: "#C7D2E8"
 
-                        opacity: 0.9
+                        opacity: 1
                     }
                 }
             }

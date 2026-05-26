@@ -125,7 +125,7 @@ Item {
         }
     }
 
-    //  SAFE CONNECTION (IMPORTANT FIX)
+    //  SAFE CONNECTION
     Connections {
         target: (typeof GlobalState !== "undefined" && GlobalState) ? GlobalState : null
 
@@ -236,27 +236,6 @@ Item {
                 font.pixelSize: Math.max(9, root.height * 0.03)
                 font.bold: true
             }
-        }
-    }
-
-    // ================= SLIDER =================
-    Slider {
-        id: machineSlider
-        anchors.bottom: parent.bottom
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.bottomMargin: 20
-
-        width: parent.width * 0.6
-
-        from: root.minValue
-        to: root.maxValue
-        stepSize: 1
-
-        value: root.productPhase
-
-        onValueChanged: {
-            if (typeof GlobalState !== "undefined" && GlobalState)
-                GlobalState.productPhase = value
         }
     }
 }
