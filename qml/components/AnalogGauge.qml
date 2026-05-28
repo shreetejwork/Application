@@ -45,15 +45,15 @@ Item {
             var ctx = getContext("2d")
             ctx.reset()
 
-            var cx = width * 0.15
+            var cx = width * 0.20
             var cy = height * 0.50
-            var radius = height * 0.45
+            var radius = height * 0.47
 
             var tickMajorLen = radius * 0.07
             var tickMinorLen = radius * 0.04
 
             var fontSize = componentTypography.tiny
-            var labelOffset = radius * 0.14
+            var labelOffset = radius * 0.18
 
             for (var v = root.minValue; v <= root.maxValue; v += 5) {
                 var isMajor = (v % 10 === 0)
@@ -74,25 +74,11 @@ Item {
 
                 if (isMajor) {
 
-                    // =========================================
-                    // DYNAMIC LABEL POSITIONING
-                    // FOR ROBOTO CONDENSED
-                    // =========================================
-
                     var dynamicFontSize = componentTypography.tiny
 
                     ctx.font = "bold " + dynamicFontSize + "px 'Roboto Condensed'"
 
-                    // Measure actual text width
-                    var textMetrics = ctx.measureText(v.toString())
-                    var textWidth = textMetrics.width
-
-                    // Dynamic inward spacing based on text width
-                    var labelR = radius - tLen - labelOffset - (textWidth * 0.12)
-
-                    // Extra inward compensation near crowded region
-                    if (v >= 140)
-                        labelR -= radius * 0.03
+                    var labelR = radius - tLen - labelOffset
 
                     var lx = cx + labelR * Math.cos(angleRad)
                     var ly = cy + labelR * Math.sin(angleRad)
@@ -128,7 +114,7 @@ Item {
 
             // MACHINE NEEDLE
             var nAngleRad = root.valueToAngleDeg(root.machinePhase) * Math.PI / 180
-            var startOffset = radius * 0.60
+            var startOffset = radius * 0.53
             var needleLen = radius * 0.15
             var baseOffset = radius * 0.025
 
@@ -189,8 +175,8 @@ Item {
             Text {
                 text: root.productPhase
                 font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.small
-                                : componentTypography.body
+                                ? componentTypography.heading
+                                : componentTypography.heading
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -198,7 +184,7 @@ Item {
             Text {
                 text: "Product Phase"
                 font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.tiny
+                                ? componentTypography.small
                                 : componentTypography.small
                 font.bold: true
             }
@@ -217,8 +203,8 @@ Item {
             Text {
                 text: root.machinePhase
                 font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.small
-                                : componentTypography.body
+                                ? componentTypography.heading
+                                : componentTypography.heading
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -231,7 +217,7 @@ Item {
                     id: machineLabel
                     text: "Machine Phase"
                     font.pixelSize: root.trackingPhase >= 0
-                                    ? componentTypography.tiny
+                                    ? componentTypography.small
                                     : componentTypography.small
                     font.bold: true
                 }
@@ -251,8 +237,8 @@ Item {
             Text {
                 text: root.trackingPhase
                 font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.small
-                                : componentTypography.body
+                                ? componentTypography.heading
+                                : componentTypography.heading
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -260,7 +246,7 @@ Item {
             Text {
                 text: root.trackingCountLabel
                 font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.tiny
+                                ? componentTypography.small
                                 : componentTypography.small
                 font.bold: true
             }

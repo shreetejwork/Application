@@ -123,7 +123,7 @@ Item {
 
         Text {
             text: root.label
-            font.pixelSize: gaugeTypography.body
+            font.pixelSize: gaugeTypography.small
             font.bold: true
             color: "#333"
             anchors.horizontalCenter: parent.horizontalCenter
@@ -149,14 +149,14 @@ Item {
 
                 Text {
                     text: root.threshold
-                    font.pixelSize: gaugeTypography.subHeading
+                    font.pixelSize: gaugeTypography.heading
                     color: "#444"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
                 Text {
                     text: root.thresholdLabel
-                    font.pixelSize: gaugeTypography.body
+                    font.pixelSize: gaugeTypography.small
                     font.bold: true
                     color: "#2446B8"
                     anchors.horizontalCenter: parent.horizontalCenter
