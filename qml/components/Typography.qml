@@ -16,21 +16,21 @@ QtObject {
     // All sizes tuned for maximum readability on touch interface
     // =========================================================
 
-    readonly property real title: Math.round(30 * scale)         // Large page titles - prominent and readable
+    readonly property real title: Math.round(32 * scale)         // Large page titles - prominent and readable
 
-    readonly property real heading: Math.round(26 * scale)       // Section headers - strong visual hierarchy
+    readonly property real heading: Math.round(28 * scale)       // Section headers - strong visual hierarchy
 
-    readonly property real subHeading: Math.round(22 * scale)    // Sub-section headers - clear distinction
+    readonly property real subHeading: Math.round(24 * scale)    // Sub-section headers - clear distinction
 
-    readonly property real body: Math.round(20 * scale)          // Main body text - primary reading content, highly readable
+    readonly property real body: Math.round(22 * scale)          // Main body text - primary reading content, highly readable
 
-    readonly property real bodySmall: Math.round(18 * scale)     // Secondary body text - important but less prominent
+    readonly property real bodySmall: Math.round(20 * scale)     // Secondary body text - important but less prominent
 
-    readonly property real caption: Math.round(15 * scale)       // Captions, labels, metadata - still readable
+    readonly property real caption: Math.round(17 * scale)       // Captions, labels, metadata - still readable
 
-    readonly property real small: Math.round(13 * scale)         // Small text, hints, helper text - minimum for touch readability
+    readonly property real small: Math.round(15 * scale)         // Small text, hints, helper text - minimum for touch readability
 
-    readonly property real tiny: Math.round(11 * scale)          // Tiny text for minimal UI elements (timestamps, version info)
+    readonly property real tiny: Math.round(13 * scale)          // Tiny text for minimal UI elements (timestamps, version info)
 
     // =========================================================
     // FONT WEIGHTS

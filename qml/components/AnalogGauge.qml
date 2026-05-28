@@ -30,9 +30,11 @@ Item {
     signal machinePhaseClicked()
 
     function valueToAngleDeg(v) {
+
         var startDeg = -90
         var sweepDeg = 180
-        return startDeg + (v / valueRange) * sweepDeg
+
+        return startDeg + ((v - minValue) / valueRange) * sweepDeg
     }
 
     // ================= CANVAS =================
@@ -45,14 +47,14 @@ Item {
             var ctx = getContext("2d")
             ctx.reset()
 
-            var cx = width * 0.15
+            var cx = width * 0.17
             var cy = height * 0.50
-            var radius = height * 0.45
+            var radius = height * 0.42
 
-            var tickMajorLen = radius * 0.07
+           var tickMajorLen = radius * 0.06
             var tickMinorLen = radius * 0.04
 
-            var fontSize = Math.max(7 * root.scale, radius * 0.075)
+            var fontSize = Math.max(5, componentTypography.body)
             var labelOffset = radius * 0.14
 
             for (var v = root.minValue; v <= root.maxValue; v += 5) {
@@ -69,18 +71,26 @@ Item {
                 ctx.moveTo(ox, oy)
                 ctx.lineTo(ix, iy)
                 ctx.strokeStyle = root.tickColor
-                ctx.lineWidth = (isMajor ? 4 : 2) * root.scale
+                ctx.lineWidth = (isMajor ? 3.2 : 1.6) * root.scale
                 ctx.stroke()
 
                 if (isMajor) {
-                    var labelR = radius - tLen - labelOffset
+
+                    var labelR = radius - tLen - radius * 0.16
+
+                    // Slightly pull bottom labels inward
+                    if (v >= 130)
+                        labelR -= radius * 0.03
+
                     var lx = cx + labelR * Math.cos(angleRad)
                     var ly = cy + labelR * Math.sin(angleRad)
 
-                    ctx.font = "bold " + fontSize + "px sans-serif"
+                    ctx.font = "600 " + fontSize + "px DejaVu Sans"
+
                     ctx.fillStyle = root.tickColor
                     ctx.textAlign = "center"
                     ctx.textBaseline = "middle"
+
                     ctx.fillText(v.toString(), lx, ly)
                 }
             }
@@ -169,8 +179,8 @@ Item {
             Text {
                 text: root.productPhase
                 font.pixelSize: root.trackingPhase >= 0
-                                ? Math.max(10, root.height * 0.055)
-                                : Math.max(12, root.height * 0.07)
+                                ? componentTypography.small
+                                : componentTypography.body
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -178,8 +188,8 @@ Item {
             Text {
                 text: "Product Phase"
                 font.pixelSize: root.trackingPhase >= 0
-                                ? Math.max(9, root.height * 0.03)
-                                : Math.max(10, root.height * 0.035)
+                                ? componentTypography.tiny
+                                : componentTypography.small
                 font.bold: true
             }
         }
@@ -197,8 +207,8 @@ Item {
             Text {
                 text: root.machinePhase
                 font.pixelSize: root.trackingPhase >= 0
-                                ? Math.max(10, root.height * 0.05)
-                                : Math.max(12, root.height * 0.055)
+                                ? componentTypography.small
+                                : componentTypography.body
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -211,8 +221,8 @@ Item {
                     id: machineLabel
                     text: "Machine Phase"
                     font.pixelSize: root.trackingPhase >= 0
-                                    ? Math.max(9, root.height * 0.03)
-                                    : Math.max(10, root.height * 0.035)
+                                    ? componentTypography.tiny
+                                    : componentTypography.small
                     font.bold: true
                 }
 
@@ -230,14 +240,18 @@ Item {
 
             Text {
                 text: root.trackingPhase
-                font.pixelSize: 10
+                font.pixelSize: root.trackingPhase >= 0
+                                ? componentTypography.small
+                                : componentTypography.body
                 font.bold: true
                 color: "#1A4DB5"
             }
 
             Text {
                 text: root.trackingCountLabel
-                font.pixelSize: 9
+                font.pixelSize: root.trackingPhase >= 0
+                                ? componentTypography.tiny
+                                : componentTypography.small
                 font.bold: true
             }
         }
