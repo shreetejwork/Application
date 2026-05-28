@@ -354,8 +354,8 @@ Rectangle {
 
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: root.width * 0.01
-                Layout.preferredWidth: root.height * 0.65
-                Layout.preferredHeight: root.height * 0.65
+                Layout.preferredWidth: root.height * 0.55
+                Layout.preferredHeight: root.height * 0.55
 
                 property int longPressCount: 0
                 property bool longPressTriggered: false
