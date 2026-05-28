@@ -30,11 +30,9 @@ Item {
     signal machinePhaseClicked()
 
     function valueToAngleDeg(v) {
-
         var startDeg = -90
         var sweepDeg = 180
-
-        return startDeg + ((v - minValue) / valueRange) * sweepDeg
+        return startDeg + (v / valueRange) * sweepDeg
     }
 
     // ================= CANVAS =================
@@ -47,14 +45,14 @@ Item {
             var ctx = getContext("2d")
             ctx.reset()
 
-            var cx = width * 0.17
+            var cx = width * 0.15
             var cy = height * 0.50
-            var radius = height * 0.42
+            var radius = height * 0.45
 
-           var tickMajorLen = radius * 0.06
+            var tickMajorLen = radius * 0.07
             var tickMinorLen = radius * 0.04
 
-            var fontSize = Math.max(5, componentTypography.body)
+            var fontSize = componentTypography.tiny
             var labelOffset = radius * 0.14
 
             for (var v = root.minValue; v <= root.maxValue; v += 5) {
@@ -71,21 +69,33 @@ Item {
                 ctx.moveTo(ox, oy)
                 ctx.lineTo(ix, iy)
                 ctx.strokeStyle = root.tickColor
-                ctx.lineWidth = (isMajor ? 3.2 : 1.6) * root.scale
+                ctx.lineWidth = (isMajor ? 4 : 2) * root.scale
                 ctx.stroke()
 
                 if (isMajor) {
 
-                    var labelR = radius - tLen - radius * 0.16
+                    // =========================================
+                    // DYNAMIC LABEL POSITIONING
+                    // FOR ROBOTO CONDENSED
+                    // =========================================
 
-                    // Slightly pull bottom labels inward
-                    if (v >= 130)
+                    var dynamicFontSize = componentTypography.tiny
+
+                    ctx.font = "bold " + dynamicFontSize + "px 'Roboto Condensed'"
+
+                    // Measure actual text width
+                    var textMetrics = ctx.measureText(v.toString())
+                    var textWidth = textMetrics.width
+
+                    // Dynamic inward spacing based on text width
+                    var labelR = radius - tLen - labelOffset - (textWidth * 0.12)
+
+                    // Extra inward compensation near crowded region
+                    if (v >= 140)
                         labelR -= radius * 0.03
 
                     var lx = cx + labelR * Math.cos(angleRad)
                     var ly = cy + labelR * Math.sin(angleRad)
-
-                    ctx.font = "600 " + fontSize + "px DejaVu Sans"
 
                     ctx.fillStyle = root.tickColor
                     ctx.textAlign = "center"
