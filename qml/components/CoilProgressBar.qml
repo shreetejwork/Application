@@ -2,6 +2,10 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
 
     property int value: 2208
@@ -26,6 +30,10 @@ Item {
 
         // ================= TRACK =================
         Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
             id: track
             width: parent.width
             height: 24
@@ -182,20 +190,20 @@ Item {
 
             Text {
                 text: root.label
-                font.pixelSize: 16
+                font.pixelSize: Typography.body
                 font.bold: true
                 color: "#1A4DB5"
             }
 
             Text {
                 text: ":"
-                font.pixelSize: 16
+                font.pixelSize: Typography.body
                 font.bold: true
             }
 
             Text {
                 text: root.value
-                font.pixelSize: 16
+                font.pixelSize: Typography.body
                 font.bold: true
             }
         }

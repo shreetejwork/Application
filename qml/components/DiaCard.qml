@@ -3,6 +3,10 @@ import QtQuick
 import QtQuick.Layouts
 
 Rectangle {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: card
 
     property string title: ""

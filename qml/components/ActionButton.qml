@@ -2,6 +2,10 @@ import QtQuick
 import QtQuick.Controls
 
 Button {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: btn
 
     property color bgColor: "#1A4DB5"
@@ -36,7 +40,7 @@ Button {
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
 
-        font.pixelSize: 14
+        font.pixelSize: Typography.body
         font.bold: true
         color: btn.enabled ? "white" : "#6B7280"
     }

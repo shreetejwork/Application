@@ -3,7 +3,21 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Popup {
+
+    Typography {
+        id: powerOffTypography
+        scale: 1.0
+    }
     id: powerPopup
+
+    // =========================================================
+    // TYPOGRAPHY FOR POPUP
+    // =========================================================
+    
+    Typography {
+        id: popupTypography
+        scale: powerPopup.scale
+    }
 
     enter: Transition {
         ParallelAnimation {
@@ -76,7 +90,7 @@ Popup {
         // TITLE
         Text {
             text: "Power Off"
-            font.pixelSize: Math.max(16, 26 * scale)
+            font.pixelSize: popupTypography.title
             font.bold: true
             color: "#1A4DB5"
             Layout.alignment: Qt.AlignHCenter
@@ -96,7 +110,7 @@ Popup {
                 wrapMode: Text.WordWrap
                 horizontalAlignment: Text.AlignHCenter
                 width: parent.width * 0.9
-                font.pixelSize: Math.max(12, 18 * scale)
+                font.pixelSize: popupTypography.body
                 font.bold: true
                 color: "#1A1A2E"
             }
@@ -121,6 +135,7 @@ Popup {
                     text: "Cancel"
                     color: "#1A4DB5"
                     font.bold: true
+                    font.pixelSize: popupTypography.body
                 }
 
                 MouseArea {
@@ -141,6 +156,7 @@ Popup {
                     text: "Power Off"
                     color: "white"
                     font.bold: true
+                    font.pixelSize: popupTypography.body
                 }
 
                 MouseArea {

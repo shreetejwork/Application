@@ -123,7 +123,7 @@ Item {
 
                     Text {
                         text: "System Diagnosis"
-                        font.pixelSize: 26 * root.scale
+                        font.pixelSize: 26
                         font.bold: true
                         color: "#1A4DB5"
                     }

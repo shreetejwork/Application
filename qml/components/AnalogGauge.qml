@@ -3,6 +3,10 @@ import QtQuick.Controls
 import AppState 1.0
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
 
     // ===== OPTIONAL TRACKING =====
@@ -226,14 +230,14 @@ Item {
 
             Text {
                 text: root.trackingPhase
-                font.pixelSize: Math.max(10, root.height * 0.05)
+                font.pixelSize: 10
                 font.bold: true
                 color: "#1A4DB5"
             }
 
             Text {
                 text: root.trackingCountLabel
-                font.pixelSize: Math.max(9, root.height * 0.03)
+                font.pixelSize: 9
                 font.bold: true
             }
         }

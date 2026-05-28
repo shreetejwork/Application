@@ -2,6 +2,10 @@ import QtQuick
 import QtQuick.Layouts
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
 
     // =====================================================
@@ -137,7 +141,7 @@ Item {
 
                                 font.pixelSize:
                                     Math.max(
-                                        13,
+                                        15,
                                         15 * root.scale)
 
                                 font.weight:
@@ -185,7 +189,7 @@ Item {
                                 color:
                                     index === root.currentPage
                                     ? "#1450C8"
-                                    : "#C8D3EA"
+                                    : "#F5F7FC"
 
                                 Behavior on width {
                                     NumberAnimation {

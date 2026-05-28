@@ -3,12 +3,25 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
     anchors.fill: parent
 
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
+    
+    // =========================================================
+    // TYPOGRAPHY FOR SETTINGS S5
+    // =========================================================
+    
+    Typography {
+        id: s5Typography
+        scale: root.scale
+    }
 
     property bool wifiEnabled: false
     property string connectedSSID: ""
@@ -180,7 +193,7 @@ Item {
 
             Text {
                 text: "Network Settings"
-                font.pixelSize: 26 * root.scale
+                font.pixelSize: s5Typography.title
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -217,7 +230,7 @@ Item {
 
                         Text {
                             text: "WIFI"
-                            font.pixelSize: 26 * root.scale
+                            font.pixelSize: s5Typography.title
                             font.bold: true
                             color: "#1A4DB5"
                         }
@@ -265,7 +278,7 @@ Item {
 
                             Text {
                                 text: root.nmcliAvailable ? "WiFi is Turned Off" : "WiFi Management Not Available"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: s5Typography.body
                                 font.bold: true
                                 color: root.nmcliAvailable ? "#AAAAAA" : "#FF6B6B"
                             }
@@ -274,7 +287,7 @@ Item {
                                 text: root.nmcliAvailable
                                       ? "Enable toggle to scan for networks"
                                       : "NetworkManager (nmcli) is required for WiFi management"
-                                font.pixelSize: 15 * root.scale
+                                font.pixelSize: s5Typography.caption
                                 color: root.nmcliAvailable ? "#BBBBBB" : "#FF9999"
                             }
                         }
@@ -309,13 +322,13 @@ Item {
 
                                             Text {
                                                 text: "●"
-                                                font.pixelSize: 15 * root.scale
+                                                font.pixelSize: s5Typography.caption
                                                 color: "#4CAF50"
                                             }
 
                                             Text {
                                                 text: "Connected"
-                                                font.pixelSize: 16 * root.scale
+                                                font.pixelSize: 16
                                                 color: "#1F2937"
                                                 font.bold: true
                                             }
@@ -323,7 +336,7 @@ Item {
 
                                         Text {
                                             text: root.connectedSSID
-                                            font.pixelSize: 20 * root.scale
+                                            font.pixelSize: s5Typography.body
                                             font.bold: true
                                             color: "#1A4DB5"
                                             elide: Text.ElideRight
@@ -356,7 +369,7 @@ Item {
                                         Text {
                                             anchors.centerIn: parent
                                             text: "Connected"
-                                            font.pixelSize: 16 * root.scale
+                                            font.pixelSize: 16
                                             font.bold: true
                                             color: "#FFFFFF"
                                         }
@@ -370,14 +383,14 @@ Item {
 
                                 Text {
                                     text: "Available Networks"
-                                    font.pixelSize: 20 * root.scale
+                                    font.pixelSize: s5Typography.body
                                     font.bold: true
                                     color: "#1F2937"
                                 }
 
                                 Text {
                                     text: "(" + availableNetworkModel.count + ")"
-                                    font.pixelSize: 20 * root.scale
+                                    font.pixelSize: s5Typography.body
                                     color: "#9CA3AF"
                                 }
                             }
@@ -410,7 +423,7 @@ Item {
 
                                         Text {
                                             text: model.secured ? "🔒" : ""
-                                            font.pixelSize: 20 * root.scale
+                                            font.pixelSize: s5Typography.body
                                         }
 
                                         Column {
@@ -419,7 +432,7 @@ Item {
 
                                             Text {
                                                 text: model.name
-                                                font.pixelSize: 20 * root.scale
+                                                font.pixelSize: s5Typography.body
                                                 font.bold: true
                                                 color: "#1F2937"
                                                 elide: Text.ElideRight
@@ -427,7 +440,7 @@ Item {
 
                                             Text {
                                                 text: model.secured ? "Secured" : "Open"
-                                                font.pixelSize: 15 * root.scale
+                                                font.pixelSize: s5Typography.caption
                                                 color: model.secured ? "#6366F1" : "#F97316"
                                             }
                                         }
@@ -458,7 +471,7 @@ Item {
                                             Text {
                                                 anchors.centerIn: parent
                                                 text: "Connect"
-                                                font.pixelSize: 16 * root.scale
+                                                font.pixelSize: 16
                                                 font.bold: true
                                                 color: "#FFFFFF"
                                             }
@@ -492,7 +505,7 @@ Item {
 
                     Text {
                         text: "LAN"
-                        font.pixelSize: 26 * root.scale
+                        font.pixelSize: s5Typography.title
                         font.bold: true
                         color: "#1A4DB5"
                     }
@@ -521,7 +534,7 @@ Item {
                                                           id: input
                                                           anchors.fill: parent
 
-                                                          font.pixelSize: ${22} * root.scale
+                                                          font.pixelSize: 22
                                                           font.bold: true
                                                           color: "#1A4DB5"
 
@@ -536,7 +549,7 @@ Item {
                                                           text: "${placeholder}"
                                                           color: "#A0AABF"
                                                           visible: input.showPlaceholder
-                                                          font.pixelSize: ${22} * root.scale
+                                                          font.pixelSize: 22
                                                           }
                                                           }
 
@@ -558,7 +571,7 @@ Item {
                                 TextField {
                                     id: ipField
                                     anchors.fill: parent
-                                    font.pixelSize: 22 * root.scale
+                                    font.pixelSize: 22
                                     font.bold: true
                                     color: "#1A4DB5"
                                     background: null
@@ -572,7 +585,7 @@ Item {
                                         text: "IP Address (192.168.1.50)"
                                         color: "#A0AABF"
                                         visible: ipField.showPlaceholder
-                                        font.pixelSize: 22 * root.scale
+                                        font.pixelSize: 22
                                     }
                                 }
 
@@ -591,7 +604,7 @@ Item {
                                 TextField {
                                     id: subnetField
                                     anchors.fill: parent
-                                    font.pixelSize: 22 * root.scale
+                                    font.pixelSize: 22
                                     font.bold: true
                                     color: "#1A4DB5"
                                     background: null
@@ -605,7 +618,7 @@ Item {
                                         text: "Subnet (24)"
                                         color: "#A0AABF"
                                         visible: subnetField.showPlaceholder
-                                        font.pixelSize: 22 * root.scale
+                                        font.pixelSize: 22
                                     }
                                 }
 
@@ -624,7 +637,7 @@ Item {
                                 TextField {
                                     id: gatewayField
                                     anchors.fill: parent
-                                    font.pixelSize: 22 * root.scale
+                                    font.pixelSize: 22
                                     font.bold: true
                                     color: "#1A4DB5"
                                     background: null
@@ -638,7 +651,7 @@ Item {
                                         text: "Gateway"
                                         color: "#A0AABF"
                                         visible: gatewayField.showPlaceholder
-                                        font.pixelSize: 22 * root.scale
+                                        font.pixelSize: 22
                                     }
                                 }
 
@@ -658,7 +671,7 @@ Item {
                                     id: dnsField
                                     anchors.fill: parent
                                     text: "8.8.8.8"
-                                    font.pixelSize: 22 * root.scale
+                                    font.pixelSize: 22
                                     font.bold: true
                                     color: "#1A4DB5"
                                     background: null
@@ -672,7 +685,7 @@ Item {
                                         text: "DNS"
                                         color: "#A0AABF"
                                         visible: dnsField.showPlaceholder
-                                        font.pixelSize: 22 * root.scale
+                                        font.pixelSize: 22
                                     }
                                 }
 
@@ -695,7 +708,7 @@ Item {
                                     text: "Apply Static IP"
                                     color: "#FFFFFF"
                                     font.bold: true
-                                    font.pixelSize: 20 * root.scale
+                                    font.pixelSize: s5Typography.body
                                 }
 
                                 MouseArea {
@@ -721,7 +734,7 @@ Item {
                                 id: resultText
                                 text: ""
                                 color: "#1A4DB5"
-                                font.pixelSize: 16 * root.scale
+                                font.pixelSize: 16
                                 wrapMode: Text.Wrap
                             }
                         }
@@ -773,7 +786,7 @@ Item {
 
                 Text {
                     text: "Connect to WiFi"
-                    font.pixelSize: 22 * root.scale
+                    font.pixelSize: 22
                     font.bold: true
                     color: "#1A4DB5"
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -781,7 +794,7 @@ Item {
 
                 Text {
                     text: "\"" + ssid + "\""
-                    font.pixelSize: 16 * root.scale
+                    font.pixelSize: 16
                     color: "#1F2937"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
@@ -804,7 +817,7 @@ Item {
                     id: passwordField
                     anchors.fill: parent
                     anchors.margins: 12 * root.scale
-                    font.pixelSize: 16 * root.scale
+                    font.pixelSize: 16
                     color: "#1F2937"
                     echoMode: TextInput.Password
                     background: null
@@ -818,7 +831,7 @@ Item {
                         text: "Enter WiFi password"
                         color: "#9CA3AF"
                         visible: passwordField.showPlaceholder
-                        font.pixelSize: 16 * root.scale
+                        font.pixelSize: 16
                     }
                 }
 
@@ -834,7 +847,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: passwordField.echoMode === TextInput.Password ? "Show" : "Hide"
-                        font.pixelSize: 16 * root.scale
+                        font.pixelSize: 16
                     }
 
                     MouseArea {
@@ -864,7 +877,7 @@ Item {
                     anchors.margins: 10 * root.scale
                     text: passwordPopup.errorMessage
                     color: "#DC2626"
-                    font.pixelSize: 13 * root.scale
+                    font.pixelSize: 13
                     wrapMode: Text.Wrap
                     verticalAlignment: Text.AlignVCenter
                 }
@@ -887,7 +900,7 @@ Item {
                     anchors.margins: 10 * root.scale
                     text: passwordPopup.successMessage
                     color: "#16A34A"
-                    font.pixelSize: 13 * root.scale
+                    font.pixelSize: 13
                     wrapMode: Text.Wrap
                     verticalAlignment: Text.AlignVCenter
                 }
@@ -912,7 +925,7 @@ Item {
                         anchors.centerIn: parent
                         text: "Cancel"
                         color: "#374151"
-                        font.pixelSize: 15 * root.scale
+                        font.pixelSize: s5Typography.caption
                         font.bold: true
                     }
 
@@ -933,7 +946,7 @@ Item {
                         anchors.centerIn: parent
                         text: passwordPopup.isConnecting ? "Connecting..." : "Connect"
                         color: "#FFFFFF"
-                        font.pixelSize: 15 * root.scale
+                        font.pixelSize: s5Typography.caption
                         font.bold: true
                     }
 

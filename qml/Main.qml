@@ -15,6 +15,18 @@ ApplicationWindow {
     color: "#F5F7FC"
 
     // =========================================================
+    // TYPOGRAPHY SYSTEM
+    // =========================================================
+    
+    Typography {
+        id: typography
+        scale: 1.0  // Base scale for main window
+    }
+    
+    // Expose typography globally for child components
+    property alias appTypography: typography
+
+    // =========================================================
     // FONT LOADING
     // =========================================================
 
@@ -118,7 +130,7 @@ ApplicationWindow {
         TopBar {
             id: mainTopBar
             Layout.fillWidth: true
-            height: Math.max(70, root.height * 0.08)
+            height: Math.max(63, root.height * 0.08)
 
             userName: "Rahul1234567789"
             userRole: "Supervisor"

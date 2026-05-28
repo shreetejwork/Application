@@ -4,6 +4,11 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Popup {
+
+    Typography {
+        id: editPwdTypography
+        scale: 1.0
+    }
     id: editPasswordPopup
 
     enter: Transition {
@@ -146,7 +151,7 @@ Popup {
             color: "white"
 
             font.bold: true
-            font.pixelSize: 18 * scale
+            font.pixelSize: 18
         }
 
         MouseArea {
@@ -223,7 +228,7 @@ Popup {
                     color: "#1A4DB5"
 
                     font.bold: true
-                    font.pixelSize: 19 * scale
+                    font.pixelSize: 19
                 }
             }
 
@@ -277,7 +282,7 @@ Popup {
 
                                 text: modelData
 
-                                font.pixelSize: 18 * scale
+                                font.pixelSize: 18
                                 font.bold: true
 
                                 color: "#1A1A2E"
@@ -333,7 +338,7 @@ Popup {
             Text {
                 text: "Edit Password"
 
-                font.pixelSize: Math.max(16, 26 * scale)
+                font.pixelSize: editPwdTypography.title
                 font.bold: true
 
                 color: "#1A4DB5"
@@ -361,7 +366,7 @@ Popup {
 
                     text: "--- Select ---"
 
-                    font.pixelSize: Math.max(12, 18 * scale)
+                    font.pixelSize: editPwdTypography.body
                     font.bold: true
                 }
 
@@ -374,7 +379,7 @@ Popup {
 
                     color: "#AAAAAA"
 
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: editPwdTypography.body
                     font.bold: true
                 }
 
@@ -422,7 +427,7 @@ Popup {
 
                     text: "--- Select ---"
 
-                    font.pixelSize: Math.max(12, 18 * scale)
+                    font.pixelSize: editPwdTypography.body
                     font.bold: true
                 }
 
@@ -435,7 +440,7 @@ Popup {
 
                     color: "#AAAAAA"
 
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: editPwdTypography.body
                     font.bold: true
                 }
 
@@ -488,7 +493,7 @@ Popup {
 
                     echoMode: TextInput.Password
 
-                    font.pixelSize: Math.max(25, 21 * scale)
+                    font.pixelSize: editPwdTypography.heading
                     font.bold: true
 
                     color: "#000000"
@@ -547,7 +552,7 @@ Popup {
 
                     color: "#AAAAAA"
 
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: editPwdTypography.body
                     font.bold: true
 
                     visible: newPasswordInput.text.length === 0
@@ -574,7 +579,7 @@ Popup {
                               ? "Show"
                               : "Hide"
 
-                        font.pixelSize: 16 * scale
+                        font.pixelSize: 16
 
                         color: "#1A4DB5"
 
@@ -622,7 +627,7 @@ Popup {
 
                     echoMode: TextInput.Password
 
-                    font.pixelSize: Math.max(25, 21 * scale)
+                    font.pixelSize: editPwdTypography.heading
                     font.bold: true
 
                     color: "#000000"
@@ -683,7 +688,7 @@ Popup {
 
                     color: "#AAAAAA"
 
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: editPwdTypography.body
                     font.bold: true
 
                     visible: confirmPasswordInput.text.length === 0
@@ -710,7 +715,7 @@ Popup {
                               ? "Show"
                               : "Hide"
 
-                        font.pixelSize: 16 * scale
+                        font.pixelSize: 16
 
                         color: "#1A4DB5"
 

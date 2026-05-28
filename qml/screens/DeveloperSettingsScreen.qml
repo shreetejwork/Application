@@ -14,6 +14,10 @@ Item {
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
     Rectangle {
+    Typography {
+        id: screenTypography
+        scale: root.scale || 1.0
+    }
         anchors.fill: parent
         color: "#F5F7FC"
 
@@ -28,7 +32,7 @@ Item {
 
                 Text {
                     text: "Developer Settings"
-                    font.pixelSize: 28 * root.scale
+                    font.pixelSize: 28
                     font.bold: true
                     color: "#1A4DB5"
                 }
@@ -67,7 +71,7 @@ Item {
 
                             Text {
                                 text: "D-Duster Screen"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                                 font.bold: true
                                 color: "#111827"
                             }
@@ -76,7 +80,7 @@ Item {
                                 text: GlobalState.showDDuster
                                       ? "D-duster Screen On"
                                       : "D-duster Screen Off"
-                                font.pixelSize: 16 * root.scale
+                                font.pixelSize: 16
                                 color: "#6B7280"
                             }
                         }
@@ -110,7 +114,7 @@ Item {
 
                             Text {
                                 text: "N/W Settings screen"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                                 font.bold: true
                                 color: "#111827"
                             }
@@ -119,7 +123,7 @@ Item {
                                 text: GlobalState.showNetworkScreen
                                       ? "N/W Screen On"
                                       : "N/W Screen Off"
-                                font.pixelSize: 16 * root.scale
+                                font.pixelSize: 16
                                 color: "#6B7280"
                             }
                         }
@@ -153,7 +157,7 @@ Item {
 
                             Text {
                                 text: "Audit Trail Report"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                                 font.bold: true
                                 color: "#111827"
                             }
@@ -162,7 +166,7 @@ Item {
                                 text: GlobalState.showAuditTrail
                                       ? "Audit Trail On"
                                       : "Audit Trail Off"
-                                font.pixelSize: 16 * root.scale
+                                font.pixelSize: 16
                                 color: "#6B7280"
                             }
                         }
@@ -197,7 +201,7 @@ Item {
 
                             Text {
                                 text: "Product Library"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                                 font.bold: true
                                 color: "#111827"
                             }
@@ -206,7 +210,7 @@ Item {
                                 text: GlobalState.showProductLib
                                       ? "Product Library On"
                                       : "Product Library Off"
-                                font.pixelSize: 16 * root.scale
+                                font.pixelSize: 16
                                 color: "#6B7280"
                             }
                         }

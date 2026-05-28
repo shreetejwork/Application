@@ -5,6 +5,11 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Popup {
+
+    Typography {
+        id: addProductTypography
+        scale: 1.0
+    }
     id: popup
 
     Component.onCompleted: {

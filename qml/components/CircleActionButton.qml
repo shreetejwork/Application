@@ -2,6 +2,10 @@ import QtQuick
 import QtQuick.Controls
 
 Button {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: btn
 
     property color bgColor: "#EEF2FF"

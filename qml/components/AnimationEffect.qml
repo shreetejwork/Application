@@ -1,6 +1,10 @@
 import QtQuick
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
 
     anchors.fill: parent

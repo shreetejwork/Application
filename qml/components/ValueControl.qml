@@ -3,6 +3,10 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
 
     property int value: 10
@@ -13,6 +17,15 @@ Item {
     property real minScale: 0.75
     property real maxScale: 1.0
     property real s: Math.max(minScale, Math.min(maxScale, Math.min(width, height) / 200))
+    
+    // =========================================================
+    // TYPOGRAPHY FOR VALUE CONTROL
+    // =========================================================
+    
+    Typography {
+        id: vcTypography
+        scale: root.s
+    }
 
     signal saveClicked(int value)
 
@@ -32,7 +45,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: root.value
-                font.pixelSize: 20
+                font.pixelSize: vcTypography.body
                 font.bold: true
                 color: "#1F2937"
             }
@@ -59,7 +72,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: "+"
-                    font.pixelSize: 22
+                    font.pixelSize: vcTypography.heading
                     font.bold: true
                     color: "white"
                 }
@@ -92,7 +105,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: "−"
-                    font.pixelSize: 24
+                    font.pixelSize: vcTypography.heading
                     font.bold: true
                     color: "white"
                 }
@@ -125,7 +138,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: "Save"
-                font.pixelSize: 12
+                font.pixelSize: vcTypography.small
                 font.bold: true
                 color: "white"
             }

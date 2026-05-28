@@ -4,6 +4,10 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
     anchors.fill: parent
 
@@ -11,6 +15,15 @@ Item {
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.max(0.85, Math.min(width / baseWidth, height / baseHeight))
+    
+    // =========================================================
+    // TYPOGRAPHY FOR SETTINGS S2
+    // =========================================================
+    
+    Typography {
+        id: s2Typography
+        scale: root.scale
+    }
 
     // Local editable date
     property date selectedDate: GlobalState.globalDateTime
@@ -27,7 +40,7 @@ Item {
     Text {
         id: titleText
         text: "Time & Date Settings"
-        font.pixelSize: 26 * root.scale
+        font.pixelSize: s2Typography.title
         font.bold: true
         color: "#1A4DB5"
         anchors.left: parent.left
@@ -68,7 +81,7 @@ Item {
                     Text {
                         text: modelData < 10 ? "0" + modelData : modelData
 
-                        font.pixelSize: 24 * root.scale
+                        font.pixelSize: s2Typography.heading
                         font.bold: Tumbler.displacement === 0
 
                         opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
@@ -98,7 +111,7 @@ Item {
 
                         Text {
                             text: "Hours"
-                            font.pixelSize: 20 * root.scale
+                            font.pixelSize: s2Typography.body
                             font.bold: true
                             color: "#5A6A85"
                             horizontalAlignment: Text.AlignHCenter
@@ -155,7 +168,7 @@ Item {
 
                         Text {
                             text: "Minutes"
-                            font.pixelSize: 20 * root.scale
+                            font.pixelSize: s2Typography.body
                             font.bold: true
                             color: "#5A6A85"
                             horizontalAlignment: Text.AlignHCenter
@@ -209,7 +222,7 @@ Item {
                     text: "Save"
                     color: "#FFFFFF"
                     font.bold: true
-                    font.pixelSize: 26 * root.scale
+                    font.pixelSize: s2Typography.title
                 }
 
                 MouseArea {
@@ -271,7 +284,7 @@ Item {
                                 text: "<"
                                 color: "#1A4DB5"
                                 font.bold: true
-                                font.pixelSize: 26 * root.scale
+                                font.pixelSize: s2Typography.title
                             }
 
                             MouseArea {
@@ -297,7 +310,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: Qt.formatDate(new Date(calendar.displayYear, calendar.displayMonth, 1), "MMMM yyyy")
                                 font.bold: true
-                                font.pixelSize: 24 * root.scale
+                                font.pixelSize: s2Typography.heading
                                 color: "#1A4DB5"
                             }
 
@@ -322,7 +335,7 @@ Item {
                                 text: ">"
                                 color: "#1A4DB5"
                                 font.bold: true
-                                font.pixelSize: 26 * root.scale
+                                font.pixelSize: s2Typography.title
                             }
 
                             MouseArea {
@@ -356,7 +369,7 @@ Item {
                                     anchors.centerIn: parent
                                     text: modelData
                                     font.bold: true
-                                    font.pixelSize: 22 * root.scale
+                                    font.pixelSize: s2Typography.subHeading
                                     color: "#1A4DB5"
                                 }
                             }
@@ -402,7 +415,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: model.day
-                                font.pixelSize: 22 * root.scale
+                                font.pixelSize: s2Typography.subHeading
                                 font.bold: isSelected || isToday
 
                                 color: isSelected ? "#FFFFFF"
@@ -453,7 +466,7 @@ Item {
                         text: "Save"
                         color: "#FFFFFF"
                         font.bold: true
-                        font.pixelSize: 26 * root.scale
+                        font.pixelSize: s2Typography.title
                     }
 
                     MouseArea {
@@ -529,7 +542,7 @@ Item {
                         anchors.centerIn: parent
                         text: "<"
                         font.bold: true
-                        font.pixelSize: 26 * root.scale
+                        font.pixelSize: s2Typography.title
                         color: "#1A4DB5"
                     }
 
@@ -556,7 +569,7 @@ Item {
                               ? (monthYearPopup.startYear + " — " + (monthYearPopup.startYear + 11))
                               : calendar.displayYear
                         font.bold: true
-                        font.pixelSize: 24 * root.scale
+                        font.pixelSize: s2Typography.heading
                         color: "#1A4DB5"
                     }
                 }
@@ -571,7 +584,7 @@ Item {
                         anchors.centerIn: parent
                         text: ">"
                         font.bold: true
-                        font.pixelSize: 26 * root.scale
+                        font.pixelSize: s2Typography.title
                         color: "#1A4DB5"
                     }
 
@@ -613,7 +626,7 @@ Item {
                                   ? yearValue
                                   : Qt.formatDate(new Date(2000, index, 1), "MMM")
                             font.bold: true
-                            font.pixelSize: 22 * root.scale
+                            font.pixelSize: s2Typography.subHeading
                             color: parent.color === "#1A4DB5" ? "#FFFFFF" : "#333333"
                         }
 

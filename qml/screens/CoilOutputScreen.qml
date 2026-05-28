@@ -355,20 +355,20 @@ Item {
 
                         ColumnLayout {
                             Layout.fillWidth: true
-                            Text { Layout.alignment: Qt.AlignHCenter; text: "AVG"; font.pixelSize: 10 * root.scale; font.bold: true; color: "#8EA2C8" }
-                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statAvg.toLocaleString(); font.pixelSize: 17 * root.scale; font.bold: true; color: "#1A4DB5" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: "AVG"; font.pixelSize: 10; font.bold: true; color: "#8EA2C8" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statAvg.toLocaleString(); font.pixelSize: 17; font.bold: true; color: "#1A4DB5" }
                         }
                         Rectangle { Layout.preferredWidth: 1; Layout.preferredHeight: 34 * root.scale; color: "#DCE5F5" }
                         ColumnLayout {
                             Layout.fillWidth: true
-                            Text { Layout.alignment: Qt.AlignHCenter; text: "MIN"; font.pixelSize: 10 * root.scale; font.bold: true; color: "#8EA2C8" }
-                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statMin.toLocaleString(); font.pixelSize: 17 * root.scale; font.bold: true; color: "#0F8A60" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: "MIN"; font.pixelSize: 10; font.bold: true; color: "#8EA2C8" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statMin.toLocaleString(); font.pixelSize: 17; font.bold: true; color: "#0F8A60" }
                         }
                         Rectangle { Layout.preferredWidth: 1; Layout.preferredHeight: 34 * root.scale; color: "#DCE5F5" }
                         ColumnLayout {
                             Layout.fillWidth: true
-                            Text { Layout.alignment: Qt.AlignHCenter; text: "MAX"; font.pixelSize: 10 * root.scale; font.bold: true; color: "#8EA2C8" }
-                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statMax.toLocaleString(); font.pixelSize: 17 * root.scale; font.bold: true; color: "#D64545" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: "MAX"; font.pixelSize: 10; font.bold: true; color: "#8EA2C8" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statMax.toLocaleString(); font.pixelSize: 17; font.bold: true; color: "#D64545" }
                         }
                     }
                 }
@@ -380,7 +380,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "Coil Output"
-                        font.pixelSize: 30 * root.scale
+                        font.pixelSize: 30
                         font.bold: true
                         color: "#0E4AB8"
                     }
@@ -413,7 +413,7 @@ Item {
                             scale: zoomOutMa.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
 
-                            Text { anchors.centerIn: parent; text: "−"; font.pixelSize: 26 * root.scale; font.bold: true; color: "#1A4DB5" }
+                            Text { anchors.centerIn: parent; text: "−"; font.pixelSize: 26; font.bold: true; color: "#1A4DB5" }
 
                             MouseArea {
                                 id: zoomOutMa
@@ -453,8 +453,8 @@ Item {
                             border.width: 1; border.color: "#DCE5F5"
                             Column {
                                 anchors.centerIn: parent; spacing: 0
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: "ZOOM"; font.pixelSize: 9 * root.scale; font.bold: true; color: "#8EA2C8" }
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: Math.round(histogramCard.zoomFactor * 100) + "%"; font.pixelSize: 15 * root.scale; font.bold: true; color: "#1A4DB5" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: "ZOOM"; font.pixelSize: 9; font.bold: true; color: "#8EA2C8" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: Math.round(histogramCard.zoomFactor * 100) + "%"; font.pixelSize: 15; font.bold: true; color: "#1A4DB5" }
                             }
                         }
 
@@ -469,7 +469,7 @@ Item {
                             scale: zoomInMa.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
 
-                            Text { anchors.centerIn: parent; text: "+"; font.pixelSize: 24 * root.scale; font.bold: true; color: "#1A4DB5" }
+                            Text { anchors.centerIn: parent; text: "+"; font.pixelSize: 24; font.bold: true; color: "#1A4DB5" }
 
                             MouseArea {
                                 id: zoomInMa
@@ -524,7 +524,7 @@ Item {
                 border.width: 1; border.color: "#6F95D6"
                 scale: prevMa.pressed ? 0.94 : 1.0
                 Behavior on scale { NumberAnimation { duration: 80 } }
-                Text { anchors.centerIn: parent; text: "‹"; font.pixelSize: 24 * root.scale; font.bold: true; color: "#1A4DB5" }
+                Text { anchors.centerIn: parent; text: "‹"; font.pixelSize: 24; font.bold: true; color: "#1A4DB5" }
                 MouseArea {
                     id: prevMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                     property bool holdActive: false
@@ -550,7 +550,7 @@ Item {
                 border.width: 1; border.color: "#6F95D6"
                 scale: nextMa.pressed ? 0.94 : 1.0
                 Behavior on scale { NumberAnimation { duration: 80 } }
-                Text { anchors.centerIn: parent; text: "›"; font.pixelSize: 24 * root.scale; font.bold: true; color: "#1A4DB5" }
+                Text { anchors.centerIn: parent; text: "›"; font.pixelSize: 24; font.bold: true; color: "#1A4DB5" }
                 MouseArea {
                     id: nextMa; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
                     property bool holdActive: false
@@ -605,7 +605,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: (index + 1) < 10 ? "0" + (index + 1) : "" + (index + 1)
-                                    font.pixelSize: 12 * root.scale; font.bold: active
+                                    font.pixelSize: 12; font.bold: active
                                     color: active ? "#FFFFFF" : pma.containsMouse ? "#1A4DB5" : "#3562B8"
                                     Behavior on color { ColorAnimation { duration: 120 } }
                                 }
@@ -663,7 +663,7 @@ Item {
 
                             return v.toString()
                         }
-                        font.pixelSize: Math.max(9, 10 * root.scale); color: "#4A5E8A"
+                        font.pixelSize: 10; color: "#4A5E8A"
                     }
                 }
             }
@@ -765,7 +765,7 @@ Item {
                             anchors.bottomMargin:     parent.barH + (4 * root.scale)
                             anchors.horizontalCenter: parent.horizontalCenter
                             text: barSlot.dataValid ? barData.val.toLocaleString() : ""
-                            font.pixelSize: Math.max(8, 9 * root.scale)
+                            font.pixelSize: 9
                             font.bold: true
                             color: "#1A4DB5"
                             renderType: Text.NativeRendering
@@ -817,8 +817,8 @@ Item {
                             anchors.topMargin:        9 * root.scale
                             anchors.horizontalCenter: parent.horizontalCenter
                             spacing: 2 * root.scale
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.dd : ""; font.pixelSize: Math.max(9, 11 * root.scale); font.bold: true; color: "#1A4DB5" }
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? root.monthName(axisData.mon) : ""; font.pixelSize: Math.max(8, 9 * root.scale); color: "#4A5E8A" }
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.dd : ""; font.pixelSize: 11; font.bold: true; color: "#1A4DB5" }
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? root.monthName(axisData.mon) : ""; font.pixelSize: 9; color: "#4A5E8A" }
                         }
 
                         // Detail label (day + time)
@@ -828,9 +828,9 @@ Item {
                             anchors.topMargin:        9 * root.scale
                             anchors.horizontalCenter: parent.horizontalCenter
                             spacing: 4 * root.scale
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.dd : ""; font.pixelSize: Math.max(9, 11 * root.scale); font.bold: true; color: "#1A4DB5" }
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? root.monthName(axisData.mon) : ""; font.pixelSize: Math.max(8, 9 * root.scale); color: "#4A5E8A" }
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.hhmm : ""; font.pixelSize: Math.max(7, 8 * root.scale); color: "#7B8FAD" }
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.dd : ""; font.pixelSize: 11; font.bold: true; color: "#1A4DB5" }
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? root.monthName(axisData.mon) : ""; font.pixelSize: 9; color: "#4A5E8A" }
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.hhmm : ""; font.pixelSize: 8; color: "#7B8FAD" }
                         }
                     }
                 }
@@ -946,7 +946,7 @@ Item {
 
                     text: "Coil Output Window"
 
-                    font.pixelSize: 26 * root.scale
+                    font.pixelSize: 26
                     font.bold: true
 
                     color: "#1A4DB5"
@@ -980,7 +980,7 @@ Item {
 
                         text: "🔒"
 
-                        font.pixelSize: 38 * root.scale
+                        font.pixelSize: 38
                     }
                 }
 
@@ -990,7 +990,7 @@ Item {
 
                     text: "Tap Here to Unlock"
 
-                    font.pixelSize: 26 * root.scale
+                    font.pixelSize: 26
                     font.bold: true
 
                     color: "#1A4DB5"
@@ -1002,7 +1002,7 @@ Item {
 
                     text: "Enable zoom, scroll & interaction"
 
-                    font.pixelSize: 18 * root.scale
+                    font.pixelSize: 18
 
                     color: "#6B7A99"
                 }

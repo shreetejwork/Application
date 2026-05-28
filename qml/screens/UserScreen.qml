@@ -178,7 +178,7 @@ Item {
             Text {
                 anchors.centerIn: parent
                 text: btnRoot.label
-                font.pixelSize: Math.max(14, 28 * root.scale)
+                font.pixelSize: 28
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -219,7 +219,7 @@ Item {
             Text {
                 text: "User"
                 anchors.horizontalCenter: parent.horizontalCenter
-                font.pixelSize: Math.max(18, 28 * root.scale)
+                font.pixelSize: 28
                 font.bold: true
                 font.family: "Roboto"
                 color: "#1A1A2E"

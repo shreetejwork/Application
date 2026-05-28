@@ -58,7 +58,7 @@ Item {
 
             Text {
                 text: "Batch Menu"
-                font.pixelSize: 26 * root.scale
+                font.pixelSize: 26
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -97,7 +97,7 @@ Item {
 
                         Text {
                             text: "Batch Name"
-                            font.pixelSize: 20 * root.scale
+                            font.pixelSize: 20
                             color: "#6B7280"
                         }
 
@@ -178,7 +178,7 @@ Item {
 
                         Text {
                             text: "Product Name"
-                            font.pixelSize: 20 * root.scale
+                            font.pixelSize: 20
                             color: "#6B7280"
                         }
 

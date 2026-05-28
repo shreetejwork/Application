@@ -28,6 +28,10 @@ Item {
     Component.onCompleted: opacity = 1
 
     Rectangle {
+    Typography {
+        id: screenTypography
+        scale: root.scale || 1.0
+    }
         anchors.fill: parent
         color: "#F5F7FC"
 

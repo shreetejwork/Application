@@ -282,7 +282,7 @@ Item {
 
                     Text {
                         text: "Reports Folder"
-                        font.pixelSize: 26 * root.scale
+                        font.pixelSize: 26
                         font.bold: true
                         color: "#1A4DB5"
                     }
@@ -307,7 +307,7 @@ Item {
                         id: countLabel
                         anchors.centerIn: parent
                         text: filteredModel.count + " file" + (filteredModel.count !== 1 ? "s" : "")
-                        font.pixelSize: 14 * root.scale
+                        font.pixelSize: 14
                         font.weight: Font.Medium
                         color: "#FFFFFF"
                     }
@@ -353,7 +353,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "Refresh"
-                            font.pixelSize: 15 * root.scale
+                            font.pixelSize: 15
                             font.weight: Font.Medium
                             color: "#FFFFFF"
                         }
@@ -396,7 +396,7 @@ Item {
                                         id: flbl
                                         anchors.centerIn: parent
                                         text: modelData
-                                        font.pixelSize: 14 * root.scale
+                                        font.pixelSize: 14
                                         color: active ? "#FFFFFF" : "#4A5E8A"
                                     }
 
@@ -425,7 +425,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: root.selectionMode ? "Cancel" : "Select"
-                            font.pixelSize: 15 * root.scale
+                            font.pixelSize: 15
                             font.weight: Font.Medium
                             color: root.selectionMode ? "#FFFFFF" : "#1A4DB5"
                         }
@@ -453,7 +453,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "Select All"
-                            font.pixelSize: 15 * root.scale
+                            font.pixelSize: 15
                             font.weight: Font.Medium
                             color: "#1A4DB5"
                         }
@@ -478,7 +478,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "Move to USB"
-                            font.pixelSize: 15 * root.scale
+                            font.pixelSize: 15
                             font.weight: Font.Medium
                             color: "#2E7D32"
                         }
@@ -503,7 +503,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "Delete"
-                            font.pixelSize: 15 * root.scale
+                            font.pixelSize: 15
                             font.weight: Font.Medium
                             color: "#C62828"
                         }
@@ -563,7 +563,7 @@ Item {
                                 text: "File Name"
                                 font.bold: true
                                 color: "#FFFFFF"
-                                font.pixelSize: 16 * root.scale
+                                font.pixelSize: 16
                                 width: parent.width * 0.55
                                 verticalAlignment: Text.AlignVCenter
                                 height: parent.height
@@ -617,7 +617,7 @@ Item {
                                     Text {
                                         anchors.centerIn: parent
                                         text: "✓"
-                                        font.pixelSize: 13 * root.scale
+                                        font.pixelSize: 13
                                         font.bold: true
                                         color: "#FFFFFF"
                                         visible: rowRect.isSelected
@@ -651,7 +651,7 @@ Item {
                                     Text {
                                         Layout.fillWidth: true
                                         text: fileName
-                                        font.pixelSize: 15 * root.scale
+                                        font.pixelSize: 15
                                         color: "#2A3550"
                                         elide: Text.ElideRight
                                         font.weight: rowRect.isSelected ? Font.Medium : Font.Normal
@@ -674,7 +674,7 @@ Item {
                                     Text {
                                         id: typeLbl
                                         anchors.centerIn: parent
-                                        font.pixelSize: 12 * root.scale
+                                        font.pixelSize: 12
                                         font.weight: Font.Medium
                                         color: {
                                             var n = fileName.toLowerCase()
@@ -705,7 +705,7 @@ Item {
                                     Text {
                                         anchors.centerIn: parent
                                         text: "View"
-                                        font.pixelSize: 15 * root.scale
+                                        font.pixelSize: 15
                                         font.weight: Font.Medium
                                         color: "#1A4DB5"
                                     }
@@ -749,13 +749,13 @@ Item {
 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
-                                    font.pixelSize: 48 * root.scale
+                                    font.pixelSize: 48
                                 }
 
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "No reports found"
-                                    font.pixelSize: 22 * root.scale
+                                    font.pixelSize: 22
                                     font.weight: Font.Medium
                                     color: "#8896B0"
                                 }
@@ -765,7 +765,7 @@ Item {
                                     text: root.activeFilter === "All"
                                           ? "No PDF files in the reports folder"
                                           : "No \"" + root.activeFilter + "\" files found"
-                                    font.pixelSize: 15 * root.scale
+                                    font.pixelSize: 15
                                     color: "#B0BEE0"
                                 }
 
@@ -779,7 +779,7 @@ Item {
                                     Text {
                                         anchors.centerIn: parent
                                         text: "↺  Refresh"
-                                        font.pixelSize: 15 * root.scale
+                                        font.pixelSize: 15
                                         color: "#FFFFFF"
                                         font.weight: Font.Medium
                                     }
@@ -810,7 +810,7 @@ Item {
                 Text {
                     anchors.centerIn: parent
                     text: root.selectedCount() + " of " + filteredModel.count + " file(s) selected  —  click rows or checkboxes to select"
-                    font.pixelSize: 13 * root.scale
+                    font.pixelSize: 13
                     color: "#FFFFFF"
                     opacity: 0.9
                 }

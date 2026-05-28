@@ -3,6 +3,10 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
     anchors.fill: parent
 
@@ -11,6 +15,15 @@ Item {
 
     // ONLY CHANGE: uniform scaling boost (keeps layout identical)
     property real scale: Math.min(width / baseWidth, height / baseHeight) * 1.10
+    
+    // =========================================================
+    // TYPOGRAPHY FOR SETTINGS S3
+    // =========================================================
+    
+    Typography {
+        id: s3Typography
+        scale: root.scale
+    }
 
     property var globalTopBar
     property var notify
@@ -43,7 +56,7 @@ Item {
 
             Text {
                 text: "Validation Time Scheduler"
-                font.pixelSize: 26 * root.scale
+                font.pixelSize: s3Typography.title
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -95,7 +108,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: "Time"
                                 font.bold: true
-                                font.pixelSize: 24 * root.scale
+                                font.pixelSize: s3Typography.heading
                                 color: "#374151"
                             }
                         }
@@ -108,7 +121,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: "Edit"
                                 font.bold: true
-                                font.pixelSize: 24 * root.scale
+                                font.pixelSize: s3Typography.heading
                                 color: "#374151"
                             }
                         }
@@ -121,7 +134,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: "ON/OFF"
                                 font.bold: true
-                                font.pixelSize: 24 * root.scale
+                                font.pixelSize: s3Typography.heading
                                 color: "#374151"
                             }
                         }
@@ -164,7 +177,7 @@ Item {
                                             text: model.time
                                             color: "#1A4DB5"
                                             font.bold: true
-                                            font.pixelSize: 24 * root.scale
+                                            font.pixelSize: s3Typography.heading
                                         }
                                     }
                                 }
@@ -185,7 +198,7 @@ Item {
                                             anchors.centerIn: parent
                                             text: "Edit"
                                             color: "#FFFFFF"
-                                            font.pixelSize: 22 * root.scale
+                                            font.pixelSize: s3Typography.subHeading
                                         }
 
                                         MouseArea {
@@ -265,7 +278,7 @@ Item {
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
 
-                                    font.pixelSize: 26 * root.scale
+                                    font.pixelSize: s3Typography.title
                                     font.bold: Tumbler.displacement === 0
 
                                     opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
@@ -286,7 +299,7 @@ Item {
 
                                     Text {
                                         text: "Hours"
-                                        font.pixelSize: 20 * root.scale
+                                        font.pixelSize: s3Typography.body
                                         font.bold: true
                                         color: "#5A6A85"
                                         width: parent.width
@@ -324,7 +337,7 @@ Item {
 
                                     Text {
                                         text: "Minutes"
-                                        font.pixelSize: 20 * root.scale
+                                        font.pixelSize: s3Typography.body
                                         font.bold: true
                                         color: "#5A6A85"
                                         width: parent.width
@@ -361,7 +374,7 @@ Item {
                                                 horizontalAlignment: Text.AlignHCenter
                                                 verticalAlignment: Text.AlignVCenter
 
-                                                font.pixelSize: 26 * root.scale
+                                                font.pixelSize: s3Typography.title
                                                 font.bold: Tumbler.displacement === 0
 
                                                 opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
@@ -387,7 +400,7 @@ Item {
                                     text: "Save Time"
                                     color: "#FFFFFF"
                                     font.bold: true
-                                    font.pixelSize: 22 * root.scale
+                                    font.pixelSize: s3Typography.subHeading
                                 }
 
                                 MouseArea {
@@ -435,7 +448,7 @@ Item {
                             text: "SAVE"
                             color: "#FFFFFF"
                             font.bold: true
-                            font.pixelSize: 22 * root.scale
+                            font.pixelSize: s3Typography.subHeading
                         }
 
                         MouseArea {

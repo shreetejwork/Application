@@ -4,6 +4,15 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Popup {
+
+    // =========================================================
+    // TYPOGRAPHY FOR CREATE USER POPUP
+    // =========================================================
+    
+    Typography {
+        id: createUserTypography
+        scale: 1.0
+    }
     id: createUserPopup
 
     Component.onCompleted: {
@@ -65,9 +74,9 @@ Popup {
 
     parent: Overlay.overlay
 
-    modal: false
-    focus: false
-    dim: true
+    modal: true
+    focus: true
+    dim: false
 
     closePolicy: Popup.NoAutoClose
 
@@ -118,6 +127,7 @@ Popup {
         border.width: 1
     }
 
+
     // =====================================================
     // CLOSE BUTTON
     // =====================================================
@@ -146,7 +156,7 @@ Popup {
             color: "white"
 
             font.bold: true
-            font.pixelSize: 18 * scale
+            font.pixelSize: 18
         }
 
         MouseArea {
@@ -198,7 +208,7 @@ Popup {
                 padding: 16 * scale
                 font.bold: true
                 color: "#1A4DB5"
-                font.pixelSize: 20 * scale
+                font.pixelSize: 20
             }
 
             Repeater {
@@ -212,7 +222,7 @@ Popup {
                     Text {
                         anchors.centerIn: parent
                         text: modelData
-                        font.pixelSize: 18 * scale
+                        font.pixelSize: 18
                         font.bold: true
                         color: "#1A1A2E"
                     }
@@ -261,7 +271,7 @@ Popup {
             Text {
                 text: "Create User"
 
-                font.pixelSize: Math.max(20, 32 * scale)
+                font.pixelSize: createUserTypography.title
                 font.bold: true
 
                 color: "#1A4DB5"
@@ -288,7 +298,7 @@ Popup {
 
                     text: "--- Select ---"
 
-                    font.pixelSize: Math.max(12, 18 * scale)
+                    font.pixelSize: createUserTypography.body
                     font.bold: true
                 }
 
@@ -301,7 +311,7 @@ Popup {
 
                     color: "#AAAAAA"
 
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: createUserTypography.body
                     font.bold: true
                 }
 
@@ -350,7 +360,7 @@ Popup {
 
                     property bool isPasswordField: false
 
-                    font.pixelSize: Math.max(25, 18 * scale)
+                    font.pixelSize: 18
                     font.bold: true
 
                     color: "#1A1A2E"
@@ -413,7 +423,7 @@ Popup {
 
                     color: "#AAAAAA"
 
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: createUserTypography.body
                     font.bold: true
                 }
             }
@@ -444,7 +454,7 @@ Popup {
 
                     echoMode: TextInput.Password
 
-                    font.pixelSize: Math.max(25, 21 * scale)
+                    font.pixelSize: createUserTypography.heading
                     font.bold: true
 
                     color: "#000000"
@@ -488,7 +498,7 @@ Popup {
 
                     color: "#AAAAAA"
 
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: createUserTypography.body
                     font.bold: true
 
                     visible: passwordInput.text.length === 0
@@ -515,7 +525,7 @@ Popup {
                               ? "Show"
                               : "Hide"
 
-                        font.pixelSize: 14 * scale
+                        font.pixelSize: 14
 
                         color: "#1A4DB5"
 

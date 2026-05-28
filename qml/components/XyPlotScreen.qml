@@ -5,6 +5,10 @@ import QtQuick.Layouts
 import CustomComponents 1.0
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
 
     anchors.fill: parent
@@ -19,6 +23,15 @@ Item {
                              width  / baseWidth,
                              height / baseHeight
                          )
+    
+    // =========================================================
+    // TYPOGRAPHY FOR XY PLOT SCREEN
+    // =========================================================
+    
+    Typography {
+        id: plotTypography
+        scale: root.scale
+    }
 
     property real bodyFont:  13 * scale
     property real smallFont: 11 * scale
@@ -55,7 +68,7 @@ Item {
 
             Text {
                 text: "X,Y Plot"
-                font.pixelSize: 26 * root.scale
+                font.pixelSize: plotTypography.title
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -106,7 +119,7 @@ Item {
 
                             Text {
                                 text: "Product\nPhase"
-                                font.pixelSize: 22 * root.scale
+                                font.pixelSize: plotTypography.subHeading
                                 font.bold: true
                                 color: "#1A4DB5"
                                 elide: Text.ElideRight
@@ -115,7 +128,7 @@ Item {
 
                             Text {
                                 text: "—"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: plotTypography.body
                                 font.bold: true
                                 color: "#1A4DB5"
                             }
@@ -139,14 +152,14 @@ Item {
 
                             Text {
                                 text: "Signal"
-                                font.pixelSize: 22 * root.scale
+                                font.pixelSize: plotTypography.subHeading
                                 font.bold: true
                                 color: "#1A4DB5"
                             }
 
                             Text {
                                 text: "400"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: plotTypography.body
                                 font.bold: true
                                 color: "#0F8A60"
                             }
@@ -170,14 +183,14 @@ Item {
 
                             Text {
                                 text: "Amplitude"
-                                font.pixelSize: 22 * root.scale
+                                font.pixelSize: plotTypography.subHeading
                                 font.bold: true
                                 color: "#1A4DB5"
                             }
 
                             Text {
                                 text: "—"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: plotTypography.body
                                 font.bold: true
                                 color: "#D64545"
                             }

@@ -20,6 +20,7 @@ qt_add_qml_module(appApplication
     QML_FILES
         qml/Main.qml
         qml/GlobalState.qml
+        qml/components/Typography.qml
         qml/screens/HomeScreen.qml
         qml/screens/DDusterScreen.qml
         qml/components/TopBar.qml

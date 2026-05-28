@@ -3,6 +3,10 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: popupRoot
 
     anchors.fill: parent

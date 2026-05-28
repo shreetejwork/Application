@@ -221,7 +221,7 @@ Item {
 
                 Text {
                     text: "Audit Trail Report"
-                    font.pixelSize: 26 * root.scale
+                    font.pixelSize: 26
                     font.bold: true
                     color: "#1A4DB5"
                 }
@@ -265,7 +265,7 @@ Item {
                             // TEXT
                             Text {
                                 text: root.fromDate !== "" ? root.fromDate : "From Date"
-                                font.pixelSize: 18 * root.scale
+                                font.pixelSize: 18
                                 color: root.fromDate !== "" ? "#1A1A1A" : "#8896B0"
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
@@ -303,7 +303,7 @@ Item {
                     Text {
                         text: "→"
                         color: "#8896B0"
-                        font.pixelSize: 18 * root.scale
+                        font.pixelSize: 18
                         verticalAlignment: Text.AlignVCenter
                     }
 
@@ -325,7 +325,7 @@ Item {
                             // TEXT
                             Text {
                                 text: root.toDate !== "" ? root.toDate : "To Date"
-                                font.pixelSize: 18 * root.scale
+                                font.pixelSize: 18
                                 color: root.toDate !== "" ? "#1A1A1A" : "#8896B0"
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
@@ -367,7 +367,7 @@ Item {
                         height: 36 * root.scale
 
                         model: ["All", "Admin","Supervisor","Operator"]
-                        font.pixelSize: 18 * root.scale
+                        font.pixelSize: 18
 
                         onCurrentTextChanged: root.selectedUser = currentText
 
@@ -381,7 +381,7 @@ Item {
                         contentItem: Text {
                             leftPadding: 8 * root.scale
                             text: parent.displayText
-                            font.pixelSize: 18 * root.scale
+                            font.pixelSize: 18
                             color: "#1A1A1A"
                             verticalAlignment: Text.AlignVCenter
                         }
@@ -406,7 +406,7 @@ Item {
                                 text: root.activeRemarkFilters.length > 0
                                       ? "Filters (" + root.activeRemarkFilters.length + ")"
                                       : "Filters"
-                                font.pixelSize: 18 * root.scale
+                                font.pixelSize: 18
                                 color: root.activeRemarkFilters.length > 0 ? "#FFFFFF" : "#1A1A1A"
                                 Layout.fillWidth: true
                                 verticalAlignment: Text.AlignVCenter
@@ -440,7 +440,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: modelData
-                                font.pixelSize: 18 * root.scale
+                                font.pixelSize: 18
                                 font.weight: Font.Medium
                                 color: modelData === "TODAY" ? "#FFFFFF" : "#1A4DB5"
                             }
@@ -555,12 +555,12 @@ Item {
                             anchors.margins: 12 * root.scale
                             spacing: root.colSpacing
 
-                            Text { text: "Sr";   width: root.colSr;   font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "Date"; width: root.colDate; font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "Time"; width: root.colTime; font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "User"; width: root.colUser; font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "Old";  width: root.colOld;  font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
-                            Text { text: "New";  width: root.colNew;  font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale }
+                            Text { text: "Sr";   width: root.colSr;   font.bold: true; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "Date"; width: root.colDate; font.bold: true; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "Time"; width: root.colTime; font.bold: true; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "User"; width: root.colUser; font.bold: true; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "Old";  width: root.colOld;  font.bold: true; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "New";  width: root.colNew;  font.bold: true; color: "#FFF"; font.pixelSize: 20 }
 
                             // remaining space
                             Text {
@@ -570,7 +570,7 @@ Item {
                                        - (root.colSpacing * 6)
                                 font.bold: true
                                 color: "#FFF"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                             }
                         }
                     }
@@ -624,9 +624,9 @@ Item {
                                 anchors.margins: 12 * root.scale
                                 spacing: root.colSpacing   // 👈 MUST MATCH HEADER
 
-                                Text { text: sr;   width: root.colSr;   font.pixelSize: 18 * root.scale; color: "#3A3A3A" }
-                                Text { text: date; width: root.colDate; font.pixelSize: 18 * root.scale; color: "#3A3A3A" }
-                                Text { text: time; width: root.colTime; font.pixelSize: 18 * root.scale; color: "#3A3A3A" }
+                                Text { text: sr;   width: root.colSr;   font.pixelSize: 18; color: "#3A3A3A" }
+                                Text { text: date; width: root.colDate; font.pixelSize: 18; color: "#3A3A3A" }
+                                Text { text: time; width: root.colTime; font.pixelSize: 18; color: "#3A3A3A" }
 
                                 Rectangle {
                                     width: root.colUser
@@ -641,7 +641,7 @@ Item {
                                     Text {
                                         anchors.centerIn: parent
                                         text: user
-                                        font.pixelSize: 18 * root.scale
+                                        font.pixelSize: 18
                                         font.weight: Font.Medium
                                         color: user === "Admin" ? "#1A4DB5"
                                               : user === "Operator" ? "#2E7D32"
@@ -652,15 +652,15 @@ Item {
 
 
 
-                                Text { text: old;    width: root.colOld; font.pixelSize: 18 * root.scale; color: "#888888" }
-                                Text { text: newVal; width: root.colNew; font.pixelSize: 18 * root.scale; color: "#1A4DB5"; font.weight: Font.Medium }
+                                Text { text: old;    width: root.colOld; font.pixelSize: 18; color: "#888888" }
+                                Text { text: newVal; width: root.colNew; font.pixelSize: 18; color: "#1A4DB5"; font.weight: Font.Medium }
 
                                 Text {
                                     text: remark
                                     width: parent.width
                                            - (root.colSr + root.colDate + root.colTime + root.colUser + root.colOld + root.colNew)
                                            - (root.colSpacing * 6)
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#3A3A3A"
                                 }
                             }
@@ -678,7 +678,7 @@ Item {
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "No data found"
-                                    font.pixelSize: 24 * root.scale
+                                    font.pixelSize: 24
                                     font.weight: Font.Medium
                                     color: "#8896B0"
                                 }
@@ -686,7 +686,7 @@ Item {
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "No records match the selected filters"
-                                    font.pixelSize: 20 * root.scale
+                                    font.pixelSize: 20
                                     color: "#B0BEE0"
                                 }
 
@@ -700,7 +700,7 @@ Item {
                                     Text {
                                         anchors.centerIn: parent
                                         text: "Reset Filters"
-                                        font.pixelSize: 18 * root.scale
+                                        font.pixelSize: 18
                                         font.weight: Font.Medium
                                         color: "#FFFFFF"
                                     }
@@ -753,7 +753,7 @@ Item {
 
                 Text {
                     text: datePickerPopup.isFrom ? "Select From Date" : "Select To Date"
-                    font.pixelSize: 20 * root.scale
+                    font.pixelSize: 20
                     font.bold: true
                     color: "#1A4DB5"
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -803,7 +803,7 @@ Item {
                                 text: "<"
                                 color: prevMouse.enabled ? "#1A4DB5" : "#AAB3C5"
                                 font.bold: true
-                                font.pixelSize: 22 * root.scale
+                                font.pixelSize: 22
                             }
 
                             MouseArea {
@@ -837,7 +837,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: Qt.formatDate(new Date(calendar.displayYear, calendar.displayMonth, 1), "MMMM yyyy")
                                 font.bold: true
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                                 color: "#1A4DB5"
                             }
                         }
@@ -853,7 +853,7 @@ Item {
                                 text: ">"
                                 color: "#1A4DB5"
                                 font.bold: true
-                                font.pixelSize: 22 * root.scale
+                                font.pixelSize: 22
                             }
 
                             MouseArea {
@@ -886,7 +886,7 @@ Item {
                                     anchors.centerIn: parent
                                     text: modelData
                                     font.bold: true
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#1A4DB5"
                                 }
                             }
@@ -958,7 +958,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: validDay ? dayNum : ""
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     font.bold: isSelected || isToday
                                     color: isSelected ? "#FFFFFF" : "#333333"
                                 }
@@ -994,7 +994,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "Cancel"
-                        font.pixelSize: 18 * root.scale
+                        font.pixelSize: 18
                         color: "#1A4DB5"
                     }
 
@@ -1014,7 +1014,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "OK"
-                        font.pixelSize: 18 * root.scale
+                        font.pixelSize: 18
                         color: "#FFFFFF"
                         font.weight: Font.Medium
                     }
@@ -1086,7 +1086,7 @@ Item {
 
                 Text {
                     text: "Filters"
-                    font.pixelSize: 22 * root.scale
+                    font.pixelSize: 22
                     font.bold: true
                     color: "#1A4DB5"
                 }
@@ -1173,7 +1173,7 @@ Item {
                                         anchors.centerIn: parent
                                         text: "✓"
                                         color: "#FFFFFF"
-                                        font.pixelSize: 15 * root.scale
+                                        font.pixelSize: 15
                                         font.bold: true
                                         visible: filterItem.isChecked
                                     }
@@ -1182,7 +1182,7 @@ Item {
                                 Text {
                                     id: labelText
                                     text: modelData
-                                    font.pixelSize: 20 * root.scale
+                                    font.pixelSize: 20
                                     color: "#2E2E2E"
                                     wrapMode: Text.WordWrap
                                     width: parent.width - (40 * root.scale)
@@ -1221,7 +1221,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "Reset"
-                        font.pixelSize: 18 * root.scale
+                        font.pixelSize: 18
                         color: "#1A4DB5"
                     }
 
@@ -1242,7 +1242,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "OK"
-                        font.pixelSize: 18 * root.scale
+                        font.pixelSize: 18
                         color: "#FFFFFF"
                     }
 

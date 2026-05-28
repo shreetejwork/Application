@@ -5,6 +5,10 @@ import QtQuick.Pdf
 import QtQuick.Window
 
 Popup {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
     modal: true
     focus: true
@@ -19,6 +23,15 @@ Popup {
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
     property url pdfSource: ""
+    
+    // =========================================================
+    // TYPOGRAPHY FOR PDF PREVIEW
+    // =========================================================
+    
+    Typography {
+        id: pdfTypography
+        scale: 1.0
+    }
 
     onOpened: Qt.callLater(computeRenderScale)
 
@@ -64,7 +77,7 @@ Popup {
                     Text {
                         text: "PDF Preview"
                         color: "white"
-                        font.pixelSize: 18
+                        font.pixelSize: pdfTypography.caption
                         font.bold: true
                         Layout.alignment: Qt.AlignVCenter
                     }

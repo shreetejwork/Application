@@ -149,7 +149,7 @@ Item {
 
                 Text {
                     text: "Batch Report"
-                    font.pixelSize: 26 * root.scale
+                    font.pixelSize: 26
                     font.bold: true
                     color: "#1A4DB5"
                 }
@@ -240,7 +240,7 @@ Item {
                                 placeholderText: "Search batch..."
                                 placeholderTextColor: "#9AA6C1"
 
-                                font.pixelSize: 15 * root.scale
+                                font.pixelSize: 15
                                 color: "#1A1A1A"
 
                                 verticalAlignment: TextInput.AlignVCenter
@@ -293,14 +293,14 @@ Item {
                             Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: root.visibleCount
-                                font.pixelSize: 17 * root.scale
+                                font.pixelSize: 17
                                 font.weight: Font.DemiBold
                                 color: "#1A4DB5"
                             }
                             Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: "records"
-                                font.pixelSize: 11 * root.scale
+                                font.pixelSize: 11
                                 color: "#5B6FA8"
                             }
                         }
@@ -356,7 +356,7 @@ Item {
                             Text {
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "Clear"
-                                font.pixelSize: 14 * root.scale
+                                font.pixelSize: 14
                                 font.weight: Font.Medium
                                 color: root.searchText.length > 0 ? "#FFFFFF" : "#1A4DB5"
                             }
@@ -410,12 +410,12 @@ Item {
                             anchors.margins: 12 * root.scale
                             spacing: root.colSpacing
 
-                            Text { text: "S/No";       width: root.colSno;     font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale; verticalAlignment: Text.AlignVCenter; height: parent.height }
-                            Text { text: "Batch";      width: root.colBatch;   font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale; verticalAlignment: Text.AlignVCenter; height: parent.height }
-                            Text { text: "Product";    width: root.colProduct; font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale; verticalAlignment: Text.AlignVCenter; height: parent.height }
-                            Text { text: "Started At"; width: root.colStarted; font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale; verticalAlignment: Text.AlignVCenter; height: parent.height }
-                            Text { text: "Ended At";   width: root.colEnded;   font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale; verticalAlignment: Text.AlignVCenter; height: parent.height }
-                            Text { text: "Save PDF";   width: root.colPdf;     font.bold: true; color: "#FFF"; font.pixelSize: 20 * root.scale; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "S/No";       width: root.colSno;     font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "Batch";      width: root.colBatch;   font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "Product";    width: root.colProduct; font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "Started At"; width: root.colStarted; font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "Ended At";   width: root.colEnded;   font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "Save PDF";   width: root.colPdf;     font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
                         }
                     }
 
@@ -462,7 +462,7 @@ Item {
                                     text: sno
                                     width: root.colSno
                                     height: parent.height
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#3A3A3A"
                                     verticalAlignment: Text.AlignVCenter
                                 }
@@ -471,7 +471,7 @@ Item {
                                     text: batch
                                     width: root.colBatch
                                     height: parent.height
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#1A4DB5"
                                     font.weight: Font.Medium
                                     elide: Text.ElideRight
@@ -482,7 +482,7 @@ Item {
                                     text: product
                                     width: root.colProduct
                                     height: parent.height
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#3A3A3A"
                                     elide: Text.ElideRight
                                     verticalAlignment: Text.AlignVCenter
@@ -492,7 +492,7 @@ Item {
                                     text: started
                                     width: root.colStarted
                                     height: parent.height
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#3A3A3A"
                                     verticalAlignment: Text.AlignVCenter
                                 }
@@ -501,7 +501,7 @@ Item {
                                     text: ended
                                     width: root.colEnded
                                     height: parent.height
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: ended === "---" ? "#8896B0" : "#3A3A3A"
                                     verticalAlignment: Text.AlignVCenter
                                 }
@@ -523,7 +523,7 @@ Item {
                                         Text {
                                             anchors.centerIn: parent
                                             text: "Save PDF"
-                                            font.pixelSize: 17 * root.scale
+                                            font.pixelSize: 17
                                             font.weight: Font.Medium
                                             color: saveMouse.pressed ? "#FFFFFF" : "#1A4DB5"
                                         }
@@ -586,7 +586,7 @@ Item {
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "No data found"
-                                    font.pixelSize: 24 * root.scale
+                                    font.pixelSize: 24
                                     font.weight: Font.Medium
                                     color: "#8896B0"
                                 }
@@ -594,7 +594,7 @@ Item {
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
                                     text: "No records match the selected filters"
-                                    font.pixelSize: 20 * root.scale
+                                    font.pixelSize: 20
                                     color: "#B0BEE0"
                                 }
 
@@ -608,7 +608,7 @@ Item {
                                     Text {
                                         anchors.centerIn: parent
                                         text: "Reset Filters"
-                                        font.pixelSize: 18 * root.scale
+                                        font.pixelSize: 18
                                         font.weight: Font.Medium
                                         color: "#FFFFFF"
                                     }

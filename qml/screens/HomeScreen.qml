@@ -13,6 +13,10 @@ Item {
     property var navigateTo
 
     Rectangle {
+    Typography {
+        id: screenTypography
+        scale: root.scale || 1.0
+    }
         anchors.fill: parent
         color: "#F5F7FC"
 

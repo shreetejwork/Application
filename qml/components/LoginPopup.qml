@@ -59,6 +59,15 @@ Popup {
 
     property string developerPassword: "dev123"
     property string engineerPassword: "eng123"
+    
+    // =========================================================
+    // TYPOGRAPHY FOR LOGIN POPUP
+    // =========================================================
+    
+    Typography {
+        id: loginTypography
+        scale: 1.0
+    }
 
     signal loginRequested(string userType, string username, string password)
     signal clearRequested()
@@ -186,7 +195,7 @@ Popup {
             color: "white"
 
             font.bold: true
-            font.pixelSize: 18 * scale
+            font.pixelSize: loginTypography.body
         }
 
         MouseArea {
@@ -254,7 +263,7 @@ Popup {
                     text: selectionPopup.title
                     color: "#1A4DB5"
                     font.bold: true
-                    font.pixelSize: 19 * scale
+                    font.pixelSize: loginTypography.body
                 }
             }
 
@@ -302,7 +311,7 @@ Popup {
 
                                 text: modelData
 
-                                font.pixelSize: 18 * scale
+                                font.pixelSize: loginTypography.body
                                 font.bold: true
 
                                 color: "#1A1A2E"
@@ -363,7 +372,7 @@ Popup {
             Text {
                 text: "Login"
 
-                font.pixelSize: Math.max(16, 26 * scale)
+                font.pixelSize: loginTypography.title
                 font.bold: true
 
                 color: "#1A4DB5"
@@ -390,7 +399,7 @@ Popup {
 
                     text: "--- Select ---"
 
-                    font.pixelSize: Math.max(12, 18 * scale)
+                    font.pixelSize: loginTypography.body
                     font.bold: true
                 }
 
@@ -403,7 +412,7 @@ Popup {
 
                     color: "#AAAAAA"
 
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: loginTypography.body
                     font.bold: true
                 }
 
@@ -452,7 +461,7 @@ Popup {
 
                     text: "--- Select ---"
 
-                    font.pixelSize: Math.max(12, 18 * scale)
+                    font.pixelSize: loginTypography.body
                     font.bold: true
                 }
 
@@ -465,7 +474,7 @@ Popup {
 
                     color: "#AAAAAA"
 
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: loginTypography.body
                     font.bold: true
                 }
 
@@ -526,7 +535,7 @@ Popup {
 
                     padding: 0
 
-                    font.pixelSize: Math.max(25, 21 * scale)
+                    font.pixelSize: loginTypography.heading
                     font.bold: true
 
                     color: "#000000"
@@ -590,7 +599,7 @@ Popup {
 
                     color: "#AAAAAA"
 
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: loginTypography.body
                     font.bold: true
 
                     visible: passwordInput.text.length === 0
@@ -618,7 +627,7 @@ Popup {
                               ? "Show"
                               : "Hide"
 
-                        font.pixelSize: 14 * scale
+                        font.pixelSize: loginTypography.small
 
                         color: "#1A4DB5"
 

@@ -5,6 +5,10 @@ import AppState 1.0
 import "../components"
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
     anchors.fill: parent
 
@@ -14,6 +18,15 @@ Item {
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
+    
+    // =========================================================
+    // TYPOGRAPHY FOR SETTINGS S1
+    // =========================================================
+    
+    Typography {
+        id: s1Typography
+        scale: root.scale
+    }
 
     signal fieldClicked(string label, string value)
 
@@ -110,7 +123,7 @@ Item {
             Text {
                 id: filterTitle
                 text: "Digital filter Settings"
-                font.pixelSize: 26 * root.scale
+                font.pixelSize: s1Typography.title
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -156,7 +169,7 @@ Item {
             // ===== TITLE =====
             Text {
                 text: "Delay Settings"
-                font.pixelSize: 26 * root.scale
+                font.pixelSize: s1Typography.title
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -204,7 +217,7 @@ Item {
             // ===== TITLE =====
             Text {
                 text: "Gain Settings"
-                font.pixelSize: 26 * root.scale
+                font.pixelSize: s1Typography.title
                 font.bold: true
                 color: "#1A4DB5"
             }
@@ -281,7 +294,7 @@ Item {
                     anchors.centerIn: parent
                     text: root.getItem(tile.fieldId)?.label || ""
                     color: "#FFFFFF"
-                    font.pixelSize: 18 * root.scale
+                    font.pixelSize: s1Typography.body
                     font.bold: true
                 }
             }
@@ -298,7 +311,7 @@ Item {
                     anchors.centerIn: parent
                     text: root.displayValue(tile.fieldId)
                     color: "#1A4DB5"
-                    font.pixelSize: 25 * root.scale
+                    font.pixelSize: s1Typography.heading
                     font.bold: true
                 }
 
@@ -308,7 +321,7 @@ Item {
                     anchors.baseline: valueText.baseline
                     text: root.displayUnit(tile.fieldId)
                     color: "#7A96CC"
-                    font.pixelSize: 16 * root.scale
+                    font.pixelSize: s1Typography.caption
                     visible: root.displayUnit(tile.fieldId) !== ""
                 }
             }

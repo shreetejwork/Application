@@ -4,12 +4,99 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Rectangle {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: keyboard
 
     width: parent.width
     height: parent.height * 0.5
 
-    anchors.bottom: parent.bottom
+    // =====================================================
+    // DRAWER ANIMATION
+    // =====================================================
+
+    y: parent.height
+    visible: false
+
+    property bool _shown: false
+
+    // OPEN animation — values set at call time
+    NumberAnimation {
+        id: slideIn
+        target: keyboard
+        property: "y"
+        duration: 550
+        easing.type: Easing.OutCubic
+        onStopped: {
+            // nothing needed after open
+        }
+    }
+
+    // CLOSE animation — values set at call time
+    NumberAnimation {
+        id: slideOut
+        target: keyboard
+        property: "y"
+        duration: 450
+        easing.type: Easing.InCubic
+        onStopped: {
+            if (!keyboard._shown) {
+                keyboard.visible  = false
+                numberMode        = false
+                capsPersistent    = false
+                shiftOnce         = false
+                backspaceHeld     = false
+            }
+        }
+    }
+
+    // Watch GlobalState for show/hide
+    Connections {
+        target: GlobalState
+
+        function onLoginKeyboardRequestChanged() {
+            if (GlobalState.loginKeyboardRequest) {
+
+                slideOut.stop()
+
+                // Apply initial state BEFORE showing
+                let input = GlobalState.activeInputField
+                let isPassword = input && input.isPasswordField === true
+
+                numberMode     = false
+                capsLock       = !isPassword
+                autoCapitalize = !isPassword
+                capsPersistent = false
+                shiftOnce      = false
+
+                keyboard._shown  = true
+                keyboard.visible = true
+
+                // Read parent height NOW at runtime
+                var ph = keyboard.parent.height
+                slideIn.from = ph
+                slideIn.to   = ph * 0.5
+                slideIn.start()
+
+            } else {
+
+                slideIn.stop()
+                keyboard._shown = false
+
+                // Read parent height NOW at runtime
+                var ph = keyboard.parent.height
+                slideOut.from = ph * 0.5
+                slideOut.to   = ph
+                slideOut.start()
+            }
+        }
+    }
+
+    // =====================================================
+    // ORIGINAL PROPERTIES
+    // =====================================================
 
     property real baseHeight: 600
     property real scale: height / baseHeight
@@ -20,7 +107,6 @@ Rectangle {
     color: "#F4F6FB"
     border.color: "#DADDE5"
 
-    visible: GlobalState.loginKeyboardRequest
     z: 10000
 
     focus: false
@@ -48,7 +134,7 @@ Rectangle {
         interval: 80
         repeat: true
 
-        running: keyboard.visible && backspaceHeld
+        running: keyboard._shown && backspaceHeld
 
         onTriggered: keyboard.sendKey("⌫")
     }
@@ -72,38 +158,6 @@ Rectangle {
     property var num1: ["1","2","3","4","5","6","7","8","9","0"]
     property var num2: ["!","@","#","$","%","&","*","(",")"]
     property var num3: ["-","/",";",":","'","\"",".",",","?","+"]
-
-    // =====================================================
-    // VISIBILITY
-    // =====================================================
-
-    onVisibleChanged: {
-
-        if (visible) {
-
-            let input = GlobalState.activeInputField
-            let isPassword = input && input.isPasswordField === true
-
-            // ALWAYS START WITH ALPHABET KEYBOARD
-            numberMode = false
-
-            capsLock = !isPassword
-            autoCapitalize = !isPassword
-
-            capsPersistent = false
-            shiftOnce = false
-        }
-
-        else {
-
-            // RESET STATES WHEN CLOSED
-            numberMode = false
-
-            capsPersistent = false
-            shiftOnce = false
-            backspaceHeld = false
-        }
-    }
 
     // =====================================================
     // HELPERS
@@ -139,10 +193,6 @@ Rectangle {
 
         switch (key) {
 
-        // =================================================
-        // BACKSPACE
-        // =================================================
-
         case "⌫":
 
             if (input.selectedText
@@ -169,10 +219,6 @@ Rectangle {
 
             break
 
-        // =================================================
-        // SPACE
-        // =================================================
-
         case "Space":
 
             if (input.selectedText
@@ -192,10 +238,6 @@ Rectangle {
 
             break
 
-        // =================================================
-        // ENTER
-        // =================================================
-
         case "↩":
 
             input.focus = false
@@ -208,10 +250,6 @@ Rectangle {
 
             break
 
-        // =================================================
-        // NUMBER MODE
-        // =================================================
-
         case "@123":
             numberMode = true
             break
@@ -219,10 +257,6 @@ Rectangle {
         case "ABC":
             numberMode = false
             break
-
-        // =================================================
-        // HIDE KEYBOARD
-        // =================================================
 
         case "⌄":
 
@@ -237,10 +271,6 @@ Rectangle {
             })
 
             break
-
-        // =================================================
-        // NORMAL KEYS
-        // =================================================
 
         default:
 
@@ -295,10 +325,6 @@ Rectangle {
 
         spacing: 10 * scale
 
-        // =================================================
-        // LETTER KEYBOARD
-        // =================================================
-
         ColumnLayout {
 
             Layout.fillWidth: true
@@ -321,8 +347,6 @@ Rectangle {
                 Layout.preferredHeight: 1
 
                 spacing: 8 * scale
-
-                // SHIFT
 
                 SpecialKey {
 
@@ -379,8 +403,6 @@ Rectangle {
                     delegate: Key {}
                 }
 
-                // BACKSPACE
-
                 SpecialKey {
 
                     text: "⌫"
@@ -404,8 +426,6 @@ Rectangle {
                     }
                 }
             }
-
-            // BOTTOM ROW
 
             RowLayout {
 
@@ -437,10 +457,6 @@ Rectangle {
                 }
             }
         }
-
-        // =================================================
-        // NUMBER KEYBOARD
-        // =================================================
 
         ColumnLayout {
 

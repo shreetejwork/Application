@@ -5,6 +5,10 @@ import AppState 1.0
 import "../components"
 
 Rectangle {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
     color: "#1A4DB5"
 
@@ -16,6 +20,15 @@ Rectangle {
     property bool notificationVisible: false
 
     property bool usbConnected: false
+
+    // =========================================================
+    // TYPOGRAPHY FOR TOPBAR
+    // =========================================================
+    
+    Typography {
+        id: topBarTypography
+        scale: root.scale
+    }
 
     Timer {
         interval: 2000
@@ -90,14 +103,14 @@ Rectangle {
                     Text {
                         text: Qt.formatTime(GlobalState.globalDateTime, "HH:mm:ss")
                         color: "white"
-                        font.pixelSize: Math.max(12, root.height * 0.30)
+                        font.pixelSize: topBarTypography.heading
                         font.bold: true
                     }
 
                     Text {
                         text: Qt.formatDate(GlobalState.globalDateTime, "dd MMM yyyy")
                         color: "white"
-                        font.pixelSize: Math.max(10, root.height * 0.25)
+                        font.pixelSize: topBarTypography.body
                         opacity: 0.9
                     }
                 }
@@ -185,7 +198,7 @@ Rectangle {
                         elide: Text.ElideRight
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
-                        font.pixelSize: Math.max(12, root.height * 0.20)
+                        font.pixelSize: topBarTypography.subHeading
                         font.bold: true
                     }
                 }
@@ -254,7 +267,7 @@ Rectangle {
                             anchors.centerIn: parent
                             text: root.userRole
                             color: "white"
-                            font.pixelSize: Math.max(8, root.height * 0.16)
+                            font.pixelSize: topBarTypography.small
                             font.bold: true
                         }
                     }
@@ -270,7 +283,7 @@ Rectangle {
                                  : root.userName)
 
                         color: "white"
-                        font.pixelSize: Math.max(10, root.height * 0.34)
+                        font.pixelSize: topBarTypography.heading
                         font.bold: true
 
                         MouseArea {
@@ -325,7 +338,7 @@ Rectangle {
                     opacity: countdownCircle.remainingSeconds <= 20
                              ? (countdownCircle.blink ? 0.2 : 1)
                              : 1
-                    font.pixelSize: Math.max(10, root.height * 0.26)
+                    font.pixelSize: topBarTypography.body
                     font.bold: true
                 }
 

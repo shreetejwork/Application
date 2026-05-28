@@ -24,6 +24,10 @@ Item {
     ]
 
     Rectangle {
+    Typography {
+        id: screenTypography
+        scale: root.scale || 1.0
+    }
         anchors.fill: parent
         color: "#F5F7FC"
 
@@ -48,7 +52,7 @@ Item {
 
                     Text {
                         text: "About Machine"
-                        font.pixelSize: 26 * root.scale
+                        font.pixelSize: 26
                         font.bold: true
                         color: "#1A4DB5"
                     }
@@ -110,14 +114,14 @@ Item {
 
                                         Text {
                                             text: modelData.label
-                                            font.pixelSize: 15 * root.scale
+                                            font.pixelSize: 15
                                             font.bold: true
                                             color: "#5B6B8C"
                                         }
 
                                         Text {
                                             text: modelData.value
-                                            font.pixelSize: 19 * root.scale
+                                            font.pixelSize: 19
                                             font.bold: true
                                             color: "#1A4DB5"
                                             elide: Text.ElideRight

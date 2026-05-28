@@ -332,7 +332,7 @@ Item {
 
                 Text {
                     text: "Product Library"
-                    font.pixelSize: 26 * root.scale
+                    font.pixelSize: 26
                     font.bold: true
                     color: "#1A4DB5"
                 }
@@ -396,7 +396,7 @@ Item {
                             refreshSelectionCount()
                         }
 
-                        font.pixelSize: 15 * root.scale
+                        font.pixelSize: 15
 
                         delegate: ItemDelegate {
                             width: groupCombo.width
@@ -409,7 +409,7 @@ Item {
                             contentItem: Text {
                                 text: modelData
                                 color: highlighted ? "#1A4DB5" : "#2A3550"
-                                font.pixelSize: 15 * root.scale
+                                font.pixelSize: 15
                                 font.weight: highlighted ? Font.Medium : Font.Normal
                                 verticalAlignment: Text.AlignVCenter
                                 leftPadding: 14 * root.scale
@@ -421,14 +421,14 @@ Item {
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.right: parent.right
                             anchors.rightMargin: 14 * root.scale
-                            font.pixelSize: 12 * root.scale
+                            font.pixelSize: 12
                             color: "#1A4DB5"
                         }
 
                         contentItem: Text {
                             text: groupCombo.displayText
                             color: "#2A3550"
-                            font.pixelSize: 15 * root.scale
+                            font.pixelSize: 15
                             font.weight: Font.Medium
                             verticalAlignment: Text.AlignVCenter
                             leftPadding: 14 * root.scale
@@ -500,7 +500,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: modelData
-                                font.pixelSize: 15 * root.scale
+                                font.pixelSize: 15
                                 font.weight: Font.Medium
 
                                 color:
@@ -605,7 +605,7 @@ Item {
 
                                     color: "#FFFFFF"
                                     font.bold: true
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                 }
 
                                 Text {
@@ -618,7 +618,7 @@ Item {
 
                                     color: "#FFFFFF"
                                     font.bold: true
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                 }
 
                                 Text {
@@ -630,7 +630,7 @@ Item {
 
                                     color: "#FFFFFF"
                                     font.bold: true
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
 
                                     elide: Text.ElideRight
                                 }
@@ -645,7 +645,7 @@ Item {
 
                                     color: "#FFFFFF"
                                     font.bold: true
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                 }
                             }
                         }
@@ -718,7 +718,7 @@ Item {
                                             visible: isSelected
                                             color: "#FFFFFF"
                                             font.bold: true
-                                            font.pixelSize: 12 * root.scale
+                                            font.pixelSize: 12
                                         }
 
                                         MouseArea {
@@ -751,7 +751,7 @@ Item {
                                             text: active ? "A" : ""
                                             color: "#FFFFFF"
                                             font.bold: true
-                                            font.pixelSize: 12 * root.scale
+                                            font.pixelSize: 12
                                         }
                                     }
 
@@ -764,7 +764,7 @@ Item {
 
                                         verticalAlignment: Text.AlignVCenter
 
-                                        font.pixelSize: 17 * root.scale
+                                        font.pixelSize: 17
                                         font.weight: active ? Font.Medium : Font.Normal
 
                                         color: "#2A3550"
@@ -781,7 +781,7 @@ Item {
 
                                         verticalAlignment: Text.AlignVCenter
 
-                                        font.pixelSize: 17 * root.scale
+                                        font.pixelSize: 17
                                         font.weight: active ? Font.Medium : Font.Normal
 
                                         color: "#2A3550"
@@ -801,7 +801,7 @@ Item {
                                             anchors.centerIn: parent
                                             text: code
 
-                                            font.pixelSize: 16 * root.scale
+                                            font.pixelSize: 16
                                             font.weight: Font.Medium
 
                                             color: active ? "#1A4DB5" : "#4A5E8A"
@@ -829,7 +829,7 @@ Item {
 
                         Text {
                             text: "Details"
-                            font.pixelSize: 20 * root.scale
+                            font.pixelSize: 20
                             font.bold: true
                             color: "#1A4DB5"
                         }
@@ -840,13 +840,13 @@ Item {
                             color: "#E4EAF5"
                         }
 
-                        Text { text: "Phase : 110";       font.pixelSize: 20 * root.scale; color: "#202020" }
-                        Text { text: "Signal : 500";      font.pixelSize: 20 * root.scale; color: "#202020" }
-                        Text { text: "Amplitude : 14000"; font.pixelSize: 20 * root.scale; color: "#202020" }
-                        Text { text: "Digital Gain : 1";  font.pixelSize: 20 * root.scale; color: "#202020" }
-                        Text { text: "Analog Gain : 1";   font.pixelSize: 20 * root.scale; color: "#202020" }
-                        Text { text: "DD Frequency : 18"; font.pixelSize: 20 * root.scale; color: "#202020" }
-                        Text { text: "DD Power : 50";     font.pixelSize: 20 * root.scale; color: "#202020" }
+                        Text { text: "Phase : 110";       font.pixelSize: 20; color: "#202020" }
+                        Text { text: "Signal : 500";      font.pixelSize: 20; color: "#202020" }
+                        Text { text: "Amplitude : 14000"; font.pixelSize: 20; color: "#202020" }
+                        Text { text: "Digital Gain : 1";  font.pixelSize: 20; color: "#202020" }
+                        Text { text: "Analog Gain : 1";   font.pixelSize: 20; color: "#202020" }
+                        Text { text: "DD Frequency : 18"; font.pixelSize: 20; color: "#202020" }
+                        Text { text: "DD Power : 50";     font.pixelSize: 20; color: "#202020" }
 
                         Rectangle {
                             width: parent.width
@@ -860,7 +860,7 @@ Item {
                                      ? "0" + currentGroup
                                      : currentGroup)
 
-                            font.pixelSize: 18 * root.scale
+                            font.pixelSize: 18
                             color: "#1A1A1A"
                         }
 
@@ -869,19 +869,7 @@ Item {
                                   + currentModel().count
                                   + " / 100"
 
-                            font.pixelSize: 18 * root.scale
-                            color: "#1A1A1A"
-                        }
-
-                        Text {
-                            text: "Active SR : " + activeSr
-                            font.pixelSize: 18 * root.scale
-                            color: "#1A1A1A"
-                        }
-
-                        Text {
-                            text: "Selected : " + selectedCount
-                            font.pixelSize: 18 * root.scale
+                            font.pixelSize: 18
                             color: "#1A1A1A"
                         }
                     }

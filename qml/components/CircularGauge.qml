@@ -1,9 +1,22 @@
 import QtQuick
 
 Item {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
 
     property real sizeRef: Math.min(width, height)
+    
+    // =========================================================
+    // TYPOGRAPHY FOR CIRCULAR GAUGE
+    // =========================================================
+    
+    Typography {
+        id: gaugeTypography
+        scale: Math.min(root.width / 200, root.height / 200)
+    }
 
     property real value: 950
     property real threshold: 500
@@ -102,7 +115,7 @@ Item {
 
         Text {
             text: root.value
-            font.pixelSize: Math.max(14, sizeRef * 0.12)
+            font.pixelSize: gaugeTypography.heading
             font.bold: true
             color: "#2446B8"
             anchors.horizontalCenter: parent.horizontalCenter
@@ -110,7 +123,7 @@ Item {
 
         Text {
             text: root.label
-            font.pixelSize: Math.max(12, sizeRef * 0.08)
+            font.pixelSize: gaugeTypography.body
             font.bold: true
             color: "#333"
             anchors.horizontalCenter: parent.horizontalCenter
@@ -136,14 +149,14 @@ Item {
 
                 Text {
                     text: root.threshold
-                    font.pixelSize: Math.max(13, sizeRef * 0.09)
+                    font.pixelSize: gaugeTypography.subHeading
                     color: "#444"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
 
                 Text {
                     text: root.thresholdLabel
-                    font.pixelSize: Math.max(12, sizeRef * 0.08)
+                    font.pixelSize: gaugeTypography.body
                     font.bold: true
                     color: "#2446B8"
                     anchors.horizontalCenter: parent.horizontalCenter

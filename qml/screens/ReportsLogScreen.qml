@@ -129,7 +129,7 @@ Item {
 
                 Text {
                     text: "Reports Log"
-                    font.pixelSize: 26 * root.scale
+                    font.pixelSize: 26
                     font.bold: true
                     color: "#1A4DB5"
                 }
@@ -174,7 +174,7 @@ Item {
                                 id: flbl
                                 anchors.centerIn: parent
                                 text: modelData + " Files"
-                                font.pixelSize: 18 * root.scale
+                                font.pixelSize: 18
                                 font.weight: Font.Medium
                                 color: active ? "#FFFFFF" : "#1A1A1A"
                             }
@@ -233,7 +233,7 @@ Item {
                                 width: root.colSr
                                 font.bold: true
                                 color: "#FFF"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                             }
 
                             Text {
@@ -247,7 +247,7 @@ Item {
 
                                 font.bold: true
                                 color: "#FFF"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                             }
 
                             Text {
@@ -260,7 +260,7 @@ Item {
                                 width: root.colDate
                                 font.bold: true
                                 color: "#FFF"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                             }
 
                             Text {
@@ -271,7 +271,7 @@ Item {
                                 width: root.colFrom
                                 font.bold: true
                                 color: "#FFF"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                             }
 
                             Text {
@@ -284,7 +284,7 @@ Item {
 
                                 font.bold: true
                                 color: "#FFF"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                             }
 
                             Text {
@@ -297,7 +297,7 @@ Item {
 
                                 font.bold: true
                                 color: "#FFF"
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                             }
                         }
                     }
@@ -346,7 +346,7 @@ Item {
                                 Text {
                                     text: index + 1
                                     width: root.colSr
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#3A3A3A"
                                 }
 
@@ -359,7 +359,7 @@ Item {
                                            ? root.colType
                                            : root.colFile
 
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#3A3A3A"
 
                                     wrapMode: Text.NoWrap
@@ -369,7 +369,7 @@ Item {
                                     text: date || "-"
                                     width: root.colDate
 
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#3A3A3A"
 
                                     elide: Text.ElideRight
@@ -382,7 +382,7 @@ Item {
 
                                     width: root.colFrom
 
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#3A3A3A"
 
                                     elide: Text.ElideRight
@@ -393,7 +393,7 @@ Item {
                                     text: (to || "-").split(" ")[0]
                                     width: root.colTo
 
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#3A3A3A"
 
                                     elide: Text.ElideRight
@@ -404,7 +404,7 @@ Item {
                                     text: by || "-"
                                     width: root.colBy
 
-                                    font.pixelSize: 18 * root.scale
+                                    font.pixelSize: 18
                                     color: "#1A4DB5"
                                     font.weight: Font.Medium
 
@@ -429,7 +429,7 @@ Item {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: "No data found"
 
-                                font.pixelSize: 24 * root.scale
+                                font.pixelSize: 24
                                 font.weight: Font.Medium
                                 color: "#8896B0"
                             }
@@ -438,7 +438,7 @@ Item {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: "No records available"
 
-                                font.pixelSize: 20 * root.scale
+                                font.pixelSize: 20
                                 color: "#B0BEE0"
                             }
                         }

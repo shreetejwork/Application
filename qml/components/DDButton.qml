@@ -2,6 +2,10 @@ import QtQuick
 import QtQuick.Controls
 
 Rectangle {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: root
 
     // ================= RESPONSIVE =================

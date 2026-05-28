@@ -4,6 +4,11 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Popup {
+
+    Typography {
+        id: deleteUserTypography
+        scale: 1.0
+    }
     id: deleteUserPopup
 
     // =====================================================
@@ -130,7 +135,7 @@ Popup {
             color: "white"
 
             font.bold: true
-            font.pixelSize: 18 * scale
+            font.pixelSize: 18
         }
 
         MouseArea {
@@ -234,7 +239,7 @@ Popup {
                     text: selectionPopup.title
                     color: "#1A4DB5"
                     font.bold: true
-                    font.pixelSize: 19 * scale
+                    font.pixelSize: 19
                 }
             }
 
@@ -273,7 +278,7 @@ Popup {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 20 * scale
                                 text: modelData
-                                font.pixelSize: 18 * scale
+                                font.pixelSize: 18
                                 font.bold: true
                                 color: "#1A1A2E"
                             }
@@ -312,7 +317,7 @@ Popup {
 
                 Text {
                     text: "Delete User"
-                    font.pixelSize: Math.max(16, 26 * scale)
+                    font.pixelSize: deleteUserTypography.title
                     font.bold: true
                     color: "#1A4DB5"
                     anchors.verticalCenter: parent.verticalCenter
@@ -334,7 +339,7 @@ Popup {
                     anchors.leftMargin: 18 * scale
                     anchors.verticalCenter: parent.verticalCenter
                     text: "--- Select ---"
-                    font.pixelSize: Math.max(12, 18 * scale)
+                    font.pixelSize: deleteUserTypography.body
                     font.bold: true
                     color: text === "--- Select ---" ? "#AAAAAA" : "#1A1A2E"
                 }
@@ -345,7 +350,7 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Usertype"
                     color: "#AAAAAA"
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: deleteUserTypography.body
                     font.bold: true
                 }
 
@@ -379,7 +384,7 @@ Popup {
                     anchors.leftMargin: 18 * scale
                     anchors.verticalCenter: parent.verticalCenter
                     text: "--- Select ---"
-                    font.pixelSize: Math.max(12, 18 * scale)
+                    font.pixelSize: deleteUserTypography.body
                     font.bold: true
                     color: text === "--- Select ---" ? "#AAAAAA" : "#1A1A2E"
                 }
@@ -390,7 +395,7 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "Username"
                     color: "#AAAAAA"
-                    font.pixelSize: Math.max(14, 18 * scale)
+                    font.pixelSize: deleteUserTypography.body
                     font.bold: true
                 }
 
@@ -425,7 +430,7 @@ Popup {
                         text: "Delete User"
                         color: "white"
                         font.bold: true
-                        font.pixelSize: Math.max(10, 15 * scale)
+                        font.pixelSize: 15
                     }
 
                     MouseArea {
@@ -458,7 +463,7 @@ Popup {
                         text: "Clear"
                         color: "#1A4DB5"
                         font.bold: true
-                        font.pixelSize: Math.max(10, 15 * scale)
+                        font.pixelSize: 15
                     }
 
                     MouseArea {

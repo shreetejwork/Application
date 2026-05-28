@@ -2,6 +2,10 @@ import QtQuick
 import QtQuick.Layouts
 
 Rectangle {
+    Typography {
+        id: componentTypography
+        scale: root.scale || 1.0
+    }
     id: card
 
     property string title:    ""
@@ -11,6 +15,15 @@ Rectangle {
     property color  cardColor: "#FFFFFF"
     property real   progress:  -1
     property string subtitle: ""
+    
+    // =========================================================
+    // TYPOGRAPHY FOR DIAG CARD
+    // =========================================================
+    
+    Typography {
+        id: cardTypography
+        scale: card.uiScale
+    }
 
     radius:       12 * uiScale
     color:        cardColor
@@ -69,7 +82,7 @@ Rectangle {
 
             Text {
                 text:             card.title
-                font.pixelSize:   Math.max(16, 15 * card.uiScale)
+                font.pixelSize:   cardTypography.body
                 font.weight:      Font.Bold
                 color:            "#1A1A1A"
                 Layout.fillWidth: true
@@ -85,7 +98,7 @@ Rectangle {
                 Text {
                     anchors.centerIn: parent
                     text:             card.statusIcon()
-                    font.pixelSize:   Math.max(13, 12 * card.uiScale)
+                    font.pixelSize:   cardTypography.small
                     color:            card.statusTextColor()
                 }
             }
@@ -102,7 +115,7 @@ Rectangle {
         Text {
             Layout.alignment:    Qt.AlignHCenter
             text:                card.detail
-            font.pixelSize:      Math.max(20, 18 * card.uiScale)
+            font.pixelSize:      cardTypography.heading
             font.weight:         Font.DemiBold
             color:               "#111111"
             horizontalAlignment: Text.AlignHCenter
@@ -138,7 +151,7 @@ Rectangle {
 
                 Text {
                     text:           "0"
-                    font.pixelSize: Math.max(10, 11 * card.uiScale)
+                    font.pixelSize: cardTypography.tiny
                     color:          "#9E9E9E"
                 }
                 Item { Layout.fillWidth: true }
@@ -146,7 +159,7 @@ Rectangle {
                     text:           card.progress >= 0
                                     ? Math.round(card.progress * 100) + "% used"
                                     : ""
-                    font.pixelSize: Math.max(13, 11 * card.uiScale)
+                    font.pixelSize: cardTypography.small
                     color:          "#9E9E9E"
                 }
             }
@@ -168,7 +181,7 @@ Rectangle {
                 id:              statusLbl
                 anchors.centerIn: parent
                 text:             card.status
-                font.pixelSize:   Math.max(15, 12 * card.uiScale)
+                font.pixelSize:   cardTypography.caption
                 font.weight:      Font.Medium
                 color:            card.statusTextColor()
             }
