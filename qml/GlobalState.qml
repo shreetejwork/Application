@@ -161,11 +161,11 @@ QtObject {
     // =========================================================
     // OTHER PROPERTIES
     // =========================================================
-    property real productPhase: 40
-    property real machinePhase: 60
+    property real productPhase: 180
+    property real machinePhase: 180
 
     property real signalThreshold: 500
-    property real amplitudeThreshold: 400
+    property real amplitudeThreshold: 180
 
     property bool loginKeyboardRequest: false
     property var activeInputField: null

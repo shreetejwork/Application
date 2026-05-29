@@ -564,7 +564,7 @@ Item {
                         height: width
 
                         // Signal Gauge Configuration
-                        value: 850
+                        value: 2000
 
                         label: "Signal"
 
@@ -725,11 +725,11 @@ Item {
 
                         anchors.horizontalCenter: parent.horizontalCenter
 
-                        value: 650
+                        value: 180
 
                         label: "Amplitude"
 
-                        threshold: 400
+                        threshold: 180
                         thresholdLabel: "Thr-A"
 
                         maxValue: 1200

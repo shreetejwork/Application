@@ -53,7 +53,7 @@ Item {
             var tickMinorLen = radius * 0.04
 
             var fontSize = componentTypography.tiny
-            var labelOffset = radius * 0.18
+            var labelOffset = radius * 0.11
 
             for (var v = root.minValue; v <= root.maxValue; v += 5) {
                 var isMajor = (v % 10 === 0)
@@ -175,17 +175,17 @@ Item {
             Text {
                 text: root.productPhase
                 font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.heading
-                                : componentTypography.heading
-                font.bold: true
+                                ? componentTypography.title
+                                : componentTypography.title
+                // font.bold: true
                 color: "#1A4DB5"
             }
 
             Text {
                 text: "Product Phase"
                 font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.small
-                                : componentTypography.small
+                                ? componentTypography.caption
+                                : componentTypography.caption
                 font.bold: true
             }
         }
@@ -203,10 +203,10 @@ Item {
             Text {
                 text: root.machinePhase
                 font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.heading
-                                : componentTypography.heading
-                font.bold: true
-                color: "#1A4DB5"
+                                ? componentTypography.title
+                                : componentTypography.title
+
+                color: "#444"
             }
 
             Item {
@@ -217,9 +217,10 @@ Item {
                     id: machineLabel
                     text: "Machine Phase"
                     font.pixelSize: root.trackingPhase >= 0
-                                    ? componentTypography.small
-                                    : componentTypography.small
+                                    ? componentTypography.caption
+                                    : componentTypography.caption
                     font.bold: true
+                    color: "#1A4DB5"
                 }
 
                 MouseArea {
@@ -237,17 +238,16 @@ Item {
             Text {
                 text: root.trackingPhase
                 font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.heading
-                                : componentTypography.heading
-                font.bold: true
+                                ? componentTypography.title
+                                : componentTypography.title
                 color: "#1A4DB5"
             }
 
             Text {
                 text: root.trackingCountLabel
                 font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.small
-                                : componentTypography.small
+                                ? componentTypography.caption
+                                : componentTypography.caption
                 font.bold: true
             }
         }
