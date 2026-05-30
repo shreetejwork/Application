@@ -101,7 +101,7 @@ Rectangle {
                     spacing: Math.max(4, root.height * 0.02)
 
                     Text {
-                        text: Qt.formatTime(GlobalState.globalDateTime, "HH:mm:ss")
+                        text: Qt.formatTime(GlobalState.globalDateTime, " HH:mm:ss")
                         color: "white"
                         font.pixelSize: topBarTypography.heading
                         font.bold: true
@@ -110,7 +110,7 @@ Rectangle {
                     Text {
                         text: Qt.formatDate(GlobalState.globalDateTime, "dd MMM yyyy")
                         color: "white"
-                        font.pixelSize: topBarTypography.body
+                        font.pixelSize: topBarTypography.subHeading
                         opacity: 0.9
                     }
                 }
@@ -275,8 +275,8 @@ Rectangle {
                             anchors.centerIn: parent
                             text: root.userRole
                             color: "white"
-                            font.pixelSize: topBarTypography.small
-                            font.bold: true
+                            font.pixelSize: topBarTypography.subHeading
+                            // font.bold: true
                         }
                     }
 

@@ -89,7 +89,7 @@ Popup {
     x: (Overlay.overlay.width - width) / 2
 
     property real keyboardHeight: GlobalState.loginKeyboardRequest
-                                  ? Overlay.overlay.height * 0.5
+                                  ? Overlay.overlay.height * 0.2
                                   : 0
 
     property real keyboardOffset:
