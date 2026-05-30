@@ -9,6 +9,7 @@ Popup {
         id: editPwdTypography
         scale: 1.0
     }
+
     id: editPasswordPopup
 
     enter: Transition {
@@ -67,7 +68,10 @@ Popup {
 
     modal: false
     focus: false
-    dim: true
+
+    Overlay.modal: Rectangle {
+        color: "#66000000"
+    }
 
     closePolicy: Popup.NoAutoClose
 
@@ -177,8 +181,8 @@ Popup {
     Popup {
         id: selectionPopup
 
-        modal: true
-        focus: true
+        modal: false
+        focus: false
 
         anchors.centerIn: Overlay.overlay
 

@@ -11,6 +11,26 @@ Item {
     id: root
     anchors.fill: parent
 
+    Rectangle {
+        id: dimBackground
+
+        anchors.fill: parent
+
+        color: "black"
+
+        opacity: addProductPopup.visible ? 0.4 : 0.0
+
+        visible: opacity > 0
+
+        z: 998
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 250
+            }
+        }
+    }
+
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.max(0.75, Math.min(width / baseWidth, height / baseHeight))

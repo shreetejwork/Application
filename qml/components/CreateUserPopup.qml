@@ -74,9 +74,12 @@ Popup {
 
     parent: Overlay.overlay
 
-    modal: true
-    focus: true
-    dim: false
+    modal: false
+    focus: false
+
+    Overlay.modal: Rectangle {
+        color: "#66000000"
+    }
 
     closePolicy: Popup.NoAutoClose
 

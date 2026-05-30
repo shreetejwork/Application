@@ -69,6 +69,12 @@ Popup {
 
     modal: true
     focus: true
+    dim: true
+
+    Overlay.modal: Rectangle {
+        color: "#66000000"
+    }
+
     closePolicy: Popup.CloseOnPressOutside
 
     width: 520 * scale

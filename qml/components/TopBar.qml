@@ -134,7 +134,15 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: root.backClicked()
+
+                        onClicked: {
+
+                            if (GlobalState.loginKeyboardRequest) {
+                                GlobalState.loginKeyboardRequest = false
+                            }
+
+                            root.backClicked()
+                        }
                     }
                 }
 

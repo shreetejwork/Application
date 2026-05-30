@@ -82,7 +82,6 @@ Popup {
 
     modal: false
     focus: false
-    dim: true
 
     closePolicy: Popup.NoAutoClose
 

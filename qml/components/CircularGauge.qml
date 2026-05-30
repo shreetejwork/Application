@@ -103,7 +103,7 @@ Item {
 
             // Zone 2:
             // threshold -> 3000
-            var zone2Limit = 3000
+            var zone2Limit = 2000
 
             // Zone 3:
             // 3000 -> 65000

@@ -7,6 +7,29 @@ Item {
     id: root
     anchors.fill: parent
 
+    Rectangle {
+        id: dimBackground
+
+        anchors.fill: parent
+
+        color: "black"
+
+        opacity: (createUserPopup.visible
+                  || editPasswordPopup.visible
+                  || deleteUserPopup.visible)
+                 ? 0.4 : 0.0
+
+        visible: opacity > 0
+
+        z: 998
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 250
+            }
+        }
+    }
+
     property real baseWidth: 1024
     property real baseHeight: 600
 
@@ -112,9 +135,9 @@ Item {
 
         // OPTIONAL: handle signals
         onCreateUserRequested: (type, username, password) => {
-            console.log("CREATE USER:", type, username, password)
-            close()
-        }
+                                   console.log("CREATE USER:", type, username, password)
+                                   close()
+                               }
 
         onClearRequested: {
             console.log("Fields cleared")

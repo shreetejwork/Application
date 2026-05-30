@@ -564,11 +564,11 @@ Item {
                         height: width
 
                         // Signal Gauge Configuration
-                        value: 2000
+                        value: 180
 
                         label: "Signal"
 
-                        threshold: 500
+                        threshold: 180
                         thresholdLabel: "Thr-S"
 
                         maxValue: 1200

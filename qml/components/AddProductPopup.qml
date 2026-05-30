@@ -10,6 +10,7 @@ Popup {
         id: addProductTypography
         scale: 1.0
     }
+
     id: popup
 
     Component.onCompleted: {
@@ -66,7 +67,12 @@ Popup {
 
     modal: false
     focus: false
-    dim: true
+
+    Overlay.modal: Rectangle {
+        color: "#66000000"
+    }
+
+
 
     closePolicy: Popup.NoAutoClose
 
