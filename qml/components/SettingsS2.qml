@@ -39,7 +39,7 @@ Item {
     // ===== TITLE =====
     Text {
         id: titleText
-        text: "Time & Date Settings"
+        text: "Date & Time Settings"
         font.pixelSize: s2Typography.title
 
         color: "#1A4DB5"

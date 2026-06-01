@@ -69,8 +69,8 @@ Rectangle {
                   : (root.toggled ? root.onText : root.offText)
 
             font.pixelSize: root.useSymbols
-                                ? knob.width * 0.30   // bigger for symbols
-                                : knob.width * 0.30   // smaller for ON/OFF
+                                ? knob.width * 0.42   // bigger for symbols
+                                : knob.width * 0.35   // smaller for ON/OFF
 
             color: root.toggled ? "#1A4DB5" : "#6B7280"
         }

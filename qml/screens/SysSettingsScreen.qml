@@ -199,19 +199,19 @@ Item {
             pageNames: GlobalState.showNetworkScreen
                        ? [
                              "Parameters",
-                             "X-Y Plot",
-                             "Time & Date",
+                             "XY - Plot",
+                             "Date & Time",
                              "Validation Time",
-                             "Machine ID",
+                             "About Machine",
                              "Network",
                              "Version"
                          ]
                        : [
                              "Parameters",
-                             "X-Y Plot",
-                             "Time & Date",
+                             "XY - Plot",
+                             "Date & Time",
                              "Validation Time",
-                             "Machine ID",
+                             "About Machine",
                              "Version"
                          ]
 

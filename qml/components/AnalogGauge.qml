@@ -115,7 +115,7 @@ Item {
             // MACHINE NEEDLE
             var nAngleRad = root.valueToAngleDeg(root.machinePhase) * Math.PI / 180
             var startOffset = radius * 0.53
-            var needleLen = radius * 0.15
+            var needleLen = radius * 0.20
             var baseOffset = radius * 0.025
 
             var startX = cx + startOffset * Math.cos(nAngleRad)

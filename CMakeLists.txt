@@ -90,6 +90,7 @@ qt_add_qml_module(appApplication
         assets/images/Reports.png
         assets/images/BatchHistory.png
         assets/images/log.png
+        assets/images/edit.png
         assets/images/RobotoCondensed-Bold.ttf
         assets/images/RobotoCondensed-Regular.ttf
 

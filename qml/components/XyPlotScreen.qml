@@ -67,7 +67,7 @@ Item {
             spacing: 10 * root.scale
 
             Text {
-                text: "X,Y Plot"
+                text: "XY - Plot"
                 font.pixelSize: plotTypography.title
                 color: "#1A4DB5"
             }

@@ -133,6 +133,10 @@ Item {
                                             if (activeFocus) {
                                                 GlobalState.activeInputField = inputField
                                                 GlobalState.loginKeyboardRequest = true
+
+                                                Qt.callLater(function() {
+                                                    inputField.selectAll()
+                                                })
                                             }
                                         }
 
@@ -158,23 +162,54 @@ Item {
                                     }
                                 }
 
-                                Text {
-                                    text: "Edit"
-                                    font.pixelSize: 12
-                                    color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"
+                                Item {
+                                    id: editButton
 
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
+                                    width: editRow.implicitWidth
+                                    height: editRow.implicitHeight
+
+                                    Row {
+                                        id: editRow
+                                        anchors.centerIn: parent
+                                        spacing: 4
+
+                                        Image {
+                                            source: "qrc:/qt/qml/Application/assets/images/edit.png"
+                                            width: 16
+                                            height: 16
+
+                                            opacity: root.batchRunning ? 0.5 : 1.0
+
+                                            fillMode: Image.PreserveAspectFit
+                                            smooth: true
+                                        }
+
+                                        Text {
+                                            text: "Edit"
+                                            font.pixelSize: 15
+                                            color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"
+
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                    }
 
                                     MouseArea {
                                         anchors.fill: parent
-                                        cursorShape: root.batchRunning ? Qt.ArrowCursor : Qt.PointingHandCursor
+
+                                        cursorShape: root.batchRunning
+                                                     ? Qt.ArrowCursor
+                                                     : Qt.PointingHandCursor
+
                                         enabled: !root.batchRunning
 
                                         onClicked: {
                                             inputField.readOnly = false
                                             inputField.forceActiveFocus()
-                                            inputField.selectAll()
+
+                                            Qt.callLater(function() {
+                                                inputField.selectAll()
+                                            })
+
                                             GlobalState.loginKeyboardRequest = true
                                         }
                                     }
@@ -226,6 +261,10 @@ Item {
                                             if (activeFocus) {
                                                 GlobalState.activeInputField = productField
                                                 GlobalState.loginKeyboardRequest = true
+
+                                                Qt.callLater(function() {
+                                                    productField.selectAll()
+                                                })
                                             }
                                         }
 
@@ -251,23 +290,52 @@ Item {
                                     }
                                 }
 
-                                Text {
-                                    text: "Edit"
-                                    font.pixelSize: 12
-                                    color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"
+                                Item {
+                                    width: productEditRow.implicitWidth
+                                    height: productEditRow.implicitHeight
 
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
+                                    Row {
+                                        id: productEditRow
+                                        anchors.centerIn: parent
+                                        spacing: 4
+
+                                        Image {
+                                            source: "qrc:/qt/qml/Application/assets/images/edit.png"
+                                            width: 16
+                                            height: 16
+
+                                            fillMode: Image.PreserveAspectFit
+                                            smooth: true
+
+                                            opacity: root.batchRunning ? 0.5 : 1.0
+                                        }
+
+                                        Text {
+                                            text: "Edit"
+                                            font.pixelSize: 15
+                                            color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"
+
+                                            verticalAlignment: Text.AlignVCenter
+                                        }
+                                    }
 
                                     MouseArea {
                                         anchors.fill: parent
-                                        cursorShape: root.batchRunning ? Qt.ArrowCursor : Qt.PointingHandCursor
+
+                                        cursorShape: root.batchRunning
+                                                     ? Qt.ArrowCursor
+                                                     : Qt.PointingHandCursor
+
                                         enabled: !root.batchRunning
 
                                         onClicked: {
                                             productField.readOnly = false
                                             productField.forceActiveFocus()
-                                            productField.selectAll()
+
+                                            Qt.callLater(function() {
+                                                productField.selectAll()
+                                            })
+
                                             GlobalState.loginKeyboardRequest = true
                                         }
                                     }
@@ -470,12 +538,15 @@ Item {
                                 anchors.verticalCenterOffset: -parent.height * 0.1
                                 width: parent.width * 0.7
 
-                                minValue: 25
-                                maxValue: 50
-                                value: 25
+                                minValue: 25.0
+                                maxValue: 50.0
+                                value: 25.0
+
+                                stepSize: 0.1
+                                decimals: 1
 
                                 onSaveClicked: (val) => {
-                                    root.notify("✓ DD Frequency Saved: " + val)
+                                    root.notify("✓ DD Frequency Saved: " + val.toFixed(1))
                                 }
                             }
                         }

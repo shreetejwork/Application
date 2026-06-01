@@ -132,7 +132,7 @@ Item {
 
                             Text {
                                 anchors.centerIn: parent
-                                text: "ON/OFF"
+                                text: "Status"
 
                                 font.pixelSize: s3Typography.heading
                                 color: "#374151"

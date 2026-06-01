@@ -49,7 +49,7 @@ Item {
         spacing: 4 * root.scale
 
         Text {
-            text: "Machine Configuration"
+            text: "About Machine"
             color: "#183C8F"
             font.pixelSize: typo.title
 
@@ -503,11 +503,16 @@ Item {
                     }
                     color: "#E4EDFF"
 
-                    Text {
+                    Image {
                         anchors.centerIn: parent
-                        text: "✎"
-                        color: "#2A62D5"
-                        font.pixelSize: typo.bodySmall
+
+                        source: "qrc:/qt/qml/Application/assets/images/edit.png"
+
+                        width: Math.max(14, 16 * root.scale)
+                        height: width
+
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
                     }
                 }
             }
