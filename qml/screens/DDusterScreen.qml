@@ -129,6 +129,24 @@ Item {
 
                                         cursorVisible: activeFocus
 
+                                        function saveBatch()
+                                        {
+                                            GlobalState.loginKeyboardRequest = false
+
+                                            if (text.trim() === "") {
+                                                text = "General Batch"
+                                                root.lastValidBatch = text
+                                                root.notify("⚠ Empty not allowed")
+                                            } else {
+                                                root.lastValidBatch = text.trim()
+                                                text = root.lastValidBatch
+                                                root.notify("✓ Batch Updated")
+                                            }
+
+                                            readOnly = true
+                                            focus = false
+                                        }
+
                                         onActiveFocusChanged: {
                                             if (activeFocus) {
                                                 GlobalState.activeInputField = inputField
@@ -137,27 +155,21 @@ Item {
                                                 Qt.callLater(function() {
                                                     inputField.selectAll()
                                                 })
+                                            } else if (!readOnly) {
+                                                saveBatch()
                                             }
+                                        }
+
+                                        onAccepted: {
+                                            saveBatch()
                                         }
 
                                         MouseArea {
                                             anchors.fill: parent
-                                            onPressed: inputField.forceActiveFocus()
-                                        }
 
-                                        onAccepted: {
-                                            GlobalState.loginKeyboardRequest = false
-
-                                            if (text.trim() === "") {
-                                                text = "General Batch"
-                                                root.notify("⚠ Empty not allowed")
-                                            } else {
-                                                root.lastValidBatch = text
-                                                root.notify("✓ Batch Updated")
+                                            onPressed: {
+                                                inputField.forceActiveFocus()
                                             }
-
-                                            inputField.focus = false
-                                            inputField.readOnly = true
                                         }
                                     }
                                 }
@@ -209,8 +221,6 @@ Item {
                                             Qt.callLater(function() {
                                                 inputField.selectAll()
                                             })
-
-                                            GlobalState.loginKeyboardRequest = true
                                         }
                                     }
                                 }
@@ -257,6 +267,24 @@ Item {
 
                                         cursorVisible: activeFocus
 
+                                        function saveProduct()
+                                        {
+                                            GlobalState.loginKeyboardRequest = false
+
+                                            if (text.trim() === "") {
+                                                text = "Default Product"
+                                                root.lastValidProduct = text
+                                                root.notify("⚠ Empty not allowed")
+                                            } else {
+                                                root.lastValidProduct = text.trim()
+                                                text = root.lastValidProduct
+                                                root.notify("✓ Product Updated")
+                                            }
+
+                                            readOnly = true
+                                            focus = false
+                                        }
+
                                         onActiveFocusChanged: {
                                             if (activeFocus) {
                                                 GlobalState.activeInputField = productField
@@ -265,27 +293,21 @@ Item {
                                                 Qt.callLater(function() {
                                                     productField.selectAll()
                                                 })
+                                            } else if (!readOnly) {
+                                                saveProduct()
                                             }
+                                        }
+
+                                        onAccepted: {
+                                            saveProduct()
                                         }
 
                                         MouseArea {
                                             anchors.fill: parent
-                                            onPressed: productField.forceActiveFocus()
-                                        }
 
-                                        onAccepted: {
-                                            GlobalState.loginKeyboardRequest = false
-
-                                            if (text.trim() === "") {
-                                                text = "Default Product"
-                                                root.notify("⚠ Empty not allowed")
-                                            } else {
-                                                root.lastValidProduct = text
-                                                root.notify("✓ Product Updated")
+                                            onPressed: {
+                                                productField.forceActiveFocus()
                                             }
-
-                                            productField.focus = false
-                                            productField.readOnly = true
                                         }
                                     }
                                 }
@@ -335,8 +357,6 @@ Item {
                                             Qt.callLater(function() {
                                                 productField.selectAll()
                                             })
-
-                                            GlobalState.loginKeyboardRequest = true
                                         }
                                     }
                                 }
@@ -454,12 +474,13 @@ Item {
 
                             Text {
                                 text: "DD ON/OFF"
-                                font.pixelSize: 13
+                                font.pixelSize: 15
 
                                 color: "#6B7280"
-                                Layout.alignment: Qt.AlignHCenter
+                                anchors.top: parent.top
+                                anchors.left: parent.left
+                                anchors.margins: 16
                             }
-
                             Item { Layout.fillHeight: true }
 
                             DDButton {
@@ -485,7 +506,7 @@ Item {
 
                         Text {
                             text: "Power (Volt)"
-                            font.pixelSize: 13
+                            font.pixelSize: 15
 
                             color: "#6B7280"
                             anchors.top: parent.top
@@ -522,7 +543,7 @@ Item {
 
                         Text {
                             text: "Frequency (Hz)"
-                            font.pixelSize: 13
+                            font.pixelSize: 15
 
                             color: "#6B7280"
                             anchors.top: parent.top

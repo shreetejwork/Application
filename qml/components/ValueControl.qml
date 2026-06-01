@@ -61,7 +61,7 @@ Item {
 
     Timer {
         id: plusRepeatTimer
-        interval: 200
+        interval: 100
         repeat: true
 
         onTriggered: {
@@ -95,7 +95,7 @@ Item {
 
     Timer {
         id: minusRepeatTimer
-        interval: 200
+        interval: 100
         repeat: true
 
         onTriggered: {
