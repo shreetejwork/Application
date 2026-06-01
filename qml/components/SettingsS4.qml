@@ -52,7 +52,7 @@ Item {
             text: "Machine Configuration"
             color: "#183C8F"
             font.pixelSize: typo.title
-            font.bold: true
+
         }
 
         Rectangle {
@@ -316,7 +316,7 @@ Item {
                     text: floatCard.fieldLabel
                     color: "#52627E"
                     font.pixelSize: typo.caption
-                    font.bold: true
+
                 }
 
                 Rectangle {
@@ -360,7 +360,7 @@ Item {
                     text: floatCard.initialValue
                     color: "#183C8F"
                     font.pixelSize: typo.body
-                    font.bold: true
+
                     verticalAlignment: Text.AlignVCenter
                     background: null
                     selectByMouse: true
@@ -402,7 +402,7 @@ Item {
                         text: "✓"
                         color: "white"
                         font.pixelSize: typo.bodySmall
-                        font.bold: true
+
                     }
 
                     MouseArea {
@@ -468,7 +468,7 @@ Item {
                 text: card.fieldLabel
                 color: "#52627E"
                 font.pixelSize: typo.heading
-                font.bold: true
+
             }
 
             Rectangle {
@@ -488,7 +488,6 @@ Item {
                     text: card.displayValue.length > 0 ? card.displayValue : card.placeholderText
                     color: card.displayValue.length > 0 ? "#183C8F" : "#A0ACC2"
                     font.pixelSize: typo.heading
-                    font.bold: card.displayValue.length > 0
                     elide: Text.ElideRight
                 }
 

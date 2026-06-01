@@ -140,7 +140,7 @@ Popup {
 
             color: "white"
 
-            font.bold: true
+
             font.pixelSize: 18
         }
 
@@ -244,7 +244,7 @@ Popup {
                     anchors.centerIn: parent
                     text: selectionPopup.title
                     color: "#1A4DB5"
-                    font.bold: true
+
                     font.pixelSize: 19
                 }
             }
@@ -285,7 +285,7 @@ Popup {
                                 anchors.leftMargin: 20 * scale
                                 text: modelData
                                 font.pixelSize: 18
-                                font.bold: true
+
                                 color: "#1A1A2E"
                             }
 
@@ -324,7 +324,7 @@ Popup {
                 Text {
                     text: "Delete User"
                     font.pixelSize: deleteUserTypography.title
-                    font.bold: true
+
                     color: "#1A4DB5"
                     anchors.verticalCenter: parent.verticalCenter
                 }
@@ -346,7 +346,7 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "--- Select ---"
                     font.pixelSize: deleteUserTypography.body
-                    font.bold: true
+
                     color: text === "--- Select ---" ? "#AAAAAA" : "#1A1A2E"
                 }
 
@@ -357,7 +357,7 @@ Popup {
                     text: "Usertype"
                     color: "#AAAAAA"
                     font.pixelSize: deleteUserTypography.body
-                    font.bold: true
+
                 }
 
                 MouseArea {
@@ -391,7 +391,7 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "--- Select ---"
                     font.pixelSize: deleteUserTypography.body
-                    font.bold: true
+
                     color: text === "--- Select ---" ? "#AAAAAA" : "#1A1A2E"
                 }
 
@@ -402,7 +402,7 @@ Popup {
                     text: "Username"
                     color: "#AAAAAA"
                     font.pixelSize: deleteUserTypography.body
-                    font.bold: true
+
                 }
 
                 MouseArea {
@@ -435,7 +435,7 @@ Popup {
                         anchors.centerIn: parent
                         text: "Delete User"
                         color: "white"
-                        font.bold: true
+
                         font.pixelSize: 15
                     }
 
@@ -468,7 +468,7 @@ Popup {
                         anchors.centerIn: parent
                         text: "Clear"
                         color: "#1A4DB5"
-                        font.bold: true
+
                         font.pixelSize: 15
                     }
 

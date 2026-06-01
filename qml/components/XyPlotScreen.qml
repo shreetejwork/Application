@@ -69,7 +69,6 @@ Item {
             Text {
                 text: "X,Y Plot"
                 font.pixelSize: plotTypography.title
-                font.bold: true
                 color: "#1A4DB5"
             }
 
@@ -120,7 +119,6 @@ Item {
                             Text {
                                 text: "Product\nPhase"
                                 font.pixelSize: plotTypography.subHeading
-                                font.bold: true
                                 color: "#1A4DB5"
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
@@ -129,7 +127,6 @@ Item {
                             Text {
                                 text: "—"
                                 font.pixelSize: plotTypography.body
-                                font.bold: true
                                 color: "#1A4DB5"
                             }
                         }
@@ -153,14 +150,12 @@ Item {
                             Text {
                                 text: "Signal"
                                 font.pixelSize: plotTypography.subHeading
-                                font.bold: true
                                 color: "#1A4DB5"
                             }
 
                             Text {
                                 text: "400"
                                 font.pixelSize: plotTypography.body
-                                font.bold: true
                                 color: "#0F8A60"
                             }
                         }
@@ -184,14 +179,12 @@ Item {
                             Text {
                                 text: "Amplitude"
                                 font.pixelSize: plotTypography.subHeading
-                                font.bold: true
                                 color: "#1A4DB5"
                             }
 
                             Text {
                                 text: "—"
                                 font.pixelSize: plotTypography.body
-                                font.bold: true
                                 color: "#D64545"
                             }
                         }

@@ -177,7 +177,6 @@ Item {
                 font.pixelSize: root.trackingPhase >= 0
                                 ? componentTypography.title
                                 : componentTypography.title
-                // font.bold: true
                 color: "#1A4DB5"
             }
 
@@ -186,7 +185,6 @@ Item {
                 font.pixelSize: root.trackingPhase >= 0
                                 ? componentTypography.caption
                                 : componentTypography.caption
-                font.bold: true
             }
         }
 
@@ -219,7 +217,6 @@ Item {
                     font.pixelSize: root.trackingPhase >= 0
                                     ? componentTypography.caption
                                     : componentTypography.caption
-                    font.bold: true
                     color: "#1A4DB5"
                 }
 
@@ -248,7 +245,6 @@ Item {
                 font.pixelSize: root.trackingPhase >= 0
                                 ? componentTypography.caption
                                 : componentTypography.caption
-                font.bold: true
             }
         }
     }

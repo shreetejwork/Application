@@ -40,9 +40,9 @@ QtObject {
 
     readonly property int weightMedium: 500
 
-    readonly property int weightBold: Font.Bold
+    readonly property int weightBold: Font.Normal
 
-    readonly property int weightExtraBold: Font.DemiBold
+    readonly property int weightExtraBold: Font.Normal
 
     // =========================================================
     // LINE HEIGHTS

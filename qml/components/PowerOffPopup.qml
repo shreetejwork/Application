@@ -91,7 +91,7 @@ Popup {
         Text {
             text: "Power Off"
             font.pixelSize: popupTypography.title
-            font.bold: true
+
             color: "#1A4DB5"
             Layout.alignment: Qt.AlignHCenter
         }
@@ -111,7 +111,7 @@ Popup {
                 horizontalAlignment: Text.AlignHCenter
                 width: parent.width * 0.9
                 font.pixelSize: popupTypography.body
-                font.bold: true
+
                 color: "#1A1A2E"
             }
         }
@@ -134,7 +134,7 @@ Popup {
                     anchors.centerIn: parent
                     text: "Cancel"
                     color: "#1A4DB5"
-                    font.bold: true
+
                     font.pixelSize: popupTypography.body
                 }
 
@@ -155,7 +155,7 @@ Popup {
                     anchors.centerIn: parent
                     text: "Power Off"
                     color: "white"
-                    font.bold: true
+
                     font.pixelSize: popupTypography.body
                 }
 

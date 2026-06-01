@@ -32,8 +32,6 @@ Button {
         text: btn.text
         anchors.centerIn: parent
         font.pixelSize: 14
-        font.bold: true
-        font.weight: Font.DemiBold
 
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter

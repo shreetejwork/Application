@@ -193,7 +193,7 @@ Popup {
 
             color: "white"
 
-            font.bold: true
+
             font.pixelSize: loginTypography.body
         }
 
@@ -261,7 +261,7 @@ Popup {
                     anchors.centerIn: parent
                     text: selectionPopup.title
                     color: "#1A4DB5"
-                    font.bold: true
+
                     font.pixelSize: loginTypography.body
                 }
             }
@@ -311,7 +311,7 @@ Popup {
                                 text: modelData
 
                                 font.pixelSize: loginTypography.body
-                                font.bold: true
+
 
                                 color: "#1A1A2E"
                             }
@@ -372,7 +372,7 @@ Popup {
                 text: "Login"
 
                 font.pixelSize: loginTypography.title
-                font.bold: true
+
 
                 color: "#1A4DB5"
             }
@@ -399,7 +399,7 @@ Popup {
                     text: "--- Select ---"
 
                     font.pixelSize: loginTypography.body
-                    font.bold: true
+
                 }
 
                 Text {
@@ -412,7 +412,7 @@ Popup {
                     color: "#AAAAAA"
 
                     font.pixelSize: loginTypography.body
-                    font.bold: true
+
                 }
 
                 MouseArea {
@@ -461,7 +461,7 @@ Popup {
                     text: "--- Select ---"
 
                     font.pixelSize: loginTypography.body
-                    font.bold: true
+
                 }
 
                 Text {
@@ -474,7 +474,7 @@ Popup {
                     color: "#AAAAAA"
 
                     font.pixelSize: loginTypography.body
-                    font.bold: true
+
                 }
 
                 MouseArea {
@@ -535,7 +535,7 @@ Popup {
                     padding: 0
 
                     font.pixelSize: loginTypography.heading
-                    font.bold: true
+
 
                     color: "#000000"
 
@@ -599,7 +599,7 @@ Popup {
                     color: "#AAAAAA"
 
                     font.pixelSize: loginTypography.body
-                    font.bold: true
+
 
                     visible: passwordInput.text.length === 0
                 }
@@ -630,7 +630,7 @@ Popup {
 
                         color: "#1A4DB5"
 
-                        font.bold: true
+
                     }
 
                     MouseArea {
@@ -668,7 +668,7 @@ Popup {
 
                         color: "white"
 
-                        font.bold: true
+
                     }
 
                     MouseArea {
@@ -742,7 +742,7 @@ Popup {
 
                         color: "#1A4DB5"
 
-                        font.bold: true
+
                     }
 
                     MouseArea {

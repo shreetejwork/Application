@@ -124,7 +124,7 @@ Item {
                 id: filterTitle
                 text: "Digital filter Settings"
                 font.pixelSize: s1Typography.title
-                font.bold: true
+
                 color: "#1A4DB5"
             }
 
@@ -170,7 +170,7 @@ Item {
             Text {
                 text: "Delay Settings"
                 font.pixelSize: s1Typography.title
-                font.bold: true
+
                 color: "#1A4DB5"
             }
 
@@ -218,7 +218,7 @@ Item {
             Text {
                 text: "Gain Settings"
                 font.pixelSize: s1Typography.title
-                font.bold: true
+
                 color: "#1A4DB5"
             }
 
@@ -295,7 +295,7 @@ Item {
                     text: root.getItem(tile.fieldId)?.label || ""
                     color: "#FFFFFF"
                     font.pixelSize: s1Typography.body
-                    font.bold: true
+
                 }
             }
 
@@ -312,7 +312,7 @@ Item {
                     text: root.displayValue(tile.fieldId)
                     color: "#1A4DB5"
                     font.pixelSize: s1Typography.heading
-                    font.bold: true
+
                 }
 
                 Text {

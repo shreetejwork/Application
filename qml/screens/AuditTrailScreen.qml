@@ -222,7 +222,7 @@ Item {
                 Text {
                     text: "Audit Trail Report"
                     font.pixelSize: 26
-                    font.bold: true
+
                     color: "#1A4DB5"
                 }
 
@@ -555,12 +555,12 @@ Item {
                             anchors.margins: 12 * root.scale
                             spacing: root.colSpacing
 
-                            Text { text: "Sr";   width: root.colSr;   font.bold: true; color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "Date"; width: root.colDate; font.bold: true; color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "Time"; width: root.colTime; font.bold: true; color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "User"; width: root.colUser; font.bold: true; color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "Old";  width: root.colOld;  font.bold: true; color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "New";  width: root.colNew;  font.bold: true; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "Sr";   width: root.colSr;   color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "Date"; width: root.colDate; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "Time"; width: root.colTime; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "User"; width: root.colUser; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "Old";  width: root.colOld;  color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "New";  width: root.colNew;  color: "#FFF"; font.pixelSize: 20 }
 
                             // remaining space
                             Text {
@@ -568,7 +568,7 @@ Item {
                                 width: parent.width
                                        - (root.colSr + root.colDate + root.colTime + root.colUser + root.colOld + root.colNew)
                                        - (root.colSpacing * 6)
-                                font.bold: true
+
                                 color: "#FFF"
                                 font.pixelSize: 20
                             }
@@ -754,7 +754,7 @@ Item {
                 Text {
                     text: datePickerPopup.isFrom ? "Select From Date" : "Select To Date"
                     font.pixelSize: 20
-                    font.bold: true
+
                     color: "#1A4DB5"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
@@ -802,7 +802,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: "<"
                                 color: prevMouse.enabled ? "#1A4DB5" : "#AAB3C5"
-                                font.bold: true
+
                                 font.pixelSize: 22
                             }
 
@@ -836,7 +836,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: Qt.formatDate(new Date(calendar.displayYear, calendar.displayMonth, 1), "MMMM yyyy")
-                                font.bold: true
+
                                 font.pixelSize: 20
                                 color: "#1A4DB5"
                             }
@@ -852,7 +852,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: ">"
                                 color: "#1A4DB5"
-                                font.bold: true
+
                                 font.pixelSize: 22
                             }
 
@@ -885,7 +885,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData
-                                    font.bold: true
+
                                     font.pixelSize: 18
                                     color: "#1A4DB5"
                                 }
@@ -959,7 +959,6 @@ Item {
                                     anchors.centerIn: parent
                                     text: validDay ? dayNum : ""
                                     font.pixelSize: 18
-                                    font.bold: isSelected || isToday
                                     color: isSelected ? "#FFFFFF" : "#333333"
                                 }
 
@@ -1087,7 +1086,7 @@ Item {
                 Text {
                     text: "Filters"
                     font.pixelSize: 22
-                    font.bold: true
+
                     color: "#1A4DB5"
                 }
 
@@ -1174,7 +1173,7 @@ Item {
                                         text: "✓"
                                         color: "#FFFFFF"
                                         font.pixelSize: 15
-                                        font.bold: true
+
                                         visible: filterItem.isChecked
                                     }
                                 }

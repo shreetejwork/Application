@@ -78,7 +78,7 @@ Popup {
                         text: "PDF Preview"
                         color: "white"
                         font.pixelSize: pdfTypography.caption
-                        font.bold: true
+
                         Layout.alignment: Qt.AlignVCenter
                     }
 
@@ -147,7 +147,7 @@ Popup {
                             anchors.centerIn: parent
                             text: "Close"
                             color: "white"
-                            font.bold: true
+
                         }
 
                         MouseArea {

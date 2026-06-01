@@ -112,7 +112,7 @@ Item {
             Text {
                 text: popup.fieldName
                 font.pixelSize: 22
-                font.bold: true
+
                 horizontalAlignment: Text.AlignHCenter
                 color: "#1A4DB5"
                 Layout.fillWidth: true
@@ -134,7 +134,7 @@ Item {
                     anchors.fill: parent
                     anchors.margins: 12
                     font.pixelSize: 28
-                    font.bold: true
+
                     color: "#333"
                     horizontalAlignment: TextInput.AlignHCenter
                     verticalAlignment: TextInput.AlignVCenter
@@ -167,7 +167,7 @@ Item {
                         text: "Min: " + popup.minValue
                         color: "#1A4DB5"
                         font.pixelSize: 13
-                        font.bold: true
+
                         Layout.fillWidth: true
                     }
 
@@ -177,7 +177,7 @@ Item {
                         text: "Max: " + popup.maxValue
                         color: "#1A4DB5"
                         font.pixelSize: 13
-                        font.bold: true
+
                         Layout.fillWidth: true
                     }
                 }
@@ -188,7 +188,7 @@ Item {
                 text: popup.errorText
                 color: "#FF5252"
                 font.pixelSize: 13
-                font.bold: true
+
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 visible: popup.hasError
@@ -218,7 +218,7 @@ Item {
                             anchors.centerIn: parent
                             text: modelData
                             font.pixelSize: 18
-                            font.bold: true
+
                             color: "#333"
                         }
 
@@ -254,7 +254,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "Cancel"
-                        font.bold: true
+
                         font.pixelSize: 22
                     }
 
@@ -276,7 +276,7 @@ Item {
                         anchors.centerIn: parent
                         text: "Save"
                         color: "white"
-                        font.bold: true
+
                         font.pixelSize: 22
                     }
 

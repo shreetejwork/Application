@@ -46,7 +46,7 @@ Item {
                 anchors.centerIn: parent
                 text: root.value
                 font.pixelSize: vcTypography.body
-                font.bold: true
+
                 color: "#1F2937"
             }
         }
@@ -73,7 +73,7 @@ Item {
                     anchors.centerIn: parent
                     text: "+"
                     font.pixelSize: vcTypography.heading
-                    font.bold: true
+
                     color: "white"
                 }
 
@@ -106,7 +106,7 @@ Item {
                     anchors.centerIn: parent
                     text: "−"
                     font.pixelSize: vcTypography.heading
-                    font.bold: true
+
                     color: "white"
                 }
 
@@ -139,7 +139,7 @@ Item {
                 anchors.centerIn: parent
                 text: "Save"
                 font.pixelSize: vcTypography.small
-                font.bold: true
+
                 color: "white"
             }
 

@@ -592,7 +592,7 @@ Rectangle {
             text: parent.text
 
             font.pixelSize: keyboard.keyFontSize * keyboard.scale
-            font.bold: true
+
 
             color: "#1A4DB5"
         }
@@ -654,7 +654,7 @@ Rectangle {
                 keyboard.specialKeyFontSize
                 * keyboard.scale
 
-            font.bold: true
+
 
             color: "#1A4DB5"
         }

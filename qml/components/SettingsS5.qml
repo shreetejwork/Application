@@ -194,7 +194,7 @@ Item {
             Text {
                 text: "Network Settings"
                 font.pixelSize: s5Typography.title
-                font.bold: true
+
                 color: "#1A4DB5"
             }
 
@@ -231,7 +231,7 @@ Item {
                         Text {
                             text: "WIFI"
                             font.pixelSize: s5Typography.title
-                            font.bold: true
+
                             color: "#1A4DB5"
                         }
 
@@ -279,7 +279,7 @@ Item {
                             Text {
                                 text: root.nmcliAvailable ? "WiFi is Turned Off" : "WiFi Management Not Available"
                                 font.pixelSize: s5Typography.body
-                                font.bold: true
+
                                 color: root.nmcliAvailable ? "#AAAAAA" : "#FF6B6B"
                             }
 
@@ -330,14 +330,14 @@ Item {
                                                 text: "Connected"
                                                 font.pixelSize: 16
                                                 color: "#1F2937"
-                                                font.bold: true
+
                                             }
                                         }
 
                                         Text {
                                             text: root.connectedSSID
                                             font.pixelSize: s5Typography.body
-                                            font.bold: true
+
                                             color: "#1A4DB5"
                                             elide: Text.ElideRight
                                         }
@@ -370,7 +370,7 @@ Item {
                                             anchors.centerIn: parent
                                             text: "Connected"
                                             font.pixelSize: 16
-                                            font.bold: true
+
                                             color: "#FFFFFF"
                                         }
                                     }
@@ -384,7 +384,7 @@ Item {
                                 Text {
                                     text: "Available Networks"
                                     font.pixelSize: s5Typography.body
-                                    font.bold: true
+
                                     color: "#1F2937"
                                 }
 
@@ -433,7 +433,7 @@ Item {
                                             Text {
                                                 text: model.name
                                                 font.pixelSize: s5Typography.body
-                                                font.bold: true
+
                                                 color: "#1F2937"
                                                 elide: Text.ElideRight
                                             }
@@ -472,7 +472,7 @@ Item {
                                                 anchors.centerIn: parent
                                                 text: "Connect"
                                                 font.pixelSize: 16
-                                                font.bold: true
+
                                                 color: "#FFFFFF"
                                             }
 
@@ -506,7 +506,7 @@ Item {
                     Text {
                         text: "LAN"
                         font.pixelSize: s5Typography.title
-                        font.bold: true
+
                         color: "#1A4DB5"
                     }
 
@@ -535,7 +535,7 @@ Item {
                                                           anchors.fill: parent
 
                                                           font.pixelSize: 22
-                                                          font.bold: true
+
                                                           color: "#1A4DB5"
 
                                                           background: null
@@ -572,7 +572,7 @@ Item {
                                     id: ipField
                                     anchors.fill: parent
                                     font.pixelSize: 22
-                                    font.bold: true
+
                                     color: "#1A4DB5"
                                     background: null
                                     padding: 0
@@ -605,7 +605,7 @@ Item {
                                     id: subnetField
                                     anchors.fill: parent
                                     font.pixelSize: 22
-                                    font.bold: true
+
                                     color: "#1A4DB5"
                                     background: null
                                     padding: 0
@@ -638,7 +638,7 @@ Item {
                                     id: gatewayField
                                     anchors.fill: parent
                                     font.pixelSize: 22
-                                    font.bold: true
+
                                     color: "#1A4DB5"
                                     background: null
                                     padding: 0
@@ -672,7 +672,7 @@ Item {
                                     anchors.fill: parent
                                     text: "8.8.8.8"
                                     font.pixelSize: 22
-                                    font.bold: true
+
                                     color: "#1A4DB5"
                                     background: null
                                     padding: 0
@@ -707,7 +707,7 @@ Item {
                                     anchors.centerIn: parent
                                     text: "Apply Static IP"
                                     color: "#FFFFFF"
-                                    font.bold: true
+
                                     font.pixelSize: s5Typography.body
                                 }
 
@@ -787,7 +787,7 @@ Item {
                 Text {
                     text: "Connect to WiFi"
                     font.pixelSize: 22
-                    font.bold: true
+
                     color: "#1A4DB5"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }
@@ -926,7 +926,7 @@ Item {
                         text: "Cancel"
                         color: "#374151"
                         font.pixelSize: s5Typography.caption
-                        font.bold: true
+
                     }
 
                     MouseArea {
@@ -947,7 +947,7 @@ Item {
                         text: passwordPopup.isConnecting ? "Connecting..." : "Connect"
                         color: "#FFFFFF"
                         font.pixelSize: s5Typography.caption
-                        font.bold: true
+
                     }
 
                     MouseArea {

@@ -104,7 +104,7 @@ Rectangle {
                         text: Qt.formatTime(GlobalState.globalDateTime, " HH:mm:ss")
                         color: "white"
                         font.pixelSize: topBarTypography.heading
-                        font.bold: true
+
                     }
 
                     Text {
@@ -207,7 +207,7 @@ Rectangle {
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
                         font.pixelSize: topBarTypography.subHeading
-                        font.bold: true
+
                     }
                 }
 
@@ -276,7 +276,6 @@ Rectangle {
                             text: root.userRole
                             color: "white"
                             font.pixelSize: topBarTypography.subHeading
-                            // font.bold: true
                         }
                     }
 
@@ -286,13 +285,13 @@ Rectangle {
 
                         text: userNameText.showFullName
                               ? root.userName
-                              : (root.userName.length > 8
-                                 ? root.userName.substring(0, 8) + "..."
+                              : (root.userName.length > 10
+                                 ? root.userName.substring(0, 10) + "..."
                                  : root.userName)
 
                         color: "white"
                         font.pixelSize: topBarTypography.heading
-                        font.bold: true
+
 
                         MouseArea {
                             anchors.fill: parent
@@ -347,7 +346,7 @@ Rectangle {
                              ? (countdownCircle.blink ? 0.2 : 1)
                              : 1
                     font.pixelSize: topBarTypography.body
-                    font.bold: true
+
                 }
 
                 MouseArea {

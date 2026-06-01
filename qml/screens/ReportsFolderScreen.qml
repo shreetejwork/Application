@@ -283,7 +283,7 @@ Item {
                     Text {
                         text: "Reports Folder"
                         font.pixelSize: 26
-                        font.bold: true
+
                         color: "#1A4DB5"
                     }
 
@@ -561,7 +561,7 @@ Item {
 
                             Text {
                                 text: "File Name"
-                                font.bold: true
+
                                 color: "#FFFFFF"
                                 font.pixelSize: 16
                                 width: parent.width * 0.55
@@ -618,7 +618,7 @@ Item {
                                         anchors.centerIn: parent
                                         text: "✓"
                                         font.pixelSize: 13
-                                        font.bold: true
+
                                         color: "#FFFFFF"
                                         visible: rowRect.isSelected
                                     }

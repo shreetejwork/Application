@@ -150,7 +150,7 @@ Item {
                 Text {
                     text: "Batch Report"
                     font.pixelSize: 26
-                    font.bold: true
+
                     color: "#1A4DB5"
                 }
 
@@ -294,7 +294,7 @@ Item {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: root.visibleCount
                                 font.pixelSize: 17
-                                font.weight: Font.DemiBold
+                                font.weight: Font.Normal
                                 color: "#1A4DB5"
                             }
                             Text {
@@ -410,12 +410,12 @@ Item {
                             anchors.margins: 12 * root.scale
                             spacing: root.colSpacing
 
-                            Text { text: "S/No";       width: root.colSno;     font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
-                            Text { text: "Batch";      width: root.colBatch;   font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
-                            Text { text: "Product";    width: root.colProduct; font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
-                            Text { text: "Started At"; width: root.colStarted; font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
-                            Text { text: "Ended At";   width: root.colEnded;   font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
-                            Text { text: "Save PDF";   width: root.colPdf;     font.bold: true; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "S/No";       width: root.colSno;     color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "Batch";      width: root.colBatch;   color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "Product";    width: root.colProduct; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "Started At"; width: root.colStarted; color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "Ended At";   width: root.colEnded;   color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
+                            Text { text: "Save PDF";   width: root.colPdf;     color: "#FFF"; font.pixelSize: 20; verticalAlignment: Text.AlignVCenter; height: parent.height }
                         }
                     }
 

@@ -154,7 +154,7 @@ Popup {
 
             color: "white"
 
-            font.bold: true
+
             font.pixelSize: 18
         }
 
@@ -231,7 +231,7 @@ Popup {
 
                     color: "#1A4DB5"
 
-                    font.bold: true
+
                     font.pixelSize: 19
                 }
             }
@@ -287,7 +287,7 @@ Popup {
                                 text: modelData
 
                                 font.pixelSize: 18
-                                font.bold: true
+
 
                                 color: "#1A1A2E"
                             }
@@ -343,7 +343,7 @@ Popup {
                 text: "Edit Password"
 
                 font.pixelSize: editPwdTypography.title
-                font.bold: true
+
 
                 color: "#1A4DB5"
             }
@@ -371,7 +371,7 @@ Popup {
                     text: "--- Select ---"
 
                     font.pixelSize: editPwdTypography.body
-                    font.bold: true
+
                 }
 
                 Text {
@@ -384,7 +384,7 @@ Popup {
                     color: "#AAAAAA"
 
                     font.pixelSize: editPwdTypography.body
-                    font.bold: true
+
                 }
 
                 MouseArea {
@@ -432,7 +432,7 @@ Popup {
                     text: "--- Select ---"
 
                     font.pixelSize: editPwdTypography.body
-                    font.bold: true
+
                 }
 
                 Text {
@@ -445,7 +445,7 @@ Popup {
                     color: "#AAAAAA"
 
                     font.pixelSize: editPwdTypography.body
-                    font.bold: true
+
                 }
 
                 MouseArea {
@@ -498,7 +498,7 @@ Popup {
                     echoMode: TextInput.Password
 
                     font.pixelSize: editPwdTypography.heading
-                    font.bold: true
+
 
                     color: "#000000"
 
@@ -557,7 +557,7 @@ Popup {
                     color: "#AAAAAA"
 
                     font.pixelSize: editPwdTypography.body
-                    font.bold: true
+
 
                     visible: newPasswordInput.text.length === 0
                 }
@@ -587,7 +587,7 @@ Popup {
 
                         color: "#1A4DB5"
 
-                        font.bold: true
+
                     }
 
                     MouseArea {
@@ -632,7 +632,7 @@ Popup {
                     echoMode: TextInput.Password
 
                     font.pixelSize: editPwdTypography.heading
-                    font.bold: true
+
 
                     color: "#000000"
 
@@ -693,7 +693,7 @@ Popup {
                     color: "#AAAAAA"
 
                     font.pixelSize: editPwdTypography.body
-                    font.bold: true
+
 
                     visible: confirmPasswordInput.text.length === 0
                 }
@@ -723,7 +723,7 @@ Popup {
 
                         color: "#1A4DB5"
 
-                        font.bold: true
+
                     }
 
                     MouseArea {
@@ -762,7 +762,7 @@ Popup {
 
                         color: "white"
 
-                        font.bold: true
+
                     }
 
                     MouseArea {
@@ -811,7 +811,7 @@ Popup {
 
                         color: "#1A4DB5"
 
-                        font.bold: true
+
                     }
 
                     MouseArea {

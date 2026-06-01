@@ -33,7 +33,7 @@ Item {
                 Text {
                     text: "Developer Settings"
                     font.pixelSize: 28
-                    font.bold: true
+
                     color: "#1A4DB5"
                 }
 
@@ -72,7 +72,7 @@ Item {
                             Text {
                                 text: "D-Duster Screen"
                                 font.pixelSize: 20
-                                font.bold: true
+
                                 color: "#111827"
                             }
 
@@ -115,7 +115,7 @@ Item {
                             Text {
                                 text: "N/W Settings screen"
                                 font.pixelSize: 20
-                                font.bold: true
+
                                 color: "#111827"
                             }
 
@@ -158,7 +158,7 @@ Item {
                             Text {
                                 text: "Audit Trail Report"
                                 font.pixelSize: 20
-                                font.bold: true
+
                                 color: "#111827"
                             }
 
@@ -202,7 +202,7 @@ Item {
                             Text {
                                 text: "Product Library"
                                 font.pixelSize: 20
-                                font.bold: true
+
                                 color: "#111827"
                             }
 

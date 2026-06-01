@@ -130,7 +130,7 @@ Item {
                 Text {
                     text: "Reports Log"
                     font.pixelSize: 26
-                    font.bold: true
+
                     color: "#1A4DB5"
                 }
 
@@ -231,7 +231,7 @@ Item {
                             Text {
                                 text: "Sr"
                                 width: root.colSr
-                                font.bold: true
+
                                 color: "#FFF"
                                 font.pixelSize: 20
                             }
@@ -245,7 +245,7 @@ Item {
                                        ? root.colType
                                        : root.colFile
 
-                                font.bold: true
+
                                 color: "#FFF"
                                 font.pixelSize: 20
                             }
@@ -258,7 +258,7 @@ Item {
                                         : "Generated Date"
 
                                 width: root.colDate
-                                font.bold: true
+
                                 color: "#FFF"
                                 font.pixelSize: 20
                             }
@@ -269,7 +269,7 @@ Item {
                                       : "By"
 
                                 width: root.colFrom
-                                font.bold: true
+
                                 color: "#FFF"
                                 font.pixelSize: 20
                             }
@@ -282,7 +282,7 @@ Item {
                                 width: root.colTo
                                 visible: root.activeFilter === "Created"
 
-                                font.bold: true
+
                                 color: "#FFF"
                                 font.pixelSize: 20
                             }
@@ -295,7 +295,7 @@ Item {
                                 width: root.colBy
                                 visible: root.activeFilter === "Created"
 
-                                font.bold: true
+
                                 color: "#FFF"
                                 font.pixelSize: 20
                             }

@@ -83,7 +83,6 @@ Rectangle {
             Text {
                 text:             card.title
                 font.pixelSize:   cardTypography.body
-                font.weight:      Font.Bold
                 color:            "#1A1A1A"
                 Layout.fillWidth: true
                 elide:            Text.ElideRight
@@ -116,7 +115,6 @@ Rectangle {
             Layout.alignment:    Qt.AlignHCenter
             text:                card.detail
             font.pixelSize:      cardTypography.heading
-            font.weight:         Font.DemiBold
             color:               "#111111"
             horizontalAlignment: Text.AlignHCenter
             wrapMode:            Text.WordWrap

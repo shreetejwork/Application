@@ -202,7 +202,7 @@ Item {
                 anchors.centerIn: parent
                 text: btnRoot.label
                 font.pixelSize: 28
-                font.bold: true
+
                 color: "#1A4DB5"
             }
 
@@ -243,7 +243,7 @@ Item {
                 text: "User"
                 anchors.horizontalCenter: parent.horizontalCenter
                 font.pixelSize: 28
-                font.bold: true
+
                 font.family: "Roboto"
                 color: "#1A1A2E"
             }

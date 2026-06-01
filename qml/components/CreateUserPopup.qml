@@ -158,7 +158,7 @@ Popup {
 
             color: "white"
 
-            font.bold: true
+
             font.pixelSize: 18
         }
 
@@ -209,7 +209,7 @@ Popup {
                 text: selectionPopup.title
                 anchors.horizontalCenter: parent.horizontalCenter
                 padding: 16 * scale
-                font.bold: true
+
                 color: "#1A4DB5"
                 font.pixelSize: 20
             }
@@ -226,7 +226,7 @@ Popup {
                         anchors.centerIn: parent
                         text: modelData
                         font.pixelSize: 18
-                        font.bold: true
+
                         color: "#1A1A2E"
                     }
 
@@ -275,7 +275,7 @@ Popup {
                 text: "Create User"
 
                 font.pixelSize: createUserTypography.title
-                font.bold: true
+
 
                 color: "#1A4DB5"
             }
@@ -302,7 +302,7 @@ Popup {
                     text: "--- Select ---"
 
                     font.pixelSize: createUserTypography.body
-                    font.bold: true
+
                 }
 
                 Text {
@@ -315,7 +315,7 @@ Popup {
                     color: "#AAAAAA"
 
                     font.pixelSize: createUserTypography.body
-                    font.bold: true
+
                 }
 
                 MouseArea {
@@ -364,7 +364,7 @@ Popup {
                     property bool isPasswordField: false
 
                     font.pixelSize: 18
-                    font.bold: true
+
 
                     color: "#1A1A2E"
 
@@ -427,7 +427,7 @@ Popup {
                     color: "#AAAAAA"
 
                     font.pixelSize: createUserTypography.body
-                    font.bold: true
+
                 }
             }
 
@@ -458,7 +458,7 @@ Popup {
                     echoMode: TextInput.Password
 
                     font.pixelSize: createUserTypography.heading
-                    font.bold: true
+
 
                     color: "#000000"
 
@@ -502,7 +502,7 @@ Popup {
                     color: "#AAAAAA"
 
                     font.pixelSize: createUserTypography.body
-                    font.bold: true
+
 
                     visible: passwordInput.text.length === 0
                 }
@@ -532,7 +532,7 @@ Popup {
 
                         color: "#1A4DB5"
 
-                        font.bold: true
+
                     }
 
                     MouseArea {
@@ -589,7 +589,7 @@ Popup {
 
                         color: "white"
 
-                        font.bold: true
+
                     }
 
                     MouseArea {
@@ -639,7 +639,7 @@ Popup {
 
                         color: "#1A4DB5"
 
-                        font.bold: true
+
                     }
 
                     MouseArea {

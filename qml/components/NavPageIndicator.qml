@@ -146,8 +146,8 @@ Item {
 
                                 font.weight:
                                     index === root.currentPage
-                                    ? Font.Bold
-                                    : Font.DemiBold
+                                    ? Font.Normal
+                                    : Font.Normal
 
                                 color:
                                     index === root.currentPage

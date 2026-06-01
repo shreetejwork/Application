@@ -57,7 +57,7 @@ Item {
             Text {
                 text: "Validation Time Scheduler"
                 font.pixelSize: s3Typography.title
-                font.bold: true
+
                 color: "#1A4DB5"
             }
 
@@ -107,7 +107,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: "Time"
-                                font.bold: true
+
                                 font.pixelSize: s3Typography.heading
                                 color: "#374151"
                             }
@@ -120,7 +120,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: "Edit"
-                                font.bold: true
+
                                 font.pixelSize: s3Typography.heading
                                 color: "#374151"
                             }
@@ -133,7 +133,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: "ON/OFF"
-                                font.bold: true
+
                                 font.pixelSize: s3Typography.heading
                                 color: "#374151"
                             }
@@ -176,7 +176,7 @@ Item {
                                             anchors.centerIn: parent
                                             text: model.time
                                             color: "#1A4DB5"
-                                            font.bold: true
+
                                             font.pixelSize: s3Typography.heading
                                         }
                                     }
@@ -279,7 +279,6 @@ Item {
                                     verticalAlignment: Text.AlignVCenter
 
                                     font.pixelSize: s3Typography.title
-                                    font.bold: Tumbler.displacement === 0
 
                                     opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
                                     scale: 1.0 - Math.abs(Tumbler.displacement) * 0.15
@@ -300,7 +299,7 @@ Item {
                                     Text {
                                         text: "Hours"
                                         font.pixelSize: s3Typography.body
-                                        font.bold: true
+
                                         color: "#5A6A85"
                                         width: parent.width
                                         horizontalAlignment: Text.AlignHCenter
@@ -338,7 +337,7 @@ Item {
                                     Text {
                                         text: "Minutes"
                                         font.pixelSize: s3Typography.body
-                                        font.bold: true
+
                                         color: "#5A6A85"
                                         width: parent.width
                                         horizontalAlignment: Text.AlignHCenter
@@ -375,7 +374,6 @@ Item {
                                                 verticalAlignment: Text.AlignVCenter
 
                                                 font.pixelSize: s3Typography.title
-                                                font.bold: Tumbler.displacement === 0
 
                                                 opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
                                                 scale: 1.0 - Math.abs(Tumbler.displacement) * 0.15
@@ -399,7 +397,7 @@ Item {
                                     anchors.centerIn: parent
                                     text: "Save Time"
                                     color: "#FFFFFF"
-                                    font.bold: true
+
                                     font.pixelSize: s3Typography.subHeading
                                 }
 
@@ -447,7 +445,7 @@ Item {
                             anchors.centerIn: parent
                             text: "SAVE"
                             color: "#FFFFFF"
-                            font.bold: true
+
                             font.pixelSize: s3Typography.subHeading
                         }
 

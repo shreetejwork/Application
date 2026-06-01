@@ -191,20 +191,20 @@ Item {
             Text {
                 text: root.label
                 font.pixelSize: Typography.body
-                font.bold: true
+
                 color: "#1A4DB5"
             }
 
             Text {
                 text: ":"
                 font.pixelSize: Typography.body
-                font.bold: true
+
             }
 
             Text {
                 text: root.value
                 font.pixelSize: Typography.body
-                font.bold: true
+
             }
         }
 

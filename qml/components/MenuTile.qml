@@ -35,7 +35,6 @@ import QtQuick
             text: label
             anchors.horizontalCenter: parent.horizontalCenter
             font.pixelSize: 18
-            font.bold: true
             color: "#1A1A2E"
             horizontalAlignment: Text.AlignHCenter
         }

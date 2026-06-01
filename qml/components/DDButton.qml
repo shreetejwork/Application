@@ -71,7 +71,6 @@ Rectangle {
             font.pixelSize: root.useSymbols
                                 ? knob.width * 0.30   // bigger for symbols
                                 : knob.width * 0.30   // smaller for ON/OFF
-            font.bold: true
 
             color: root.toggled ? "#1A4DB5" : "#6B7280"
         }

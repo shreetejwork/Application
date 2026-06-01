@@ -60,7 +60,7 @@ Item {
                     Text {
                         text: "Batch Menu"
                         font.pixelSize: 18
-                        font.bold: true
+
                         color: "#1A4DB5"
                     }
 
@@ -354,7 +354,7 @@ Item {
                     Text {
                         text: "D Duster Menu"
                         font.pixelSize: 18
-                        font.bold: true
+
                         color: "#1A4DB5"
                     }
 
@@ -387,7 +387,7 @@ Item {
                             Text {
                                 text: "DD ON/OFF"
                                 font.pixelSize: 13
-                                font.bold: true
+
                                 color: "#6B7280"
                                 Layout.alignment: Qt.AlignHCenter
                             }
@@ -418,7 +418,7 @@ Item {
                         Text {
                             text: "Power (Volt)"
                             font.pixelSize: 13
-                            font.bold: true
+
                             color: "#6B7280"
                             anchors.top: parent.top
                             anchors.left: parent.left
@@ -455,7 +455,7 @@ Item {
                         Text {
                             text: "Frequency (Hz)"
                             font.pixelSize: 13
-                            font.bold: true
+
                             color: "#6B7280"
                             anchors.top: parent.top
                             anchors.left: parent.left

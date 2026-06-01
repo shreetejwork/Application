@@ -161,7 +161,7 @@ Popup {
                 text: "Add Product"
 
                 font.pixelSize: 26 * popup.scaleFactor
-                font.bold: true
+
 
                 color: "#1A4DB5"
             }

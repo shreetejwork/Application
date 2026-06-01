@@ -185,7 +185,7 @@ Item {
                 Text {
                     text: "Batch History"
                     font.pixelSize: 26
-                    font.bold: true
+
                     color: "#1A4DB5"
                 }
 
@@ -247,7 +247,7 @@ Item {
                                 width: root.colSr
 
                                 font.pixelSize: 20
-                                font.bold: true
+
                                 color: "#FFFFFF"
                             }
 
@@ -256,7 +256,7 @@ Item {
                                 width: root.colBatch
 
                                 font.pixelSize: 20
-                                font.bold: true
+
                                 color: "#FFFFFF"
                             }
 
@@ -265,7 +265,7 @@ Item {
                                 width: root.colDate
 
                                 font.pixelSize: 20
-                                font.bold: true
+
                                 color: "#FFFFFF"
                             }
 
@@ -274,7 +274,7 @@ Item {
                                 width: root.colBy
 
                                 font.pixelSize: 20
-                                font.bold: true
+
                                 color: "#FFFFFF"
                             }
                         }

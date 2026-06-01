@@ -353,7 +353,7 @@ Item {
                 Text {
                     text: "Product Library"
                     font.pixelSize: 26
-                    font.bold: true
+
                     color: "#1A4DB5"
                 }
 
@@ -624,7 +624,7 @@ Item {
                                     verticalAlignment: Text.AlignVCenter
 
                                     color: "#FFFFFF"
-                                    font.bold: true
+
                                     font.pixelSize: 18
                                 }
 
@@ -637,7 +637,7 @@ Item {
                                     verticalAlignment: Text.AlignVCenter
 
                                     color: "#FFFFFF"
-                                    font.bold: true
+
                                     font.pixelSize: 18
                                 }
 
@@ -649,7 +649,7 @@ Item {
                                     verticalAlignment: Text.AlignVCenter
 
                                     color: "#FFFFFF"
-                                    font.bold: true
+
                                     font.pixelSize: 18
 
                                     elide: Text.ElideRight
@@ -664,7 +664,7 @@ Item {
                                     verticalAlignment: Text.AlignVCenter
 
                                     color: "#FFFFFF"
-                                    font.bold: true
+
                                     font.pixelSize: 18
                                 }
                             }
@@ -737,7 +737,7 @@ Item {
                                             text: "✓"
                                             visible: isSelected
                                             color: "#FFFFFF"
-                                            font.bold: true
+
                                             font.pixelSize: 12
                                         }
 
@@ -770,7 +770,7 @@ Item {
                                             anchors.centerIn: parent
                                             text: active ? "A" : ""
                                             color: "#FFFFFF"
-                                            font.bold: true
+
                                             font.pixelSize: 12
                                         }
                                     }
@@ -850,7 +850,7 @@ Item {
                         Text {
                             text: "Details"
                             font.pixelSize: 20
-                            font.bold: true
+
                             color: "#1A4DB5"
                         }
 

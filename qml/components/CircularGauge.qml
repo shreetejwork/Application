@@ -288,7 +288,6 @@ Item {
         Text {
             text: root.value
             font.pixelSize: gaugeTypography.heading
-            // font.bold: true
             color: "#2446B8"
             anchors.horizontalCenter: parent.horizontalCenter
         }
@@ -296,7 +295,7 @@ Item {
         Text {
             text: root.label
             font.pixelSize: gaugeTypography.small
-            font.bold: true
+
             color: "#333"
             anchors.horizontalCenter: parent.horizontalCenter
         }
@@ -329,7 +328,7 @@ Item {
                 Text {
                     text: root.thresholdLabel
                     font.pixelSize: gaugeTypography.small
-                    font.bold: true
+
                     color: "#2446B8"
                     anchors.horizontalCenter: parent.horizontalCenter
                 }

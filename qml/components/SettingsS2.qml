@@ -41,7 +41,7 @@ Item {
         id: titleText
         text: "Time & Date Settings"
         font.pixelSize: s2Typography.title
-        font.bold: true
+
         color: "#1A4DB5"
         anchors.left: parent.left
         anchors.top: parent.top
@@ -82,7 +82,6 @@ Item {
                         text: modelData < 10 ? "0" + modelData : modelData
 
                         font.pixelSize: s2Typography.heading
-                        font.bold: Tumbler.displacement === 0
 
                         opacity: 1.0 - Math.abs(Tumbler.displacement) * 0.6
                         scale: 1.0 - Math.abs(Tumbler.displacement) * 0.2
@@ -112,7 +111,7 @@ Item {
                         Text {
                             text: "Hours"
                             font.pixelSize: s2Typography.body
-                            font.bold: true
+
                             color: "#5A6A85"
                             horizontalAlignment: Text.AlignHCenter
                             width: parent.width
@@ -169,7 +168,7 @@ Item {
                         Text {
                             text: "Minutes"
                             font.pixelSize: s2Typography.body
-                            font.bold: true
+
                             color: "#5A6A85"
                             horizontalAlignment: Text.AlignHCenter
                             width: parent.width
@@ -221,7 +220,7 @@ Item {
                     anchors.centerIn: parent
                     text: "Save"
                     color: "#FFFFFF"
-                    font.bold: true
+
                     font.pixelSize: s2Typography.title
                 }
 
@@ -283,7 +282,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: "<"
                                 color: "#1A4DB5"
-                                font.bold: true
+
                                 font.pixelSize: s2Typography.title
                             }
 
@@ -309,7 +308,7 @@ Item {
                             Text {
                                 anchors.centerIn: parent
                                 text: Qt.formatDate(new Date(calendar.displayYear, calendar.displayMonth, 1), "MMMM yyyy")
-                                font.bold: true
+
                                 font.pixelSize: s2Typography.heading
                                 color: "#1A4DB5"
                             }
@@ -334,7 +333,7 @@ Item {
                                 anchors.centerIn: parent
                                 text: ">"
                                 color: "#1A4DB5"
-                                font.bold: true
+
                                 font.pixelSize: s2Typography.title
                             }
 
@@ -368,7 +367,7 @@ Item {
                                 Text {
                                     anchors.centerIn: parent
                                     text: modelData
-                                    font.bold: true
+
                                     font.pixelSize: s2Typography.subHeading
                                     color: "#1A4DB5"
                                 }
@@ -416,7 +415,6 @@ Item {
                                 anchors.centerIn: parent
                                 text: model.day
                                 font.pixelSize: s2Typography.subHeading
-                                font.bold: isSelected || isToday
 
                                 color: isSelected ? "#FFFFFF"
                                                   : model.month === calendar.displayMonth ? "#333333"
@@ -465,7 +463,7 @@ Item {
                         anchors.centerIn: parent
                         text: "Save"
                         color: "#FFFFFF"
-                        font.bold: true
+
                         font.pixelSize: s2Typography.title
                     }
 
@@ -541,7 +539,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "<"
-                        font.bold: true
+
                         font.pixelSize: s2Typography.title
                         color: "#1A4DB5"
                     }
@@ -568,7 +566,7 @@ Item {
                         text: monthYearPopup.mode === "year"
                               ? (monthYearPopup.startYear + " — " + (monthYearPopup.startYear + 11))
                               : calendar.displayYear
-                        font.bold: true
+
                         font.pixelSize: s2Typography.heading
                         color: "#1A4DB5"
                     }
@@ -583,7 +581,7 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: ">"
-                        font.bold: true
+
                         font.pixelSize: s2Typography.title
                         color: "#1A4DB5"
                     }
@@ -625,7 +623,7 @@ Item {
                             text: monthYearPopup.mode === "year"
                                   ? yearValue
                                   : Qt.formatDate(new Date(2000, index, 1), "MMM")
-                            font.bold: true
+
                             font.pixelSize: s2Typography.subHeading
                             color: parent.color === "#1A4DB5" ? "#FFFFFF" : "#333333"
                         }

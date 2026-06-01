@@ -41,7 +41,6 @@ Button {
         verticalAlignment: Text.AlignVCenter
 
         font.pixelSize: Typography.body
-        font.bold: true
         color: btn.enabled ? "white" : "#6B7280"
     }
 
