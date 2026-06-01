@@ -210,7 +210,11 @@ Item {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
                         radius: 10
-                        color: mouseArea.pressed ? "#CCCCCC" : "#F0F0F0"
+
+                        color: modelData === "⌫"
+                               ? (mouseArea.pressed ? "#E6B87A" : "#FFCC99")
+                               : (mouseArea.pressed ? "#CCCCCC" : "#F0F0F0")
+
                         border.color: "#E0E0E0"
                         border.width: 1
 
@@ -219,7 +223,7 @@ Item {
                             text: modelData
                             font.pixelSize: 18
 
-                            color: "#333"
+                            color: modelData === "⌫" ? "#333" : "#333"
                         }
 
                         MouseArea {

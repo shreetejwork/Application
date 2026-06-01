@@ -440,7 +440,7 @@ Item {
                     spacing: 4
 
                     Text {
-                        text: "D Duster Menu"
+                        text: "De-duster Menu"
                         font.pixelSize: 18
 
                         color: "#1A4DB5"

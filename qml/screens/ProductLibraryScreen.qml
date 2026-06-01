@@ -629,7 +629,7 @@ Item {
                                 }
 
                                 Text {
-                                    text: "SR No"
+                                    text: "Sr. No."
 
                                     Layout.preferredWidth: root.colSr
 

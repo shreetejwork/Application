@@ -408,6 +408,8 @@ Rectangle {
                     text: "⌫"
                     widthRatio: 2.2
 
+                    color: "#FFCC99"
+
                     MouseArea {
 
                         anchors.fill: parent
