@@ -400,63 +400,6 @@ Popup {
             spacing: 16 * popup.scaleFactor
 
             // =============================================
-            // CANCEL
-            // =============================================
-
-            Rectangle {
-
-                width: (parent.width - parent.spacing) / 2
-                height: 56 * popup.scaleFactor
-
-                radius: 12 * popup.scaleFactor
-
-                color: cancelHover.containsMouse
-                       ? "#EEF3FF"
-                       : "#FFFFFF"
-
-                border.color: "#1A4DB5"
-                border.width: 1.5
-
-                Text {
-
-                    anchors.centerIn: parent
-
-                    text: "Cancel"
-
-                    font.pixelSize: 20 * popup.scaleFactor
-                    font.weight: Font.Medium
-
-                    color: "#1A4DB5"
-                }
-
-                MouseArea {
-                    id: cancelHover
-
-                    anchors.fill: parent
-
-                    hoverEnabled: true
-
-                    cursorShape: Qt.PointingHandCursor
-
-                    onClicked: {
-
-                        productNameField.text = ""
-                        productCodeField.text = ""
-
-                        popup.productName = ""
-                        popup.productCode = ""
-
-                        validationMsg.text = ""
-
-                        GlobalState.loginKeyboardRequest = false
-                        GlobalState.activeInputField = null
-
-                        popup.close()
-                    }
-                }
-            }
-
-            // =============================================
             // SAVE
             // =============================================
 
@@ -570,6 +513,63 @@ Popup {
                     cursorShape: Qt.PointingHandCursor
 
                     onClicked: saveButton.clicked()
+                }
+            }
+
+            // =============================================
+            // CANCEL
+            // =============================================
+
+            Rectangle {
+
+                width: (parent.width - parent.spacing) / 2
+                height: 56 * popup.scaleFactor
+
+                radius: 12 * popup.scaleFactor
+
+                color: cancelHover.containsMouse
+                       ? "#EEF3FF"
+                       : "#FFFFFF"
+
+                border.color: "#1A4DB5"
+                border.width: 1.5
+
+                Text {
+
+                    anchors.centerIn: parent
+
+                    text: "Cancel"
+
+                    font.pixelSize: 20 * popup.scaleFactor
+                    font.weight: Font.Medium
+
+                    color: "#1A4DB5"
+                }
+
+                MouseArea {
+                    id: cancelHover
+
+                    anchors.fill: parent
+
+                    hoverEnabled: true
+
+                    cursorShape: Qt.PointingHandCursor
+
+                    onClicked: {
+
+                        productNameField.text = ""
+                        productCodeField.text = ""
+
+                        popup.productName = ""
+                        popup.productCode = ""
+
+                        validationMsg.text = ""
+
+                        GlobalState.loginKeyboardRequest = false
+                        GlobalState.activeInputField = null
+
+                        popup.close()
+                    }
                 }
             }
         }

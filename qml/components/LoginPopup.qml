@@ -668,7 +668,7 @@ Popup {
 
                         color: "white"
 
-
+                        font.pixelSize: loginTypography.body
                     }
 
                     MouseArea {
@@ -742,7 +742,7 @@ Popup {
 
                         color: "#1A4DB5"
 
-
+                        font.pixelSize: loginTypography.body
                     }
 
                     MouseArea {

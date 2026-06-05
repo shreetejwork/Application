@@ -903,7 +903,7 @@ Item {
 
                 color: "#DCE9FF"
 
-                opacity: pulseAnim.running ? 0.48 : 0.38
+                opacity: pulseAnim.running ? 0.78 : 0.68
 
                 scale: pulseAnim.running ? 1.08 : 0.95
 

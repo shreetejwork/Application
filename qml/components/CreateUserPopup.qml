@@ -8,7 +8,7 @@ Popup {
     // =========================================================
     // TYPOGRAPHY FOR CREATE USER POPUP
     // =========================================================
-    
+
     Typography {
         id: createUserTypography
         scale: 1.0
@@ -589,7 +589,7 @@ Popup {
 
                         color: "white"
 
-
+                        font.pixelSize: createUserTypography.body
                     }
 
                     MouseArea {
@@ -639,7 +639,7 @@ Popup {
 
                         color: "#1A4DB5"
 
-
+                        font.pixelSize: createUserTypography.body
                     }
 
                     MouseArea {

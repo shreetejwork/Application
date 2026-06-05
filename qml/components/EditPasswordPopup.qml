@@ -762,7 +762,7 @@ Popup {
 
                         color: "white"
 
-
+                        font.pixelSize: editPwdTypography.body
                     }
 
                     MouseArea {
@@ -811,7 +811,7 @@ Popup {
 
                         color: "#1A4DB5"
 
-
+                        font.pixelSize: editPwdTypography.body
                     }
 
                     MouseArea {

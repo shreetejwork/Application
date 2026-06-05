@@ -121,29 +121,6 @@ Popup {
             Layout.alignment: Qt.AlignHCenter
             spacing: 20 * scale
 
-            // CANCEL
-            Rectangle {
-                width: 140 * scale
-                height: 50 * scale
-                radius: 10 * scale
-                border.color: "#1A4DB5"
-                border.width: 2
-                color: "white"
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "Cancel"
-                    color: "#1A4DB5"
-
-                    font.pixelSize: popupTypography.body
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: powerPopup.close()
-                }
-            }
-
             // POWER OFF
             Rectangle {
                 width: 140 * scale
@@ -165,6 +142,29 @@ Popup {
                         powerPopup.close()
                         SystemController.shutdown()
                     }
+                }
+            }
+
+            // CANCEL
+            Rectangle {
+                width: 140 * scale
+                height: 50 * scale
+                radius: 10 * scale
+                border.color: "#1A4DB5"
+                border.width: 2
+                color: "white"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "Cancel"
+                    color: "#1A4DB5"
+
+                    font.pixelSize: popupTypography.body
+                }
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: powerPopup.close()
                 }
             }
         }

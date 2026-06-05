@@ -436,7 +436,7 @@ Popup {
                         text: "Delete User"
                         color: "white"
 
-                        font.pixelSize: 15
+                        font.pixelSize: deleteUserTypography.body
                     }
 
                     MouseArea {
@@ -469,7 +469,7 @@ Popup {
                         text: "Clear"
                         color: "#1A4DB5"
 
-                        font.pixelSize: 15
+                        font.pixelSize: deleteUserTypography.body
                     }
 
                     MouseArea {
