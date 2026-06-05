@@ -239,18 +239,44 @@ Item {
                             Layout.fillWidth: true
                             Layout.fillHeight: true
                             radius: 10
+
                             color: mouseArea.pressed
-                                   ? (modelData === "C" ? "#FF9999" : modelData === "⌫" ? "#FFCC99" : "#CCCCCC")
-                                   : (modelData === "C" ? "#FFCDD2" : modelData === "⌫" ? "#FFE0B2" : "#F0F0F0")
+                                   ? (modelData === "C" ? "#FF9999"
+                                                        : modelData === "⌫" ? "#FFCC99"
+                                                                             : "#CCCCCC")
+                                   : (modelData === "C" ? "#FFCDD2"
+                                                        : modelData === "⌫" ? "#FFE0B2"
+                                                                             : "#F0F0F0")
+
                             border.color: "#E0E0E0"
                             border.width: 1
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: modelData
-                                font.pixelSize: 18
+                            Item {
+                                anchors.fill: parent
 
-                                color: "#333"
+                                Image {
+                                    anchors.centerIn: parent
+
+                                    visible: modelData === "⌫"
+
+                                    source: "qrc:/qt/qml/Application/assets/images/backspace.png"
+
+                                    width: parent.width * 0.7
+                                    height: parent.height * 0.7
+
+                                    fillMode: Image.PreserveAspectFit
+                                }
+
+                                Text {
+                                    anchors.centerIn: parent
+
+                                    visible: modelData !== "⌫"
+
+                                    text: modelData
+
+                                    font.pixelSize: 18
+                                    color: "#333"
+                                }
                             }
 
                             MouseArea {

@@ -113,6 +113,8 @@ Rectangle {
                         font.pixelSize: topBarTypography.subHeading
                         opacity: 0.9
                     }
+
+                    width: 180 * root.scale
                 }
 
                 // ===== BACK BUTTON =====
@@ -145,8 +147,6 @@ Rectangle {
                         }
                     }
                 }
-
-                Item { width: root.width * 0.10 }
 
                 // ===== MENU BUTTON =====
                 Item {

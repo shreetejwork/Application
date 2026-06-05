@@ -351,6 +351,9 @@ Rectangle {
                 SpecialKey {
 
                     text: "⇧"
+
+                    iconSource: "qrc:/qt/qml/Application/assets/images/capslock.png"
+
                     active: capsLock
                     widthRatio: 2.2
 
@@ -404,27 +407,31 @@ Rectangle {
                 }
 
                 SpecialKey {
+                    id: backspaceKey
 
                     text: "⌫"
+                    iconSource: "qrc:/qt/qml/Application/assets/images/backspaceBlue.png"
                     widthRatio: 2.2
 
-                    color: "#FFCC99"
-
                     MouseArea {
-
                         anchors.fill: parent
 
-                        propagateComposedEvents: false
-                        preventStealing: true
-
                         onPressed: {
+                            backspaceKey.pressedState = true
 
                             keyboard.backspaceHeld = true
                             keyboard.sendKey("⌫")
                         }
 
-                        onReleased: keyboard.backspaceHeld = false
-                        onCanceled: keyboard.backspaceHeld = false
+                        onReleased: {
+                            backspaceKey.pressedState = false
+                            keyboard.backspaceHeld = false
+                        }
+
+                        onCanceled: {
+                            backspaceKey.pressedState = false
+                            keyboard.backspaceHeld = false
+                        }
                     }
                 }
             }
@@ -485,25 +492,31 @@ Rectangle {
                 }
 
                 SpecialKey {
+                    id: numberBackspaceKey
 
                     text: "⌫"
+                    iconSource: "qrc:/qt/qml/Application/assets/images/backspaceBlue.png"
                     widthRatio: 2.0
 
                     MouseArea {
-
                         anchors.fill: parent
 
-                        propagateComposedEvents: false
-                        preventStealing: true
-
                         onPressed: {
+                            numberBackspaceKey.pressedState = true
 
                             keyboard.backspaceHeld = true
                             keyboard.sendKey("⌫")
                         }
 
-                        onReleased: keyboard.backspaceHeld = false
-                        onCanceled: keyboard.backspaceHeld = false
+                        onReleased: {
+                            numberBackspaceKey.pressedState = false
+                            keyboard.backspaceHeld = false
+                        }
+
+                        onCanceled: {
+                            numberBackspaceKey.pressedState = false
+                            keyboard.backspaceHeld = false
+                        }
                     }
                 }
             }
@@ -626,8 +639,11 @@ Rectangle {
     component SpecialKey: Rectangle {
 
         property string text: ""
+        property string iconSource: ""
         property bool active: false
         property real widthRatio: 1
+
+        property bool pressedState: false
 
         Layout.fillHeight: true
 
@@ -638,59 +654,61 @@ Rectangle {
 
         radius: 10
 
-        color: active
-               ? "#CCD9FF"
-               : "#E6EBF5"
+        color: mouseArea.pressed
+               ? (modelData === "⌫" ? "#FFCC99"
+                                    : "#CCCCCC")
+               : (modelData === "⌫" ? "#FFE0B2"
+                                    : "#F0F0F0")
 
         border.color: "#C9CED8"
 
-        activeFocusOnTab: false
-        focus: false
+        Image {
+            anchors.centerIn: parent
+
+            visible: iconSource !== ""
+
+            source: iconSource
+
+            width: 68 * keyboard.scale
+            height: 68 * keyboard.scale
+
+            fillMode: Image.PreserveAspectFit
+        }
 
         Text {
             anchors.centerIn: parent
 
+            visible: iconSource === ""
+
             text: parent.text
 
             font.pixelSize:
-                keyboard.specialKeyFontSize
-                * keyboard.scale
-
-
+                keyboard.specialKeyFontSize * keyboard.scale
 
             color: "#1A4DB5"
         }
 
-        Rectangle {
-
-            visible: active
-
-            anchors.fill: parent
-
-            radius: parent.radius
-
-            border.width: 2
-            border.color: "#1A4DB5"
-
-            color: "transparent"
-        }
-
         MouseArea {
+            id: mouseArea
 
             anchors.fill: parent
 
-            propagateComposedEvents: false
-            preventStealing: true
+            onPressed: {
+                parent.pressedState = true
+                parent.scale = 0.92
+            }
+
+            onReleased: {
+                parent.pressedState = false
+                parent.scale = 1.0
+            }
+
+            onCanceled: {
+                parent.pressedState = false
+                parent.scale = 1.0
+            }
 
             onClicked: keyboard.sendKey(parent.text)
-
-            onPressed: parent.scale = 0.92
-            onReleased: parent.scale = 1.0
-            onCanceled: parent.scale = 1.0
-        }
-
-        Behavior on scale {
-            NumberAnimation { duration: 70 }
         }
     }
 }

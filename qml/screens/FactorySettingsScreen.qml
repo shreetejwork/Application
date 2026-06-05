@@ -117,18 +117,8 @@ Item {
                 spacing: 70 * root.scale
 
                 MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/supplier.png"
-                    label:      "Supplier Info"
-                    iconSize:   100 * root.scale
-                    onTileClicked: {
-                        console.log("Supplier Info tapped")
-                        // TODO: navigateTo("SupplierInfo")
-                    }
-                }
-
-                MenuTile {
                     iconSource: "qrc:/qt/qml/Application/assets/images/updated.png"
-                    label:      "Software Update \n(Git)"
+                    label:      "Software Update \n(Online)"
                     iconSize:   100 * root.scale
                     onTileClicked: {
                         console.log("Software Update tapped")

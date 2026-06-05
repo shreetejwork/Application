@@ -218,12 +218,32 @@ Item {
                         border.color: "#E0E0E0"
                         border.width: 1
 
-                        Text {
-                            anchors.centerIn: parent
-                            text: modelData
-                            font.pixelSize: 18
+                        Item {
+                            anchors.fill: parent
 
-                            color: modelData === "⌫" ? "#333" : "#333"
+                            Image {
+                                anchors.centerIn: parent
+
+                                visible: modelData === "⌫"
+
+                                source: "qrc:/qt/qml/Application/assets/images/backspace.png"
+
+                                width: parent.height * 0.7
+                                height: parent.height * 0.7
+
+                                fillMode: Image.PreserveAspectFit
+                            }
+
+                            Text {
+                                anchors.centerIn: parent
+
+                                visible: modelData !== "⌫"
+
+                                text: modelData
+
+                                font.pixelSize: 18
+                                color: "#333"
+                            }
                         }
 
                         MouseArea {

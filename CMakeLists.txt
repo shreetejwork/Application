@@ -91,6 +91,9 @@ qt_add_qml_module(appApplication
         assets/images/BatchHistory.png
         assets/images/log.png
         assets/images/edit.png
+        assets/images/backspace.png
+        assets/images/backspaceBlue.png
+        assets/images/capslock.png
         assets/images/RobotoCondensed-Bold.ttf
         assets/images/RobotoCondensed-Regular.ttf
 
