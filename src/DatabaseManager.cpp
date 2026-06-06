@@ -46,15 +46,6 @@ void DatabaseManager::createTables()
 {
     QSqlQuery query;
 
-    // USER TABLE
-    query.exec(R"(
-        CREATE TABLE IF NOT EXISTS usertable (
-            fpid VARCHAR(4),
-            id VARCHAR(3),
-            username VARCHAR(15),
-            password VARCHAR(8)
-        );
-    )");
 
     // ENV VARIABLES
     query.exec(R"(
@@ -165,28 +156,79 @@ void DatabaseManager::createTables()
 
     QString tableName = "A_" + QDate::currentDate().toString("dd_MM_yyyy");
 
-    query.exec("CREATE TABLE IF NOT EXISTS " + tableName + " ("
-                                                           "id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                                                           "data TEXT)");
+    query.exec(R"(
+    CREATE TABLE IF NOT EXISTS usertable (
+        fpid VARCHAR(4),
+        id VARCHAR(3),
+        username VARCHAR(15),
+        password VARCHAR(20),
+        role VARCHAR(20)
+    );
+)");
+
+    // Create default admin user if it doesn't exist
+    QSqlQuery checkUser;
+    checkUser.prepare(
+        "SELECT COUNT(*) FROM usertable WHERE username = ?");
+
+    checkUser.addBindValue("DefaultUser");
+
+    if (checkUser.exec() && checkUser.next())
+    {
+        if (checkUser.value(0).toInt() == 0)
+        {
+            QSqlQuery insertDefaultUser;
+
+            insertDefaultUser.prepare(
+                "INSERT INTO usertable "
+                "(fpid, id, username, password, role) "
+                "VALUES (?, ?, ?, ?, ?)");
+
+            insertDefaultUser.addBindValue("0000");
+            insertDefaultUser.addBindValue("001");
+            insertDefaultUser.addBindValue("DefaultUser");
+            insertDefaultUser.addBindValue("00000");
+            insertDefaultUser.addBindValue("Admin");
+
+            if (!insertDefaultUser.exec())
+            {
+                qDebug() << "Failed to create default admin:"
+                         << insertDefaultUser.lastError().text();
+            }
+            else
+            {
+                qDebug() << "Default admin user created.";
+            }
+        }
+    }
 
     qDebug() << "All tables created!";
 }
 
 // INSERT USER
-bool DatabaseManager::insertUser(const QString &fpid, const QString &id,
-                                 const QString &username, const QString &password)
+bool DatabaseManager::insertUser(const QString &fpid,
+                                 const QString &id,
+                                 const QString &username,
+                                 const QString &password,
+                                 const QString &role)
 {
     QSqlQuery query;
-    query.prepare("INSERT INTO usertable (fpid, id, username, password) "
-                  "VALUES (?, ?, ?, ?)");
+
+    query.prepare(
+        "INSERT INTO usertable "
+        "(fpid, id, username, password, role) "
+        "VALUES (?, ?, ?, ?, ?)");
 
     query.addBindValue(fpid);
     query.addBindValue(id);
     query.addBindValue(username);
     query.addBindValue(password);
+    query.addBindValue(role);
 
-    if (!query.exec()) {
-        qDebug() << "Insert error:" << query.lastError().text();
+    if (!query.exec())
+    {
+        qDebug() << "Insert error:"
+                 << query.lastError().text();
         return false;
     }
 
@@ -201,7 +243,91 @@ void DatabaseManager::printAllUsers()
     while (query.next()) {
         QString username = query.value("username").toString();
         QString password = query.value("password").toString();
+        QString role = query.value("role").toString();
 
-        qDebug() << "User:" << username << password;
+        qDebug() << "User:"
+                 << username
+                 << password
+                 << role;
     }
+}
+
+bool DatabaseManager::deleteUser(const QString &username)
+{
+    QSqlQuery userQuery;
+    userQuery.prepare(
+        "SELECT role FROM usertable "
+        "WHERE username = ?");
+
+    userQuery.addBindValue(username);
+
+    if (!userQuery.exec() || !userQuery.next())
+    {
+        qDebug() << "User not found.";
+        return false;
+    }
+
+    QString role = userQuery.value(0).toString();
+
+    if (role == "Admin")
+    {
+        QSqlQuery adminCountQuery;
+        adminCountQuery.exec(
+            "SELECT COUNT(*) FROM usertable "
+            "WHERE role = 'Admin'");
+
+        adminCountQuery.next();
+
+        int adminCount = adminCountQuery.value(0).toInt();
+
+        if (adminCount <= 1)
+        {
+            qDebug() << "Cannot delete the last Admin.";
+            return false;
+        }
+    }
+
+    QSqlQuery deleteQuery;
+    deleteQuery.prepare(
+        "DELETE FROM usertable "
+        "WHERE username = ?");
+
+    deleteQuery.addBindValue(username);
+
+    if (!deleteQuery.exec())
+    {
+        qDebug() << "Delete failed:"
+                 << deleteQuery.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+QStringList DatabaseManager::getUsersByRole(const QString &role)
+{
+    QStringList users;
+
+    QSqlQuery query;
+    query.prepare(
+        "SELECT username "
+        "FROM usertable "
+        "WHERE role = ? "
+        "ORDER BY username");
+
+    query.addBindValue(role);
+
+    if (!query.exec())
+    {
+        qDebug() << "Failed to fetch users:"
+                 << query.lastError().text();
+        return users;
+    }
+
+    while (query.next())
+    {
+        users << query.value(0).toString();
+    }
+
+    return users;
 }

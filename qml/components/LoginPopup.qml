@@ -426,12 +426,16 @@ Popup {
 
                         selectionPopup.modelData = [
                                     "Admin",
-                                    "Operator",
-                                    "User"
+                                    "Spervisor",
+                                    "Operator"
                                 ]
 
                         selectionPopup.onSelectCallback = function(val) {
+
                             userTypeValue.text = val
+
+                            // Reset username when role changes
+                            usernameValue.text = "--- Select ---"
                         }
 
                         selectionPopup.open()
@@ -484,16 +488,14 @@ Popup {
 
                     onClicked: {
 
+                        if (userTypeValue.text === "--- Select ---")
+                            return
+
                         selectionPopup.title = "Select Username"
 
-                        selectionPopup.modelData = [
-                                    "John Doe",
-                                    "Jane Smith",
-                                    "Bob Johnson",
-                                    "John Doe",
-                                    "Jane Smith",
-                                    "Bob Johnson"
-                                ]
+                        selectionPopup.modelData =
+                                databaseManager.getUsersByRole(
+                                    userTypeValue.text)
 
                         selectionPopup.onSelectCallback = function(val) {
                             usernameValue.text = val

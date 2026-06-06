@@ -654,11 +654,13 @@ Rectangle {
 
         radius: 10
 
-        color: mouseArea.pressed
-               ? (modelData === "⌫" ? "#FFCC99"
-                                    : "#CCCCCC")
-               : (modelData === "⌫" ? "#FFE0B2"
-                                    : "#F0F0F0")
+        color: pressedState
+               ? (text === "⌫" ? "#FFCC99"
+                                : active ? "#CCD9FF"
+                                         : "#DCE5FF")
+               : (text === "⌫" ? "#FFE0B2"
+                                : active ? "#CCD9FF"
+                                         : "#E6EBF5")
 
         border.color: "#C9CED8"
 

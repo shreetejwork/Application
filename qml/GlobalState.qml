@@ -171,4 +171,7 @@ QtObject {
     property var activeInputField: null
 
     property var globalDateTime: new Date()
+
+    property string loggedInUserName: ""
+    property string loggedInUserRole: ""
 }

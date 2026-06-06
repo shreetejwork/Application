@@ -340,7 +340,7 @@ Popup {
             spacing: 14 * scale
 
             Text {
-                text: "Edit Password"
+                text: "Change Password"
 
                 font.pixelSize: editPwdTypography.title
 

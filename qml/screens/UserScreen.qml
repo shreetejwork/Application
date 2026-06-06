@@ -261,7 +261,7 @@ Item {
                 }
 
                 ActionButton {
-                    label: "Edit PW"
+                    label: "Change PW"
                     onClicked: editPasswordPopup.open()
                 }
 

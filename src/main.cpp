@@ -12,17 +12,18 @@
 
 int main(int argc, char *argv[])
 {
+    QGuiApplication::setAttribute(
+        Qt::AA_SynthesizeTouchForUnhandledMouseEvents);
 
-    QGuiApplication::setAttribute(Qt::AA_SynthesizeTouchForUnhandledMouseEvents);
-    QGuiApplication::setAttribute(Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
+    QGuiApplication::setAttribute(
+        Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
 
     // =========================================================
     // QT SCALING FIX FOR QT 6.5
     // =========================================================
 
     QGuiApplication::setHighDpiScaleFactorRoundingPolicy(
-        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough
-        );
+        Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     QGuiApplication app(argc, argv);
 
@@ -34,26 +35,16 @@ int main(int argc, char *argv[])
     QCoreApplication::setApplicationName("MD_Application");
 
     // =========================================================
-    // DATABASE
-    // =========================================================
-
-    DatabaseManager dbManager;
-
-    if (!dbManager.initialize()) {
-        return -1;
-    }
-
-    // =========================================================
     // GLOBAL STATE
     // =========================================================
 
     qmlRegisterSingletonType(
-        QUrl(QStringLiteral("qrc:/qt/qml/Application/qml/GlobalState.qml")),
+        QUrl(QStringLiteral(
+            "qrc:/qt/qml/Application/qml/GlobalState.qml")),
         "AppState",
         1,
         0,
-        "GlobalState"
-        );
+        "GlobalState");
 
     // =========================================================
     // CUSTOM COMPONENTS
@@ -63,14 +54,26 @@ int main(int argc, char *argv[])
         "CustomComponents",
         1,
         0,
-        "MagneticFieldPlotItem"
-        );
+        "MagneticFieldPlotItem");
 
     // =========================================================
     // ENGINE
     // =========================================================
 
     QQmlApplicationEngine engine;
+
+    // =========================================================
+    // DATABASE
+    // =========================================================
+
+    DatabaseManager dbManager;
+
+    if (!dbManager.initialize())
+        return -1;
+
+    engine.rootContext()->setContextProperty(
+        "databaseManager",
+        &dbManager);
 
     // =========================================================
     // BACKEND OBJECTS
@@ -83,23 +86,19 @@ int main(int argc, char *argv[])
 
     engine.rootContext()->setContextProperty(
         "SystemController",
-        &systemController
-        );
+        &systemController);
 
     engine.rootContext()->setContextProperty(
         "WiFiScanner",
-        &wifi
-        );
+        &wifi);
 
     engine.rootContext()->setContextProperty(
         "PdfExporter",
-        &pdfExporter
-        );
+        &pdfExporter);
 
     engine.rootContext()->setContextProperty(
         "SystemDiag",
-        &diag
-        );
+        &diag);
 
     // =========================================================
     // ERROR HANDLING
@@ -112,8 +111,7 @@ int main(int argc, char *argv[])
         []() {
             QCoreApplication::exit(-1);
         },
-        Qt::QueuedConnection
-        );
+        Qt::QueuedConnection);
 
     // =========================================================
     // LOAD MAIN QML
@@ -121,26 +119,25 @@ int main(int argc, char *argv[])
 
     engine.loadFromModule("Application", "Main");
 
+    if (engine.rootObjects().isEmpty())
+        return -1;
+
     // =========================================================
     // FORCE WINDOW SIZE
     // =========================================================
 
-    if (!engine.rootObjects().isEmpty()) {
+    QObject *root = engine.rootObjects().first();
 
-        QObject *root = engine.rootObjects().first();
+    QQuickWindow *window =
+        qobject_cast<QQuickWindow *>(root);
 
-        QQuickWindow *window = qobject_cast<QQuickWindow *>(root);
+    if (window)
+    {
+        window->setWidth(1024);
+        window->setHeight(600);
 
-        if (window) {
-
-            // KEEP YOUR ORIGINAL DESIGN SIZE
-            window->setWidth(1024);
-            window->setHeight(600);
-
-            // IMPORTANT FOR EMBEDDED DEVICES
-            window->setMinimumSize(QSize(1024, 600));
-            window->setMaximumSize(QSize(1024, 600));
-        }
+        window->setMinimumSize(QSize(1024, 600));
+        window->setMaximumSize(QSize(1024, 600));
     }
 
     return app.exec();

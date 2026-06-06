@@ -21,6 +21,10 @@ Rectangle {
 
     property bool usbConnected: false
 
+    property bool isLoggedIn:
+        GlobalState.loggedInUserName !== ""
+        && GlobalState.loggedInUserName !== undefined
+
     // =========================================================
     // TYPOGRAPHY FOR TOPBAR
     // =========================================================
@@ -49,7 +53,13 @@ Rectangle {
         id: loginPopup
 
         onLoginRequested: function(userType, username, password) {
-            console.log("Login:", userType, username, password)
+
+            GlobalState.loggedInUserName = username
+            GlobalState.loggedInUserRole = userType
+
+            countdownCircle.remainingSeconds =
+                    countdownCircle.sessionTimeout
+
             loginPopup.close()
         }
     }
@@ -70,8 +80,8 @@ Rectangle {
     property real baseHeight: 90
     property real scale: Math.max(0.6, height / baseHeight)
 
-    property string userName: "Supervisor11"
-    property string userRole: "Admin"
+    property string userName: GlobalState.loggedInUserName
+    property string userRole: GlobalState.loggedInUserRole
 
     signal bellClicked()
 
@@ -119,10 +129,21 @@ Rectangle {
 
                 // ===== BACK BUTTON =====
                 Item {
+                    id: backButton
+
                     visible: root.showBackButton
-                    width: Math.max(36 * root.scale, root.height * 0.85)
+                    width: Math.max(36 * root.scale, root.height * 0.95)
                     height: width
                     anchors.verticalCenter: parent.verticalCenter
+
+                    scale: backMouseArea.pressed ? 0.88 : 1.0
+
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutBack
+                        }
+                    }
 
                     Image {
                         id: backIcon
@@ -135,10 +156,10 @@ Rectangle {
                     }
 
                     MouseArea {
+                        id: backMouseArea
                         anchors.fill: parent
 
                         onClicked: {
-
                             if (GlobalState.loginKeyboardRequest) {
                                 GlobalState.loginKeyboardRequest = false
                             }
@@ -151,10 +172,20 @@ Rectangle {
                 // ===== MENU BUTTON =====
                 Item {
                     id: menuButton
+
                     visible: !root.showBackButton
                     width: Math.max(28 * root.scale, root.height * 0.55)
                     height: root.height * 0.50
                     anchors.verticalCenter: parent.verticalCenter
+
+                    scale: menuMouseArea.pressed ? 0.88 : 1.0
+
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 120
+                            easing.type: Easing.OutBack
+                        }
+                    }
 
                     Image {
                         anchors.centerIn: parent
@@ -166,7 +197,9 @@ Rectangle {
                     }
 
                     MouseArea {
+                        id: menuMouseArea
                         anchors.fill: parent
+
                         onClicked: root.menuClicked()
                     }
                 }
@@ -262,39 +295,48 @@ Rectangle {
                 }
 
                 ColumnLayout {
+                    visible: root.isLoggedIn
+
                     spacing: Math.max(2, root.height * 0.01)
 
                     Rectangle {
                         Layout.preferredHeight: root.height * 0.26
                         Layout.preferredWidth: roleText.implicitWidth + root.width * 0.01
+
                         radius: root.height * 0.05
                         color: "#2C63D6"
 
                         Text {
                             id: roleText
+
                             anchors.centerIn: parent
-                            text: root.userRole
+
+                            text: GlobalState.loggedInUserRole
+
                             color: "white"
+
                             font.pixelSize: topBarTypography.subHeading
                         }
                     }
 
                     Text {
                         id: userNameText
+
                         property bool showFullName: false
 
-                        text: userNameText.showFullName
-                              ? root.userName
-                              : (root.userName.length > 10
-                                 ? root.userName.substring(0, 10) + "..."
-                                 : root.userName)
+                        text: showFullName
+                              ? GlobalState.loggedInUserName
+                              : (GlobalState.loggedInUserName.length > 10
+                                 ? GlobalState.loggedInUserName.substring(0, 10) + "..."
+                                 : GlobalState.loggedInUserName)
 
                         color: "white"
-                        font.pixelSize: topBarTypography.heading
 
+                        font.pixelSize: topBarTypography.heading
 
                         MouseArea {
                             anchors.fill: parent
+
                             onClicked: {
                                 userNameText.showFullName = true
                                 resetTimer.restart()
@@ -305,6 +347,7 @@ Rectangle {
                             id: resetTimer
                             interval: 5000
                             repeat: false
+
                             onTriggered: userNameText.showFullName = false
                         }
                     }
@@ -313,45 +356,91 @@ Rectangle {
 
             Rectangle {
                 id: countdownCircle
+
+                visible: root.isLoggedIn
+
                 width: Math.max(48 * root.scale, root.height * 0.60)
                 height: width
                 radius: width / 2
+
                 color: "transparent"
+
                 border.color: "white"
                 border.width: Math.max(1, root.height * 0.038)
 
-                property int remainingSeconds: 180
+                property int sessionTimeout: 180
+                property int remainingSeconds: sessionTimeout
+
                 property bool blink: false
+
+                opacity: remainingSeconds <= 20
+                             ? (blink ? 0.2 : 1.0)
+                             : 1.0
+
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 150
+                    }
+                }
 
                 Timer {
                     interval: 1000
-                    running: true
                     repeat: true
-                    onTriggered: if (countdownCircle.remainingSeconds > 0)
-                                     countdownCircle.remainingSeconds--
+
+                    running: root.isLoggedIn
+
+                    onTriggered: {
+
+                        if (countdownCircle.remainingSeconds > 0) {
+
+                            countdownCircle.remainingSeconds--
+                        }
+
+                        if (countdownCircle.remainingSeconds <= 0) {
+
+                            // Logout user
+                            GlobalState.loggedInUserName = ""
+                            GlobalState.loggedInUserRole = ""
+
+                            countdownCircle.remainingSeconds =
+                                    countdownCircle.sessionTimeout
+                        }
+                    }
                 }
 
                 Timer {
                     interval: 400
                     repeat: true
-                    running: countdownCircle.remainingSeconds <= 20
-                    onTriggered: countdownCircle.blink = !countdownCircle.blink
+
+                    running: root.isLoggedIn
+                             && countdownCircle.remainingSeconds <= 20
+
+                    onTriggered: {
+                        countdownCircle.blink =
+                                !countdownCircle.blink
+                    }
                 }
 
                 Text {
                     anchors.centerIn: parent
-                    text: countdownCircle.remainingSeconds
-                    color: "white"
-                    opacity: countdownCircle.remainingSeconds <= 20
-                             ? (countdownCircle.blink ? 0.2 : 1)
-                             : 1
-                    font.pixelSize: topBarTypography.body
 
+                    text: countdownCircle.remainingSeconds
+
+                    color: "white"
+
+                    font.pixelSize: topBarTypography.body
                 }
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: countdownCircle.remainingSeconds = 180
+
+                    onClicked: {
+
+                        // Extend session
+                        countdownCircle.remainingSeconds =
+                                countdownCircle.sessionTimeout
+                    }
                 }
             }
 
