@@ -59,6 +59,9 @@ Popup {
 
     property string developerPassword: "dev123"
     property string engineerPassword: "eng123"
+
+    property string errorText: ""
+    property bool hasError: false
     
     // =========================================================
     // TYPOGRAPHY FOR LOGIN POPUP
@@ -133,7 +136,14 @@ Popup {
 
         userTypeValue.text = "--- Select ---"
         usernameValue.text = "--- Select ---"
+
         passwordInput.text = ""
+
+        // Reset password visibility
+        passwordInput.echoMode = TextInput.Password
+
+        loginPopup.errorText = ""
+        loginPopup.hasError = false
 
         loginPopup.devModeActive = false
         loginPopup.fieldsLocked = false
@@ -149,6 +159,9 @@ Popup {
     }
 
     onClosed: {
+
+        passwordInput.text = ""
+        passwordInput.echoMode = TextInput.Password
 
         passwordInput.focus = false
 
@@ -516,7 +529,11 @@ Popup {
 
                 color: "#F2F2F2"
 
-                border.color: "#1A4DB5"
+                border.color: loginPopup.hasError
+                              ? "#FF5252"
+                              : "#1A4DB5"
+
+                border.width: loginPopup.hasError ? 2 : 1
 
                 TextField {
                     id: passwordInput
@@ -538,7 +555,6 @@ Popup {
 
                     font.pixelSize: loginTypography.heading
 
-
                     color: "#000000"
 
                     inputMethodHints:
@@ -554,6 +570,14 @@ Popup {
 
                         GlobalState.loginKeyboardRequest = false
                         focus = false
+                    }
+
+                    onTextChanged: {
+
+                        if (loginPopup.hasError) {
+                            loginPopup.errorText = ""
+                            loginPopup.hasError = false
+                        }
                     }
 
                     onActiveFocusChanged: {
@@ -602,7 +626,6 @@ Popup {
 
                     font.pixelSize: loginTypography.body
 
-
                     visible: passwordInput.text.length === 0
                 }
 
@@ -628,11 +651,9 @@ Popup {
                               ? "Show"
                               : "Hide"
 
-                        font.pixelSize: loginTypography.small
-
                         color: "#1A4DB5"
 
-
+                        font.pixelSize: loginTypography.small
                     }
 
                     MouseArea {
@@ -647,6 +668,20 @@ Popup {
                         }
                     }
                 }
+            }
+
+            Text {
+                Layout.fillWidth: true
+
+                text: loginPopup.errorText
+
+                color: "#FF5252"
+
+                horizontalAlignment: Text.AlignHCenter
+
+                visible: loginPopup.hasError
+
+                font.pixelSize: loginTypography.caption
             }
 
             // BUTTONS

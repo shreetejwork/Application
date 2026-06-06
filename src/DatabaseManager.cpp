@@ -331,3 +331,36 @@ QStringList DatabaseManager::getUsersByRole(const QString &role)
 
     return users;
 }
+
+bool DatabaseManager::validateLogin(
+    const QString &role,
+    const QString &username,
+    const QString &password)
+{
+    QSqlQuery query;
+
+    query.prepare(
+        "SELECT COUNT(*) "
+        "FROM usertable "
+        "WHERE role = :role "
+        "AND username = :username "
+        "AND password = :password");
+
+    query.bindValue(":role", role);
+    query.bindValue(":username", username);
+    query.bindValue(":password", password);
+
+    if (!query.exec())
+    {
+        qDebug() << "Login query failed:"
+                 << query.lastError().text();
+        return false;
+    }
+
+    if (query.next())
+    {
+        return query.value(0).toInt() > 0;
+    }
+
+    return false;
+}

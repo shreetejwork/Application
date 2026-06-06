@@ -119,6 +119,7 @@ qt_add_qml_module(appApplication
         SOURCES src/PlotItem.h
         SOURCES src/PlotItem.cpp
         QML_FILES qml/components/AnimationEffect.qml
+        QML_FILES qml/components/LogoutPopup.qml
 )
 
 set_target_properties(appApplication PROPERTIES

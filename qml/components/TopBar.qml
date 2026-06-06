@@ -49,10 +49,41 @@ Rectangle {
         id: powerPopup
     }
 
+    LogoutPopup {
+        id: logoutPopup
+
+        onLogoutRequested: {
+
+            GlobalState.loggedInUserName = ""
+            GlobalState.loggedInUserRole = ""
+
+            countdownCircle.remainingSeconds =
+                    countdownCircle.sessionTimeout
+        }
+    }
+
     LoginPopup {
         id: loginPopup
 
         onLoginRequested: function(userType, username, password) {
+
+            var valid = databaseManager.validateLogin(
+                            userType,
+                            username,
+                            password)
+
+            if (!valid) {
+
+                loginPopup.errorText =
+                        "Invalid username or password"
+
+                loginPopup.hasError = true
+
+                return
+            }
+
+            loginPopup.errorText = ""
+            loginPopup.hasError = false
 
             GlobalState.loggedInUserName = username
             GlobalState.loggedInUserRole = userType
@@ -290,7 +321,10 @@ Rectangle {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: loginPopup.open()
+
+                        onClicked: root.isLoggedIn
+                                   ? logoutPopup.open()
+                                   : loginPopup.open()
                     }
                 }
 

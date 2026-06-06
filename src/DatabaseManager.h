@@ -23,6 +23,11 @@ public:
 
     Q_INVOKABLE QStringList getUsersByRole(const QString &role);
 
+    Q_INVOKABLE bool validateLogin(
+        const QString &role,
+        const QString &username,
+        const QString &password);
+
     void printAllUsers();
 
 private:
