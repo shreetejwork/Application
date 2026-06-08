@@ -16,6 +16,9 @@ QtObject {
         property bool showAuditTrail: true
         property bool showProductLib: true
 
+        property string blockedUsersJson:   "{}"
+        property string failedAttemptsJson: "{}"
+
     }
 
     property var reportSettings: Settings {
@@ -30,6 +33,12 @@ QtObject {
     property bool showNetworkScreen: settings.showNetworkScreen
     property bool showAuditTrail: settings.showAuditTrail
     property bool showProductLib: settings.showProductLib
+
+    property string blockedUsersJson:   settings.blockedUsersJson
+    property string failedAttemptsJson: settings.failedAttemptsJson
+
+    onBlockedUsersJsonChanged:   settings.blockedUsersJson   = blockedUsersJson
+    onFailedAttemptsJsonChanged: settings.failedAttemptsJson = failedAttemptsJson
 
     onShowDDusterChanged: settings.showDDuster = showDDuster
     onShowNetworkScreenChanged: settings.showNetworkScreen = showNetworkScreen

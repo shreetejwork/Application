@@ -63,19 +63,41 @@ Popup {
     property string errorText: ""
     property bool hasError: false
 
-    // failedAttempts: { username: count }
-    // blockedUsers:   { username: unblockTimestamp }
-    property var failedAttempts: ({})
-    property var blockedUsers: ({})
     property int maxAttempts: 5
     property int blockDurationSeconds: 60
 
-    // The currently selected username (used to gate error display)
+
     property string currentSelectedUser: ""
 
-    // The username that is actively blocked and being tracked by the countdown
+
     property string blockedUserName: ""
     property int blockedRemainingSeconds: 0
+
+    // ── Storage helpers ───────────────────────────────────────────────────────
+
+    function loadBlocked() {
+        try {
+            return JSON.parse(GlobalState.blockedUsersJson || "{}")
+        } catch(e) {
+            return {}
+        }
+    }
+
+    function saveBlocked(obj) {
+        GlobalState.blockedUsersJson = JSON.stringify(obj)
+    }
+
+    function loadAttempts() {
+        try {
+            return JSON.parse(GlobalState.failedAttemptsJson || "{}")
+        } catch(e) {
+            return {}
+        }
+    }
+
+    function saveAttempts(obj) {
+        GlobalState.failedAttemptsJson = JSON.stringify(obj)
+    }
 
     // =========================================================
     // TYPOGRAPHY FOR LOGIN POPUP
@@ -91,6 +113,7 @@ Popup {
 
     // =========================================================
     // BLOCK COUNTDOWN TIMER
+    // ticks every second while a blocked user is selected
     // =========================================================
     Timer {
         id: blockCountdownTimer
@@ -118,8 +141,7 @@ Popup {
                 loginPopup.errorText =
                     loginPopup.blockedUserName
                     + " is blocked. Try again in "
-                    + loginPopup.blockedRemainingSeconds
-                    + " second(s)."
+                    + loginPopup.formatRemaining(loginPopup.blockedRemainingSeconds)
                 loginPopup.hasError = true
             }
         }
@@ -130,20 +152,20 @@ Popup {
     // =========================================================
 
     function isUserBlocked(username) {
-        if (!blockedUsers[username])
+        var blocked = loadBlocked()
+        if (!blocked[username])
             return false
 
-        var remaining = blockedUsers[username] - Date.now()
+        var remaining = blocked[username] - Date.now()
 
         if (remaining <= 0) {
-            // Expired – clean up
-            var copy = blockedUsers
-            delete copy[username]
-            blockedUsers = copy
+            // Expired – clean up persisted data
+            delete blocked[username]
+            saveBlocked(blocked)
 
-            var copyFA = failedAttempts
-            copyFA[username] = 0
-            failedAttempts = copyFA
+            var attempts = loadAttempts()
+            attempts[username] = 0
+            saveAttempts(attempts)
 
             return false
         }
@@ -152,36 +174,38 @@ Popup {
     }
 
     function getBlockRemaining(username) {
-        if (!blockedUsers[username])
+        var blocked = loadBlocked()
+        if (!blocked[username])
             return 0
-        return Math.ceil((blockedUsers[username] - Date.now()) / 1000)
+        return Math.ceil((blocked[username] - Date.now()) / 1000)
     }
 
     // Returns how many attempts the user has left before being blocked
     function attemptsRemaining(username) {
-        var used = failedAttempts[username] ? failedAttempts[username] : 0
+        var attempts = loadAttempts()
+        var used = attempts[username] ? attempts[username] : 0
         return maxAttempts - used
     }
 
     function registerFailedAttempt(username) {
-        var copyFA = failedAttempts
-        if (!copyFA[username])
-            copyFA[username] = 0
-        copyFA[username]++
-        failedAttempts = copyFA
+        var attempts = loadAttempts()
+        if (!attempts[username])
+            attempts[username] = 0
+        attempts[username]++
+        saveAttempts(attempts)
 
-        var used = failedAttempts[username]
-        var left  = maxAttempts - used
+        var used = attempts[username]
+        var left = maxAttempts - used
 
         if (used >= maxAttempts) {
-            // Block the user
-            var copyB = blockedUsers
-            copyB[username] = Date.now() + (blockDurationSeconds * 1000)
-            blockedUsers = copyB
+            // Block the user – persist unblock timestamp
+            var blocked = loadBlocked()
+            blocked[username] = Date.now() + (blockDurationSeconds * 1000)
+            saveBlocked(blocked)
 
-            var resetFA = failedAttempts
-            resetFA[username] = 0
-            failedAttempts = resetFA
+            // Reset attempt counter now that they are blocked
+            attempts[username] = 0
+            saveAttempts(attempts)
 
             loginPopup.blockedUserName = username
             loginPopup.blockedRemainingSeconds = loginPopup.getBlockRemaining(username)
@@ -189,13 +213,11 @@ Popup {
             loginPopup.errorText =
                 username
                 + " is blocked. Try again in "
-                + loginPopup.blockedRemainingSeconds
-                + " second(s)."
+                + loginPopup.formatRemaining(loginPopup.blockedRemainingSeconds)
             loginPopup.hasError = true
 
             blockCountdownTimer.restart()
         } else {
-            // Show per-attempt warning only if this user is currently selected
             loginPopup.errorText =
                 "Wrong password. "
                 + left
@@ -205,9 +227,24 @@ Popup {
     }
 
     function clearFailedAttempts(username) {
-        var copyFA = failedAttempts
-        copyFA[username] = 0
-        failedAttempts = copyFA
+        var attempts = loadAttempts()
+        attempts[username] = 0
+        saveAttempts(attempts)
+    }
+
+    // Formats seconds into "Xd Xh Xm Xs" so long block durations are readable
+    function formatRemaining(seconds) {
+        if (seconds <= 0) return "0s"
+        var d = Math.floor(seconds / 86400)
+        var h = Math.floor((seconds % 86400) / 3600)
+        var m = Math.floor((seconds % 3600) / 60)
+        var s = seconds % 60
+        var parts = []
+        if (d > 0) parts.push(d + "d")
+        if (h > 0) parts.push(h + "h")
+        if (m > 0) parts.push(m + "m")
+        if (s > 0 || parts.length === 0) parts.push(s + "s")
+        return parts.join(" ")
     }
 
     // Called whenever the selected username changes; refreshes error display
@@ -226,13 +263,13 @@ Popup {
             loginPopup.errorText =
                 username
                 + " is blocked. Try again in "
-                + loginPopup.blockedRemainingSeconds
-                + " second(s)."
+                + loginPopup.formatRemaining(loginPopup.blockedRemainingSeconds)
             loginPopup.hasError = true
             blockCountdownTimer.restart()
         } else {
             // Show leftover attempt-warning if any failed attempts exist
-            var used = failedAttempts[username] ? failedAttempts[username] : 0
+            var attempts = loadAttempts()
+            var used = attempts[username] ? attempts[username] : 0
             if (used > 0) {
                 var left = maxAttempts - used
                 loginPopup.errorText =
@@ -309,6 +346,7 @@ Popup {
     // =====================================================
 
     onOpened: {
+
         userTypeValue.text  = "--- Select ---"
         usernameValue.text  = "--- Select ---"
         passwordInput.text  = ""
@@ -353,6 +391,8 @@ Popup {
         border.color: "#C8C8C8"
         border.width: 1
     }
+
+
 
     // =====================================================
     // CLOSE BUTTON
@@ -412,7 +452,7 @@ Popup {
         property string title: ""
         property var    onSelectCallback
 
-
+        // Extended model that carries { label, username, blocked, remaining }
         property var richModel: []
 
         width:  340 * scale
@@ -563,11 +603,10 @@ Popup {
                                     id: badgeText
                                     anchors.centerIn: parent
                                     text: entry
-                                          ? ("Blocked " + entry.remaining + "s")
+                                          ? ("Blocked for " + (entry.label || (entry.remaining + "s")))
                                           : ""
                                     color: "white"
-                                    font.pixelSize: loginTypography.small
-                                    font.bold: true
+                                    font.pixelSize: loginTypography.tiny
                                 }
                             }
 
@@ -598,13 +637,14 @@ Popup {
             onTriggered: {
                 var updated = []
                 for (var i = 0; i < selectionPopup.richModel.length; i++) {
-                    var entry = selectionPopup.richModel[i]
+                    var entry   = selectionPopup.richModel[i]
                     var blocked = loginPopup.isUserBlocked(entry.username)
-                    var rem = blocked ? loginPopup.getBlockRemaining(entry.username) : 0
+                    var rem     = blocked ? loginPopup.getBlockRemaining(entry.username) : 0
                     updated.push({
-                        username: entry.username,
-                        blocked:  blocked,
-                        remaining: rem
+                        username:  entry.username,
+                        blocked:   blocked,
+                        remaining: rem,
+                        label:     blocked ? loginPopup.formatRemaining(rem) : ""
                     })
                 }
                 selectionPopup.richModel = updated
@@ -747,7 +787,8 @@ Popup {
                             rich.push({
                                 username:  name,
                                 blocked:   blocked,
-                                remaining: rem
+                                remaining: rem,
+                                label:     blocked ? loginPopup.formatRemaining(rem) : ""
                             })
                         }
                         selectionPopup.richModel = rich
@@ -1012,8 +1053,6 @@ Popup {
             }
         }
     }
-
-
 
     function onLoginSuccess(username) {
         loginPopup.clearFailedAttempts(username)
