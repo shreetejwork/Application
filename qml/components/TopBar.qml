@@ -57,8 +57,7 @@ Rectangle {
             GlobalState.loggedInUserName = ""
             GlobalState.loggedInUserRole = ""
 
-            countdownCircle.remainingSeconds =
-                    countdownCircle.sessionTimeout
+            countdownCircle.resetCountdown()
         }
     }
 
@@ -88,8 +87,7 @@ Rectangle {
             GlobalState.loggedInUserName = username
             GlobalState.loggedInUserRole = userType
 
-            countdownCircle.remainingSeconds =
-                    countdownCircle.sessionTimeout
+            countdownCircle.resetCountdown()
 
             loginPopup.close()
         }
@@ -404,13 +402,29 @@ Rectangle {
 
                 property int sessionTimeout: 180
                 property int remainingSeconds: sessionTimeout
-
                 property bool blink: false
 
-                opacity: remainingSeconds <= 20
-                             ? (blink ? 0.2 : 1.0)
-                             : 1.0
+                function resetCountdown() {
+                    countdownTimer.stop()
 
+                    remainingSeconds = sessionTimeout
+                    blink = false
+
+                    if (root.isLoggedIn)
+                        countdownTimer.start()
+
+                    console.log("Countdown reset:", remainingSeconds)
+                }
+
+                // Reset whenever user logs in
+                onVisibleChanged: {
+                    if (visible)
+                        resetCountdown()
+                }
+
+                opacity: remainingSeconds <= 20
+                         ? (blink ? 0.2 : 1.0)
+                         : 1.0
 
                 Behavior on opacity {
                     NumberAnimation {
@@ -419,36 +433,52 @@ Rectangle {
                 }
 
                 Timer {
+                    id: countdownTimer
+
                     interval: 1000
                     repeat: true
-
-                    running: root.isLoggedIn
+                    running: false
 
                     onTriggered: {
+
+                        if (!root.isLoggedIn) {
+                            stop()
+                            return
+                        }
 
                         if (countdownCircle.remainingSeconds > 0) {
 
                             countdownCircle.remainingSeconds--
+
+                            console.log(
+                                "Countdown:",
+                                countdownCircle.remainingSeconds
+                            )
                         }
 
                         if (countdownCircle.remainingSeconds <= 0) {
 
-                            // Logout user
+                            stop()
+
+                            countdownCircle.blink = false
+
                             GlobalState.loggedInUserName = ""
                             GlobalState.loggedInUserRole = ""
 
-                            countdownCircle.remainingSeconds =
-                                    countdownCircle.sessionTimeout
+                            console.log("Auto logout")
                         }
                     }
                 }
 
                 Timer {
+                    id: blinkTimer
+
                     interval: 400
                     repeat: true
 
                     running: root.isLoggedIn
                              && countdownCircle.remainingSeconds <= 20
+                             && countdownCircle.remainingSeconds > 0
 
                     onTriggered: {
                         countdownCircle.blink =
@@ -470,10 +500,7 @@ Rectangle {
                     anchors.fill: parent
 
                     onClicked: {
-
-                        // Extend session
-                        countdownCircle.remainingSeconds =
-                                countdownCircle.sessionTimeout
+                        countdownCircle.resetCountdown()
                     }
                 }
             }

@@ -5,7 +5,7 @@ import QtQuick.Layouts
 Popup {
 
     Typography {
-        id: powerOffTypography
+        id: logoutTypography
         scale: 1.0
     }
     id: logoutPopup
@@ -18,7 +18,7 @@ Popup {
 
     Typography {
         id: popupTypography
-        scale: powerPopup.scale
+        scale: logoutPopup.scale
     }
 
     enter: Transition {
