@@ -66,6 +66,22 @@ Rectangle {
 
         onLoginRequested: function(userType, username, password) {
 
+            if (loginPopup.isUserBlocked(username)) {
+
+                var remaining =
+                        loginPopup.getBlockRemaining(
+                            username)
+
+                loginPopup.errorText =
+                        "User blocked. Try again in "
+                        + remaining
+                        + " seconds"
+
+                loginPopup.hasError = true
+
+                return
+            }
+
             var valid = databaseManager.validateLogin(
                             userType,
                             username,
@@ -73,10 +89,23 @@ Rectangle {
 
             if (!valid) {
 
-                loginPopup.errorText =
-                        "Invalid username or password"
+                loginPopup.registerFailedAttempt(
+                            username)
 
-                loginPopup.hasError = true
+                if (!loginPopup.hasError) {
+
+                    var attempts =
+                            loginPopup.failedAttempts[
+                                username] || 0
+
+                    loginPopup.errorText =
+                            "Invalid username or password. "
+                            + (loginPopup.maxAttempts
+                               - attempts)
+                            + " attempts remaining"
+
+                    loginPopup.hasError = true
+                }
 
                 return
             }
@@ -86,6 +115,8 @@ Rectangle {
 
             GlobalState.loggedInUserName = username
             GlobalState.loggedInUserRole = userType
+
+            loginPopup.clearFailedAttempts(username)
 
             countdownCircle.resetCountdown()
 
@@ -412,8 +443,6 @@ Rectangle {
 
                     if (root.isLoggedIn)
                         countdownTimer.start()
-
-                    console.log("Countdown reset:", remainingSeconds)
                 }
 
                 // Reset whenever user logs in
@@ -449,11 +478,6 @@ Rectangle {
                         if (countdownCircle.remainingSeconds > 0) {
 
                             countdownCircle.remainingSeconds--
-
-                            console.log(
-                                "Countdown:",
-                                countdownCircle.remainingSeconds
-                            )
                         }
 
                         if (countdownCircle.remainingSeconds <= 0) {
@@ -464,8 +488,6 @@ Rectangle {
 
                             GlobalState.loggedInUserName = ""
                             GlobalState.loggedInUserRole = ""
-
-                            console.log("Auto logout")
                         }
                     }
                 }
