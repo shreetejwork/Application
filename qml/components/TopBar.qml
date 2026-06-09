@@ -110,11 +110,33 @@ Rectangle {
                 return
             }
 
+            if (databaseManager.isPasswordExpired(username))
+            {
+                loginPopup.errorText =
+                        "Password expired. Contact Admin."
+
+                loginPopup.hasError = true
+
+                return
+            }
+
             loginPopup.errorText = ""
             loginPopup.hasError = false
 
             GlobalState.loggedInUserName = username
             GlobalState.loggedInUserRole = userType
+
+            var days =
+                    databaseManager.daysUntilPasswordExpiry(
+                        username)
+
+            if (days > 0 && days <= 7) {
+
+                root.showNotification(
+                    "Password expires in "
+                    + days
+                    + " day(s)")
+            }
 
             loginPopup.clearFailedAttempts(username)
 

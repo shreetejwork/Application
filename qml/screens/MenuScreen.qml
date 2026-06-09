@@ -10,6 +10,8 @@ Item {
     id: root
     anchors.fill: parent
 
+    property var globalTopBar: null
+
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)

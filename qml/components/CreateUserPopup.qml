@@ -5,6 +5,8 @@ import AppState 1.0
 
 Popup {
 
+    id: createUserPopup
+
     // =========================================================
     // TYPOGRAPHY FOR CREATE USER POPUP
     // =========================================================
@@ -13,11 +15,15 @@ Popup {
         id: createUserTypography
         scale: 1.0
     }
-    id: createUserPopup
+
+    property var globalTopBar: null
 
     Component.onCompleted: {
         root.applyFontToAllChildren(this)
     }
+
+    property string errorText: ""
+    property bool hasError: false
 
     enter: Transition {
         ParallelAnimation {
@@ -108,11 +114,11 @@ Popup {
         usernameInput.text = ""
         passwordInput.text = ""
 
+        errorText = ""
+        hasError = false
+
         GlobalState.loginKeyboardRequest = false
         GlobalState.activeInputField = null
-
-        if (selectionPopup.visible)
-            selectionPopup.close()
     }
 
     onClosed: {
@@ -350,7 +356,8 @@ Popup {
 
                 color: "#F2F2F2"
 
-                border.color: "#1A4DB5"
+                border.color: createUserPopup.hasError ? "#FF5252" : "#1A4DB5"
+                border.width: createUserPopup.hasError ? 2 : 1
 
                 TextField {
                     id: usernameInput
@@ -396,6 +403,11 @@ Popup {
                                 flick.adjustView(usernameInput)
                         }
                     }
+
+                    onTextChanged: {
+                        createUserPopup.errorText = ""
+                        createUserPopup.hasError = false
+                    }
                 }
 
                 MouseArea {
@@ -429,6 +441,20 @@ Popup {
                     font.pixelSize: createUserTypography.body
 
                 }
+            }
+
+            Text {
+                Layout.fillWidth: true
+
+                text: createUserPopup.errorText
+
+                color: "#FF3B30"
+
+                font.pixelSize: createUserTypography.bodySmall
+
+                visible: createUserPopup.hasError
+
+                wrapMode: Text.WordWrap
             }
 
             // ── PASSWORD ──
@@ -605,18 +631,49 @@ Popup {
                                 return
                             }
 
-                            console.log("Creating user...")
+                            var username = usernameInput.text.trim()
 
-                            createUserPopup.createUserRequested(
-                                        userTypeValue.text,
-                                        usernameInput.text.trim(),
-                                        passwordInput.text
-                                        )
+                            // Generate simple FPID
+                            var fpid =
+                                    Math.floor(
+                                        1000 + Math.random() * 9000
+                                        ).toString()
 
-                            GlobalState.loginKeyboardRequest = false
-                            GlobalState.activeInputField = null
+                            // Generate User ID
+                            var id =
+                                    Math.floor(
+                                        100 + Math.random() * 900
+                                        ).toString()
 
-                            createUserPopup.close()
+                            var success =
+                                    databaseManager.insertUser(
+                                        fpid,
+                                        id,
+                                        username,
+                                        passwordInput.text,
+                                        userTypeValue.text)
+
+                            if (success)
+                            {
+                                if (createUserPopup.globalTopBar &&
+                                        createUserPopup.globalTopBar.showNotification)
+                                {
+                                    createUserPopup.globalTopBar.showNotification(
+                                        "✓ User created successfully"
+                                    )
+                                }
+
+                                GlobalState.loginKeyboardRequest = false
+                                GlobalState.activeInputField = null
+
+                                createUserPopup.close()
+                            }
+                            else
+                            {
+                                createUserPopup.errorText = "Username already exists"
+                                createUserPopup.hasError = true
+
+                            }
                         }
                     }
                 }

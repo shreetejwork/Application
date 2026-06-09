@@ -38,6 +38,18 @@ bool DatabaseManager::initialize()
         qDebug() << "DB already exists, opening...";
     }
 
+    QSqlQuery query;
+
+    query.exec(
+        "ALTER TABLE usertable "
+        "ADD COLUMN password_expiry_date TEXT");
+
+    query.exec(
+        "UPDATE usertable "
+        "SET password_expiry_date = date('now', '+90 day') "
+        "WHERE password_expiry_date IS NULL "
+        "OR password_expiry_date = ''");
+
     return true;
 }
 
@@ -162,7 +174,8 @@ void DatabaseManager::createTables()
         id VARCHAR(3),
         username VARCHAR(15),
         password VARCHAR(20),
-        role VARCHAR(20)
+        role VARCHAR(20),
+        password_expiry_date TEXT
     );
 )");
 
@@ -181,14 +194,19 @@ void DatabaseManager::createTables()
 
             insertDefaultUser.prepare(
                 "INSERT INTO usertable "
-                "(fpid, id, username, password, role) "
-                "VALUES (?, ?, ?, ?, ?)");
+                "(fpid, id, username, password, role, password_expiry_date) "
+                "VALUES (?, ?, ?, ?, ?, ?)");
 
             insertDefaultUser.addBindValue("0000");
             insertDefaultUser.addBindValue("001");
             insertDefaultUser.addBindValue("DefaultUser");
             insertDefaultUser.addBindValue("00000");
             insertDefaultUser.addBindValue("Admin");
+
+            insertDefaultUser.addBindValue(
+                QDate::currentDate()
+                    .addDays(90)
+                    .toString(Qt::ISODate));
 
             if (!insertDefaultUser.exec())
             {
@@ -206,24 +224,48 @@ void DatabaseManager::createTables()
 }
 
 // INSERT USER
-bool DatabaseManager::insertUser(const QString &fpid,
-                                 const QString &id,
-                                 const QString &username,
-                                 const QString &password,
-                                 const QString &role)
+bool DatabaseManager::insertUser(
+    const QString &fpid,
+    const QString &id,
+    const QString &username,
+    const QString &password,
+    const QString &role)
 {
+    QSqlQuery checkQuery;
+
+    checkQuery.prepare(
+        "SELECT COUNT(*) "
+        "FROM usertable "
+        "WHERE username = ?");
+
+    checkQuery.addBindValue(username);
+
+    if (checkQuery.exec() && checkQuery.next())
+    {
+        if (checkQuery.value(0).toInt() > 0)
+        {
+            qDebug() << "Username already exists";
+            return false;
+        }
+    }
+
     QSqlQuery query;
 
     query.prepare(
         "INSERT INTO usertable "
-        "(fpid, id, username, password, role) "
-        "VALUES (?, ?, ?, ?, ?)");
+        "(fpid, id, username, password, role, password_expiry_date) "
+        "VALUES (?, ?, ?, ?, ?, ?)");
 
     query.addBindValue(fpid);
     query.addBindValue(id);
     query.addBindValue(username);
     query.addBindValue(password);
     query.addBindValue(role);
+
+    query.addBindValue(
+        QDate::currentDate()
+            .addDays(90)
+            .toString(Qt::ISODate));
 
     if (!query.exec())
     {
@@ -363,4 +405,50 @@ bool DatabaseManager::validateLogin(
     }
 
     return false;
+}
+
+bool DatabaseManager::isPasswordExpired(
+    const QString &username)
+{
+    QSqlQuery query;
+
+    query.prepare(
+        "SELECT password_expiry_date "
+        "FROM usertable "
+        "WHERE username = ?");
+
+    query.addBindValue(username);
+
+    if (!query.exec() || !query.next())
+        return true;
+
+    QDate expiry =
+        QDate::fromString(
+            query.value(0).toString(),
+            Qt::ISODate);
+
+    return QDate::currentDate() > expiry;
+}
+
+int DatabaseManager::daysUntilPasswordExpiry(
+    const QString &username)
+{
+    QSqlQuery query;
+
+    query.prepare(
+        "SELECT password_expiry_date "
+        "FROM usertable "
+        "WHERE username = ?");
+
+    query.addBindValue(username);
+
+    if (!query.exec() || !query.next())
+        return -1;
+
+    QDate expiry =
+        QDate::fromString(
+            query.value(0).toString(),
+            Qt::ISODate);
+
+    return QDate::currentDate().daysTo(expiry);
 }

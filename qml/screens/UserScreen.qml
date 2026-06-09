@@ -7,6 +7,9 @@ Item {
     id: root
     anchors.fill: parent
 
+    property var globalTopBar
+    property var notify
+
     Rectangle {
         id: dimBackground
 
@@ -133,15 +136,7 @@ Item {
         parent: root
         scale: root.scale
 
-        // OPTIONAL: handle signals
-        onCreateUserRequested: (type, username, password) => {
-                                   console.log("CREATE USER:", type, username, password)
-                                   close()
-                               }
-
-        onClearRequested: {
-            console.log("Fields cleared")
-        }
+        globalTopBar: root.globalTopBar
     }
 
     //EDIT PASSWORD POPUP INSTANCE
