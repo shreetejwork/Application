@@ -793,15 +793,42 @@ Popup {
                         }
                         selectionPopup.richModel = rich
 
-                        selectionPopup.onSelectCallback = function(username) {
+                        selectionPopup.onSelectCallback = function(username)
+                        {
                             usernameValue.text = username
                             loginPopup.currentSelectedUser = username
 
-                            // Clear old password when switching users
                             passwordInput.text = ""
 
-                            // Refresh errors for this user
+                            // First show block-related errors
                             loginPopup.refreshErrorForUser(username)
+
+                            // If user is blocked, don't overwrite the message
+                            if (loginPopup.isUserBlocked(username))
+                                return
+
+                            // Password expired
+                            if (databaseManager.isPasswordExpired(username)) {
+
+                                loginPopup.errorText =
+                                    "Password expired. Please change your password."
+
+                                loginPopup.hasError = true
+                                return
+                            }
+
+                            // Password expiry warning
+                            var days = databaseManager.daysUntilPasswordExpiry(username)
+
+                            if (days >= 0 && days <= 7) {
+
+                                loginPopup.errorText =
+                                    days === 0
+                                    ? "Password expires today."
+                                    : "Password will expire in " + days + " day(s)."
+
+                                loginPopup.hasError = true
+                            }
                         }
 
                         selectionPopup.open()
