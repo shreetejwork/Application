@@ -294,31 +294,34 @@ void DatabaseManager::printAllUsers()
     }
 }
 
-bool DatabaseManager::deleteUser(const QString &username)
+// Delete User
+
+bool DatabaseManager::deleteUser(
+    const QString &role,
+    const QString &username)
 {
-    QSqlQuery userQuery;
-    userQuery.prepare(
-        "SELECT role FROM usertable "
-        "WHERE username = ?");
-
-    userQuery.addBindValue(username);
-
-    if (!userQuery.exec() || !userQuery.next())
+    // Optional protection
+    if (username == "DefaultUser")
     {
-        qDebug() << "User not found.";
+        qDebug() << "DefaultUser cannot be deleted.";
         return false;
     }
 
-    QString role = userQuery.value(0).toString();
-
+    // If deleting an Admin, ensure at least one Admin remains
     if (role == "Admin")
     {
         QSqlQuery adminCountQuery;
+
         adminCountQuery.exec(
-            "SELECT COUNT(*) FROM usertable "
+            "SELECT COUNT(*) "
+            "FROM usertable "
             "WHERE role = 'Admin'");
 
-        adminCountQuery.next();
+        if (!adminCountQuery.next())
+        {
+            qDebug() << "Failed to count admins.";
+            return false;
+        }
 
         int adminCount = adminCountQuery.value(0).toInt();
 
@@ -330,10 +333,13 @@ bool DatabaseManager::deleteUser(const QString &username)
     }
 
     QSqlQuery deleteQuery;
+
     deleteQuery.prepare(
         "DELETE FROM usertable "
-        "WHERE username = ?");
+        "WHERE role = ? "
+        "AND username = ?");
 
+    deleteQuery.addBindValue(role);
     deleteQuery.addBindValue(username);
 
     if (!deleteQuery.exec())
@@ -342,6 +348,58 @@ bool DatabaseManager::deleteUser(const QString &username)
                  << deleteQuery.lastError().text();
         return false;
     }
+
+    if (deleteQuery.numRowsAffected() == 0)
+    {
+        qDebug() << "User not found.";
+        return false;
+    }
+
+    qDebug() << "User deleted successfully:"
+             << username;
+
+    return true;
+}
+
+bool DatabaseManager::updatePassword(
+    const QString &role,
+    const QString &username,
+    const QString &newPassword)
+{
+    QSqlQuery query;
+
+    query.prepare(
+        "UPDATE usertable "
+        "SET password = ?, "
+        "password_expiry_date = ? "
+        "WHERE role = ? "
+        "AND username = ?");
+
+    query.addBindValue(newPassword);
+
+    query.addBindValue(
+        QDate::currentDate()
+            .addDays(90)
+            .toString(Qt::ISODate));
+
+    query.addBindValue(role);
+    query.addBindValue(username);
+
+    if (!query.exec())
+    {
+        qDebug() << "Password update failed:"
+                 << query.lastError().text();
+        return false;
+    }
+
+    if (query.numRowsAffected() == 0)
+    {
+        qDebug() << "User not found.";
+        return false;
+    }
+
+    qDebug() << "Password updated for:"
+             << username;
 
     return true;
 }

@@ -143,28 +143,14 @@ Item {
     EditPasswordPopup {
         id: editPasswordPopup
 
-        onUpdatePasswordRequested: function(newPassword) {
-            console.log("New Password:", newPassword)
-
-            editPasswordPopup.close()
-        }
-
-        onClearRequested: {
-            console.log("Clear clicked")
-        }
+        globalTopBar: root.globalTopBar
     }
 
     //DELETE USER POPUP INSTANCE
     DeleteUserPopup {
         id: deleteUserPopup
 
-        onDeleteUserRequested: function(userType, username) {
-            console.log("Delete:", userType, username)
-        }
-
-        onClearRequested: {
-            console.log("Clear pressed")
-        }
+        globalTopBar: root.globalTopBar
     }
 
     Rectangle {

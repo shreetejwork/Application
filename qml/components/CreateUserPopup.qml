@@ -199,52 +199,111 @@ Popup {
         property string title: ""
         property var onSelectCallback
 
-        width: 320 * scale
-        height: (4 * 60 * scale) + (60 * scale)
+        width: 340 * scale
+        height: (4 * 64 * scale) + (64 * scale)
 
         background: Rectangle {
-            radius: 16 * scale
+            radius: 18 * scale
             color: "white"
             border.color: "#E0E3EB"
+            border.width: 1
         }
 
-        Column {
+        contentItem: Column {
             anchors.fill: parent
 
-            Text {
-                text: selectionPopup.title
-                anchors.horizontalCenter: parent.horizontalCenter
-                padding: 16 * scale
+            // ===== HEADER =====
+            Rectangle {
+                width: parent.width
+                height: 64 * scale
 
-                color: "#1A4DB5"
-                font.pixelSize: 20
+                color: "white"
+                radius: 18 * scale
+                clip: true
+
+                Rectangle {
+                    anchors.bottom: parent.bottom
+                    width: parent.width
+                    height: radius
+
+                    color: "#1A4DB5"
+                }
+
+                Text {
+                    anchors.centerIn: parent
+
+                    text: selectionPopup.title
+
+                    color: "#1A4DB5"
+
+                    font.pixelSize: 20
+                    font.bold: true
+                }
             }
 
-            Repeater {
-                model: selectionPopup.modelData
+            Rectangle {
+                width: parent.width
+                height: 1
+                color: "#E5E7EB"
+            }
 
-                delegate: Rectangle {
+            // ===== LIST =====
+            Flickable {
+                width: parent.width
+                height: 4 * 64 * scale
+
+                contentHeight: listColumn.height
+
+                clip: true
+
+                Column {
+                    id: listColumn
+
                     width: parent.width
-                    height: 60 * scale
-                    color: mouse.pressed ? "#E8EDFF" : "white"
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: modelData
-                        font.pixelSize: 18
+                    Repeater {
+                        model: selectionPopup.modelData
 
-                        color: "#1A1A2E"
-                    }
+                        delegate: Rectangle {
+                            width: parent.width
+                            height: 64 * scale
 
-                    MouseArea {
-                        id: mouse
-                        anchors.fill: parent
+                            color: mouse.pressed
+                                   ? "#E8EDFF"
+                                   : (index % 2 === 0
+                                      ? "#FFFFFF"
+                                      : "#FAFBFF")
 
-                        onClicked: {
-                            selectionPopup.close()
+                            Rectangle {
+                                anchors.bottom: parent.bottom
+                                width: parent.width
+                                height: 1
+                                color: "#F0F0F0"
+                            }
 
-                            if (selectionPopup.onSelectCallback)
-                                selectionPopup.onSelectCallback(modelData)
+                            Text {
+                                anchors.verticalCenter: parent.verticalCenter
+                                anchors.left: parent.left
+                                anchors.leftMargin: 20 * scale
+
+                                text: modelData
+
+                                font.pixelSize: 18
+                                color: "#1A1A2E"
+                            }
+
+                            MouseArea {
+                                id: mouse
+
+                                anchors.fill: parent
+
+                                onClicked: {
+                                    selectionPopup.close()
+
+                                    if (selectionPopup.onSelectCallback)
+                                        selectionPopup.onSelectCallback(modelData)
+                                }
+                            }
                         }
                     }
                 }
@@ -333,8 +392,8 @@ Popup {
 
                         selectionPopup.modelData = [
                                     "Admin",
-                                    "Operator",
-                                    "User"
+                                    "Supervisor",
+                                    "Operator"
                                 ]
 
                         selectionPopup.onSelectCallback = function(val) {

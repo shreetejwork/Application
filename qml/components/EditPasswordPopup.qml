@@ -12,6 +12,8 @@ Popup {
 
     id: editPasswordPopup
 
+    property var globalTopBar
+
     enter: Transition {
         ParallelAnimation {
 
@@ -395,10 +397,10 @@ Popup {
                         selectionPopup.title = "Select User Type"
 
                         selectionPopup.modelData = [
-                                    "Admin",
-                                    "Operator",
-                                    "User"
-                                ]
+                            "Admin",
+                            "Supervisor",
+                            "Operator"
+                        ]
 
                         selectionPopup.onSelectCallback = function(val) {
                             userTypeValue.text = val
@@ -453,15 +455,17 @@ Popup {
 
                     onClicked: {
 
+                        if (userTypeValue.text === "--- Select ---")
+                            return
+
                         selectionPopup.title = "Select Username"
 
-                        selectionPopup.modelData = [
-                                    "John Doe",
-                                    "Jane Smith",
-                                    "Bob Johnson"
-                                ]
+                        selectionPopup.modelData =
+                                databaseManager.getUsersByRole(
+                                    userTypeValue.text)
 
                         selectionPopup.onSelectCallback = function(val) {
+
                             usernameValue.text = val
                         }
 
@@ -772,23 +776,62 @@ Popup {
 
                             if (userTypeValue.text === "--- Select ---" ||
                                     usernameValue.text === "--- Select ---" ||
-                                    newPasswordInput.text === "" ||
-                                    confirmPasswordInput.text === "")
+                                    newPasswordInput.text.trim() === "" ||
+                                    confirmPasswordInput.text.trim() === "")
+                            {
                                 return
+                            }
 
                             if (newPasswordInput.text !== confirmPasswordInput.text)
-                                return
+                            {
+                                if (editPasswordPopup.globalTopBar &&
+                                        editPasswordPopup.globalTopBar.showNotification)
+                                {
+                                    editPasswordPopup.globalTopBar.showNotification(
+                                        "✗ Passwords do not match"
+                                    )
+                                }
 
-                            editPasswordPopup.updatePasswordRequested(
+                                return
+                            }
+
+                            var success =
+                                    databaseManager.updatePassword(
                                         userTypeValue.text,
                                         usernameValue.text,
-                                        newPasswordInput.text
-                                        )
+                                        newPasswordInput.text)
 
-                            GlobalState.loginKeyboardRequest = false
-                            GlobalState.activeInputField = null
+                            if (success)
+                            {
+                                if (editPasswordPopup.globalTopBar &&
+                                        editPasswordPopup.globalTopBar.showNotification)
+                                {
+                                    editPasswordPopup.globalTopBar.showNotification(
+                                        "✓ Password updated successfully"
+                                    )
+                                }
 
-                            editPasswordPopup.close()
+                                userTypeValue.text = "--- Select ---"
+                                usernameValue.text = "--- Select ---"
+
+                                newPasswordInput.text = ""
+                                confirmPasswordInput.text = ""
+
+                                GlobalState.loginKeyboardRequest = false
+                                GlobalState.activeInputField = null
+
+                                editPasswordPopup.close()
+                            }
+                            else
+                            {
+                                if (editPasswordPopup.globalTopBar &&
+                                        editPasswordPopup.globalTopBar.showNotification)
+                                {
+                                    editPasswordPopup.globalTopBar.showNotification(
+                                        "✗ Failed to update password"
+                                    )
+                                }
+                            }
                         }
                     }
                 }

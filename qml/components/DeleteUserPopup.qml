@@ -9,7 +9,10 @@ Popup {
         id: deleteUserTypography
         scale: 1.0
     }
+
     id: deleteUserPopup
+
+    property var globalTopBar
 
     // =====================================================
     // ANIMATION
@@ -347,7 +350,6 @@ Popup {
                     text: "--- Select ---"
                     font.pixelSize: deleteUserTypography.body
 
-                    color: text === "--- Select ---" ? "#AAAAAA" : "#1A1A2E"
                 }
 
                 Text {
@@ -366,9 +368,13 @@ Popup {
 
                     onClicked: {
                         selectionPopup.title = "Select User Type"
-                        selectionPopup.modelData = ["Admin", "Operator", "User"]
+                        selectionPopup.modelData = ["Admin", "Supervisor", "Operator"]
+
                         selectionPopup.onSelectCallback = function(val) {
+
                             userTypeValue.text = val
+
+                            usernameValue.text = "--- Select ---"
                         }
                         selectionPopup.open()
                     }
@@ -391,8 +397,6 @@ Popup {
                     anchors.verticalCenter: parent.verticalCenter
                     text: "--- Select ---"
                     font.pixelSize: deleteUserTypography.body
-
-                    color: text === "--- Select ---" ? "#AAAAAA" : "#1A1A2E"
                 }
 
                 Text {
@@ -410,11 +414,20 @@ Popup {
                     enabled: !deleteUserPopup.fieldsLocked
 
                     onClicked: {
+
+                        if (userTypeValue.text === "--- Select ---")
+                            return
+
                         selectionPopup.title = "Select Username"
-                        selectionPopup.modelData = ["John Doe", "Jane Smith", "Bob Johnson"]
+
+                        selectionPopup.modelData =
+                                databaseManager.getUsersByRole(
+                                    userTypeValue.text)
+
                         selectionPopup.onSelectCallback = function(val) {
                             usernameValue.text = val
                         }
+
                         selectionPopup.open()
                     }
                 }
@@ -443,15 +456,41 @@ Popup {
                         anchors.fill: parent
 
                         onClicked: {
+
                             if (userTypeValue.text === "--- Select ---" ||
-                                usernameValue.text === "--- Select ---")
+                                    usernameValue.text === "--- Select ---")
                                 return
 
-                            deleteUserPopup.deleteUserRequested(
-                                userTypeValue.text,
-                                usernameValue.text
-                            )
-                            deleteUserPopup.close()
+                            var success =
+                                    databaseManager.deleteUser(
+                                        userTypeValue.text,
+                                        usernameValue.text)
+
+                            if (success)
+                            {
+                                if (deleteUserPopup.globalTopBar &&
+                                        deleteUserPopup.globalTopBar.showNotification)
+                                {
+                                    deleteUserPopup.globalTopBar.showNotification(
+                                        "✓ User deleted successfully"
+                                    )
+                                }
+
+                                userTypeValue.text = "--- Select ---"
+                                usernameValue.text = "--- Select ---"
+
+                                deleteUserPopup.close()
+                            }
+                            else
+                            {
+                                if (deleteUserPopup.globalTopBar &&
+                                        deleteUserPopup.globalTopBar.showNotification)
+                                {
+                                    deleteUserPopup.globalTopBar.showNotification(
+                                        "✗ Failed to delete user"
+                                    )
+                                }
+                            }
                         }
                     }
                 }

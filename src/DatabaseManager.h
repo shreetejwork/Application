@@ -19,10 +19,18 @@ public:
         const QString &username,
         const QString &password,
         const QString &role);
-    bool deleteUser(const QString &username);
+
+    Q_INVOKABLE bool deleteUser(
+        const QString &role,
+        const QString &username);
 
 
     Q_INVOKABLE QStringList getUsersByRole(const QString &role);
+
+    Q_INVOKABLE bool updatePassword(
+        const QString &role,
+        const QString &username,
+        const QString &newPassword);
 
     Q_INVOKABLE bool validateLogin(
         const QString &role,
