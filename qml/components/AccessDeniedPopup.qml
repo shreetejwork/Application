@@ -5,18 +5,23 @@ import QtQuick.Layouts
 Popup {
 
     Typography {
-        id: powerOffTypography
+        id: accessDeniedPopupTypography
         scale: 1.0
     }
-    id: powerPopup
+    id:  accessDeniedPopup
+
+    property string popupTitle: "Access Denied"
+    property string popupMessage: ""
+
+    signal logoutRequested()
 
     // =========================================================
     // TYPOGRAPHY FOR POPUP
     // =========================================================
-    
+
     Typography {
         id: popupTypography
-        scale: powerPopup.scale
+        scale: logoutPopup.scale
     }
 
     enter: Transition {
@@ -64,9 +69,11 @@ Popup {
     property real baseWidth: 1024
     property real baseHeight: 600
 
+
     modal: true
     focus: true
     dim: true
+
 
     Overlay.modal: Rectangle {
         color: "#66000000"
@@ -78,7 +85,7 @@ Popup {
     height: 360 * scale
 
     x: (Overlay.overlay.width - width) / 2
-    y: (Overlay.overlay.height - height) / 2
+    y: (Overlay.overlay.height - height) / 2 - (70 * scale)
 
     background: Rectangle {
         color: "#EBEBEB"
@@ -94,7 +101,7 @@ Popup {
 
         // TITLE
         Text {
-            text: "Power Off"
+            text: accessDeniedPopup.popupTitle
             font.pixelSize: popupTypography.title
 
             color: "#1A4DB5"
@@ -111,7 +118,7 @@ Popup {
 
             Text {
                 anchors.centerIn: parent
-                text: "This will turn off the system. Continue?"
+                text: accessDeniedPopup.popupMessage
                 wrapMode: Text.WordWrap
                 horizontalAlignment: Text.AlignHCenter
                 width: parent.width * 0.9
@@ -126,30 +133,6 @@ Popup {
             Layout.alignment: Qt.AlignHCenter
             spacing: 20 * scale
 
-            // POWER OFF
-            Rectangle {
-                width: 140 * scale
-                height: 50 * scale
-                radius: 10 * scale
-                color: "#1A4DB5"
-
-                Text {
-                    anchors.centerIn: parent
-                    text: "Power Off"
-                    color: "white"
-
-                    font.pixelSize: popupTypography.body
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    onClicked: {
-                        powerPopup.close()
-                        SystemController.shutdown()
-                    }
-                }
-            }
-
             // CANCEL
             Rectangle {
                 width: 140 * scale
@@ -161,7 +144,7 @@ Popup {
 
                 Text {
                     anchors.centerIn: parent
-                    text: "Cancel"
+                    text: "Close"
                     color: "#1A4DB5"
 
                     font.pixelSize: popupTypography.body
@@ -169,7 +152,7 @@ Popup {
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: powerPopup.close()
+                    onClicked: accessDeniedPopup.close()
                 }
             }
         }

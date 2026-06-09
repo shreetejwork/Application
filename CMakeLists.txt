@@ -120,6 +120,7 @@ qt_add_qml_module(appApplication
         SOURCES src/PlotItem.cpp
         QML_FILES qml/components/AnimationEffect.qml
         QML_FILES qml/components/LogoutPopup.qml
+        QML_FILES qml/components/AccessDeniedPopup.qml
 )
 
 set_target_properties(appApplication PROPERTIES

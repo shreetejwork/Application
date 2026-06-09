@@ -16,6 +16,11 @@ Item {
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
+
     // =====================================================
     // PAGE OPEN ANIMATION
     // =====================================================
@@ -125,7 +130,21 @@ Item {
                     iconSource: "qrc:/qt/qml/Application/assets/images/UserCircle.png"
                     label: "User"
                     iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("User")
+                    onTileClicked: {
+
+                        if (GlobalState.loggedInUserRole !== "Admin")
+                        {
+                            accessDeniedPopup.popupTitle = "Access Denied !"
+
+                            accessDeniedPopup.popupMessage =
+                                    "Only Admin can access."
+
+                            accessDeniedPopup.open()
+                            return
+                        }
+
+                        navigateTo("User")
+                    }
                 }
                 MenuTile {
 
