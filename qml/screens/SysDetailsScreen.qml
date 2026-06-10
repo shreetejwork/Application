@@ -11,23 +11,23 @@ Item {
     property bool showTopBar: true
     property var globalTopBar
 
-
-
     property real baseHeight: 700
     property real scale: Math.max(0.9, Math.min(1.8, height / baseHeight))
 
     property var sysDetails: [
-        { label: "User", value: "..............."},
-        { label: "Location", value: "..............."},
-        { label: "Machine Id", value: "PHMX"},
-        { label: "Version", value: "v4.0.1"}
+        { label: "Supplier Name",  value: GlobalState.supplierName  ?? "..." },
+        { label: "Serial Number",  value: GlobalState.serialNumber  ?? "..." },
+        { label: "User",           value: GlobalState.userName      ?? "..." },
+        { label: "Machine ID",     value: GlobalState.machineId     ?? "PHMX" },
+        { label: "Location",       value: GlobalState.location      ?? "..." },
+        { label: "Version",        value: "v4.0.1" }
     ]
 
     Rectangle {
-    Typography {
-        id: screenTypography
-        scale: root.scale || 1.0
-    }
+        Typography {
+            id: screenTypography
+            scale: root.scale || 1.0
+        }
         anchors.fill: parent
         color: "#F5F7FC"
 
@@ -35,7 +35,7 @@ Item {
         Item {
             anchors.centerIn: parent
             width: Math.min(parent.width * 0.92, 900 * root.scale)
-            height: contentColumn.implicitHeight
+            height: centerColumn.implicitHeight
 
             Column {
                 id: centerColumn
@@ -53,7 +53,6 @@ Item {
                     Text {
                         text: "About Machine"
                         font.pixelSize: 26
-
                         color: "#1A4DB5"
                     }
 
@@ -97,7 +96,6 @@ Item {
                                 model: root.sysDetails
 
                                 delegate: Rectangle {
-
                                     Layout.fillWidth: true
                                     Layout.preferredHeight: 80 * root.scale
 
@@ -114,17 +112,16 @@ Item {
 
                                         Text {
                                             text: modelData.label
-                                            font.pixelSize: 15
-
+                                            font.pixelSize: 16
                                             color: "#5B6B8C"
                                         }
 
                                         Text {
                                             text: modelData.value
-                                            font.pixelSize: 19
-
+                                            font.pixelSize: 20
                                             color: "#1A4DB5"
                                             elide: Text.ElideRight
+                                            width: parent.width
                                         }
                                     }
                                 }

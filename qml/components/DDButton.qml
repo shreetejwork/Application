@@ -17,6 +17,8 @@ Rectangle {
     height: 60
     radius: 16
 
+    signal toggleRequested()
+
     // ================= PUBLIC API =================
     property bool toggled: false
     property bool hovered: false
@@ -86,7 +88,7 @@ Rectangle {
         onPressed: root.pressed = true
         onReleased: root.pressed = false
 
-        onClicked: root.toggled = !root.toggled
+        onClicked: root.toggleRequested()
     }
 
     // ================= ANIMATIONS =================

@@ -23,6 +23,10 @@ Item {
             globalTopBar.showNotification(msg)
     }
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
     opacity: 0
     Behavior on opacity { NumberAnimation { duration: 400 } }
     Component.onCompleted: opacity = 1
@@ -168,6 +172,18 @@ Item {
                                             anchors.fill: parent
 
                                             onPressed: {
+
+                                                if (GlobalState.loggedInUserRole === "")
+                                                {
+                                                    accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                                    accessDeniedPopup.popupMessage =
+                                                            "Please login first"
+
+                                                    accessDeniedPopup.open()
+                                                    return
+                                                }
+
                                                 inputField.forceActiveFocus()
                                             }
                                         }
@@ -215,6 +231,18 @@ Item {
                                         enabled: !root.batchRunning
 
                                         onClicked: {
+
+                                            if (GlobalState.loggedInUserRole === "")
+                                            {
+                                                accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                                accessDeniedPopup.popupMessage =
+                                                        "Please login first"
+
+                                                accessDeniedPopup.open()
+                                                return
+                                            }
+
                                             inputField.readOnly = false
                                             inputField.forceActiveFocus()
 
@@ -306,6 +334,18 @@ Item {
                                             anchors.fill: parent
 
                                             onPressed: {
+
+                                                if (GlobalState.loggedInUserRole === "")
+                                                {
+                                                    accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                                    accessDeniedPopup.popupMessage =
+                                                            "Please login first"
+
+                                                    accessDeniedPopup.open()
+                                                    return
+                                                }
+
                                                 productField.forceActiveFocus()
                                             }
                                         }
@@ -351,6 +391,18 @@ Item {
                                         enabled: !root.batchRunning
 
                                         onClicked: {
+
+                                            if (GlobalState.loggedInUserRole === "")
+                                            {
+                                                accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                                accessDeniedPopup.popupMessage =
+                                                        "Please login first"
+
+                                                accessDeniedPopup.open()
+                                                return
+                                            }
+
                                             productField.readOnly = false
                                             productField.forceActiveFocus()
 
@@ -383,6 +435,18 @@ Item {
                                 enabled: !root.batchRunning
 
                                 onClicked: {
+
+                                    if (GlobalState.loggedInUserRole === "")
+                                    {
+                                        accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                        accessDeniedPopup.popupMessage =
+                                                "Please login first"
+
+                                        accessDeniedPopup.open()
+                                        return
+                                    }
+
                                     root.batchRunning = true
                                     root.batchPaused = false
                                     root.notify("✓ Batch Start")
@@ -400,6 +464,18 @@ Item {
                                 enabled: root.batchRunning
 
                                 onClicked: {
+
+                                    if (GlobalState.loggedInUserRole === "")
+                                    {
+                                        accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                        accessDeniedPopup.popupMessage =
+                                                "Please login first"
+
+                                        accessDeniedPopup.open()
+                                        return
+                                    }
+
                                     root.batchPaused = !root.batchPaused
                                     root.notify(root.batchPaused ? "⏸ Paused" : "▶ Resumed")
                                 }
@@ -416,6 +492,18 @@ Item {
                                 enabled: root.batchRunning
 
                                 onClicked: {
+
+                                    if (GlobalState.loggedInUserRole === "")
+                                    {
+                                        accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                        accessDeniedPopup.popupMessage =
+                                                "Please login first"
+
+                                        accessDeniedPopup.open()
+                                        return
+                                    }
+
                                     root.batchRunning = false
                                     root.batchPaused = false
                                     root.notify("■ Batch End")
@@ -487,7 +575,21 @@ Item {
                                 id: ddBtn
                                 Layout.alignment: Qt.AlignHCenter
 
-                                onToggledChanged: {
+                                onToggleRequested: {
+
+                                    if (GlobalState.loggedInUserRole === "")
+                                    {
+                                        accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                        accessDeniedPopup.popupMessage =
+                                                "Please login first"
+
+                                        accessDeniedPopup.open()
+                                        return
+                                    }
+
+                                    toggled = !toggled
+
                                     root.notify(toggled ? "✓ DD ON" : "✓ DD OFF")
                                 }
                             }
@@ -526,7 +628,20 @@ Item {
                                 maxValue: 100
                                 value: 0
 
-                                onSaveClicked: (val) => {
+                                onSaveClicked: (val) =>
+                                {
+                                                   if (GlobalState.loggedInUserRole === "")
+                                                   {
+                                                       accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                                       accessDeniedPopup.popupMessage =
+                                                               "Please login first"
+
+                                                       accessDeniedPopup.open()
+                                                       return
+                                                   }
+
+
                                     root.notify("✓ DD Power Saved: " + val)
                                 }
                             }
@@ -567,6 +682,18 @@ Item {
                                 decimals: 1
 
                                 onSaveClicked: (val) => {
+
+                                                   if (GlobalState.loggedInUserRole === "")
+                                                   {
+                                                       accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                                       accessDeniedPopup.popupMessage =
+                                                               "Please login first"
+
+                                                       accessDeniedPopup.open()
+                                                       return
+                                                   }
+
                                     root.notify("✓ DD Frequency Saved: " + val.toFixed(1))
                                 }
                             }

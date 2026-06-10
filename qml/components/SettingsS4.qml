@@ -4,10 +4,6 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Item {
-    Typography {
-        id: componentTypography
-        scale: root.scale || 1.0
-    }
     id: root
     anchors.fill: parent
 
@@ -52,7 +48,6 @@ Item {
             text: "About Machine"
             color: "#183C8F"
             font.pixelSize: typo.title
-
         }
 
         Rectangle {
@@ -80,26 +75,6 @@ Item {
         color: "#FFFFFF"
         border.color: "#D9E2F2"
         border.width: 1
-
-        // Dim overlay inside panel
-        Rectangle {
-            anchors.fill: parent
-            radius: parent.radius
-            color: "#000000"
-            opacity: root.activeCardId !== "" ? 0.28 : 0
-            z: 2
-            visible: opacity > 0
-            Behavior on opacity { NumberAnimation { duration: 220 } }
-
-            MouseArea {
-                anchors.fill: parent
-                enabled: root.activeCardId !== ""
-                onClicked: {
-                    root.activeCardId = ""
-                    GlobalState.loginKeyboardRequest = false
-                }
-            }
-        }
 
         // ── Inner layout: supplier row + grid ──
         Column {
@@ -181,14 +156,17 @@ Item {
         }
     }
 
-    // ── Full-screen dim behind floating card ────────────────
+    // ── Single clean full-screen dim ────────────────────────
     Rectangle {
         anchors.fill: parent
         color: "#000000"
-        opacity: root.activeCardId !== "" ? 0.38 : 0
+        opacity: root.activeCardId !== "" ? 0.45 : 0.0
         visible: opacity > 0
         z: 15
-        Behavior on opacity { NumberAnimation { duration: 220 } }
+
+        Behavior on opacity {
+            NumberAnimation { duration: 220 }
+        }
 
         MouseArea {
             anchors.fill: parent
@@ -315,8 +293,7 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     text: floatCard.fieldLabel
                     color: "#52627E"
-                    font.pixelSize: typo.caption
-
+                    font.pixelSize: typo.body
                 }
 
                 Rectangle {
@@ -332,7 +309,7 @@ Item {
                         anchors.centerIn: parent
                         text: "✕"
                         color: "#8898B8"
-                        font.pixelSize: typo.caption
+                        font.pixelSize: typo.heading
                     }
 
                     HoverHandler { id: xHover }
@@ -360,7 +337,6 @@ Item {
                     text: floatCard.initialValue
                     color: "#183C8F"
                     font.pixelSize: typo.body
-
                     verticalAlignment: Text.AlignVCenter
                     background: null
                     selectByMouse: true
@@ -402,7 +378,6 @@ Item {
                         text: "✓"
                         color: "white"
                         font.pixelSize: typo.bodySmall
-
                     }
 
                     MouseArea {
@@ -437,7 +412,6 @@ Item {
         Layout.preferredWidth: 440 * root.scale
         Layout.preferredHeight: 150 * root.scale
 
-        // fallback size when used outside GridLayout (supplier card)
         implicitWidth:  440 * root.scale
         implicitHeight: 150 * root.scale
 
@@ -468,7 +442,6 @@ Item {
                 text: card.fieldLabel
                 color: "#52627E"
                 font.pixelSize: typo.heading
-
             }
 
             Rectangle {
@@ -505,12 +478,9 @@ Item {
 
                     Image {
                         anchors.centerIn: parent
-
                         source: "qrc:/qt/qml/Application/assets/images/edit.png"
-
                         width: Math.max(14, 16 * root.scale)
                         height: width
-
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                     }

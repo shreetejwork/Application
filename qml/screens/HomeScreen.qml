@@ -32,6 +32,10 @@ Item {
             userRole: "Supervisor"
         }
 
+        AccessDeniedPopup {
+            id: accessDeniedPopup
+        }
+
         // ================= POPUP =================
         Rectangle {
             id: popup
@@ -443,12 +447,26 @@ Item {
                     id: analogGauge
                     anchors.fill: parent
 
-                    onMachinePhaseClicked: popup.open(
-                        "Machine Phase",
-                        GlobalState.machinePhase,
-                        function(val){ GlobalState.machinePhase = val },
-                        0, 180
-                    )
+                    onMachinePhaseClicked: {
+                        if (GlobalState.loggedInUserRole === "") {
+                            accessDeniedPopup.popupTitle = "Access Denied !"
+
+                            accessDeniedPopup.popupMessage =
+                                    "Please login first"
+
+                            accessDeniedPopup.open()
+                            return
+                        }
+
+                        popup.open(
+                            "Machine Phase",
+                            GlobalState.machinePhase,
+                            function(val) {
+                                GlobalState.machinePhase = val
+                            },
+                            0, 180
+                        )
+                    }
                 }
             }
 
@@ -535,6 +553,18 @@ Item {
                             onReleased: parent.pressed = false
 
                             onClicked: {
+
+                                if (GlobalState.loggedInUserRole !== "Admin")
+                                {
+                                    accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                    accessDeniedPopup.popupMessage =
+                                            "Only Admin can access"
+
+                                    accessDeniedPopup.open()
+                                    return
+                                }
+
                                 navigateTo("ProductLibrary")
                             }
                         }
@@ -600,6 +630,17 @@ Item {
                         maxValue: 1200
 
                         onThresholdClicked: {
+
+                            if (GlobalState.loggedInUserRole === "") {
+                                accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                accessDeniedPopup.popupMessage =
+                                        "Please login first"
+
+                                accessDeniedPopup.open()
+                                return
+                            }
+
                             popup.open(
                                 "Thr-S",
                                 signalGauge.threshold,
@@ -761,6 +802,17 @@ Item {
                         maxValue: 1200
 
                         onThresholdClicked: {
+
+                            if (GlobalState.loggedInUserRole === "") {
+                                accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                accessDeniedPopup.popupMessage =
+                                        "Please login first"
+
+                                accessDeniedPopup.open()
+                                return
+                            }
+
                             popup.open(
                                 "Thr-A",
                                 ampGauge.threshold,

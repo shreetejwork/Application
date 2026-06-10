@@ -315,6 +315,131 @@ Popup {
         }
     }
 
+    Popup {
+        id: confirmDeletePopup
+
+        modal: true
+        focus: true
+        anchors.centerIn: Overlay.overlay
+
+        width: 380 * scale
+        height: 180 * scale
+
+        property string selectedUserType: ""
+        property string selectedUsername: ""
+
+        background: Rectangle {
+            radius: 16 * scale
+            color: "white"
+            border.color: "#DADADA"
+            border.width: 1
+        }
+
+        ColumnLayout {
+            anchors.fill: parent
+            anchors.margins: 20 * scale
+            spacing: 20 * scale
+
+            Text {
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+
+                text: "Are you sure you want to delete\n\"" +
+                      confirmDeletePopup.selectedUsername + "\" ?"
+
+                wrapMode: Text.WordWrap
+                color: "#1A1A2E"
+                font.pixelSize: deleteUserTypography.body
+            }
+
+            RowLayout {
+                Layout.alignment: Qt.AlignHCenter
+                spacing: 20 * scale
+
+                Rectangle {
+                    width: 120 * scale
+                    height: 45 * scale
+                    radius: 8 * scale
+                    color: "#1A4DB5"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Yes"
+                        color: "white"
+                        font.pixelSize: deleteUserTypography.body
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+
+                        onClicked: {
+
+                            confirmDeletePopup.close()
+
+                            var success =
+                                    databaseManager.deleteUser(
+                                        confirmDeletePopup.selectedUserType,
+                                        confirmDeletePopup.selectedUsername)
+
+                            if (success)
+                            {
+                                if (deleteUserPopup.globalTopBar &&
+                                        deleteUserPopup.globalTopBar.showNotification)
+                                {
+                                    deleteUserPopup.globalTopBar.showNotification(
+                                        "✓ User deleted successfully")
+                                }
+
+                                userTypeValue.text = "--- Select ---"
+                                usernameValue.text = "--- Select ---"
+
+                                deleteUserPopup.close()
+                            }
+                            else
+                            {
+                                if (confirmDeletePopup.selectedUserType === "Admin")
+                                {
+                                    deleteUserPopup.errorText =
+                                            "Cannot delete the last Admin user. At least one Admin is must."
+
+                                    deleteUserPopup.hasError = true
+                                }
+                                else
+                                {
+                                    deleteUserPopup.errorText =
+                                            "Failed to delete user."
+
+                                    deleteUserPopup.hasError = true
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: 120 * scale
+                    height: 45 * scale
+                    radius: 8 * scale
+                    border.color: "#1A4DB5"
+                    border.width: 2
+                    color: "white"
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "No"
+                        color: "#1A4DB5"
+                        font.pixelSize: deleteUserTypography.body
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: confirmDeletePopup.close()
+                    }
+                }
+            }
+        }
+    }
+
     // ================= MAIN CONTENT =================
     contentItem: Item {
         anchors.fill: parent
@@ -489,43 +614,13 @@ Popup {
                                     usernameValue.text === "--- Select ---")
                                 return
 
-                            var success =
-                                    databaseManager.deleteUser(
-                                        userTypeValue.text,
-                                        usernameValue.text)
+                            deleteUserPopup.errorText = ""
+                            deleteUserPopup.hasError = false
 
-                            if (success)
-                            {
-                                if (deleteUserPopup.globalTopBar &&
-                                        deleteUserPopup.globalTopBar.showNotification)
-                                {
-                                    deleteUserPopup.globalTopBar.showNotification(
-                                        "✓ User deleted successfully"
-                                    )
-                                }
+                            confirmDeletePopup.selectedUserType = userTypeValue.text
+                            confirmDeletePopup.selectedUsername = usernameValue.text
 
-                                userTypeValue.text = "--- Select ---"
-                                usernameValue.text = "--- Select ---"
-
-                                deleteUserPopup.close()
-                            }
-                            else
-                            {
-                                if (userTypeValue.text === "Admin")
-                                {
-                                    deleteUserPopup.errorText =
-                                            "Cannot delete the last Admin user. At least one Admin is must."
-
-                                    deleteUserPopup.hasError = true
-                                }
-                                else
-                                {
-                                    deleteUserPopup.errorText =
-                                            "✗ Failed to delete user."
-
-                                    deleteUserPopup.hasError = true
-                                }
-                            }
+                            confirmDeletePopup.open()
                         }
                     }
                 }

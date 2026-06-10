@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import AppState 1.0
+
 Item {
     Typography {
         id: componentTypography
@@ -9,6 +11,10 @@ Item {
     }
 
     id: root
+
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
 
     // =========================================================
     // VALUE CONTROL PROPERTIES
@@ -316,6 +322,7 @@ Item {
                 onReleased: parent.pressed = false
 
                 onClicked: {
+
                     root.saveClicked(root.value)
                 }
             }

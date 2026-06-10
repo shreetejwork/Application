@@ -236,15 +236,17 @@ bool DatabaseManager::insertUser(
     checkQuery.prepare(
         "SELECT COUNT(*) "
         "FROM usertable "
-        "WHERE username = ?");
+        "WHERE username = ? "
+        "AND role = ?");
 
     checkQuery.addBindValue(username);
+    checkQuery.addBindValue(role);
 
     if (checkQuery.exec() && checkQuery.next())
     {
         if (checkQuery.value(0).toInt() > 0)
         {
-            qDebug() << "Username already exists";
+            qDebug() << "User already exists with same role";
             return false;
         }
     }

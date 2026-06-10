@@ -729,7 +729,7 @@ Popup {
                             }
                             else
                             {
-                                createUserPopup.errorText = "Username already exists"
+                                createUserPopup.errorText = "User already exists with same role"
                                 createUserPopup.hasError = true
 
                             }
