@@ -300,32 +300,33 @@ bool DatabaseManager::deleteUser(
     const QString &role,
     const QString &username)
 {
-    // Optional protection
     if (username == "DefaultUser")
     {
         qDebug() << "DefaultUser cannot be deleted.";
         return false;
     }
 
-    // If deleting an Admin, ensure at least one Admin remains
     if (role == "Admin")
     {
-        QSqlQuery adminCountQuery;
+        QSqlQuery query;
 
-        adminCountQuery.exec(
+        query.prepare(
             "SELECT COUNT(*) "
             "FROM usertable "
-            "WHERE role = 'Admin'");
+            "WHERE role = 'Admin' "
+            "AND username != ?");
 
-        if (!adminCountQuery.next())
+        query.addBindValue(username);
+
+        if (!query.exec() || !query.next())
         {
             qDebug() << "Failed to count admins.";
             return false;
         }
 
-        int adminCount = adminCountQuery.value(0).toInt();
+        int remainingAdmins = query.value(0).toInt();
 
-        if (adminCount <= 1)
+        if (remainingAdmins < 1)
         {
             qDebug() << "Cannot delete the last Admin.";
             return false;
@@ -349,16 +350,7 @@ bool DatabaseManager::deleteUser(
         return false;
     }
 
-    if (deleteQuery.numRowsAffected() == 0)
-    {
-        qDebug() << "User not found.";
-        return false;
-    }
-
-    qDebug() << "User deleted successfully:"
-             << username;
-
-    return true;
+    return deleteQuery.numRowsAffected() > 0;
 }
 
 bool DatabaseManager::updatePassword(

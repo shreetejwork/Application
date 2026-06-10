@@ -13,6 +13,8 @@ Popup {
     id: deleteUserPopup
 
     property var globalTopBar
+    property string errorText: ""
+    property bool hasError: false
 
     // =====================================================
     // ANIMATION
@@ -93,6 +95,9 @@ Popup {
     onOpened: {
         userTypeValue.text = "--- Select ---"
         usernameValue.text = "--- Select ---"
+
+        deleteUserPopup.errorText = ""
+        deleteUserPopup.hasError = false
 
         deleteUserPopup.devModeActive = false
         deleteUserPopup.fieldsLocked = false
@@ -375,6 +380,9 @@ Popup {
                             userTypeValue.text = val
 
                             usernameValue.text = "--- Select ---"
+
+                            deleteUserPopup.errorText = ""
+                            deleteUserPopup.hasError = false
                         }
                         selectionPopup.open()
                     }
@@ -416,9 +424,13 @@ Popup {
                     onClicked: {
 
                         if (userTypeValue.text === "--- Select ---")
+
                             return
 
                         selectionPopup.title = "Select Username"
+
+                        deleteUserPopup.errorText = ""
+                        deleteUserPopup.hasError = false
 
                         selectionPopup.modelData =
                                 databaseManager.getUsersByRole(
@@ -431,6 +443,22 @@ Popup {
                         selectionPopup.open()
                     }
                 }
+            }
+
+            Text {
+                Layout.fillWidth: true
+
+                text: deleteUserPopup.errorText
+
+                color: "#FF5252"
+
+                horizontalAlignment: Text.AlignHCenter
+
+                visible: deleteUserPopup.hasError
+
+                wrapMode: Text.WordWrap
+
+                font.pixelSize: deleteUserTypography.caption
             }
 
             // ================= BUTTONS =================
@@ -483,12 +511,19 @@ Popup {
                             }
                             else
                             {
-                                if (deleteUserPopup.globalTopBar &&
-                                        deleteUserPopup.globalTopBar.showNotification)
+                                if (userTypeValue.text === "Admin")
                                 {
-                                    deleteUserPopup.globalTopBar.showNotification(
-                                        "✗ Failed to delete user"
-                                    )
+                                    deleteUserPopup.errorText =
+                                            "Cannot delete the last Admin user. At least one Admin is must."
+
+                                    deleteUserPopup.hasError = true
+                                }
+                                else
+                                {
+                                    deleteUserPopup.errorText =
+                                            "✗ Failed to delete user."
+
+                                    deleteUserPopup.hasError = true
                                 }
                             }
                         }
