@@ -14,6 +14,44 @@ ApplicationWindow {
     title: "Dashboard"
     color: "#F5F7FC"
 
+    Timer {
+        id: navigateHomeTimer
+        interval: 1000
+        repeat: false
+
+        onTriggered: {
+            navigateToHome()
+        }
+    }
+
+    Connections {
+        target: GlobalState
+
+        function onLoggedInUserRoleChanged() {
+            if (GlobalState.loggedInUserRole === "") {
+                navigateHomeTimer.restart()
+            }
+        }
+    }
+
+    function navigateToHome() {
+
+        // Close any menu screen
+        menuLoader.visible = false
+        menuLoader.source = ""
+
+        // Reset menu navigation
+        currentMenuScreen = ""
+        menuStack = []
+
+        // Show home page
+        swipeView.visible = true
+        swipeView.currentIndex = 0
+
+        // Reset top bar
+        mainTopBar.showBackButton = false
+    }
+
 
     // =========================================================
     // TYPOGRAPHY SYSTEM
@@ -59,7 +97,6 @@ ApplicationWindow {
 
     font.family: regularFontFamily
     font.pixelSize: 20  // Set default base size for entire app
-
 
 
     // =========================================================

@@ -137,7 +137,7 @@ Item {
                             accessDeniedPopup.popupTitle = "Access Denied !"
 
                             accessDeniedPopup.popupMessage =
-                                    "Only Admin can access."
+                                    "Only Admin can access"
 
                             accessDeniedPopup.open()
                             return
@@ -153,13 +153,41 @@ Item {
                     iconSource: "qrc:/qt/qml/Application/assets/images/ProductLib.png"
                     label: "Product\nLibrary"
                     iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("ProductLibrary")
+                    onTileClicked: {
+
+                        if (GlobalState.loggedInUserRole !== "Admin")
+                        {
+                            accessDeniedPopup.popupTitle = "Access Denied !"
+
+                            accessDeniedPopup.popupMessage =
+                                    "Only Admin can access."
+
+                            accessDeniedPopup.open()
+                            return
+                        }
+
+                        navigateTo("ProductLibrary")
+                    }
                 }
                 MenuTile {
                     iconSource: "qrc:/qt/qml/Application/assets/images/Reports.png"
                     label: "Reports"
                     iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("Reports")
+                    onTileClicked: {
+
+                        if (GlobalState.loggedInUserRole === "")
+                        {
+                            accessDeniedPopup.popupTitle = "Access Denied !"
+
+                            accessDeniedPopup.popupMessage =
+                                    "Please login first"
+
+                            accessDeniedPopup.open()
+                            return
+                        }
+
+                        navigateTo("Reports")
+                    }
                 }
             }
 
@@ -172,19 +200,50 @@ Item {
                     iconSource: "qrc:/qt/qml/Application/assets/images/FactorySettings.png"
                     label: "Factory\nSettings"
                     iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("FactorySettings")
+                    onTileClicked: {
+
+                        if (GlobalState.loggedInUserRole !== "Admin")
+                        {
+                            accessDeniedPopup.popupTitle = "Access Denied !"
+
+                            accessDeniedPopup.popupMessage =
+                                    "Only Admin can access"
+
+                            accessDeniedPopup.open()
+                            return
+                        }
+
+                        navigateTo("FactorySettings")
+                    }
                 }
                 MenuTile {
                     iconSource: "qrc:/qt/qml/Application/assets/images/Settings.png"
                     label: "System\nSettings"
                     iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("SysSettings")
+                    onTileClicked: {
+
+                        if (GlobalState.loggedInUserRole === "")
+                        {
+                            accessDeniedPopup.popupTitle = "Access Denied !"
+
+                            accessDeniedPopup.popupMessage =
+                                    "Please login first"
+
+                            accessDeniedPopup.open()
+                            return
+                        }
+
+                        navigateTo("SysSettings")
+                    }
                 }
                 MenuTile {
                     iconSource: "qrc:/qt/qml/Application/assets/images/diagnosis.png"
                     label: "System\nDiagnosis"
                     iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("Diagnosis")
+                    onTileClicked: {
+
+                        navigateTo("Diagnosis")
+                    }
                 }
             }
         }

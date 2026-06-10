@@ -192,41 +192,40 @@ Item {
             visible: root.trackingPhase < 0
             width: 40
             height: 2
-            color: "#90CAF9"
+            color: "#9BB8E8"
         }
 
-        Column {
-            spacing: 2
 
-            Text {
-                text: root.machinePhase
-                font.pixelSize: root.trackingPhase >= 0
-                                ? componentTypography.title
-                                : componentTypography.title
 
-                color: "#444"
-            }
+        Item {
+            width: phaseColumn.width
+            height: phaseColumn.height
 
-            Item {
-                width: machineLabel.width
-                height: machineLabel.height
+            Column {
+                id: phaseColumn
+                anchors.centerIn: parent
+
 
                 Text {
-                    id: machineLabel
-                    text: "Machine Phase"
-                    font.pixelSize: root.trackingPhase >= 0
-                                    ? componentTypography.caption
-                                    : componentTypography.caption
-                    color: "#1A4DB5"
+                    text: root.machinePhase
+                    font.pixelSize: componentTypography.title
+                    color: "#444"
                 }
 
-                MouseArea {
-                    anchors.fill: parent
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.machinePhaseClicked()
+                Text {
+                    text: "Machine Phase"
+                    font.pixelSize: componentTypography.caption
+                    color: "#1A4DB5"
                 }
             }
+
+            MouseArea {
+                anchors.fill: parent
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.machinePhaseClicked()
+            }
         }
+
 
         Column {
             visible: root.trackingPhase >= 0

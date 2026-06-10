@@ -150,6 +150,7 @@ Popup {
                     onClicked: {
 
                         logoutPopup.logoutRequested()
+
                         logoutPopup.close()
                     }
                 }
