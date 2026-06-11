@@ -368,21 +368,16 @@ Rectangle {
             Rectangle {
                 id: countdownCircle
 
+                visible: root.isLoggedIn
+
                 width: Math.max(48 * root.scale, root.height * 0.60)
                 height: width
                 radius: width / 2
+
                 color: "transparent"
+
                 border.color: "white"
                 border.width: Math.max(1, root.height * 0.038)
-
-                // Always reserve space; fade out when not logged in
-                opacity: !root.isLoggedIn
-                         ? 0.0
-                         : (remainingSeconds <= 20 ? (blink ? 0.2 : 1.0) : 1.0)
-
-                Behavior on opacity {
-                    NumberAnimation { duration: 150 }
-                }
 
                 property int sessionTimeout: 180
                 property int remainingSeconds: sessionTimeout
@@ -390,71 +385,95 @@ Rectangle {
 
                 function resetCountdown() {
                     countdownTimer.stop()
+
                     remainingSeconds = sessionTimeout
                     blink = false
+
                     if (root.isLoggedIn)
                         countdownTimer.start()
                 }
 
-                onOpacityChanged: {
-                    // Start countdown when becoming visible (logged in)
-                    if (root.isLoggedIn && !countdownTimer.running)
+                // Reset whenever user logs in
+                onVisibleChanged: {
+                    if (visible)
                         resetCountdown()
                 }
 
-                Connections {
-                    target: root
-                    function onIsLoggedInChanged() {
-                        if (root.isLoggedIn)
-                            countdownCircle.resetCountdown()
-                        else
-                            countdownTimer.stop()
+                opacity: remainingSeconds <= 20
+                         ? (blink ? 0.2 : 1.0)
+                         : 1.0
+
+                Behavior on opacity {
+                    NumberAnimation {
+                        duration: 150
                     }
                 }
 
                 Timer {
                     id: countdownTimer
+
                     interval: 1000
                     repeat: true
                     running: false
 
                     onTriggered: {
+
                         if (!root.isLoggedIn) {
                             stop()
                             return
                         }
+
                         if (countdownCircle.remainingSeconds > 0) {
+
                             countdownCircle.remainingSeconds--
                         }
+
                         if (countdownCircle.remainingSeconds <= 0) {
+
                             stop()
+
                             countdownCircle.blink = false
+
                             GlobalState.loggedInUserName = ""
                             GlobalState.loggedInUserRole = ""
+
+                            console.log("Auto logout")
                         }
                     }
                 }
 
                 Timer {
                     id: blinkTimer
+
                     interval: 400
                     repeat: true
+
                     running: root.isLoggedIn
                              && countdownCircle.remainingSeconds <= 20
                              && countdownCircle.remainingSeconds > 0
-                    onTriggered: countdownCircle.blink = !countdownCircle.blink
+
+                    onTriggered: {
+                        countdownCircle.blink =
+                                !countdownCircle.blink
+                    }
                 }
 
                 Text {
                     anchors.centerIn: parent
+
                     text: countdownCircle.remainingSeconds
+
                     color: "white"
+
                     font.pixelSize: topBarTypography.body
                 }
 
                 MouseArea {
                     anchors.fill: parent
-                    onClicked: countdownCircle.resetCountdown()
+
+                    onClicked: {
+                        countdownCircle.resetCountdown()
+                    }
                 }
             }
 
@@ -463,8 +482,8 @@ Rectangle {
                 id: powerItem
                 Layout.alignment: Qt.AlignVCenter
                 Layout.leftMargin: root.width * 0.01
-                Layout.preferredWidth: root.height * 0.55
-                Layout.preferredHeight: root.height * 0.55
+                Layout.preferredWidth: root.height * 0.65
+                Layout.preferredHeight: root.height * 0.65
 
                 property int longPressCount: 0
                 property bool longPressTriggered: false
