@@ -2,51 +2,62 @@ import QtQuick
 import QtQuick.Controls
 
 Button {
+    id: btn
+
     Typography {
         id: componentTypography
         scale: root.scale || 1.0
     }
-    id: btn
 
     property color bgColor: "#1A4DB5"
     property color hoverColor: "#163E91"
+    property color disabledColor: "#D1D5DB"
 
-    property real minScale: 0.75
-    property real maxScale: 1.0
-    property real s: Math.max(minScale, Math.min(maxScale, Math.min(width, height) / 200))
+    property color textColor: "white"
+    property color disabledTextColor: "#6B7280"
 
-    implicitWidth: btn.width > 0 ? btn.width : 180
-    implicitHeight: btn.height > 0 ? btn.height : 48
+    property real radius: 10
+
+    implicitWidth: 110
+    implicitHeight: 50
 
     hoverEnabled: true
 
     background: Rectangle {
-        radius: 10
+        radius: btn.radius
 
         color: !btn.enabled
-               ? "#D1D5DB"
+               ? btn.disabledColor
                : (btn.down
                   ? btn.hoverColor
                   : (btn.hovered ? btn.hoverColor : btn.bgColor))
 
         opacity: btn.enabled ? 1.0 : 0.5
 
-        Behavior on color { ColorAnimation { duration: 120 } }
+        Behavior on color {
+            ColorAnimation { duration: 120 }
+        }
     }
 
     contentItem: Text {
         text: btn.text
         anchors.centerIn: parent
+
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter
 
-        font.pixelSize: Typography.body
-        color: btn.enabled ? "white" : "#6B7280"
+        font: btn.font
+
+        color: btn.enabled
+               ? btn.textColor
+               : btn.disabledTextColor
     }
 
-    // IMPORTANT: DO NOT FORCE enabled here
-    // enabled is controlled from outside now
-
     scale: !btn.enabled ? 1.0 : (btn.down ? 0.96 : 1.0)
-    Behavior on scale { NumberAnimation { duration: 100 } }
+
+    Behavior on scale {
+        NumberAnimation {
+            duration: 100
+        }
+    }
 }

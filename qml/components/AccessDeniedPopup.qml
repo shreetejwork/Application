@@ -21,7 +21,6 @@ Popup {
 
     Typography {
         id: popupTypography
-        scale: logoutPopup.scale
     }
 
     enter: Transition {

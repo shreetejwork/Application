@@ -359,31 +359,104 @@ Item {
                     }
 
                     // USER FILTER
-                    ComboBox {
-                        Layout.preferredWidth: 110 * root.scale
-                        Layout.minimumWidth: 110 * root.scale
-                        Layout.maximumWidth: 110 * root.scale
+                    Item {
+                        id: userFilter
 
+                        property var model: ["All", "Admin", "Supervisor", "Operator"]
+                        property string currentText: "All"
+
+                        width: 150 * root.scale
                         height: 36 * root.scale
 
-                        model: ["All", "Admin","Supervisor","Operator"]
-                        font.pixelSize: 18
-
-                        onCurrentTextChanged: root.selectedUser = currentText
-
-                        background: Rectangle {
+                        Rectangle {
+                            anchors.fill: parent
                             color: "#F0F4FF"
                             border.color: "#B0BEE0"
                             border.width: 1
                             radius: 6 * root.scale
+
+                            Row {
+                                anchors.fill: parent
+                                anchors.leftMargin: 10 * root.scale
+                                anchors.rightMargin: 10 * root.scale
+                                spacing: 6 * root.scale
+
+                                Text {
+                                    width: parent.width - 24 * root.scale
+                                    anchors.verticalCenter: parent.verticalCenter
+
+                                    text: userFilter.currentText
+                                    font.pixelSize: 18 * root.scale
+                                    color: "#1A1A1A"
+                                    elide: Text.ElideRight
+                                }
+
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: "▼"
+                                    font.pixelSize: 12 * root.scale
+                                    color: "#4A5A80"
+                                }
+                            }
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: popup.open()
+                            }
                         }
 
-                        contentItem: Text {
-                            leftPadding: 8 * root.scale
-                            text: parent.displayText
-                            font.pixelSize: 18
-                            color: "#1A1A1A"
-                            verticalAlignment: Text.AlignVCenter
+                        Popup {
+                            id: popup
+
+                            y: userFilter.height + (2 * root.scale)
+                            width: userFilter.width
+
+                            padding: 0
+
+                            background: Rectangle {
+                                color: "white"
+                                radius: 6 * root.scale
+                                border.color: "#B0BEE0"
+                                border.width: 1
+                            }
+
+                            contentItem: ListView {
+                                implicitHeight: contentHeight
+                                clip: true
+
+                                model: userFilter.model
+
+                                delegate: Rectangle {
+                                    width: popup.width
+                                    height: 40 * root.scale
+
+                                    color: mouseArea.containsMouse
+                                           ? "#E8EEFF"
+                                           : "white"
+
+                                    Text {
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 10 * root.scale
+
+                                        text: modelData
+                                        font.pixelSize: 18 * root.scale
+                                        color: "#1A1A1A"
+                                    }
+
+                                    MouseArea {
+                                        id: mouseArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+
+                                        onClicked: {
+                                            userFilter.currentText = modelData
+                                            root.selectedUser = modelData
+                                            popup.close()
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -555,7 +628,7 @@ Item {
                             anchors.margins: 12 * root.scale
                             spacing: root.colSpacing
 
-                            Text { text: "Sr";   width: root.colSr;   color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "Sr. No.";   width: root.colSr;   color: "#FFF"; font.pixelSize: 20 }
                             Text { text: "Date"; width: root.colDate; color: "#FFF"; font.pixelSize: 20 }
                             Text { text: "Time"; width: root.colTime; color: "#FFF"; font.pixelSize: 20 }
                             Text { text: "User"; width: root.colUser; color: "#FFF"; font.pixelSize: 20 }
@@ -581,6 +654,7 @@ Item {
                         Layout.fillHeight: true
                         clip: true
                         id: tableList
+
 
                         model: ListModel {
                             ListElement { sr: "1";  date: "1/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
@@ -622,7 +696,7 @@ Item {
                             Row {
                                 anchors.fill: parent
                                 anchors.margins: 12 * root.scale
-                                spacing: root.colSpacing   // 👈 MUST MATCH HEADER
+                                spacing: root.colSpacing   // MUST MATCH HEADER
 
                                 Text { text: sr;   width: root.colSr;   font.pixelSize: 18; color: "#3A3A3A" }
                                 Text { text: date; width: root.colDate; font.pixelSize: 18; color: "#3A3A3A" }

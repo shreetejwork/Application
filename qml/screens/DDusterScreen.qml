@@ -428,9 +428,11 @@ Item {
                             ActionButton {
                                 text: "Batch Start"
                                 width: 100
-                                height: 50
+                                height: 60
                                 bgColor: "#1A4DB5"
                                 hoverColor: "#123A8A"
+
+                                font.pixelSize : 18
 
                                 enabled: !root.batchRunning
 
@@ -457,11 +459,13 @@ Item {
                             ActionButton {
                                 text: root.batchPaused ? "Batch Resume" : "Batch Pause"
                                 width: 110
-                                height: 50
+                                height: 60
                                 bgColor: "#1A4DB5"
                                 hoverColor: "#123A8A"
 
                                 enabled: root.batchRunning
+
+                                font.pixelSize : 18
 
                                 onClicked: {
 
@@ -485,11 +489,13 @@ Item {
                             ActionButton {
                                 text: "Batch End"
                                 width: 100
-                                height: 50
+                                height: 60
                                 bgColor: "#1A4DB5"
                                 hoverColor: "#123A8A"
 
                                 enabled: root.batchRunning
+
+                                font.pixelSize : 18
 
                                 onClicked: {
 
@@ -630,18 +636,6 @@ Item {
 
                                 onSaveClicked: (val) =>
                                 {
-                                                   if (GlobalState.loggedInUserRole === "")
-                                                   {
-                                                       accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                                       accessDeniedPopup.popupMessage =
-                                                               "Please login first"
-
-                                                       accessDeniedPopup.open()
-                                                       return
-                                                   }
-
-
                                     root.notify("✓ DD Power Saved: " + val)
                                 }
                             }
