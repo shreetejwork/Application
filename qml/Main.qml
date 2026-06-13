@@ -232,6 +232,8 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             visible: !menuLoader.visible
+            enabled: visible
+            clip: true
             currentIndex: 0
 
             // ===== SMOOTHNESS TWEAKS =====
