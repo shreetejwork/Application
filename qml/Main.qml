@@ -44,6 +44,8 @@ ApplicationWindow {
         currentMenuScreen = ""
         menuStack = []
 
+        swipeView.interactive = true
+
         // Show home page
         swipeView.visible = true
         swipeView.currentIndex = 0
@@ -174,6 +176,7 @@ ApplicationWindow {
             userRole: "Supervisor"
 
             onMenuClicked: {
+                swipeView.interactive = false
                 currentMenuScreen = "Menu"
                 menuLoader.source = "screens/MenuScreen.qml"
                 menuLoader.visible = true
@@ -190,6 +193,7 @@ ApplicationWindow {
                     currentMenuScreen = ""
                     menuLoader.visible = false
                     menuLoader.source = ""
+                    swipeView.interactive = true
                     swipeView.visible = true
                     swipeView.currentIndex = 0
                     mainTopBar.showBackButton = false
@@ -228,25 +232,25 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.fillHeight: true
             visible: !menuLoader.visible
-
             currentIndex: 0
+
+            // ===== SMOOTHNESS TWEAKS =====
+            interactive: true
+
+            // Preload neighboring pages so swipe doesn't lag on first transition
+            LayoutMirroring.enabled: false
 
             HomeScreen {
                 showTopBar: false
                 globalTopBar: mainTopBar
-
                 navigateTo: function(screen) {
-
                     if (root.currentMenuScreen !== "")
                         root.menuStack.push(root.currentMenuScreen)
-
                     root.currentMenuScreen = screen
-
                     menuLoader.source = "screens/" + screen + "Screen.qml"
                     menuLoader.visible = true
-
+                    swipeView.interactive = false
                     swipeView.visible = false
-
                     mainTopBar.showBackButton = true
                 }
             }
@@ -254,10 +258,11 @@ ApplicationWindow {
             Loader {
                 property bool showDDuster: GlobalState.showDDuster
                 sourceComponent: showDDuster ? ddusterComp : batchComp
+                asynchronous: true
             }
 
-            AutoLearnScreen { showTopBar: false; globalTopBar: mainTopBar }
-            CoilOutputScreen { showTopBar: false; globalTopBar: mainTopBar}
+            AutoLearnScreen  { showTopBar: false; globalTopBar: mainTopBar }
+            CoilOutputScreen { showTopBar: false; globalTopBar: mainTopBar }
             SysDetailsScreen { showTopBar: false; globalTopBar: mainTopBar }
 
             onCurrentIndexChanged: navigator.currentPage = currentIndex
