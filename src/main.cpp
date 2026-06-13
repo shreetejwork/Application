@@ -2,6 +2,8 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickWindow>
+#include <QFontDatabase>
+#include <QFont>
 
 #include "DatabaseManager.h"
 #include "SystemController.h"
@@ -26,6 +28,15 @@ int main(int argc, char *argv[])
         Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     QGuiApplication app(argc, argv);
+
+    int id = QFontDatabase::addApplicationFont(":/qt/qml/Application/assets/images/RobotoCondensed-Regular.ttf");
+
+    if (id == -1) {
+        qWarning("Failed to load Roboto Condensed font");
+    } else {
+        QString family = QFontDatabase::applicationFontFamilies(id).at(0);
+        app.setFont(QFont(family));
+    }
 
     // =========================================================
     // APP INFO

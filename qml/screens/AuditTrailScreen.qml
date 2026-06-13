@@ -9,11 +9,18 @@ Item {
     id: root
     anchors.fill: parent
 
+
+
     property var globalTopBar
 
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
+
+    FontLoader {
+        id: condensedFont
+        source: "qrc:/fonts/RobotoCondensed-Regular.ttf"
+    }
 
     // =====================================================
     // PAGE OPEN ANIMATION
