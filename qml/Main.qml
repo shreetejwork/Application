@@ -66,6 +66,20 @@ ApplicationWindow {
     property alias appTypography: typography
 
     // =========================================================
+    // FONT LOADING
+    // =========================================================
+
+    FontLoader {
+        id: appRegularFont
+        source: "qrc:/qt/qml/Application/assets/images/RobotoCondensed-Regular.ttf"
+    }
+
+    FontLoader {
+        id: appBoldFont
+        source: "qrc:/qt/qml/Application/assets/images/RobotoCondensed-Bold.ttf"
+    }
+
+    // =========================================================
     // GLOBAL FONT
     // =========================================================
 
