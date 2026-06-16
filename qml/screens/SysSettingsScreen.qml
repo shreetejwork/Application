@@ -27,13 +27,6 @@ Item {
     // =====================================================
     // STATIC BACKDROP
     // =====================================================
-    // This sits directly on root, fills the whole screen, and is NEVER
-    // animated (no opacity/scale on it). It exists purely so that while
-    // "content" below is fading/scaling in or out, there is always a solid
-    // opaque surface behind it - so whatever screen is sitting underneath
-    // (e.g. the Dashboard SwipeView, which is now kept alive in the
-    // background for performance) can never peek through the edges during
-    // the transition.
 
     Rectangle {
         id: backdrop
@@ -44,9 +37,6 @@ Item {
     // =====================================================
     // ANIMATED CONTENT WRAPPER
     // =====================================================
-    // Everything that used to animate directly on "root" now animates on
-    // this wrapper instead. "root" and "backdrop" stay fully opaque and
-    // full-size at all times.
 
     Item {
         id: content

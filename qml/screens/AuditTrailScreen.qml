@@ -12,31 +12,25 @@ Item {
 
 
     property var globalTopBar
+    property var navigateTo
 
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
-    FontLoader {
-        id: condensedFont
-        source: "qrc:/fonts/RobotoCondensed-Regular.ttf"
+    // =====================================================
+    // STATIC BACKDROP
+    // =====================================================
+
+    Rectangle {
+        id: backdrop
+        anchors.fill: parent
+        color: "#F5F7FC"
     }
 
     // =====================================================
     // PAGE OPEN ANIMATION
     // =====================================================
-
-    opacity: 0.0
-
-    property real pageScale: 0.85
-
-    transform: Scale {
-        origin.x: root.width / 2
-        origin.y: root.height / 2
-
-        xScale: root.pageScale
-        yScale: root.pageScale
-    }
 
     Component.onCompleted: {
         openAnimation.start()
@@ -50,7 +44,7 @@ Item {
         id: openAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 0.0
@@ -62,7 +56,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 0.85
@@ -84,7 +78,7 @@ Item {
         id: closeAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 1.0
@@ -96,7 +90,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 1.0
@@ -213,9 +207,24 @@ Item {
         root.activeRemarkFilters = []
     }
 
-    Rectangle {
+    Item {
+        id: content
         anchors.fill: parent
-        color: "#F5F7FC"
+
+        opacity: 0.0
+        property real pageScale: 0.85
+
+        transform: Scale {
+            origin.x: content.width / 2
+            origin.y: content.height / 2
+
+            xScale: content.pageScale
+            yScale: content.pageScale
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: "#F5F7FC"
 
         ColumnLayout {
             anchors.fill: parent
@@ -802,6 +811,7 @@ Item {
                 }
             }
         }
+    }
     }
 
     // ===== DATE PICKER POPUP =====

@@ -17,6 +17,16 @@ Item {
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
     // =====================================================
+    // STATIC BACKDROP
+    // =====================================================
+
+    Rectangle {
+        id: backdrop
+        anchors.fill: parent
+        color: "#F5F7FC"
+    }
+
+    // =====================================================
     // PAGE OPEN / CLOSE ANIMATION
     // =====================================================
 
