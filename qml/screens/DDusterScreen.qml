@@ -583,17 +583,6 @@ Item {
 
                                 onToggleRequested: {
 
-                                    if (GlobalState.loggedInUserRole === "")
-                                    {
-                                        accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                        accessDeniedPopup.popupMessage =
-                                                "Please login first"
-
-                                        accessDeniedPopup.open()
-                                        return
-                                    }
-
                                     toggled = !toggled
 
                                     root.notify(toggled ? "✓ DD ON" : "✓ DD OFF")

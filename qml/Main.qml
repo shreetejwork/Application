@@ -39,18 +39,17 @@ ApplicationWindow {
 
     function navigateToHome() {
 
-        // Close any menu screen
-        menuLoader.visible = false
+        // Close any menu screen. SwipeView itself is never hidden (see
+        // contentArea below) - we just deactivate the menu Loader so it
+        // unloads its content and stops covering the SwipeView.
+        menuLoader.active = false
         menuLoader.source = ""
 
         // Reset menu navigation
         currentMenuScreen = ""
         menuStack = []
 
-        swipeView.interactive = true
-
         // Show home page
-        swipeView.visible = true
         swipeView.currentIndex = 0
 
         // Reset top bar
@@ -213,11 +212,9 @@ ApplicationWindow {
             userRole: "Supervisor"
 
             onMenuClicked: {
-                swipeView.interactive = false
                 currentMenuScreen = "Menu"
                 menuLoader.source = "screens/MenuScreen.qml"
-                menuLoader.visible = true
-                swipeView.visible = false
+                menuLoader.active = true
                 mainTopBar.showBackButton = true
             }
 
@@ -228,118 +225,132 @@ ApplicationWindow {
                     menuLoader.source = "screens/" + previous + "Screen.qml"
                 } else {
                     currentMenuScreen = ""
-                    menuLoader.visible = false
+                    menuLoader.active = false
                     menuLoader.source = ""
-                    swipeView.interactive = true
-                    swipeView.visible = true
                     swipeView.currentIndex = 0
                     mainTopBar.showBackButton = false
                 }
             }
         }
 
-        // ===== MENU SCREEN LOADER =====
-        Loader {
-            id: menuLoader
+        // ===== SWIPEVIEW + MENU OVERLAY =====
+        // A plain Item (not a Layout) so the menu can sit exactly on top of
+        // the SwipeView via z-order instead of replacing it. SwipeView's
+        // own `visible` is NEVER toggled - that's what was destroying its
+        // cached layer textures (see layer.enabled below) every time you
+        // left and came back, forcing a full, heavy re-render of every page
+        // on return. Now SwipeView just sits there, fully warm, the whole
+        // time the menu is open on top of it.
+        Item {
+            id: contentArea
             Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: false
 
-            onLoaded: {
-                if (item) {
-                    // Apply fonts to newly loaded screen
-                    root.applyFontToAllChildren(item)
+            // ===== MAIN SCREENS =====
+            SwipeView {
+                id: swipeView
+                anchors.fill: parent
+                z: 0
+                clip: true
+                currentIndex: 0
 
-                    if ("globalTopBar" in item)
-                        item.globalTopBar = mainTopBar
-                    item.navigateTo = function(screen) {
+                // Block touches reaching the SwipeView while the menu
+                // overlay is on top of it - this is the only state change
+                // SwipeView sees now, never visible/invisible.
+                enabled: !menuLoader.active
+
+                // ===== SMOOTHNESS TWEAKS =====
+                interactive: true
+
+                // Preload neighboring pages so swipe doesn't lag on first transition
+                LayoutMirroring.enabled: false
+
+                // Re-apply tuning any time the internal contentItem is recreated
+                // (e.g. if the application style changes at runtime)
+                onContentItemChanged: root.tuneSwipeViewSmoothness()
+
+                HomeScreen {
+                    id: homePage
+                    showTopBar: false
+                    globalTopBar: mainTopBar
+                    // Cache this page as a texture: while SwipeView is panning,
+                    // the GPU just slides the cached bitmap instead of repainting
+                    // the whole Home screen tree every frame.
+                    layer.enabled: true
+                    layer.smooth: true
+                    navigateTo: function(screen) {
                         if (root.currentMenuScreen !== "")
                             root.menuStack.push(root.currentMenuScreen)
-
                         root.currentMenuScreen = screen
                         menuLoader.source = "screens/" + screen + "Screen.qml"
+                        menuLoader.active = true
+                        mainTopBar.showBackButton = true
+                    }
+                }
+
+                Loader {
+                    id: batchOrDDusterPage
+                    property bool showDDuster: GlobalState.showDDuster
+                    sourceComponent: showDDuster ? ddusterComp : batchComp
+                    asynchronous: true
+                    layer.enabled: true
+                    layer.smooth: true
+                }
+
+                AutoLearnScreen  {
+                    showTopBar: false
+                    globalTopBar: mainTopBar
+                    layer.enabled: true
+                    layer.smooth: true
+                }
+                CoilOutputScreen {
+                    showTopBar: false
+                    globalTopBar: mainTopBar
+                    layer.enabled: true
+                    layer.smooth: true
+                }
+                SysDetailsScreen {
+                    showTopBar: false
+                    globalTopBar: mainTopBar
+                    layer.enabled: true
+                    layer.smooth: true
+                }
+
+                onCurrentIndexChanged: navigator.currentPage = currentIndex
+            }
+
+            // ===== MENU SCREEN LOADER (overlay on top of SwipeView) =====
+            Loader {
+                id: menuLoader
+                anchors.fill: parent
+                z: 1
+                active: false
+                visible: active
+
+                onLoaded: {
+                    if (item) {
+                        // Apply fonts to newly loaded screen
+                        root.applyFontToAllChildren(item)
+
+                        if ("globalTopBar" in item)
+                            item.globalTopBar = mainTopBar
+                        item.navigateTo = function(screen) {
+                            if (root.currentMenuScreen !== "")
+                                root.menuStack.push(root.currentMenuScreen)
+
+                            root.currentMenuScreen = screen
+                            menuLoader.source = "screens/" + screen + "Screen.qml"
+                        }
                     }
                 }
             }
-        }
-
-        // ===== MAIN SCREENS =====
-        SwipeView {
-            id: swipeView
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            visible: !menuLoader.visible
-            enabled: visible
-            clip: true
-            currentIndex: 0
-
-            // ===== SMOOTHNESS TWEAKS =====
-            interactive: true
-
-            // Preload neighboring pages so swipe doesn't lag on first transition
-            LayoutMirroring.enabled: false
-
-            // Re-apply tuning any time the internal contentItem is recreated
-            // (e.g. if the application style changes at runtime)
-            onContentItemChanged: root.tuneSwipeViewSmoothness()
-
-            HomeScreen {
-                id: homePage
-                showTopBar: false
-                globalTopBar: mainTopBar
-                // Cache this page as a texture: while SwipeView is panning,
-                // the GPU just slides the cached bitmap instead of repainting
-                // the whole Home screen tree every frame.
-                layer.enabled: true
-                layer.smooth: true
-                navigateTo: function(screen) {
-                    if (root.currentMenuScreen !== "")
-                        root.menuStack.push(root.currentMenuScreen)
-                    root.currentMenuScreen = screen
-                    menuLoader.source = "screens/" + screen + "Screen.qml"
-                    menuLoader.visible = true
-                    swipeView.interactive = false
-                    swipeView.visible = false
-                    mainTopBar.showBackButton = true
-                }
-            }
-
-            Loader {
-                id: batchOrDDusterPage
-                property bool showDDuster: GlobalState.showDDuster
-                sourceComponent: showDDuster ? ddusterComp : batchComp
-                asynchronous: true
-                layer.enabled: true
-                layer.smooth: true
-            }
-
-            AutoLearnScreen  {
-                showTopBar: false
-                globalTopBar: mainTopBar
-                layer.enabled: true
-                layer.smooth: true
-            }
-            CoilOutputScreen {
-                showTopBar: false
-                globalTopBar: mainTopBar
-                layer.enabled: true
-                layer.smooth: true
-            }
-            SysDetailsScreen {
-                showTopBar: false
-                globalTopBar: mainTopBar
-                layer.enabled: true
-                layer.smooth: true
-            }
-
-            onCurrentIndexChanged: navigator.currentPage = currentIndex
         }
 
         // ===== NAV INDICATOR =====
         NavPageIndicator {
             id: navigator
 
-            visible: !menuLoader.visible
+            visible: !menuLoader.active
 
             Layout.fillWidth: true
             Layout.preferredHeight: Math.max(32, root.height * 0.015)
