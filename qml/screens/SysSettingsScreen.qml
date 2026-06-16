@@ -17,9 +17,6 @@ Item {
     property real baseWidth: 1024
     property real baseHeight: 600
 
-    // IMPORTANT:
-    // DO NOT use property name "scale"
-    // because Qt already has built-in scale property
 
     property real uiScale:
         Math.min(width / baseWidth,
@@ -28,84 +25,211 @@ Item {
     property var globalTopBar
 
     // =====================================================
-    // PAGE OPEN ANIMATION
+    // STATIC BACKDROP
     // =====================================================
+    // This sits directly on root, fills the whole screen, and is NEVER
+    // animated (no opacity/scale on it). It exists purely so that while
+    // "content" below is fading/scaling in or out, there is always a solid
+    // opaque surface behind it - so whatever screen is sitting underneath
+    // (e.g. the Dashboard SwipeView, which is now kept alive in the
+    // background for performance) can never peek through the edges during
+    // the transition.
 
-    opacity: 0.0
+    Rectangle {
+        id: backdrop
+        anchors.fill: parent
+        color: "#F5F7FC"
+    }
 
-    // THIS is Qt built-in transform scale
-    scale: 0.85
+    // =====================================================
+    // ANIMATED CONTENT WRAPPER
+    // =====================================================
+    // Everything that used to animate directly on "root" now animates on
+    // this wrapper instead. "root" and "backdrop" stay fully opaque and
+    // full-size at all times.
+
+    Item {
+        id: content
+        anchors.fill: parent
+
+        // =================================================
+        // PAGE OPEN ANIMATION
+        // =================================================
+
+        opacity: 0.0
+
+        // THIS is Qt built-in transform scale
+        scale: 0.85
+
+        // =================================================
+        // OPEN ANIMATION
+        // =================================================
+
+        ParallelAnimation {
+            id: openAnimation
+
+            NumberAnimation {
+                target: content
+                property: "opacity"
+
+                from: 0.0
+                to: 1.0
+
+                duration: 650
+
+                easing.type: Easing.OutCubic
+            }
+
+            NumberAnimation {
+                target: content
+                property: "scale"
+
+                from: 0.85
+                to: 1.0
+
+                duration: 650
+
+                easing.type: Easing.OutBack
+                easing.overshoot: 1.05
+            }
+        }
+
+        // =================================================
+        // CLOSE ANIMATION
+        // =================================================
+
+        ParallelAnimation {
+            id: closeAnimation
+
+            NumberAnimation {
+                target: content
+                property: "opacity"
+
+                from: 1.0
+                to: 0.0
+
+                duration: 500
+
+                easing.type: Easing.InOutCubic
+            }
+
+            NumberAnimation {
+                target: content
+                property: "scale"
+
+                from: 1.0
+                to: 0.85
+
+                duration: 500
+
+                easing.type: Easing.InOutCubic
+            }
+        }
+
+        // =================================================
+        // MAIN LAYOUT
+        // =================================================
+
+        ColumnLayout {
+            anchors.fill: parent
+            spacing: 0
+
+            // =============================================
+            // SWIPE VIEW
+            // =============================================
+
+            SwipeView {
+                id: swipeView
+
+                Layout.fillWidth: true
+                Layout.fillHeight: true
+
+                currentIndex: 0
+
+                Repeater {
+                    model: pageModel
+
+                    delegate: Loader {
+                        width: swipeView.width
+                        height: swipeView.height
+
+                        sourceComponent: modelData
+                    }
+                }
+
+                onCurrentIndexChanged: {
+                    indicator.currentPage = currentIndex
+                }
+            }
+
+            // =============================================
+            // PAGE INDICATOR
+            // =============================================
+
+            NavPageIndicator {
+                id: indicator
+
+                Layout.fillWidth: true
+
+                Layout.preferredHeight:
+                    Math.max(
+                        50,
+                        root.height * 0.07)
+
+                // =====================================
+                // DYNAMIC SCREEN NAMES
+                // =====================================
+
+                pageNames: GlobalState.showNetworkScreen
+                           ? [
+                                 "Parameters",
+                                 "XY - Plot",
+                                 "Date & Time",
+                                 "Validation Time",
+                                 "About Machine",
+                                 "Network",
+                                 "Version"
+                             ]
+                           : [
+                                 "Parameters",
+                                 "XY - Plot",
+                                 "Date & Time",
+                                 "Validation Time",
+                                 "About Machine",
+                                 "Version"
+                             ]
+
+                currentPage: swipeView.currentIndex
+
+                // =====================================
+                // NAVIGATION
+                // =====================================
+
+                onPreviousClicked: {
+
+                    if (swipeView.currentIndex > 0)
+                        swipeView.currentIndex--
+                }
+
+                onNextClicked: {
+
+                    if (swipeView.currentIndex < pageCount - 1)
+                        swipeView.currentIndex++
+                }
+
+                onPageSelected: function(index) {
+
+                    swipeView.currentIndex = index
+                }
+            }
+        }
+    }
 
     Component.onCompleted: {
         openAnimation.start()
 
         if (globalTopBar)
             globalTopBar.showBackButton = true
-    }
-
-    // =====================================================
-    // OPEN ANIMATION
-    // =====================================================
-
-    ParallelAnimation {
-        id: openAnimation
-
-        NumberAnimation {
-            target: root
-            property: "opacity"
-
-            from: 0.0
-            to: 1.0
-
-            duration: 650
-
-            easing.type: Easing.OutCubic
-        }
-
-        NumberAnimation {
-            target: root
-            property: "scale"
-
-            from: 0.85
-            to: 1.0
-
-            duration: 650
-
-            easing.type: Easing.OutBack
-            easing.overshoot: 1.05
-        }
-    }
-
-    // =====================================================
-    // CLOSE ANIMATION
-    // =====================================================
-
-    ParallelAnimation {
-        id: closeAnimation
-
-        NumberAnimation {
-            target: root
-            property: "opacity"
-
-            from: 1.0
-            to: 0.0
-
-            duration: 500
-
-            easing.type: Easing.InOutCubic
-        }
-
-        NumberAnimation {
-            target: root
-            property: "scale"
-
-            from: 1.0
-            to: 0.85
-
-            duration: 500
-
-            easing.type: Easing.InOutCubic
-        }
     }
 
     function closePage() {
@@ -140,104 +264,6 @@ Item {
         pages.push(screen6)
 
         return pages
-    }
-
-    // =====================================================
-    // MAIN LAYOUT
-    // =====================================================
-
-    ColumnLayout {
-        anchors.fill: parent
-        spacing: 0
-
-        // =================================================
-        // SWIPE VIEW
-        // =================================================
-
-        SwipeView {
-            id: swipeView
-
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            currentIndex: 0
-
-            Repeater {
-                model: pageModel
-
-                delegate: Loader {
-                    width: swipeView.width
-                    height: swipeView.height
-
-                    sourceComponent: modelData
-                }
-            }
-
-            onCurrentIndexChanged: {
-                indicator.currentPage = currentIndex
-            }
-        }
-
-        // =================================================
-        // PAGE INDICATOR
-        // =================================================
-
-        NavPageIndicator {
-            id: indicator
-
-            Layout.fillWidth: true
-
-            Layout.preferredHeight:
-                Math.max(
-                    50,
-                    root.height * 0.07)
-
-            // =========================================
-            // DYNAMIC SCREEN NAMES
-            // =========================================
-
-            pageNames: GlobalState.showNetworkScreen
-                       ? [
-                             "Parameters",
-                             "XY - Plot",
-                             "Date & Time",
-                             "Validation Time",
-                             "About Machine",
-                             "Network",
-                             "Version"
-                         ]
-                       : [
-                             "Parameters",
-                             "XY - Plot",
-                             "Date & Time",
-                             "Validation Time",
-                             "About Machine",
-                             "Version"
-                         ]
-
-            currentPage: swipeView.currentIndex
-
-            // =========================================
-            // NAVIGATION
-            // =========================================
-
-            onPreviousClicked: {
-
-                if (swipeView.currentIndex > 0)
-                    swipeView.currentIndex--
-            }
-
-            onNextClicked: {
-
-                if (swipeView.currentIndex < pageCount - 1)
-                    swipeView.currentIndex++
-            }
-
-            onPageSelected: function(index) {
-
-                swipeView.currentIndex = index
-            }
-        }
     }
 
     // =====================================================

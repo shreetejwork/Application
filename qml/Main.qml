@@ -39,9 +39,6 @@ ApplicationWindow {
 
     function navigateToHome() {
 
-        // Close any menu screen. SwipeView itself is never hidden (see
-        // contentArea below) - we just deactivate the menu Loader so it
-        // unloads its content and stops covering the SwipeView.
         menuLoader.active = false
         menuLoader.source = ""
 
@@ -106,7 +103,6 @@ ApplicationWindow {
     // =========================================================
     // RECURSIVE FONT APPLICATION TO ALL CHILDREN
     // =========================================================
-    // This ensures all Text and Controls inherit the root font
 
     function applyFontToAllChildren(item) {
         if (item === null) return
@@ -133,32 +129,23 @@ ApplicationWindow {
     // =========================================================
     // SWIPEVIEW SMOOTHNESS TUNING
     // =========================================================
-    // SwipeView's Basic style implementation is backed internally by a
-    // ListView (its `contentItem`). Tuning that ListView's flick/­highlight
-    // properties is what actually controls how the drag/­release animation
-    // feels - SwipeView itself exposes no easing/­velocity API directly.
+
     function tuneSwipeViewSmoothness() {
         var flick = swipeView.contentItem
         if (!flick) return
 
-        // Snappier, consistent settle animation instead of the 250ms default
         if ("highlightMoveDuration" in flick)
             flick.highlightMoveDuration = 220
 
-        // Let a fast finger flick travel further/faster without feeling capped
         if ("maximumFlickVelocity" in flick)
             flick.maximumFlickVelocity = 2500
 
-        // Higher deceleration = page settles faster, feels less "floaty"
         if ("flickDeceleration" in flick)
             flick.flickDeceleration = 1500
 
-        // Removes the ~150ms delay before a touch is recognized as a press,
-        // which otherwise makes the very start of every swipe feel laggy
         if ("pressDelay" in flick)
             flick.pressDelay = 0
 
-        // Never rubber-band past the first/last page
         if ("boundsBehavior" in flick)
             flick.boundsBehavior = Flickable.StopAtBounds
     }
@@ -234,13 +221,6 @@ ApplicationWindow {
         }
 
         // ===== SWIPEVIEW + MENU OVERLAY =====
-        // A plain Item (not a Layout) so the menu can sit exactly on top of
-        // the SwipeView via z-order instead of replacing it. SwipeView's
-        // own `visible` is NEVER toggled - that's what was destroying its
-        // cached layer textures (see layer.enabled below) every time you
-        // left and came back, forcing a full, heavy re-render of every page
-        // on return. Now SwipeView just sits there, fully warm, the whole
-        // time the menu is open on top of it.
         Item {
             id: contentArea
             Layout.fillWidth: true
@@ -254,28 +234,21 @@ ApplicationWindow {
                 clip: true
                 currentIndex: 0
 
-                // Block touches reaching the SwipeView while the menu
-                // overlay is on top of it - this is the only state change
-                // SwipeView sees now, never visible/invisible.
                 enabled: !menuLoader.active
 
                 // ===== SMOOTHNESS TWEAKS =====
                 interactive: true
 
-                // Preload neighboring pages so swipe doesn't lag on first transition
+
                 LayoutMirroring.enabled: false
 
-                // Re-apply tuning any time the internal contentItem is recreated
-                // (e.g. if the application style changes at runtime)
                 onContentItemChanged: root.tuneSwipeViewSmoothness()
 
                 HomeScreen {
                     id: homePage
                     showTopBar: false
                     globalTopBar: mainTopBar
-                    // Cache this page as a texture: while SwipeView is panning,
-                    // the GPU just slides the cached bitmap instead of repainting
-                    // the whole Home screen tree every frame.
+
                     layer.enabled: true
                     layer.smooth: true
                     navigateTo: function(screen) {
@@ -319,7 +292,7 @@ ApplicationWindow {
                 onCurrentIndexChanged: navigator.currentPage = currentIndex
             }
 
-            // ===== MENU SCREEN LOADER (overlay on top of SwipeView) =====
+            // ===== MENU SCREEN LOADER =====
             Loader {
                 id: menuLoader
                 anchors.fill: parent
