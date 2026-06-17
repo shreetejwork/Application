@@ -52,18 +52,6 @@ Item {
     // PAGE OPEN ANIMATION
     // =====================================================
 
-    opacity: 0.0
-
-    property real pageScale: 0.85
-
-    transform: Scale {
-        origin.x: root.width / 2
-        origin.y: root.height / 2
-
-        xScale: root.pageScale
-        yScale: root.pageScale
-    }
-
     Component.onCompleted: {
         openAnimation.start()
     }
@@ -76,7 +64,7 @@ Item {
         id: openAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 0.0
@@ -88,7 +76,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 0.85
@@ -110,7 +98,7 @@ Item {
         id: closeAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 1.0
@@ -122,7 +110,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 1.0
@@ -163,103 +151,119 @@ Item {
         globalTopBar: root.globalTopBar
     }
 
-    Rectangle {
+    Item {
+        id: content
         anchors.fill: parent
-        color: "#F5F7FC"
 
-        // ── Responsive Button ─────
-        component ActionButton: Rectangle {
-            id: btnRoot
+        opacity: 0.0
+        property real pageScale: 0.85
 
-            property string label: ""
-            signal clicked()
+        transform: Scale {
+            origin.x: content.width / 2
+            origin.y: content.height / 2
 
-            width: Math.max(140, 220 * root.scale)
-            height: Math.max(44, 74 * root.scale)
-            radius: height * 0.5
-
-            color: btnMouse.containsPress ? "#F5F7FC" : "white"
-            border.color: "#1A4DB5"
-            border.width: Math.max(2, 3 * root.scale)
-
-            Behavior on color { ColorAnimation { duration: 100 } }
-
-            scale: btnMouse.containsPress ? 0.96 : 1.0
-            Behavior on scale {
-                NumberAnimation { duration: 100; easing.type: Easing.OutQuad }
-            }
-
-            Text {
-                anchors.centerIn: parent
-                text: btnRoot.label
-                font.pixelSize: 28
-
-                color: "#1A4DB5"
-            }
-
-            MouseArea {
-                id: btnMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                onClicked: btnRoot.clicked()
-            }
+            xScale: content.pageScale
+            yScale: content.pageScale
         }
 
-        // ── MAIN CONTENT ─────────
-        Column {
-            anchors.centerIn: parent
-            spacing: Math.max(20, 40 * root.scale)
+        Rectangle {
+            anchors.fill: parent
+            color: "#F5F7FC"
 
-            // ── ICON CARD ────────
-            Rectangle {
-                width: Math.max(100, 160 * root.scale)
-                height: width
-                radius: width * 0.15
-                color: "#F5F7FC"
-                anchors.horizontalCenter: parent.horizontalCenter
+            // ── Responsive Button ─────
+            component ActionButton: Rectangle {
+                id: btnRoot
 
-                Image {
-                    source: "qrc:/qt/qml/Application/assets/images/userNew.png"
-                    width: parent.width * 0.9
-                    height: parent.height * 0.9
+                property string label: ""
+                signal clicked()
+
+                width: Math.max(140, 220 * root.scale)
+                height: Math.max(44, 74 * root.scale)
+                radius: height * 0.5
+
+                color: btnMouse.containsPress ? "#F5F7FC" : "white"
+                border.color: "#1A4DB5"
+                border.width: Math.max(2, 3 * root.scale)
+
+                Behavior on color { ColorAnimation { duration: 100 } }
+
+                scale: btnMouse.containsPress ? 0.96 : 1.0
+                Behavior on scale {
+                    NumberAnimation { duration: 100; easing.type: Easing.OutQuad }
+                }
+
+                Text {
                     anchors.centerIn: parent
-                    fillMode: Image.PreserveAspectFit
-                    smooth: true
-                    mipmap: true
+                    text: btnRoot.label
+                    font.pixelSize: 28
+
+                    color: "#1A4DB5"
+                }
+
+                MouseArea {
+                    id: btnMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: btnRoot.clicked()
                 }
             }
 
-            // ── TITLE ───────
-            Text {
-                text: "User"
-                anchors.horizontalCenter: parent.horizontalCenter
-                font.pixelSize: 28
+            // ── MAIN CONTENT ─────────
+            Column {
+                anchors.centerIn: parent
+                spacing: Math.max(20, 40 * root.scale)
 
-                font.family: "Roboto"
-                color: "#1A1A2E"
-            }
+                // ── ICON CARD ────────
+                Rectangle {
+                    width: Math.max(100, 160 * root.scale)
+                    height: width
+                    radius: width * 0.15
+                    color: "#F5F7FC"
+                    anchors.horizontalCenter: parent.horizontalCenter
 
-            // ── BUTTON ROW ─────
-            Row {
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: Math.max(16, 32 * root.scale)
-
-                ActionButton {
-                    label: "Add User"
-                    onClicked: {
-                        createUserPopup.open()
+                    Image {
+                        source: "qrc:/qt/qml/Application/assets/images/userNew.png"
+                        width: parent.width * 0.9
+                        height: parent.height * 0.9
+                        anchors.centerIn: parent
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                        mipmap: true
                     }
                 }
 
-                ActionButton {
-                    label: "Change PW"
-                    onClicked: editPasswordPopup.open()
+                // ── TITLE ───────
+                Text {
+                    text: "User"
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    font.pixelSize: 28
+
+                    font.family: "Roboto"
+                    color: "#1A1A2E"
                 }
 
-                ActionButton {
-                    label: "Delete User"
-                    onClicked: {
-                        deleteUserPopup.open()
+                // ── BUTTON ROW ─────
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: Math.max(16, 32 * root.scale)
+
+                    ActionButton {
+                        label: "Add User"
+                        onClicked: {
+                            createUserPopup.open()
+                        }
+                    }
+
+                    ActionButton {
+                        label: "Change PW"
+                        onClicked: editPasswordPopup.open()
+                    }
+
+                    ActionButton {
+                        label: "Delete User"
+                        onClicked: {
+                            deleteUserPopup.open()
+                        }
                     }
                 }
             }

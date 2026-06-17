@@ -11,6 +11,7 @@ Item {
     anchors.fill: parent
 
     property var globalTopBar
+    property var navigateTo
 
     property real baseWidth: 1024
     property real baseHeight: 600
@@ -30,25 +31,6 @@ Item {
     // PAGE OPEN / CLOSE ANIMATION
     // =====================================================
 
-    opacity: 0.0
-
-    property real animationScale: 0.88
-    property real animationY: 40 * root.scale
-
-    transform: [
-        Scale {
-            origin.x: root.width / 2
-            origin.y: root.height / 2
-
-            xScale: root.animationScale
-            yScale: root.animationScale
-        },
-
-        Translate {
-            y: root.animationY
-        }
-    ]
-
     Component.onCompleted: {
         openAnimation.start()
         loadFiles()
@@ -58,7 +40,7 @@ Item {
         id: openAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 0.0
@@ -69,7 +51,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "animationScale"
 
             from: 0.88
@@ -81,7 +63,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "animationY"
 
             from: 40 * root.scale
@@ -96,7 +78,7 @@ Item {
         id: closeAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 1.0
@@ -107,7 +89,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "animationScale"
 
             from: 1.0
@@ -118,7 +100,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "animationY"
 
             from: 0
@@ -271,9 +253,32 @@ Item {
         }
     }
 
-    Rectangle {
+    Item {
+        id: content
         anchors.fill: parent
-        color: "#EDF1FA"
+
+        opacity: 0.0
+
+        property real animationScale: 0.88
+        property real animationY: 40 * root.scale
+
+        transform: [
+            Scale {
+                origin.x: content.width / 2
+                origin.y: content.height / 2
+
+                xScale: content.animationScale
+                yScale: content.animationScale
+            },
+
+            Translate {
+                y: content.animationY
+            }
+        ]
+
+        Rectangle {
+            anchors.fill: parent
+            color: "#EDF1FA"
 
         ColumnLayout {
             anchors.fill: parent
@@ -826,6 +831,7 @@ Item {
                 }
             }
         }
+    }
     }
 
     PdfPreview {

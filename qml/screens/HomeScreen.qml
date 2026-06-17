@@ -565,7 +565,8 @@ Item {
                                     return
                                 }
 
-                                navigateTo("ProductLibrary")
+                                if (GlobalState.showProductLib)
+                                    navigateTo("ProductLibrary")
                             }
                         }
 

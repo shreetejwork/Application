@@ -26,18 +26,6 @@ Item {
     // PAGE OPEN ANIMATION
     // =====================================================
 
-    opacity: 0.0
-
-    property real pageScale: 0.85
-
-    transform: Scale {
-        origin.x: root.width / 2
-        origin.y: root.height / 2
-
-        xScale: root.pageScale
-        yScale: root.pageScale
-    }
-
     Component.onCompleted: {
         openAnimation.start()
     }
@@ -50,7 +38,7 @@ Item {
         id: openAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 0.0
@@ -62,7 +50,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 0.85
@@ -84,7 +72,7 @@ Item {
         id: closeAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 1.0
@@ -96,7 +84,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 1.0
@@ -114,205 +102,221 @@ Item {
 
     property bool isLoading: false
 
-    Rectangle {
+    Item {
+        id: content
         anchors.fill: parent
-        color: "#F0F3FA"
 
-        ColumnLayout {
-            anchors.fill:    parent
-            anchors.margins: 24
-            spacing:         16
+        opacity: 0.0
+        property real pageScale: 0.85
 
-            // ── HEADER ────────────────────────────────────────────
-            RowLayout {
-                Layout.fillWidth: true
-                spacing: 12
+        transform: Scale {
+            origin.x: content.width / 2
+            origin.y: content.height / 2
 
-                Column {
-                    spacing: 6 * root.scale
+            xScale: content.pageScale
+            yScale: content.pageScale
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: "#F0F3FA"
+
+            ColumnLayout {
+                anchors.fill:    parent
+                anchors.margins: 24
+                spacing:         16
+
+                // ── HEADER ────────────────────────────────────────────
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 12
+
+                    Column {
+                        spacing: 6 * root.scale
+
+                        Text {
+                            text: "System Diagnosis"
+                            font.pixelSize: 26
+
+                            color: "#1A4DB5"
+                        }
+
+                        Rectangle {
+                            width: 80 * root.scale
+                            height: 4 * root.scale
+                            radius: 2 * root.scale
+                            color: "#1A4DB5"
+                        }
+                    }
+
+                    Item { Layout.fillWidth: true }
 
                     Text {
-                        text: "System Diagnosis"
-                        font.pixelSize: 26
-
-                        color: "#1A4DB5"
+                        id:             lastUpdated
+                        text:           ""
+                        font.pixelSize: 12
+                        color:          "#9E9E9E"
+                        Layout.alignment: Qt.AlignVCenter
                     }
 
                     Rectangle {
-                        width: 80 * root.scale
-                        height: 4 * root.scale
-                        radius: 2 * root.scale
-                        color: "#1A4DB5"
+                        width:  110
+                        height: 36
+                        radius: 8
+                        color:  isLoading ? "#1A4DB5" : "#1A4DB5"
+                        Layout.alignment: Qt.AlignVCenter
+
+                        Behavior on color { ColorAnimation { duration: 200 } }
+
+                        Row {
+                            anchors.centerIn: parent
+                            spacing: 6
+
+                            Text {
+                                text:           isLoading ? "..." : "▶"
+                                color:          "#FFFFFF"
+                                font.pixelSize: 13
+                            }
+
+                            Text {
+                                text:           isLoading ? "Running..." : "Run All"
+                                color:          "#FFFFFF"
+                                font.pixelSize: 14
+                                font.weight:    Font.Medium
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            enabled:      !isLoading
+                            cursorShape:  Qt.PointingHandCursor
+                            onClicked: {
+                                isLoading = true
+                                SystemDiag.update()
+                            }
+                        }
                     }
                 }
 
-                Item { Layout.fillWidth: true }
-
-                Text {
-                    id:             lastUpdated
-                    text:           ""
-                    font.pixelSize: 12
-                    color:          "#9E9E9E"
-                    Layout.alignment: Qt.AlignVCenter
-                }
-
+                // ── DIVIDER ───────────────────────────────────────────
                 Rectangle {
-                    width:  110
-                    height: 36
-                    radius: 8
-                    color:  isLoading ? "#1A4DB5" : "#1A4DB5"
-                    Layout.alignment: Qt.AlignVCenter
+                    Layout.fillWidth: true
+                    height: 1
+                    color:  "#D8DFF0"
+                }
 
-                    Behavior on color { ColorAnimation { duration: 200 } }
+                // ── CARDS GRID ────────────────────────────────────────
+                GridLayout {
+                    Layout.fillWidth:  true
+                    Layout.fillHeight: true
+                    columns:       2
+                    rowSpacing:    12
+                    columnSpacing: 12
 
-                    Row {
-                        anchors.centerIn: parent
-                        spacing: 6
+                    // RAM ─────────────────────────────────────────────
+                    DiagCard {
+                        id: ramCard
+                        Layout.fillWidth:  true
+                        Layout.fillHeight: true
 
-                        Text {
-                            text:           isLoading ? "..." : "▶"
-                            color:          "#FFFFFF"
-                            font.pixelSize: 13
-                        }
+                        title:    "RAM Usage"
+                        uiScale:  root.scale
 
-                        Text {
-                            text:           isLoading ? "Running..." : "Run All"
-                            color:          "#FFFFFF"
-                            font.pixelSize: 14
-                            font.weight:    Font.Medium
-                        }
+                        property real usage: SystemDiag.ramTotal > 0
+                                             ? SystemDiag.ramUsed / SystemDiag.ramTotal : 0
+
+                        progress:  isLoading ? -1 : usage
+
+                        status: isLoading    ? "Checking..."
+                              : usage > 0.9  ? "Critical"
+                              : usage > 0.75 ? "Warning"
+                              : "OK"
+
+                        detail: isLoading ? "— GB / — GB" : SystemDiag.ramUsage
+
+                        cardColor: status === "Critical" ? "#FFF5F5"
+                                 : status === "Warning"  ? "#FFFBF0"
+                                 : "#F7FBF7"
                     }
 
-                    MouseArea {
-                        anchors.fill: parent
-                        enabled:      !isLoading
-                        cursorShape:  Qt.PointingHandCursor
-                        onClicked: {
-                            isLoading = true
-                            SystemDiag.update()
-                        }
+                    // MEMORY ──────────────────────────────────────────
+                    DiagCard {
+                        id: memCard
+                        Layout.fillWidth:  true
+                        Layout.fillHeight: true
+
+                        title:    "Storage"
+                        uiScale:  root.scale
+
+                        property real usage: SystemDiag.memTotal > 0
+                                             ? SystemDiag.memUsed / SystemDiag.memTotal : 0
+
+                        progress:  isLoading ? -1 : usage
+
+                        status: isLoading    ? "Checking..."
+                              : usage > 0.9  ? "Critical"
+                              : usage > 0.6  ? "Warning"
+                              : "OK"
+
+                        detail: isLoading ? "— GB / — GB" : SystemDiag.memoryUsage
+
+                        cardColor: status === "Critical" ? "#FFF5F5"
+                                 : status === "Warning"  ? "#FFFBF0"
+                                 : "#F7FBF7"
                     }
-                }
-            }
 
-            // ── DIVIDER ───────────────────────────────────────────
-            Rectangle {
-                Layout.fillWidth: true
-                height: 1
-                color:  "#D8DFF0"
-            }
+                    // TEMPERATURE ─────────────────────────────────────
+                    DiagCard {
+                        id: tempCard
+                        Layout.fillWidth:  true
+                        Layout.fillHeight: true
 
-            // ── CARDS GRID ────────────────────────────────────────
-            GridLayout {
-                Layout.fillWidth:  true
-                Layout.fillHeight: true
-                columns:       2
-                rowSpacing:    12
-                columnSpacing: 12
+                        title:    "CPU Temperature"
+                        uiScale:  root.scale
 
-                // RAM ─────────────────────────────────────────────
-                DiagCard {
-                    id: ramCard
-                    Layout.fillWidth:  true
-                    Layout.fillHeight: true
+                        property real temp: SystemDiag.temperatureValue
+                        property real tempProgress: temp > 0 ? Math.min(temp / 100.0, 1.0) : -1
 
-                    title:    "RAM Usage"
-                    uiScale:  root.scale
+                        progress: isLoading ? -1 : tempProgress
 
-                    property real usage: SystemDiag.ramTotal > 0
-                                         ? SystemDiag.ramUsed / SystemDiag.ramTotal : 0
+                        status: isLoading ? "Checking..."
+                              : temp < 0  ? "Unknown"
+                              : temp > 75 ? "Critical"
+                              : temp > 60 ? "Warning"
+                              : "OK"
 
-                    progress:  isLoading ? -1 : usage
+                        detail: isLoading ? "— °C" : SystemDiag.temperature
 
-                    status: isLoading    ? "Checking..."
-                          : usage > 0.9  ? "Critical"
-                          : usage > 0.75 ? "Warning"
-                          : "OK"
+                        cardColor: status === "Critical" ? "#FFF5F5"
+                                 : status === "Warning"  ? "#FFFBF0"
+                                 : "#F7FBF7"
+                    }
 
-                    detail: isLoading ? "— GB / — GB" : SystemDiag.ramUsage
+                    // CPU USAGE ─────────────────────────────────────
+                    DiagCard {
+                        id: cpuCard
+                        Layout.fillWidth:  true
+                        Layout.fillHeight: true
 
-                    cardColor: status === "Critical" ? "#FFF5F5"
-                             : status === "Warning"  ? "#FFFBF0"
-                             : "#F7FBF7"
-                }
+                        title:   "CPU Usage"
+                        uiScale: root.scale
 
-                // MEMORY ──────────────────────────────────────────
-                DiagCard {
-                    id: memCard
-                    Layout.fillWidth:  true
-                    Layout.fillHeight: true
+                        property real cpu: SystemDiag.cpuUsageValue
+                        property real cpuProgress: cpu > 0 ? Math.min(cpu / 100.0, 1.0) : 0
 
-                    title:    "Storage"
-                    uiScale:  root.scale
+                        progress: isLoading ? -1 : cpuProgress
 
-                    property real usage: SystemDiag.memTotal > 0
-                                         ? SystemDiag.memUsed / SystemDiag.memTotal : 0
+                        status: isLoading ? "Checking..."
+                              : cpu > 90 ? "Critical"
+                              : cpu > 70 ? "Warning"
+                              : "OK"
 
-                    progress:  isLoading ? -1 : usage
+                        detail: isLoading ? "— %" : SystemDiag.cpuUsage
 
-                    status: isLoading    ? "Checking..."
-                          : usage > 0.9  ? "Critical"
-                          : usage > 0.6  ? "Warning"
-                          : "OK"
-
-                    detail: isLoading ? "— GB / — GB" : SystemDiag.memoryUsage
-
-                    cardColor: status === "Critical" ? "#FFF5F5"
-                             : status === "Warning"  ? "#FFFBF0"
-                             : "#F7FBF7"
-                }
-
-                // TEMPERATURE ─────────────────────────────────────
-                DiagCard {
-                    id: tempCard
-                    Layout.fillWidth:  true
-                    Layout.fillHeight: true
-
-                    title:    "CPU Temperature"
-                    uiScale:  root.scale
-
-                    property real temp: SystemDiag.temperatureValue
-                    property real tempProgress: temp > 0 ? Math.min(temp / 100.0, 1.0) : -1
-
-                    progress: isLoading ? -1 : tempProgress
-
-                    status: isLoading ? "Checking..."
-                          : temp < 0  ? "Unknown"
-                          : temp > 75 ? "Critical"
-                          : temp > 60 ? "Warning"
-                          : "OK"
-
-                    detail: isLoading ? "— °C" : SystemDiag.temperature
-
-                    cardColor: status === "Critical" ? "#FFF5F5"
-                             : status === "Warning"  ? "#FFFBF0"
-                             : "#F7FBF7"
-                }
-
-                // CPU USAGE ─────────────────────────────────────
-                DiagCard {
-                    id: cpuCard
-                    Layout.fillWidth:  true
-                    Layout.fillHeight: true
-
-                    title:   "CPU Usage"
-                    uiScale: root.scale
-
-                    property real cpu: SystemDiag.cpuUsageValue
-                    property real cpuProgress: cpu > 0 ? Math.min(cpu / 100.0, 1.0) : 0
-
-                    progress: isLoading ? -1 : cpuProgress
-
-                    status: isLoading ? "Checking..."
-                          : cpu > 90 ? "Critical"
-                          : cpu > 70 ? "Warning"
-                          : "OK"
-
-                    detail: isLoading ? "— %" : SystemDiag.cpuUsage
-
-                    cardColor: status === "Critical" ? "#FFF5F5"
-                             : status === "Warning"  ? "#FFFBF0"
-                             : "#F7FBF7"
+                        cardColor: status === "Critical" ? "#FFF5F5"
+                                 : status === "Warning"  ? "#FFFBF0"
+                                 : "#F7FBF7"
+                    }
                 }
             }
         }

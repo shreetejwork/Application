@@ -24,18 +24,6 @@ Item {
     // PAGE OPEN ANIMATION
     // =====================================================
 
-    opacity: 0.0
-
-    property real pageScale: 0.85
-
-    transform: Scale {
-        origin.x: root.width / 2
-        origin.y: root.height / 2
-
-        xScale: root.pageScale
-        yScale: root.pageScale
-    }
-
     Component.onCompleted: {
         openAnimation.start()
     }
@@ -48,7 +36,7 @@ Item {
         id: openAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 0.0
@@ -60,7 +48,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 0.85
@@ -82,7 +70,7 @@ Item {
         id: closeAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 1.0
@@ -94,7 +82,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 1.0
@@ -113,64 +101,80 @@ Item {
     // function injected from Main.qml
     property var navigateTo
 
-    Rectangle {
+    Item {
+        id: content
         anchors.fill: parent
-        color: "#F5F7FC"
 
-        Column {
-            anchors.centerIn: parent
-            spacing: 40 * root.scale
+        opacity: 0.0
+        property real pageScale: 0.85
 
-            // ── Row 1: 3 tiles ───────
-            Row {
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 70 * root.scale
+        transform: Scale {
+            origin.x: content.width / 2
+            origin.y: content.height / 2
 
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/updated.png"
-                    label:      "Software Update \n(Online)"
-                    iconSize:   100 * root.scale
-                    onTileClicked: {
-                        console.log("Software Update tapped")
-                        // TODO: navigateTo("SoftwareUpdate")
+            xScale: content.pageScale
+            yScale: content.pageScale
+        }
+
+        Rectangle {
+            anchors.fill: parent
+            color: "#F5F7FC"
+
+            Column {
+                anchors.centerIn: parent
+                spacing: 40 * root.scale
+
+                // ── Row 1: 3 tiles ───────
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 70 * root.scale
+
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/updated.png"
+                        label:      "Software Update \n(Online)"
+                        iconSize:   100 * root.scale
+                        onTileClicked: {
+                            console.log("Software Update tapped")
+                            // TODO: navigateTo("SoftwareUpdate")
+                        }
+                    }
+
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/usbupdate.png"
+                        label:      "Software Update \n(USB)"
+                        iconSize:   100 * root.scale
+                        onTileClicked: navigateTo("UsbSoftwareUpdate")
                     }
                 }
 
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/usbupdate.png"
-                    label:      "Software Update \n(USB)"
-                    iconSize:   100 * root.scale
-                    onTileClicked: navigateTo("UsbSoftwareUpdate")
-                }
-            }
+                // ── Row 2: 3 tiles (col 1 & col 3 reserved for future) ───
+                Row {
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    spacing: 70 * root.scale
 
-            // ── Row 2: 3 tiles (col 1 & col 3 reserved for future) ───
-            Row {
-                anchors.horizontalCenter: parent.horizontalCenter
-                spacing: 70 * root.scale
+                    // ── SLOT 1: Add your future PNG here ───
 
-                // ── SLOT 1: Add your future PNG here ───
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/coding.png"
+                        label:      "Developer Settings"
+                        iconSize:   100 * root.scale
+                        visible: true
+                        enabled: true
+                        onTileClicked: navigateTo("DeveloperSettings")
+                    }
 
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/coding.png"
-                    label:      "Developer Settings"
-                    iconSize:   100 * root.scale
-                    visible: true
-                    enabled: true
-                    onTileClicked: navigateTo("DeveloperSettings")
-                }
+                    // ── SLOT 3: Add your future PNG here ───────
 
-                // ── SLOT 3: Add your future PNG here ───────
-
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/social.png"
-                    label:      ""
-                    iconSize:   100 * root.scale
-                    visible: true
-                    enabled: true
-                    onTileClicked: {
-                        console.log("Slot 3 tapped")
-                        // TODO: navigateTo("YourScreen2")
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/social.png"
+                        label:      ""
+                        iconSize:   100 * root.scale
+                        visible: true
+                        enabled: true
+                        onTileClicked: {
+                            console.log("Slot 3 tapped")
+                            // TODO: navigateTo("YourScreen2")
+                        }
                     }
                 }
             }

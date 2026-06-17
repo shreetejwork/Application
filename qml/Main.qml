@@ -307,13 +307,14 @@ ApplicationWindow {
 
                         if ("globalTopBar" in item)
                             item.globalTopBar = mainTopBar
-                        item.navigateTo = function(screen) {
-                            if (root.currentMenuScreen !== "")
-                                root.menuStack.push(root.currentMenuScreen)
 
-                            root.currentMenuScreen = screen
-                            menuLoader.source = "screens/" + screen + "Screen.qml"
-                        }
+                        if ("navigateTo" in item)
+                            item.navigateTo = function(screen) {
+                                if (root.currentMenuScreen !== "")
+                                    root.menuStack.push(root.currentMenuScreen)
+                                root.currentMenuScreen = screen
+                                menuLoader.source = "screens/" + screen + "Screen.qml"
+                            }
                     }
                 }
             }

@@ -88,7 +88,10 @@ Rectangle {
         onPressed: root.pressed = true
         onReleased: root.pressed = false
 
-        onClicked: root.toggleRequested()
+        onClicked: {
+            root.toggled = !root.toggled
+            root.toggleRequested()
+        }
     }
 
     // ================= ANIMATIONS =================

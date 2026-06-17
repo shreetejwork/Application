@@ -258,6 +258,11 @@ Item {
                             RowLayout {
                                 Layout.fillWidth: true
                                 Layout.topMargin: Math.max(20, 30 * root.scale)
+
+                                visible: !GlobalState.showProductLib
+
+                                Layout.preferredHeight: visible ? implicitHeight : 0
+
                                 spacing: Math.max(6, 12 * root.scale)
 
                                 Rectangle {

@@ -28,18 +28,6 @@ Item {
     // PAGE OPEN ANIMATION
     // =====================================================
 
-    opacity: 0.0
-
-    property real pageScale: 0.85
-
-    transform: Scale {
-        origin.x: root.width / 2
-        origin.y: root.height / 2
-
-        xScale: root.pageScale
-        yScale: root.pageScale
-    }
-
     Component.onCompleted: {
         openAnimation.start()
     }
@@ -52,7 +40,7 @@ Item {
         id: openAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 0.0
@@ -64,7 +52,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 0.85
@@ -86,7 +74,7 @@ Item {
         id: closeAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 1.0
@@ -98,7 +86,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 1.0
@@ -116,59 +104,75 @@ Item {
 
     property var navigateTo
 
-    Rectangle {
+    Item {
+        id: content
         anchors.fill: parent
-        color: "#F5F7FC"
 
-        ColumnLayout {
-            anchors.centerIn: parent
-            spacing: 36 * root.scale
+        opacity: 0.0
+        property real pageScale: 0.85
 
-            // ===== REPORT TILES =====
-            RowLayout {
-                spacing: 65 * root.scale
-                Layout.alignment: Qt.AlignHCenter
+        transform: Scale {
+            origin.x: content.width / 2
+            origin.y: content.height / 2
 
-                MenuTile {
+            xScale: content.pageScale
+            yScale: content.pageScale
+        }
 
-                    visible: GlobalState.showAuditTrail
+        Rectangle {
+            anchors.fill: parent
+            color: "#F5F7FC"
 
-                    iconSource: "qrc:/qt/qml/Application/assets/images/AuditTrail.png"
-                    label: "Audit Trail\nReport"
-                    iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("AuditTrail")
+            ColumnLayout {
+                anchors.centerIn: parent
+                spacing: 36 * root.scale
+
+                // ===== REPORT TILES =====
+                RowLayout {
+                    spacing: 65 * root.scale
+                    Layout.alignment: Qt.AlignHCenter
+
+                    MenuTile {
+
+                        visible: GlobalState.showAuditTrail
+
+                        iconSource: "qrc:/qt/qml/Application/assets/images/AuditTrail.png"
+                        label: "Audit Trail\nReport"
+                        iconSize: 100 * root.scale
+                        onTileClicked: navigateTo("AuditTrail")
+                    }
+
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/More.png"
+                        label: "Product/Batch\nReport"
+                        iconSize: 100 * root.scale
+                        onTileClicked: navigateTo("BatchReport")
+                    }
+
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
+                        label: "Reports\nFolder"
+                        iconSize: 100 * root.scale
+                        onTileClicked: navigateTo("ReportsFolder")
+                    }
                 }
+                RowLayout {
+                    spacing: 65 * root.scale
+                    Layout.alignment: Qt.AlignHCenter
 
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/More.png"
-                    label: "Product/Batch\nReport"
-                    iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("BatchReport")
-                }
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/log.png"
+                        label: "Reports\nLog"
+                        iconSize: 100 * root.scale
+                        onTileClicked: navigateTo("ReportsLog")
+                    }
 
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
-                    label: "Reports\nFolder"
-                    iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("ReportsFolder")
-                }
-            }
-            RowLayout {
-                spacing: 65 * root.scale
-                Layout.alignment: Qt.AlignHCenter
-
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/log.png"
-                    label: "Reports\nLog"
-                    iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("ReportsLog")
-                }
-
-                MenuTile {
-                    iconSource: "qrc:/qt/qml/Application/assets/images/BatchHistory.png"
-                    label: "Batch\nHistory"
-                    iconSize: 100 * root.scale
-                    onTileClicked: navigateTo("BatchHistory")
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/BatchHistory.png"
+                        label: "Batch\nHistory"
+                        iconSize: 100 * root.scale
+                        onTileClicked: navigateTo("BatchHistory")
+                    }
                 }
             }
         }

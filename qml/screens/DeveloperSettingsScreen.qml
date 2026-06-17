@@ -70,7 +70,7 @@ Item {
                             Layout.fillWidth: true
 
                             Text {
-                                text: "D-Duster Screen"
+                                text: "D-Duster"
                                 font.pixelSize: 20
 
                                 color: "#111827"
@@ -113,7 +113,7 @@ Item {
                             Layout.fillWidth: true
 
                             Text {
-                                text: "N/W Settings screen"
+                                text: "N/W Settings"
                                 font.pixelSize: 20
 
                                 color: "#111827"

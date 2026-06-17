@@ -43,6 +43,25 @@ QtObject {
     onShowDDusterChanged: settings.showDDuster = showDDuster
     onShowNetworkScreenChanged: settings.showNetworkScreen = showNetworkScreen
     onShowAuditTrailChanged: settings.showAuditTrail = showAuditTrail
+    onShowProductLibChanged: settings.showProductLib = showProductLib
+
+
+    // =========================================================
+    // OTHER PROPERTIES
+    // =========================================================
+    property real productPhase: 180
+    property real machinePhase: 180
+
+    property real signalThreshold: 500
+    property real amplitudeThreshold: 180
+
+    property bool loginKeyboardRequest: false
+    property var activeInputField: null
+
+    property var globalDateTime: new Date()
+
+    property string loggedInUserName: ""
+    property string loggedInUserRole: ""
 
 
     // =========================================================
@@ -165,22 +184,4 @@ QtObject {
 
         saveLogs()
     }
-
-
-    // =========================================================
-    // OTHER PROPERTIES
-    // =========================================================
-    property real productPhase: 180
-    property real machinePhase: 180
-
-    property real signalThreshold: 500
-    property real amplitudeThreshold: 180
-
-    property bool loginKeyboardRequest: false
-    property var activeInputField: null
-
-    property var globalDateTime: new Date()
-
-    property string loggedInUserName: ""
-    property string loggedInUserRole: ""
 }

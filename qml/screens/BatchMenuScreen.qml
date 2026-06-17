@@ -14,6 +14,10 @@ Item {
     property bool showTopBar: true
     property var globalTopBar
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
     // scale system
     property real baseWidth: 1024
     property real baseHeight: 600
@@ -107,64 +111,155 @@ Item {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 52
-                                radius: 12
+                                Layout.preferredHeight: 48
+                                radius: 10
                                 color: "#F9FAFB"
                                 border.color: inputField.activeFocus ? "#1A4DB5" : "#D1D5DB"
+                                border.width: 1
+
+                                Behavior on border.color { ColorAnimation { duration: 150 } }
 
                                 TextField {
                                     id: inputField
                                     anchors.fill: parent
-                                    anchors.margins: 12
+                                    anchors.margins: 10
 
                                     text: root.lastValidBatch
                                     font.pixelSize: 18
                                     color: "#1A4DB5"
 
+                                    property bool isPasswordField: false
+
+                                    focus: false
+                                    activeFocusOnPress: true
                                     readOnly: root.batchRunning
+                                    inputMethodHints: Qt.ImhNone
+
                                     background: null
+                                    padding: 0
+                                    leftPadding: 0
+                                    rightPadding: 0
+                                    topPadding: 0
+                                    bottomPadding: 0
+
+                                    cursorVisible: activeFocus
+
+                                    function saveBatch()
+                                    {
+                                        GlobalState.loginKeyboardRequest = false
+
+                                        if (text.trim() === "") {
+                                            text = "General Batch"
+                                            root.lastValidBatch = text
+                                            root.notify("⚠ Empty not allowed")
+                                        } else {
+                                            root.lastValidBatch = text.trim()
+                                            text = root.lastValidBatch
+                                            root.notify("✓ Batch Updated")
+                                        }
+
+                                        readOnly = true
+                                        focus = false
+                                    }
 
                                     onActiveFocusChanged: {
                                         if (activeFocus) {
                                             GlobalState.activeInputField = inputField
                                             GlobalState.loginKeyboardRequest = true
+
+                                            Qt.callLater(function() {
+                                                inputField.selectAll()
+                                            })
+                                        } else if (!readOnly) {
+                                            saveBatch()
                                         }
                                     }
 
                                     onAccepted: {
-                                        GlobalState.loginKeyboardRequest = false
+                                        saveBatch()
+                                    }
 
-                                        if (text.trim() === "") {
-                                            text = "General Batch"
-                                            root.notify("⚠ Empty not allowed")
-                                        } else {
-                                            root.lastValidBatch = text
-                                            root.notify("✓ Batch Updated")
+                                    MouseArea {
+                                        anchors.fill: parent
+
+                                        onPressed: {
+
+                                            if (GlobalState.loggedInUserRole === "")
+                                            {
+                                                accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                                accessDeniedPopup.popupMessage =
+                                                        "Please login first"
+
+                                                accessDeniedPopup.open()
+                                                return
+                                            }
+
+                                            inputField.forceActiveFocus()
                                         }
-
-                                        focus = false
-                                        readOnly = true
                                     }
                                 }
                             }
 
-                            Text {
-                                text: "Edit"
-                                Layout.preferredWidth: 60
-                                verticalAlignment: Text.AlignVCenter
-                                font.pixelSize: 14
-                                color: root.batchRunning ? "#9CA3AF" : "#2563EB"
+                            Item {
+                                id: editButton
+
+                                width: editRow.implicitWidth
+                                height: editRow.implicitHeight
+
+                                Row {
+                                    id: editRow
+                                    anchors.centerIn: parent
+                                    spacing: 4
+
+                                    Image {
+                                        source: "qrc:/qt/qml/Application/assets/images/edit.png"
+                                        width: 16
+                                        height: 16
+
+                                        opacity: root.batchRunning ? 0.5 : 1.0
+
+                                        fillMode: Image.PreserveAspectFit
+                                        smooth: true
+                                    }
+
+                                    Text {
+                                        text: "Edit"
+                                        font.pixelSize: 15
+                                        color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"
+
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
 
                                 MouseArea {
                                     anchors.fill: parent
+
+                                    cursorShape: root.batchRunning
+                                                 ? Qt.ArrowCursor
+                                                 : Qt.PointingHandCursor
+
                                     enabled: !root.batchRunning
-                                    cursorShape: Qt.PointingHandCursor
 
                                     onClicked: {
+
+                                        if (GlobalState.loggedInUserRole === "")
+                                        {
+                                            accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                            accessDeniedPopup.popupMessage =
+                                                    "Please login first"
+
+                                            accessDeniedPopup.open()
+                                            return
+                                        }
+
                                         inputField.readOnly = false
                                         inputField.forceActiveFocus()
-                                        inputField.selectAll()
-                                        GlobalState.loginKeyboardRequest = true
+
+                                        Qt.callLater(function() {
+                                            inputField.selectAll()
+                                        })
                                     }
                                 }
                             }
@@ -174,6 +269,11 @@ Item {
                     // ===== PRODUCT =====
                     ColumnLayout {
                         Layout.fillWidth: true
+
+                        visible: !GlobalState.showProductLib
+
+                        Layout.preferredHeight: visible ? implicitHeight : 0
+
                         spacing: 6 * root.scale
 
                         Text {
@@ -188,63 +288,153 @@ Item {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                Layout.preferredHeight: 52
-                                radius: 12
+                                Layout.preferredHeight: 48
+                                radius: 10
                                 color: "#F9FAFB"
                                 border.color: productField.activeFocus ? "#1A4DB5" : "#D1D5DB"
+                                border.width: 1
+
+                                Behavior on border.color { ColorAnimation { duration: 150 } }
 
                                 TextField {
                                     id: productField
                                     anchors.fill: parent
-                                    anchors.margins: 12
+                                    anchors.margins: 10
 
                                     text: root.lastValidProduct
                                     font.pixelSize: 18
                                     color: "#1A4DB5"
 
+                                    property bool isPasswordField: false
+
+                                    focus: false
+                                    activeFocusOnPress: true
                                     readOnly: root.batchRunning
+                                    inputMethodHints: Qt.ImhNone
+
                                     background: null
+                                    padding: 0
+                                    leftPadding: 0
+                                    rightPadding: 0
+                                    topPadding: 0
+                                    bottomPadding: 0
+
+                                    cursorVisible: activeFocus
+
+                                    function saveProduct()
+                                    {
+                                        GlobalState.loginKeyboardRequest = false
+
+                                        if (text.trim() === "") {
+                                            text = "Default Product"
+                                            root.lastValidProduct = text
+                                            root.notify("⚠ Empty not allowed")
+                                        } else {
+                                            root.lastValidProduct = text.trim()
+                                            text = root.lastValidProduct
+                                            root.notify("✓ Product Updated")
+                                        }
+
+                                        readOnly = true
+                                        focus = false
+                                    }
 
                                     onActiveFocusChanged: {
                                         if (activeFocus) {
                                             GlobalState.activeInputField = productField
                                             GlobalState.loginKeyboardRequest = true
+
+                                            Qt.callLater(function() {
+                                                productField.selectAll()
+                                            })
+                                        } else if (!readOnly) {
+                                            saveProduct()
                                         }
                                     }
 
                                     onAccepted: {
-                                        GlobalState.loginKeyboardRequest = false
+                                        saveProduct()
+                                    }
 
-                                        if (text.trim() === "") {
-                                            text = "Default Product"
-                                            root.notify("⚠ Empty not allowed")
-                                        } else {
-                                            root.lastValidProduct = text
-                                            root.notify("✓ Product Updated")
+                                    MouseArea {
+                                        anchors.fill: parent
+
+                                        onPressed: {
+
+                                            if (GlobalState.loggedInUserRole === "")
+                                            {
+                                                accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                                accessDeniedPopup.popupMessage =
+                                                        "Please login first"
+
+                                                accessDeniedPopup.open()
+                                                return
+                                            }
+
+                                            productField.forceActiveFocus()
                                         }
-
-                                        focus = false
-                                        readOnly = true
                                     }
                                 }
                             }
 
-                            Text {
-                                text: "Edit"
-                                Layout.preferredWidth: 60
-                                verticalAlignment: Text.AlignVCenter
-                                font.pixelSize: 14
-                                color: root.batchRunning ? "#9CA3AF" : "#2563EB"
+                            Item {
+                                width: productEditRow.implicitWidth
+                                height: productEditRow.implicitHeight
+
+                                Row {
+                                    id: productEditRow
+                                    anchors.centerIn: parent
+                                    spacing: 4
+
+                                    Image {
+                                        source: "qrc:/qt/qml/Application/assets/images/edit.png"
+                                        width: 16
+                                        height: 16
+
+                                        fillMode: Image.PreserveAspectFit
+                                        smooth: true
+
+                                        opacity: root.batchRunning ? 0.5 : 1.0
+                                    }
+
+                                    Text {
+                                        text: "Edit"
+                                        font.pixelSize: 15
+                                        color: root.batchRunning ? "#9CA3AF" : "#1A4DB5"
+
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+                                }
 
                                 MouseArea {
                                     anchors.fill: parent
+
+                                    cursorShape: root.batchRunning
+                                                 ? Qt.ArrowCursor
+                                                 : Qt.PointingHandCursor
+
                                     enabled: !root.batchRunning
 
                                     onClicked: {
+
+                                        if (GlobalState.loggedInUserRole === "")
+                                        {
+                                            accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                            accessDeniedPopup.popupMessage =
+                                                    "Please login first"
+
+                                            accessDeniedPopup.open()
+                                            return
+                                        }
+
                                         productField.readOnly = false
                                         productField.forceActiveFocus()
-                                        productField.selectAll()
-                                        GlobalState.loginKeyboardRequest = true
+
+                                        Qt.callLater(function() {
+                                            productField.selectAll()
+                                        })
                                     }
                                 }
                             }
@@ -261,7 +451,7 @@ Item {
 
                     ActionButton {
                         text: "Batch Start"
-                        width: 130
+                        width: 100
                         height: 50
                         enabled: !root.batchRunning
 
@@ -274,7 +464,7 @@ Item {
 
                     ActionButton {
                         text: root.batchPaused ? "Batch Resume" : "Batch Pause"
-                        width: 120
+                        width: 110
                         height: 50
                         enabled: root.batchRunning
 
@@ -286,7 +476,7 @@ Item {
 
                     ActionButton {
                         text: "Batch End"
-                        width: 110
+                        width: 100
                         height: 50
                         enabled: root.batchRunning
 

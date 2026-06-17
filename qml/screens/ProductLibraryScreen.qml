@@ -49,18 +49,6 @@ Item {
     // PAGE OPEN ANIMATION
     // =====================================================
 
-    opacity: 0.0
-
-    property real pageScale: 0.85
-
-    transform: Scale {
-        origin.x: root.width / 2
-        origin.y: root.height / 2
-
-        xScale: root.pageScale
-        yScale: root.pageScale
-    }
-
     Component.onCompleted: {
         openAnimation.start()
     }
@@ -73,7 +61,7 @@ Item {
         id: openAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 0.0
@@ -85,7 +73,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 0.85
@@ -107,7 +95,7 @@ Item {
         id: closeAnimation
 
         NumberAnimation {
-            target: root
+            target: content
             property: "opacity"
 
             from: 1.0
@@ -119,7 +107,7 @@ Item {
         }
 
         NumberAnimation {
-            target: root
+            target: content
             property: "pageScale"
 
             from: 1.0
@@ -346,377 +334,287 @@ Item {
         }
     }
 
-    Rectangle {
+    Item {
+        id: content
         anchors.fill: parent
-        color: "#F5F7FC"
 
-        ColumnLayout {
+        opacity: 0.0
+        property real pageScale: 0.85
+
+        transform: Scale {
+            origin.x: content.width / 2
+            origin.y: content.height / 2
+
+            xScale: content.pageScale
+            yScale: content.pageScale
+        }
+
+        Rectangle {
             anchors.fill: parent
-            anchors.margins: 20 * root.scale
-            spacing: 12 * root.scale
+            color: "#F5F7FC"
 
-            // ================= TITLE =================
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 20 * root.scale
+                spacing: 12 * root.scale
 
-            Column {
-                spacing: 6 * root.scale
+                // ================= TITLE =================
 
-                Text {
-                    text: "Product Library"
-                    font.pixelSize: 26
+                Column {
+                    spacing: 6 * root.scale
 
-                    color: "#1A4DB5"
-                }
+                    Text {
+                        text: "Product Library"
+                        font.pixelSize: 26
 
-                Rectangle {
-                    width: 80 * root.scale
-                    height: 4 * root.scale
-                    radius: 2 * root.scale
-                    color: "#1A4DB5"
-                }
-            }
-
-            // ================= TOP BAR =================
-
-            Rectangle {
-                Layout.fillWidth: true
-                height: 60 * root.scale
-                color: "#FFFFFF"
-                radius: 12 * root.scale
-                border.color: "#C8D4EE"
-                border.width: 1
-
-                Rectangle {
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
-                    height: 2 * root.scale
-                    radius: 12 * root.scale
-                    color: "#E8EEF9"
-                }
-
-                RowLayout {
-                    anchors.fill: parent
-                    anchors.leftMargin: 14 * root.scale
-                    anchors.rightMargin: 14 * root.scale
-                    anchors.topMargin: 10 * root.scale
-                    anchors.bottomMargin: 10 * root.scale
-                    spacing: 10 * root.scale
-
-                    // ================= GROUP COMBO =================
-
-                    ComboBox {
-                        id: groupCombo
-
-                        Layout.preferredWidth: 210 * root.scale
-                        Layout.preferredHeight: 38 * root.scale
-                        Layout.alignment: Qt.AlignVCenter
-
-                        model: [
-                            "GROUP 01", "GROUP 02", "GROUP 03", "GROUP 04", "GROUP 05",
-                            "GROUP 06", "GROUP 07", "GROUP 08", "GROUP 09", "GROUP 10"
-                        ]
-
-                        currentIndex: 0
-
-                        onCurrentIndexChanged: {
-
-                            currentGroup = currentIndex + 1
-                            activeModel = currentModel()
-
-                            refreshSelectionCount()
-                        }
-
-                        font.pixelSize: 15
-
-                        delegate: ItemDelegate {
-                            width: groupCombo.width
-                            height: 40 * root.scale
-
-                            background: Rectangle {
-                                color: highlighted ? "#E3EDFF" : "#FFFFFF"
-                            }
-
-                            contentItem: Text {
-                                text: modelData
-                                color: highlighted ? "#1A4DB5" : "#2A3550"
-                                font.pixelSize: 15
-                                font.weight: highlighted ? Font.Medium : Font.Normal
-                                verticalAlignment: Text.AlignVCenter
-                                leftPadding: 14 * root.scale
-                            }
-                        }
-
-                        indicator: Text {
-                            text: "▼"
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.right: parent.right
-                            anchors.rightMargin: 14 * root.scale
-                            font.pixelSize: 12
-                            color: "#1A4DB5"
-                        }
-
-                        contentItem: Text {
-                            text: groupCombo.displayText
-                            color: "#2A3550"
-                            font.pixelSize: 15
-                            font.weight: Font.Medium
-                            verticalAlignment: Text.AlignVCenter
-                            leftPadding: 14 * root.scale
-                            rightPadding: 34 * root.scale
-                        }
-
-                        background: Rectangle {
-                            radius: 8 * root.scale
-                            color: "#EDF1FA"
-                            border.width: 1
-                            border.color: groupCombo.popup.visible ? "#1A4DB5" : "#C8D4EE"
-                        }
-
-                        popup: Popup {
-                            y: groupCombo.height + 4 * root.scale
-                            width: groupCombo.width
-                            padding: 0
-
-                            background: Rectangle {
-                                radius: 10 * root.scale
-                                color: "#FFFFFF"
-                                border.color: "#C8D4EE"
-                                border.width: 1
-                            }
-
-                            contentItem: ListView {
-                                clip: true
-                                implicitHeight: contentHeight
-                                model: groupCombo.popup.visible ? groupCombo.delegateModel : null
-                                currentIndex: groupCombo.highlightedIndex
-                            }
-                        }
+                        color: "#1A4DB5"
                     }
 
-                    Item { Layout.fillWidth: true }
-
-                    // ================= BUTTONS =================
-
-                    Repeater {
-                        model: ["LOAD", "ADD", "DELETE"]
-
-                        delegate: Rectangle {
-
-                            property bool loadDisabled:
-                                modelData === "LOAD"
-                                && selectedCount !== 1
-
-                            property bool deleteDisabled:
-                                modelData === "DELETE"
-                                && selectedCount === 0
-
-                            width: 100 * root.scale
-                            height: 38 * root.scale
-                            radius: 8 * root.scale
-
-                            color: (loadDisabled || deleteDisabled)
-                                   ? "#E4EAF5"
-                                   : "#FFFFFF"
-
-                            border.width: 1
-
-                            border.color:
-                                modelData === "DELETE"
-                                ? "#C62828"
-                                : "#1A4DB5"
-
-                            opacity: (loadDisabled || deleteDisabled) ? 0.5 : 1.0
-
-                            Text {
-                                anchors.centerIn: parent
-                                text: modelData
-                                font.pixelSize: 15
-                                font.weight: Font.Medium
-
-                                color:
-                                    modelData === "DELETE"
-                                    ? "#C62828"
-                                    : "#1A4DB5"
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-
-                                enabled: !(loadDisabled || deleteDisabled)
-
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-
-                                onClicked: {
-
-                                    if (modelData === "LOAD") {
-
-                                        var srNo = getSingleSelectedSr()
-
-                                        if (srNo !== -1) {
-
-                                            setActiveProduct(srNo)
-                                            clearSelection()
-                                        }
-                                    }
-
-                                    else if (modelData === "ADD") {
-
-                                        addProductPopup.open()
-                                    }
-
-                                    else if (modelData === "DELETE") {
-
-                                        deleteSelectedProducts()
-                                    }
-                                }
-                            }
-                        }
+                    Rectangle {
+                        width: 80 * root.scale
+                        height: 4 * root.scale
+                        radius: 2 * root.scale
+                        color: "#1A4DB5"
                     }
                 }
-            }
 
-            // ================= MAIN CONTENT =================
-
-            RowLayout {
-                Layout.fillWidth: true
-                Layout.fillHeight: true
-                spacing: 10 * root.scale
-
-                // ================= TABLE =================
+                // ================= TOP BAR =================
 
                 Rectangle {
                     Layout.fillWidth: true
-                    Layout.fillHeight: true
-                    radius: 10 * root.scale
+                    height: 60 * root.scale
                     color: "#FFFFFF"
-                    border.color: "#D0D8EC"
+                    radius: 12 * root.scale
+                    border.color: "#C8D4EE"
                     border.width: 1
-                    clip: true
 
-                    ColumnLayout {
+                    Rectangle {
+                        anchors.top: parent.top
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        height: 2 * root.scale
+                        radius: 12 * root.scale
+                        color: "#E8EEF9"
+                    }
+
+                    RowLayout {
                         anchors.fill: parent
-                        spacing: 0
+                        anchors.leftMargin: 14 * root.scale
+                        anchors.rightMargin: 14 * root.scale
+                        anchors.topMargin: 10 * root.scale
+                        anchors.bottomMargin: 10 * root.scale
+                        spacing: 10 * root.scale
 
-                        // ================= HEADER =================
+                        // ================= GROUP COMBO =================
 
-                        Rectangle {
-                            Layout.fillWidth: true
-                            height: 44 * root.scale
-                            color: "#1A4DB5"
-                            radius: 10 * root.scale
+                        ComboBox {
+                            id: groupCombo
 
-                            Rectangle {
-                                anchors.bottom: parent.bottom
-                                anchors.left: parent.left
+                            Layout.preferredWidth: 210 * root.scale
+                            Layout.preferredHeight: 38 * root.scale
+                            Layout.alignment: Qt.AlignVCenter
+
+                            model: [
+                                "GROUP 01", "GROUP 02", "GROUP 03", "GROUP 04", "GROUP 05",
+                                "GROUP 06", "GROUP 07", "GROUP 08", "GROUP 09", "GROUP 10"
+                            ]
+
+                            currentIndex: 0
+
+                            onCurrentIndexChanged: {
+
+                                currentGroup = currentIndex + 1
+                                activeModel = currentModel()
+
+                                refreshSelectionCount()
+                            }
+
+                            font.pixelSize: 15
+
+                            delegate: ItemDelegate {
+                                width: groupCombo.width
+                                height: 40 * root.scale
+
+                                background: Rectangle {
+                                    color: highlighted ? "#E3EDFF" : "#FFFFFF"
+                                }
+
+                                contentItem: Text {
+                                    text: modelData
+                                    color: highlighted ? "#1A4DB5" : "#2A3550"
+                                    font.pixelSize: 15
+                                    font.weight: highlighted ? Font.Medium : Font.Normal
+                                    verticalAlignment: Text.AlignVCenter
+                                    leftPadding: 14 * root.scale
+                                }
+                            }
+
+                            indicator: Text {
+                                text: "▼"
+                                anchors.verticalCenter: parent.verticalCenter
                                 anchors.right: parent.right
-                                height: 10 * root.scale
+                                anchors.rightMargin: 14 * root.scale
+                                font.pixelSize: 12
                                 color: "#1A4DB5"
                             }
 
-                            RowLayout {
-                                anchors.fill: parent
+                            contentItem: Text {
+                                text: groupCombo.displayText
+                                color: "#2A3550"
+                                font.pixelSize: 15
+                                font.weight: Font.Medium
+                                verticalAlignment: Text.AlignVCenter
+                                leftPadding: 14 * root.scale
+                                rightPadding: 34 * root.scale
+                            }
 
-                                anchors.leftMargin: root.tableHorizontalMargin
-                                anchors.rightMargin: root.tableHorizontalMargin
-                                spacing: root.tableSpacing
+                            background: Rectangle {
+                                radius: 8 * root.scale
+                                color: "#EDF1FA"
+                                border.width: 1
+                                border.color: groupCombo.popup.visible ? "#1A4DB5" : "#C8D4EE"
+                            }
 
-                                Item {
-                                    Layout.preferredWidth: root.colSelect
+                            popup: Popup {
+                                y: groupCombo.height + 4 * root.scale
+                                width: groupCombo.width
+                                padding: 0
+
+                                background: Rectangle {
+                                    radius: 10 * root.scale
+                                    color: "#FFFFFF"
+                                    border.color: "#C8D4EE"
+                                    border.width: 1
                                 }
 
-                                Text {
-                                    text: "Status"
-
-                                    Layout.preferredWidth: root.colStatus
-
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-
-                                    color: "#FFFFFF"
-
-                                    font.pixelSize: 18
-                                }
-
-                                Text {
-                                    text: "Sr. No."
-
-                                    Layout.preferredWidth: root.colSr
-
-                                    horizontalAlignment: Text.AlignLeft
-                                    verticalAlignment: Text.AlignVCenter
-
-                                    color: "#FFFFFF"
-
-                                    font.pixelSize: 18
-                                }
-
-                                Text {
-                                    text: "Product Name"
-
-                                    Layout.preferredWidth: root.dynamicNameWidth
-
-                                    verticalAlignment: Text.AlignVCenter
-
-                                    color: "#FFFFFF"
-
-                                    font.pixelSize: 18
-
-                                    elide: Text.ElideRight
-                                }
-
-                                Text {
-                                    text: "Product Code"
-
-                                    Layout.preferredWidth: root.colCode
-
-                                    horizontalAlignment: Text.AlignHCenter
-                                    verticalAlignment: Text.AlignVCenter
-
-                                    color: "#FFFFFF"
-
-                                    font.pixelSize: 18
+                                contentItem: ListView {
+                                    clip: true
+                                    implicitHeight: contentHeight
+                                    model: groupCombo.popup.visible ? groupCombo.delegateModel : null
+                                    currentIndex: groupCombo.highlightedIndex
                                 }
                             }
                         }
 
-                        // ================= LIST =================
+                        Item { Layout.fillWidth: true }
 
-                        ListView {
-                            id: productList
+                        // ================= BUTTONS =================
 
-                            Layout.fillWidth: true
-                            Layout.fillHeight: true
-
-                            clip: true
-                            spacing: 0
-                            boundsBehavior: Flickable.StopAtBounds
-
-                            model: activeModel
-
-                            ScrollBar.vertical: ScrollBar {
-                                policy: ScrollBar.AsNeeded
-                                width: 8 * root.scale
-                            }
+                        Repeater {
+                            model: ["LOAD", "ADD", "DELETE"]
 
                             delegate: Rectangle {
-                                id: rowRect
 
-                                width: productList.width
-                                height: visible ? 42 * root.scale : 0
+                                property bool loadDisabled:
+                                    modelData === "LOAD"
+                                    && selectedCount !== 1
 
-                                property bool isSelected: selected === true
+                                property bool deleteDisabled:
+                                    modelData === "DELETE"
+                                    && selectedCount === 0
 
-                                color: isSelected
-                                       ? "#E3EDFF"
-                                       : (index % 2 === 0 ? "#FFFFFF" : "#F4F7FF")
+                                width: 100 * root.scale
+                                height: 38 * root.scale
+                                radius: 8 * root.scale
+
+                                color: (loadDisabled || deleteDisabled)
+                                       ? "#E4EAF5"
+                                       : "#FFFFFF"
+
+                                border.width: 1
+
+                                border.color:
+                                    modelData === "DELETE"
+                                    ? "#C62828"
+                                    : "#1A4DB5"
+
+                                opacity: (loadDisabled || deleteDisabled) ? 0.5 : 1.0
+
+                                Text {
+                                    anchors.centerIn: parent
+                                    text: modelData
+                                    font.pixelSize: 15
+                                    font.weight: Font.Medium
+
+                                    color:
+                                        modelData === "DELETE"
+                                        ? "#C62828"
+                                        : "#1A4DB5"
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+
+                                    enabled: !(loadDisabled || deleteDisabled)
+
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+
+                                    onClicked: {
+
+                                        if (modelData === "LOAD") {
+
+                                            var srNo = getSingleSelectedSr()
+
+                                            if (srNo !== -1) {
+
+                                                setActiveProduct(srNo)
+                                                clearSelection()
+                                            }
+                                        }
+
+                                        else if (modelData === "ADD") {
+
+                                            addProductPopup.open()
+                                        }
+
+                                        else if (modelData === "DELETE") {
+
+                                            deleteSelectedProducts()
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ================= MAIN CONTENT =================
+
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    spacing: 10 * root.scale
+
+                    // ================= TABLE =================
+
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: 10 * root.scale
+                        color: "#FFFFFF"
+                        border.color: "#D0D8EC"
+                        border.width: 1
+                        clip: true
+
+                        ColumnLayout {
+                            anchors.fill: parent
+                            spacing: 0
+
+                            // ================= HEADER =================
+
+                            Rectangle {
+                                Layout.fillWidth: true
+                                height: 44 * root.scale
+                                color: "#1A4DB5"
+                                radius: 10 * root.scale
 
                                 Rectangle {
                                     anchors.bottom: parent.bottom
                                     anchors.left: parent.left
                                     anchors.right: parent.right
-                                    height: 1
-                                    color: "#E4EAF5"
+                                    height: 10 * root.scale
+                                    color: "#1A4DB5"
                                 }
 
                                 RowLayout {
@@ -726,181 +624,287 @@ Item {
                                     anchors.rightMargin: root.tableHorizontalMargin
                                     spacing: root.tableSpacing
 
-                                    // CHECKBOX
-
-                                    Rectangle {
+                                    Item {
                                         Layout.preferredWidth: root.colSelect
-                                        Layout.preferredHeight: root.colSelect
-
-                                        radius: 4 * root.scale
-
-                                        color: isSelected ? "#1A4DB5" : "#FFFFFF"
-
-                                        border.color: isSelected
-                                                      ? "#1A4DB5"
-                                                      : "#8BA0CC"
-
-                                        border.width: 1.5
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: "✓"
-                                            visible: isSelected
-                                            color: "#FFFFFF"
-
-                                            font.pixelSize: 12
-                                        }
-
-                                        MouseArea {
-                                            anchors.fill: parent
-
-                                            onClicked: {
-
-                                                currentModel().setProperty(
-                                                            index,
-                                                            "selected",
-                                                            !selected)
-
-                                                refreshSelectionCount()
-                                            }
-                                        }
                                     }
-
-                                    // STATUS
-
-                                    Rectangle {
-                                        Layout.preferredWidth: root.colStatus
-                                        Layout.preferredHeight: root.colActive
-
-                                        radius: root.colActive / 2
-
-                                        color: active ? "#1A4DB5" : "#D5DDEE"
-
-                                        Text {
-                                            anchors.centerIn: parent
-                                            text: active ? "A" : ""
-                                            color: "#FFFFFF"
-
-                                            font.pixelSize: 12
-                                        }
-                                    }
-
-                                    // SR
 
                                     Text {
-                                        text: sr
+                                        text: "Status"
+
+                                        Layout.preferredWidth: root.colStatus
+
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+
+                                        color: "#FFFFFF"
+
+                                        font.pixelSize: 18
+                                    }
+
+                                    Text {
+                                        text: "Sr. No."
 
                                         Layout.preferredWidth: root.colSr
 
+                                        horizontalAlignment: Text.AlignLeft
                                         verticalAlignment: Text.AlignVCenter
 
-                                        font.pixelSize: 17
-                                        font.weight: active ? Font.Medium : Font.Normal
+                                        color: "#FFFFFF"
 
-                                        color: "#2A3550"
+                                        font.pixelSize: 18
                                     }
 
-                                    // PRODUCT NAME
-
                                     Text {
-                                        text: name
+                                        text: "Product Name"
 
                                         Layout.preferredWidth: root.dynamicNameWidth
 
-                                        elide: Text.ElideRight
-
                                         verticalAlignment: Text.AlignVCenter
 
-                                        font.pixelSize: 17
-                                        font.weight: active ? Font.Medium : Font.Normal
+                                        color: "#FFFFFF"
 
-                                        color: "#2A3550"
+                                        font.pixelSize: 18
+
+                                        elide: Text.ElideRight
                                     }
 
-                                    // PRODUCT CODE
+                                    Text {
+                                        text: "Product Code"
+
+                                        Layout.preferredWidth: root.colCode
+
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+
+                                        color: "#FFFFFF"
+
+                                        font.pixelSize: 18
+                                    }
+                                }
+                            }
+
+                            // ================= LIST =================
+
+                            ListView {
+                                id: productList
+
+                                Layout.fillWidth: true
+                                Layout.fillHeight: true
+
+                                clip: true
+                                spacing: 0
+                                boundsBehavior: Flickable.StopAtBounds
+
+                                model: activeModel
+
+                                ScrollBar.vertical: ScrollBar {
+                                    policy: ScrollBar.AsNeeded
+                                    width: 8 * root.scale
+                                }
+
+                                delegate: Rectangle {
+                                    id: rowRect
+
+                                    width: productList.width
+                                    height: visible ? 42 * root.scale : 0
+
+                                    property bool isSelected: selected === true
+
+                                    color: isSelected
+                                           ? "#E3EDFF"
+                                           : (index % 2 === 0 ? "#FFFFFF" : "#F4F7FF")
 
                                     Rectangle {
-                                        Layout.preferredWidth: root.colCode
-                                        Layout.preferredHeight: 24 * root.scale
+                                        anchors.bottom: parent.bottom
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        height: 1
+                                        color: "#E4EAF5"
+                                    }
 
-                                        radius: 12 * root.scale
+                                    RowLayout {
+                                        anchors.fill: parent
 
-                                        color: active ? "#E8F0FF" : "#EDF1FA"
+                                        anchors.leftMargin: root.tableHorizontalMargin
+                                        anchors.rightMargin: root.tableHorizontalMargin
+                                        spacing: root.tableSpacing
+
+                                        // CHECKBOX
+
+                                        Rectangle {
+                                            Layout.preferredWidth: root.colSelect
+                                            Layout.preferredHeight: root.colSelect
+
+                                            radius: 4 * root.scale
+
+                                            color: isSelected ? "#1A4DB5" : "#FFFFFF"
+
+                                            border.color: isSelected
+                                                          ? "#1A4DB5"
+                                                          : "#8BA0CC"
+
+                                            border.width: 1.5
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "✓"
+                                                visible: isSelected
+                                                color: "#FFFFFF"
+
+                                                font.pixelSize: 12
+                                            }
+
+                                            MouseArea {
+                                                anchors.fill: parent
+
+                                                onClicked: {
+
+                                                    currentModel().setProperty(
+                                                                index,
+                                                                "selected",
+                                                                !selected)
+
+                                                    refreshSelectionCount()
+                                                }
+                                            }
+                                        }
+
+                                        // STATUS
+
+                                        Rectangle {
+                                            Layout.preferredWidth: root.colStatus
+                                            Layout.preferredHeight: root.colActive
+
+                                            radius: root.colActive / 2
+
+                                            color: active ? "#1A4DB5" : "#D5DDEE"
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: active ? "A" : ""
+                                                color: "#FFFFFF"
+
+                                                font.pixelSize: 12
+                                            }
+                                        }
+
+                                        // SR
 
                                         Text {
-                                            anchors.centerIn: parent
-                                            text: code
+                                            text: sr
 
-                                            font.pixelSize: 16
-                                            font.weight: Font.Medium
+                                            Layout.preferredWidth: root.colSr
 
-                                            color: active ? "#1A4DB5" : "#4A5E8A"
+                                            verticalAlignment: Text.AlignVCenter
+
+                                            font.pixelSize: 17
+                                            font.weight: active ? Font.Medium : Font.Normal
+
+                                            color: "#2A3550"
+                                        }
+
+                                        // PRODUCT NAME
+
+                                        Text {
+                                            text: name
+
+                                            Layout.preferredWidth: root.dynamicNameWidth
+
+                                            elide: Text.ElideRight
+
+                                            verticalAlignment: Text.AlignVCenter
+
+                                            font.pixelSize: 17
+                                            font.weight: active ? Font.Medium : Font.Normal
+
+                                            color: "#2A3550"
+                                        }
+
+                                        // PRODUCT CODE
+
+                                        Rectangle {
+                                            Layout.preferredWidth: root.colCode
+                                            Layout.preferredHeight: 24 * root.scale
+
+                                            radius: 12 * root.scale
+
+                                            color: active ? "#E8F0FF" : "#EDF1FA"
+
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: code
+
+                                                font.pixelSize: 16
+                                                font.weight: Font.Medium
+
+                                                color: active ? "#1A4DB5" : "#4A5E8A"
+                                            }
                                         }
                                     }
                                 }
                             }
                         }
                     }
-                }
 
-                // ================= SIDE PANEL =================
+                    // ================= SIDE PANEL =================
 
-                Rectangle {
-                    Layout.preferredWidth: 260 * root.scale
-                    Layout.fillHeight: true
-                    radius: 10 * root.scale
-                    color: "#FFFFFF"
-                    border.color: "#D0D8EC"
+                    Rectangle {
+                        Layout.preferredWidth: 260 * root.scale
+                        Layout.fillHeight: true
+                        radius: 10 * root.scale
+                        color: "#FFFFFF"
+                        border.color: "#D0D8EC"
 
-                    Column {
-                        anchors.fill: parent
-                        anchors.margins: 14 * root.scale
-                        spacing: 10 * root.scale
+                        Column {
+                            anchors.fill: parent
+                            anchors.margins: 14 * root.scale
+                            spacing: 10 * root.scale
 
-                        Text {
-                            text: "Details"
-                            font.pixelSize: 20
+                            Text {
+                                text: "Details"
+                                font.pixelSize: 20
 
-                            color: "#1A4DB5"
-                        }
+                                color: "#1A4DB5"
+                            }
 
-                        Rectangle {
-                            width: parent.width
-                            height: 2
-                            color: "#E4EAF5"
-                        }
+                            Rectangle {
+                                width: parent.width
+                                height: 2
+                                color: "#E4EAF5"
+                            }
 
-                        Text { text: "Phase : 110";       font.pixelSize: 20; color: "#202020" }
-                        Text { text: "Signal : 500";      font.pixelSize: 20; color: "#202020" }
-                        Text { text: "Amplitude : 14000"; font.pixelSize: 20; color: "#202020" }
-                        Text { text: "Digital Gain : 1";  font.pixelSize: 20; color: "#202020" }
-                        Text { text: "Analog Gain : 1";   font.pixelSize: 20; color: "#202020" }
-                        Text { text: "DD Frequency : 18"; font.pixelSize: 20; color: "#202020" }
-                        Text { text: "DD Power : 50";     font.pixelSize: 20; color: "#202020" }
+                            Text { text: "Phase : 110";       font.pixelSize: 20; color: "#202020" }
+                            Text { text: "Signal : 500";      font.pixelSize: 20; color: "#202020" }
+                            Text { text: "Amplitude : 14000"; font.pixelSize: 20; color: "#202020" }
+                            Text { text: "Digital Gain : 1";  font.pixelSize: 20; color: "#202020" }
+                            Text { text: "Analog Gain : 1";   font.pixelSize: 20; color: "#202020" }
+                            Text { text: "DD Frequency : 18"; font.pixelSize: 20; color: "#202020" }
+                            Text { text: "DD Power : 50";     font.pixelSize: 20; color: "#202020" }
 
-                        Rectangle {
-                            width: parent.width
-                            height: 1
-                            color: "#E4EAF5"
-                        }
+                            Rectangle {
+                                width: parent.width
+                                height: 1
+                                color: "#E4EAF5"
+                            }
 
-                        Text {
-                            text: "Current Group : "
-                                  + (currentGroup < 10
-                                     ? "0" + currentGroup
-                                     : currentGroup)
+                            Text {
+                                text: "Current Group : "
+                                      + (currentGroup < 10
+                                         ? "0" + currentGroup
+                                         : currentGroup)
 
-                            font.pixelSize: 18
-                            color: "#1A1A1A"
-                        }
+                                font.pixelSize: 18
+                                color: "#1A1A1A"
+                            }
 
-                        Text {
-                            text: "Products : "
-                                  + currentModel().count
-                                  + " / 100"
+                            Text {
+                                text: "Products : "
+                                      + currentModel().count
+                                      + " / 100"
 
-                            font.pixelSize: 18
-                            color: "#1A1A1A"
+                                font.pixelSize: 18
+                                color: "#1A1A1A"
+                            }
                         }
                     }
                 }
