@@ -587,11 +587,8 @@ Item {
                                 Layout.alignment: Qt.AlignHCenter
 
                                 onToggleRequested: {
-
-                                    toggled = !toggled
-
-                                    root.notify(toggled ? "✓ DD ON" : "✓ DD OFF")
-                                }
+                                        root.notify(toggled ? "✓ DD ON" : "✓ DD OFF")
+                                    }
                             }
 
                             Item { Layout.fillHeight: true }
