@@ -11,6 +11,7 @@
 #include "PdfExporter.h"
 #include "SystemDiagnosis.h"
 #include "PlotItem.h"
+#include "SerialManager.h"
 
 int main(int argc, char *argv[])
 {
@@ -19,6 +20,8 @@ int main(int argc, char *argv[])
 
     QGuiApplication::setAttribute(
         Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
+
+    SerialManager serialManager;
 
     // =========================================================
     // QT SCALING FIX FOR QT 6.5
@@ -56,6 +59,13 @@ int main(int argc, char *argv[])
         1,
         0,
         "GlobalState");
+
+    qmlRegisterSingletonInstance(
+        "Backend",
+        1,
+        0,
+        "SerialManager",
+        &serialManager);
 
     // =========================================================
     // CUSTOM COMPONENTS

@@ -3,6 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import AppState 1.0
 
+import Backend 1.0
+
 import "../components"
 
 
@@ -11,6 +13,7 @@ Item {
     property bool showTopBar: true
     property var globalTopBar: null
     property var navigateTo
+
 
     Rectangle {
     Typography {
@@ -448,24 +451,40 @@ Item {
                     anchors.fill: parent
 
                     onMachinePhaseClicked: {
+
                         if (GlobalState.loggedInUserRole === "") {
+
                             accessDeniedPopup.popupTitle = "Access Denied !"
 
                             accessDeniedPopup.popupMessage =
                                     "Please login first"
 
                             accessDeniedPopup.open()
+
                             return
                         }
 
+
                         popup.open(
+
                             "Machine Phase",
+
                             GlobalState.machinePhase,
-                            function(val) {
+
+                            function(val){
+
                                 GlobalState.machinePhase = val
+
+                                SerialManager.setMachinePhase(val)
+
                             },
-                            0, 180
+
+                            0,
+
+                            180
+
                         )
+
                     }
                 }
             }
@@ -620,12 +639,11 @@ Item {
                         width: parent.width * 0.85
                         height: width
 
-                        // Signal Gauge Configuration
-                        value: 180
+                        value: SerialManager.signal
 
                         label: "Signal"
 
-                        threshold: 180
+                        threshold: GlobalState.signalThreshold
                         thresholdLabel: "Thr-S"
 
                         maxValue: 1200
@@ -633,21 +651,27 @@ Item {
                         onThresholdClicked: {
 
                             if (GlobalState.loggedInUserRole === "") {
+
                                 accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                accessDeniedPopup.popupMessage =
-                                        "Please login first"
-
+                                accessDeniedPopup.popupMessage = "Please login first"
                                 accessDeniedPopup.open()
                                 return
                             }
 
                             popup.open(
+
                                 "Thr-S",
+
                                 signalGauge.threshold,
-                                function(val) {
-                                    signalGauge.threshold = val
+
+                                function(val){
+
+                                    GlobalState.signalThreshold = val
+
+                                    SerialManager.setSignalThreshold(val)
+
                                 },
+
                                 100,
                                 1500
                             )
@@ -786,44 +810,71 @@ Item {
                     // =====================================================
 
                     CircularGauge {
+
                         id: ampGauge
+
+                        anchors.horizontalCenter: parent.horizontalCenter
 
                         width: parent.width
                         height: width
 
-                        anchors.horizontalCenter: parent.horizontalCenter
 
-                        value: 180
+                        value: SerialManager.amplitude
+
 
                         label: "Amplitude"
 
-                        threshold: 180
+
+                        threshold: GlobalState.amplitudeThreshold
+
+
                         thresholdLabel: "Thr-A"
 
+
                         maxValue: 1200
+
+
 
                         onThresholdClicked: {
 
                             if (GlobalState.loggedInUserRole === "") {
+
                                 accessDeniedPopup.popupTitle = "Access Denied !"
 
                                 accessDeniedPopup.popupMessage =
                                         "Please login first"
 
                                 accessDeniedPopup.open()
+
                                 return
                             }
 
+
+
                             popup.open(
+
                                 "Thr-A",
+
                                 ampGauge.threshold,
-                                function(val) {
-                                    ampGauge.threshold = val
+
+
+                                function(val){
+
+                                    GlobalState.amplitudeThreshold = val
+
+
+                                    SerialManager.setAmplitudeThreshold(val)
+
                                 },
+
                                 50,
+
                                 1500
+
                             )
+
                         }
+
                     }
                 }
             }

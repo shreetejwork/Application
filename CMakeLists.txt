@@ -4,7 +4,7 @@ project(Application VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Sql Svg PrintSupport)
+find_package(Qt6 REQUIRED COMPONENTS Quick Sql Svg PrintSupport SerialPort)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -121,6 +121,8 @@ qt_add_qml_module(appApplication
         QML_FILES qml/components/AnimationEffect.qml
         QML_FILES qml/components/LogoutPopup.qml
         QML_FILES qml/components/AccessDeniedPopup.qml
+        SOURCES src/SerialManager.h
+        SOURCES src/SerialManager.cpp
 )
 
 set_target_properties(appApplication PROPERTIES
@@ -135,6 +137,7 @@ target_link_libraries(appApplication
     PRIVATE Qt6::Sql
     PRIVATE Qt6::Svg
     PRIVATE Qt6::PrintSupport
+    PRIVATE Qt6::SerialPort
 )
 
 include(GNUInstallDirs)
