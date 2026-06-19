@@ -49,7 +49,7 @@ QtObject {
     // =========================================================
     // OTHER PROPERTIES
     // =========================================================
-    property real productPhase: 180
+    property real productPhase: 0
     property real machinePhase: 180
 
     property real signalThreshold: 500

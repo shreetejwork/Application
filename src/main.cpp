@@ -21,8 +21,6 @@ int main(int argc, char *argv[])
     QGuiApplication::setAttribute(
         Qt::AA_SynthesizeMouseForUnhandledTouchEvents);
 
-    SerialManager serialManager;
-
     // =========================================================
     // QT SCALING FIX FOR QT 6.5
     // =========================================================
@@ -31,6 +29,8 @@ int main(int argc, char *argv[])
         Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     QGuiApplication app(argc, argv);
+
+    SerialManager serialManager;
 
     int id = QFontDatabase::addApplicationFont(":/qt/qml/Application/assets/images/RobotoCondensed-Regular.ttf");
 

@@ -473,9 +473,8 @@ Item {
 
                             function(val){
 
-                                GlobalState.machinePhase = val
-
                                 SerialManager.setMachinePhase(val)
+                                GlobalState.machinePhase = val
 
                             },
 
@@ -541,7 +540,7 @@ Item {
 
                                 text: "Active Product"
 
-                                font.pixelSize: 12
+                                font.pixelSize: 14
 
 
                                 color: "#6B7280"
@@ -666,9 +665,9 @@ Item {
 
                                 function(val){
 
-                                    GlobalState.signalThreshold = val
-
                                     SerialManager.setSignalThreshold(val)
+
+                                    GlobalState.signalThreshold = val
 
                                 },
 
@@ -860,10 +859,9 @@ Item {
 
                                 function(val){
 
-                                    GlobalState.amplitudeThreshold = val
-
-
                                     SerialManager.setAmplitudeThreshold(val)
+
+                                    GlobalState.amplitudeThreshold = val
 
                                 },
 
