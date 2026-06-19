@@ -5,11 +5,13 @@
 #include <QSerialPort>
 #include <QSerialPortInfo>
 
+#include <QTimer>
+
 class SerialManager : public QObject
 {
     Q_OBJECT
 
-    Q_PROPERTY(int productPhase
+    Q_PROPERTY(double productPhase
                    READ productPhase
                        NOTIFY productPhaseChanged)
 
@@ -28,7 +30,7 @@ class SerialManager : public QObject
 public:
     explicit SerialManager(QObject *parent = nullptr);
 
-    int productPhase() const
+    double productPhase() const
     {
         return m_productPhase;
     }
@@ -75,11 +77,17 @@ private:
 
     void sendCommand(const QString &cmd);
 
+// private slots:
+//     void generateDummyPacket();
+
+// private:
+//     QTimer m_dummyTimer;
+
     QSerialPort serial;
 
     QByteArray rxBuffer;
 
-    int m_productPhase = 0;   // 0 - 180
+    double m_productPhase = 0.0;   // 0 - 180
 
     int m_signal = 0;         // 0 - 30000
 
@@ -87,3 +95,5 @@ private:
 
     int m_coilOutput = 0;     // 0 - 10000
 };
+
+

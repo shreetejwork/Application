@@ -121,7 +121,12 @@ Item {
             ctx.lineTo(ix - thickness * Math.cos(perp), iy - thickness * Math.sin(perp))
             ctx.lineTo(ix + thickness * Math.cos(perp), iy + thickness * Math.sin(perp))
             ctx.closePath()
-            ctx.fillStyle = "rgba(255, 0, 0, 0.6)"
+            var inRange =
+                    Math.abs(root.productPhase - root.machinePhase) <= 5
+
+            ctx.fillStyle = inRange
+                            ? "rgba(0, 180, 0, 0.7)"
+                            : "rgba(255, 0, 0, 0.7)"
             ctx.fill()
 
             // MACHINE NEEDLE
@@ -195,7 +200,7 @@ Item {
 
 
                 Text {
-                    text: root.machinePhase
+                    text: root.machinePhase.toFixed(1)
                     font.pixelSize: componentTypography.title
                     color: "#444"
                 }

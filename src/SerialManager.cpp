@@ -1,6 +1,8 @@
 #include "SerialManager.h"
 
 #include <QDebug>
+#include <QRandomGenerator>
+#include <QTimer>
 
 SerialManager::SerialManager(QObject *parent)
     : QObject(parent)
@@ -9,6 +11,13 @@ SerialManager::SerialManager(QObject *parent)
             &QSerialPort::readyRead,
             this,
             &SerialManager::onReadyRead);
+
+    // connect(&m_dummyTimer,
+    //         &QTimer::timeout,
+    //         this,
+    //         &SerialManager::generateDummyPacket);
+
+    // m_dummyTimer.start(3000);
 
 #ifdef Q_OS_MACOS
 
@@ -20,6 +29,7 @@ SerialManager::SerialManager(QObject *parent)
 
 #endif
 }
+
 
 
 bool SerialManager::openPort(const QString &port)
@@ -148,8 +158,11 @@ void SerialManager::onReadyRead()
 
         bool ok1, ok2, ok3, ok4;
 
-        int phase =
+        int phaseRaw =
             fields[0].trimmed().toInt(&ok1);
+
+        double phase =
+            phaseRaw / 10.0;
 
         int signal =
             fields[1].trimmed().toInt(&ok2);
@@ -180,9 +193,11 @@ void SerialManager::onReadyRead()
 
 
         // Update properties
-        if (phase != m_productPhase)
+        if (!qFuzzyCompare(m_productPhase + 1.0,
+                           phase + 1.0))
         {
             m_productPhase = phase;
+
             emit productPhaseChanged();
         }
 
@@ -214,3 +229,62 @@ void SerialManager::onReadyRead()
         qDebug() << "Coil Out  :" << m_coilOutput;
     }
 }
+
+// void SerialManager::generateDummyPacket()
+// {
+//     int phase =
+//         QRandomGenerator::global()->bounded(181);
+
+//     int signal =
+//         QRandomGenerator::global()->bounded(
+//             QRandomGenerator::global()->bounded(30001));
+
+//     int amplitude =
+//         QRandomGenerator::global()->bounded(
+//             QRandomGenerator::global()->bounded(14001));
+
+//     int coil =
+//         QRandomGenerator::global()->bounded(
+//             QRandomGenerator::global()->bounded(10001));
+
+
+//     QString packet =
+//         QString("N %1,%2,%3,%4 n")
+//             .arg(phase,5,10,QChar('0'))
+//             .arg(signal,5,10,QChar('0'))
+//             .arg(amplitude,5,10,QChar('0'))
+//             .arg(coil,5,10,QChar('0'));
+
+
+//     qDebug() << "Dummy RX :" << packet;
+
+
+//     if (phase != m_productPhase)
+//     {
+//         m_productPhase = phase;
+//         emit productPhaseChanged();
+//     }
+
+//     if (signal != m_signal)
+//     {
+//         m_signal = signal;
+//         emit signalChanged();
+//     }
+
+//     if (amplitude != m_amplitude)
+//     {
+//         m_amplitude = amplitude;
+//         emit amplitudeChanged();
+//     }
+
+//     if (coil != m_coilOutput)
+//     {
+//         m_coilOutput = coil;
+//         emit coilOutputChanged();
+//     }
+
+//     qDebug() << "Phase     :" << m_productPhase;
+//     qDebug() << "Signal    :" << m_signal;
+//     qDebug() << "Amplitude :" << m_amplitude;
+//     qDebug() << "Coil Out  :" << m_coilOutput;
+// }

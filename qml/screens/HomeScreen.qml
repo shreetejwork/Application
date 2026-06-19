@@ -374,7 +374,7 @@ Item {
                                     return
                                 }
 
-                                var val = parseInt(inputText)
+                                var val = parseFloat(inputText)
 
                                 if (isNaN(val)) {
                                     popup.errorText = "Enter valid number"
