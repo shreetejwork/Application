@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import AppState 1.0
 
+import Backend 1.0
+
 Item {
     Typography {
         id: componentTypography
@@ -17,8 +19,18 @@ Item {
     property real scale: Math.max(0.6, height / baseHeight)
 
     // LOCAL STATE (SYNCED WITH GLOBAL)
-    property real productPhase: 0
-    property real machinePhase: 0
+    property real productPhase: SerialManager.productPhase
+    property real machinePhase: GlobalState.machinePhase
+
+    onProductPhaseChanged:
+    {
+        canvas.requestPaint()
+    }
+
+    onMachinePhaseChanged:
+    {
+        canvas.requestPaint()
+    }
 
     property real minValue: 0
     property real maxValue: 180
@@ -135,30 +147,6 @@ Item {
         }
     }
 
-    //  SAFE CONNECTION
-    Connections {
-        target: (typeof GlobalState !== "undefined" && GlobalState) ? GlobalState : null
-
-        function onProductPhaseChanged() {
-            root.productPhase = GlobalState.productPhase
-            canvas.requestPaint()
-        }
-
-        function onMachinePhaseChanged() {
-            root.machinePhase = GlobalState.machinePhase
-            canvas.requestPaint()
-        }
-    }
-
-    //  INITIAL LOAD (CRITICAL)
-    Component.onCompleted: {
-        if (typeof GlobalState !== "undefined" && GlobalState) {
-            root.productPhase = GlobalState.productPhase
-            root.machinePhase = GlobalState.machinePhase
-        }
-        canvas.requestPaint()
-    }
-
     // ================= LEFT PANEL =================
     Column {
         anchors.left: parent.left
@@ -173,7 +161,7 @@ Item {
             spacing: 2
 
             Text {
-                text: root.productPhase
+                text: SerialManager.productPhase
                 font.pixelSize: root.trackingPhase >= 0
                                 ? componentTypography.title
                                 : componentTypography.title

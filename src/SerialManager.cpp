@@ -99,60 +99,118 @@ void SerialManager::onReadyRead()
 {
     rxBuffer += serial.readAll();
 
-    while (rxBuffer.contains('\n'))
+    while (true)
     {
-        int index = rxBuffer.indexOf('\n');
+        // Find packet start
+        int start = rxBuffer.indexOf('N');
+
+        if (start < 0)
+        {
+            rxBuffer.clear();
+            return;
+        }
+
+        // Find packet end
+        int end = rxBuffer.indexOf('n', start);
+
+        if (end < 0)
+            return;     // wait for complete packet
+
 
         QByteArray packet =
-            rxBuffer.left(index);
+            rxBuffer.mid(start, end - start + 1);
 
-        rxBuffer.remove(0,index+1);
+        rxBuffer.remove(0, end + 1);
+
 
         QString str =
             QString::fromUtf8(packet).trimmed();
 
+        qDebug() << "RX :" << str;
+
+
+        // Remove start/end markers
+        str.remove(0,1);    // remove N
+        str.chop(1);        // remove n
+        str = str.trimmed();
+
+
         QStringList fields =
             str.split(',');
 
-        for (QString f : fields)
+
+        if (fields.size() != 4)
         {
-            f = f.trimmed();
-
-            if (f.startsWith("PC="))
-            {
-                QString code =
-                    f.mid(3);
-
-                if (code != m_productCode)
-                {
-                    m_productCode = code;
-                    emit productCodeChanged();
-                }
-            }
-            else if (f.startsWith("S="))
-            {
-                int value =
-                    f.mid(2).toInt();
-
-                if (value != m_signal)
-                {
-                    m_signal = value;
-                    emit signalChanged();
-                }
-            }
-            else if (f.startsWith("A="))
-            {
-                int value =
-                    f.mid(2).toInt();
-
-                if (value != m_amplitude)
-                {
-                    m_amplitude = value;
-                    emit amplitudeChanged();
-                }
-            }
+            qDebug() << "Invalid packet";
+            continue;
         }
 
-        qDebug() << "RX :" << str;
+
+        bool ok1, ok2, ok3, ok4;
+
+        int phase =
+            fields[0].trimmed().toInt(&ok1);
+
+        int signal =
+            fields[1].trimmed().toInt(&ok2);
+
+        int amplitude =
+            fields[2].trimmed().toInt(&ok3);
+
+        int coil =
+            fields[3].trimmed().toInt(&ok4);
+
+
+        if (!(ok1 && ok2 && ok3 && ok4))
+        {
+            qDebug() << "Non numeric packet";
+            continue;
+        }
+
+
+        // Validate ranges
+        if (phase > 180 ||
+            signal > 30000 ||
+            amplitude > 14000 ||
+            coil > 10000)
+        {
+            qDebug() << "Packet out of range";
+            continue;
+        }
+
+
+        // Update properties
+        if (phase != m_productPhase)
+        {
+            m_productPhase = phase;
+            emit productPhaseChanged();
+        }
+
+
+        if (signal != m_signal)
+        {
+            m_signal = signal;
+            emit signalChanged();
+        }
+
+
+        if (amplitude != m_amplitude)
+        {
+            m_amplitude = amplitude;
+            emit amplitudeChanged();
+        }
+
+
+        if (coil != m_coilOutput)
+        {
+            m_coilOutput = coil;
+            emit coilOutputChanged();
+        }
+
+
+        qDebug() << "Phase     :" << m_productPhase;
+        qDebug() << "Signal    :" << m_signal;
+        qDebug() << "Amplitude :" << m_amplitude;
+        qDebug() << "Coil Out  :" << m_coilOutput;
     }
 }
