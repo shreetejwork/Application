@@ -16,7 +16,7 @@ SerialManager::SerialManager(QObject *parent)
 
 #elif defined(Q_OS_LINUX)
 
-    openPort("/dev/serial0");
+    openPort("/dev/ttyAMA0");
 
 #endif
 }
