@@ -473,7 +473,11 @@ Item {
 
                             function(val){
 
-                                SerialManager.setMachinePhase(val)
+                                // 12.5 -> 125
+                                var phase = Math.round(val * 10)
+
+                                SerialManager.setMachinePhase(phase)
+
                                 GlobalState.machinePhase = val
 
                             },

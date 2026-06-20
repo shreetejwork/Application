@@ -30,7 +30,33 @@ SerialManager::SerialManager(QObject *parent)
 #endif
 }
 
+// =============== D-duster ======================
 
+void SerialManager::setDDuster(bool enabled)
+{
+    sendCommand(enabled ? "{L11111}" : "{L00000}");
+}
+
+void SerialManager::setDDPower(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value,5,10,QChar('0'));
+
+    sendCommand(QString("{N%1}").arg(v));
+}
+
+
+void SerialManager::setDDFrequency(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value, 5, 10, QChar('0'));
+
+    sendCommand(QString("{M%1}").arg(v));
+}
+
+// ================= MD Data ==================
 
 bool SerialManager::openPort(const QString &port)
 {
@@ -81,7 +107,7 @@ void SerialManager::setMachinePhase(int value)
         QString("%1")
             .arg(value,5,10,QChar('0'));
 
-    sendCommand(QString("{MP%1}").arg(v));
+    sendCommand(QString("{A%1}").arg(v));
 }
 
 
@@ -91,7 +117,7 @@ void SerialManager::setSignalThreshold(int value)
         QString("%1")
             .arg(value,5,10,QChar('0'));
 
-    sendCommand(QString("{TS%1}").arg(v));
+    sendCommand(QString("{B%1}").arg(v));
 }
 
 
@@ -101,9 +127,8 @@ void SerialManager::setAmplitudeThreshold(int value)
         QString("%1")
             .arg(value,5,10,QChar('0'));
 
-    sendCommand(QString("{TA%1}").arg(v));
+    sendCommand(QString("{C%1}").arg(v));
 }
-
 
 void SerialManager::onReadyRead()
 {

@@ -60,6 +60,11 @@ public slots:
     void setSignalThreshold(int value);
     void setAmplitudeThreshold(int value);
 
+    // D-duster ON/OFF
+    void setDDuster(bool enabled);
+    void setDDPower(int value);
+    void setDDFrequency(int value);
+
 signals:
     void productPhaseChanged();
 
@@ -82,6 +87,7 @@ private:
 
 // private:
 //     QTimer m_dummyTimer;
+
 
     QSerialPort serial;
 

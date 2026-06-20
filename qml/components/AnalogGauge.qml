@@ -166,7 +166,7 @@ Item {
             spacing: 2
 
             Text {
-                text: SerialManager.productPhase
+                text: Number(SerialManager.productPhase).toFixed(1)
                 font.pixelSize: root.trackingPhase >= 0
                                 ? componentTypography.title
                                 : componentTypography.title

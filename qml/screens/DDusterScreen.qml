@@ -3,6 +3,9 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import AppState 1.0
 
+import Backend 1.0
+
+
 
 import "../components"
 
@@ -584,11 +587,17 @@ Item {
 
                             DDButton {
                                 id: ddBtn
+
                                 Layout.alignment: Qt.AlignHCenter
 
                                 onToggleRequested: {
-                                        root.notify(toggled ? "✓ DD ON" : "✓ DD OFF")
-                                    }
+
+                                    SerialManager.setDDuster(toggled)
+
+                                    root.notify(
+                                        toggled ? "✓ DD ON" : "✓ DD OFF"
+                                    )
+                                }
                             }
 
                             Item { Layout.fillHeight: true }
@@ -625,9 +634,12 @@ Item {
                                 maxValue: 100
                                 value: 0
 
-                                onSaveClicked: (val) =>
+                                onSaveClicked: function(val)
                                 {
-                                    root.notify("✓ DD Power Saved: " + val)
+
+                                    SerialManager.setDDPower(val)
+
+                                    root.notify("✓ DD Power Saved : " + val)
                                 }
                             }
                         }
@@ -666,20 +678,24 @@ Item {
                                 stepSize: 0.1
                                 decimals: 1
 
-                                onSaveClicked: (val) => {
+                                onSaveClicked: function(val)
+                                {
+                                    if (GlobalState.loggedInUserRole === "")
+                                    {
+                                        accessDeniedPopup.popupTitle = "Access Denied !"
+                                        accessDeniedPopup.popupMessage = "Please login first"
+                                        accessDeniedPopup.open()
+                                        return
+                                    }
 
-                                                   if (GlobalState.loggedInUserRole === "")
-                                                   {
-                                                       accessDeniedPopup.popupTitle = "Access Denied !"
+                                    // 25.0 -> 250
+                                    // 25.1 -> 251
+                                    // 49.9 -> 499
+                                    var freq = Math.round(val * 10)
 
-                                                       accessDeniedPopup.popupMessage =
-                                                               "Please login first"
+                                    SerialManager.setDDFrequency(freq)
 
-                                                       accessDeniedPopup.open()
-                                                       return
-                                                   }
-
-                                    root.notify("✓ DD Frequency Saved: " + val.toFixed(1))
+                                    root.notify("✓ DD Frequency Saved : " + val.toFixed(1))
                                 }
                             }
                         }
