@@ -76,6 +76,9 @@ public slots:
     void setDigitalGain(int value);
     void setAnalogGain(int value);
 
+    // Batch Settings
+    void setBatch(int state);
+
 signals:
     void productPhaseChanged();
 

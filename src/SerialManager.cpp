@@ -30,6 +30,26 @@ SerialManager::SerialManager(QObject *parent)
 #endif
 }
 
+// =========== Batch Settings =================
+
+void SerialManager::setBatch(int state)
+{
+    switch(state)
+    {
+    case 1:     // Start
+        sendCommand("{O11111}");
+        break;
+
+    case 2:     // Pause
+        sendCommand("{O01010}");
+        break;
+
+    default:    // End
+        sendCommand("{O00000}");
+        break;
+    }
+}
+
 // ========== Machine Settings ===============
 
 void SerialManager::setLPF(int value)

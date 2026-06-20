@@ -3,6 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import AppState 1.0
 
+import Backend 1.0
+
 import "../components"
 
 Item {
@@ -458,6 +460,9 @@ Item {
                         onClicked: {
                             root.batchRunning = true
                             root.batchPaused = false
+
+                            SerialManager.setBatch(1)
+
                             root.notify("✓ Batch Start")
                         }
                     }
@@ -470,6 +475,12 @@ Item {
 
                         onClicked: {
                             root.batchPaused = !root.batchPaused
+
+                            if (root.batchPaused)
+                                SerialManager.setBatch(2)
+                            else
+                                SerialManager.setBatch(1)
+
                             root.notify(root.batchPaused ? "⏸ Paused" : "▶ Resumed")
                         }
                     }
@@ -483,6 +494,9 @@ Item {
                         onClicked: {
                             root.batchRunning = false
                             root.batchPaused = false
+
+                            SerialManager.setBatch(0)
+
                             root.notify("■ Batch End")
                         }
                     }
