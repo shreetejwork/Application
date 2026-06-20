@@ -30,6 +30,77 @@ SerialManager::SerialManager(QObject *parent)
 #endif
 }
 
+// ========== Machine Settings ===============
+
+void SerialManager::setLPF(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value,5,10,QChar('0'));
+
+    sendCommand(QString("{E%1}").arg(v));
+}
+
+
+void SerialManager::setHPF(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value,5,10,QChar('0'));
+
+    sendCommand(QString("{F%1}").arg(v));
+}
+
+
+void SerialManager::setOperateDelay(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value,5,10,QChar('0'));
+
+    sendCommand(QString("{H%1}").arg(v));
+}
+
+
+void SerialManager::setHoldDelay(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value,5,10,QChar('0'));
+
+    sendCommand(QString("{G%1}").arg(v));
+}
+
+
+void SerialManager::setRelayDelay(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value,5,10,QChar('0'));
+
+    sendCommand(QString("{I%1}").arg(v));
+}
+
+
+void SerialManager::setDigitalGain(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value,5,10,QChar('0'));
+
+    sendCommand(QString("{J%1}").arg(v));
+}
+
+
+void SerialManager::setAnalogGain(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value,5,10,QChar('0'));
+
+    sendCommand(QString("{K%1}").arg(v));
+}
+
 // =============== D-duster ======================
 
 void SerialManager::setDDuster(bool enabled)

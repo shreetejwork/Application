@@ -2,6 +2,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import AppState 1.0
+
+import Backend 1.0
+
 import "../components"
 
 Item {
@@ -48,13 +51,13 @@ Item {
         id: fieldModel
 
         ListElement { fieldId: "lpf1"; label: "LPF"; title: "LPF"; value: "10"; unit: "Hz"; min: 1; max: 100 }
-        ListElement { fieldId: "hpf1"; label: "HPF"; title: "HPF"; value: "2"; unit: "Hz"; min: 1; max: 50 }
+        ListElement { fieldId: "hpf1"; label: "HPF"; title: "HPF"; value: "2.0"; unit: "Hz"; min: 1.0; max: 50.0 }
 
         ListElement { fieldId: "od"; label: "O/D"; title: "Operate Delay"; value: "0"; unit: "mSec"; min: 0; max: 500 }
         ListElement { fieldId: "hd"; label: "H/D"; title: "Hold Delay"; value: "250"; unit: "mSec"; min: 0; max: 1000 }
         ListElement { fieldId: "rd"; label: "R/D"; title: "Relay Delay"; value: "250"; unit: "mSec"; min: 0; max: 1000 }
 
-        ListElement { fieldId: "dg"; label: "D/G"; title: "Digital Gain"; value: "1"; unit: ""; min: 0; max: 10 }
+        ListElement { fieldId: "dg"; label: "D/G"; title: "Digital Gain"; value: "1.0"; unit: ""; min: 0; max: 10 }
         ListElement { fieldId: "ag"; label: "A/G"; title: "Analog Gain"; value: "1"; unit: ""; min: 0; max: 10 }
     }
 
@@ -98,13 +101,71 @@ Item {
         numberPopup.open(
             item.title,
             "",
-            function(newVal) {
-                updateValue(fieldId, newVal)
-                root.fieldClicked(
-                    item.label,
-                    newVal + (item.unit !== "" ? " " + item.unit : "")
-                )
-            },
+                    function(newVal)
+                    {
+                        updateValue(fieldId,newVal)
+
+
+                        switch(fieldId)
+                        {
+                        case "lpf1":
+                            SerialManager.setLPF(newVal)
+                            break
+
+                        case "hpf1":
+
+                            SerialManager.setHPF(
+                                        Math.round(newVal*10))
+
+                            break
+
+
+                        case "od":
+                            SerialManager.setOperateDelay(newVal)
+                            break
+
+
+                        case "hd":
+                            SerialManager.setHoldDelay(newVal)
+                            break
+
+
+                        case "rd":
+                            SerialManager.setRelayDelay(newVal)
+                            break
+
+
+                        case "dg":
+
+                            SerialManager.setDigitalGain(
+                                        Math.round(newVal*10))
+
+                            break
+
+
+                        case "ag":
+                            SerialManager.setAnalogGain(newVal)
+                            break
+                        }
+
+
+                        root.notify(
+                                    "✓ "
+                                    + item.label
+                                    + " Saved : "
+                                    + newVal
+                                    + " "
+                                    + item.unit)
+
+
+                        root.fieldClicked(
+                                    item.label,
+                                    newVal + (
+                                        item.unit !== ""
+                                        ? " " + item.unit
+                                        : "")
+                                    )
+                    },
             item.min,
             item.max
         )
@@ -309,7 +370,16 @@ Item {
                 Text {
                     id: valueText
                     anchors.centerIn: parent
-                    text: root.displayValue(tile.fieldId)
+                    text:
+                    {
+                        var v = Number(root.displayValue(tile.fieldId))
+
+                        if(tile.fieldId==="hpf1" ||
+                           tile.fieldId==="dg")
+                            return v.toFixed(1)
+
+                        return v
+                    }
                     color: "#1A4DB5"
                     font.pixelSize: s1Typography.heading
 

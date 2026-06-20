@@ -65,6 +65,17 @@ public slots:
     void setDDPower(int value);
     void setDDFrequency(int value);
 
+    // Machine setting parameters
+    void setLPF(int value);
+    void setHPF(int value);
+
+    void setOperateDelay(int value);
+    void setHoldDelay(int value);
+    void setRelayDelay(int value);
+
+    void setDigitalGain(int value);
+    void setAnalogGain(int value);
+
 signals:
     void productPhaseChanged();
 
