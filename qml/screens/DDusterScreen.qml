@@ -646,10 +646,13 @@ Item {
                                 maxValue: 100
                                 value: 0
 
+                                onValueChangedDelayed: function(val)
+                                {
+                                    SerialManager.setDDPower(val)
+                                }
+
                                 onSaveClicked: function(val)
                                 {
-
-                                    SerialManager.setDDPower(val)
 
                                     root.notify("✓ DD Power Saved : " + val)
                                 }
@@ -690,6 +693,13 @@ Item {
                                 stepSize: 0.1
                                 decimals: 1
 
+                                onValueChangedDelayed: function(val)
+                                {
+                                    var freq = Math.round(val * 10)
+
+                                    SerialManager.setDDFrequency(freq)
+                                }
+
                                 onSaveClicked: function(val)
                                 {
                                     if (GlobalState.loggedInUserRole === "")
@@ -704,8 +714,6 @@ Item {
                                     // 25.1 -> 251
                                     // 49.9 -> 499
                                     var freq = Math.round(val * 10)
-
-                                    SerialManager.setDDFrequency(freq)
 
                                     root.notify("✓ DD Frequency Saved : " + val.toFixed(1))
                                 }

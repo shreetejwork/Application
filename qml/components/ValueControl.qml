@@ -16,6 +16,35 @@ Item {
         id: accessDeniedPopup
     }
 
+    signal valueChangedDelayed(real value)
+
+    Timer {
+        id: sendTimer
+        interval: 100
+        repeat: true
+
+        onTriggered: {
+            root.valueChangedDelayed(root.value)
+        }
+    }
+
+    function updateValue(delta)
+    {
+        var newValue = Math.max(
+                    minValue,
+                    Math.min(
+                        maxValue,
+                        Number((value + delta).toFixed(decimals))
+                    ))
+
+        if (newValue !== value)
+        {
+            value = newValue
+            valueChangedDelayed(value)
+        }
+    }
+
+
     // =========================================================
     // VALUE CONTROL PROPERTIES
     // =========================================================
@@ -71,20 +100,15 @@ Item {
         repeat: true
 
         onTriggered: {
-            if (root.value < root.maxValue) {
-                root.value = Math.min(
-                                 root.maxValue,
-                                 Number(
-                                     (root.value + root.stepSize)
-                                     .toFixed(root.decimals)
-                                 )
-                             )
-            } else {
+
+            if(root.value >= root.maxValue){
                 stop()
+                return
             }
+
+            root.updateValue(root.stepSize)
         }
     }
-
     // =========================================================
     // MINUS AUTO REPEAT
     // =========================================================
@@ -105,17 +129,13 @@ Item {
         repeat: true
 
         onTriggered: {
-            if (root.value > root.minValue) {
-                root.value = Math.max(
-                                 root.minValue,
-                                 Number(
-                                     (root.value - root.stepSize)
-                                     .toFixed(root.decimals)
-                                 )
-                             )
-            } else {
+
+            if(root.value <= root.minValue){
                 stop()
+                return
             }
+
+            root.updateValue(-root.stepSize)
         }
     }
 
@@ -190,21 +210,14 @@ Item {
                     }
 
                     onReleased: {
+
                         parent.pressed = false
 
-                        // Short click
-                        if (plusHoldTimer.running) {
+                        if (plusHoldTimer.running)
+                        {
                             plusHoldTimer.stop()
 
-                            if (root.value < root.maxValue) {
-                                root.value = Math.min(
-                                                 root.maxValue,
-                                                 Number(
-                                                     (root.value + root.stepSize)
-                                                     .toFixed(root.decimals)
-                                                 )
-                                             )
-                            }
+                            root.updateValue(root.stepSize)
                         }
 
                         plusRepeatTimer.stop()
@@ -256,21 +269,14 @@ Item {
                     }
 
                     onReleased: {
+
                         parent.pressed = false
 
-                        // Short click
-                        if (minusHoldTimer.running) {
+                        if (minusHoldTimer.running)
+                        {
                             minusHoldTimer.stop()
 
-                            if (root.value > root.minValue) {
-                                root.value = Math.max(
-                                                 root.minValue,
-                                                 Number(
-                                                     (root.value - root.stepSize)
-                                                     .toFixed(root.decimals)
-                                                 )
-                                             )
-                            }
+                            root.updateValue(-root.stepSize)
                         }
 
                         minusRepeatTimer.stop()

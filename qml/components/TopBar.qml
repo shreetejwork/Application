@@ -41,9 +41,32 @@ Rectangle {
 
     LogoutPopup {
         id: logoutPopup
+
         onLogoutRequested: {
+
+            var username = GlobalState.loggedInUserName
+            var role     = GlobalState.loggedInUserRole
+
+            var initial = "U"
+
+            if (role === "Admin")
+                initial = "A"
+            else if (role === "Operator")
+                initial = "O"
+            else if (role === "Supervisor")
+                initial = "S"
+
+
+            root.showNotification(
+                        "Logged out "
+                        + initial
+                        + "-"
+                        + username)
+
+
             GlobalState.loggedInUserName = ""
             GlobalState.loggedInUserRole = ""
+
             countdownCircle.resetCountdown()
         }
     }
@@ -80,16 +103,39 @@ Rectangle {
             loginPopup.errorText = ""
             loginPopup.hasError = false
 
+
             GlobalState.loggedInUserName = username
             GlobalState.loggedInUserRole = userType
+
+
+            var initial = "U"
+
+            if (userType === "Admin")
+                initial = "A"
+            else if (userType === "Operator")
+                initial = "O"
+            else if (userType === "Supervisor")
+                initial = "S"
+
+
+            // Show login notification
+            root.showNotification(
+                        "Logged in "
+                        + initial
+                        + "-"
+                        + username)
+
 
             var days = databaseManager.daysUntilPasswordExpiry(username)
             if (days > 0 && days <= 7) {
                 root.showNotification("Password expires in " + days + " day(s)")
             }
 
+
             loginPopup.clearFailedAttempts(username)
+
             countdownCircle.resetCountdown()
+
             loginPopup.close()
         }
     }

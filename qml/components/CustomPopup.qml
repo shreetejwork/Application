@@ -166,7 +166,7 @@ Item {
                     Text {
                         text: "Min: " + popup.minValue
                         color: "#1A4DB5"
-                        font.pixelSize: 13
+                        font.pixelSize: 15
 
                         Layout.fillWidth: true
                     }
@@ -176,7 +176,7 @@ Item {
                     Text {
                         text: "Max: " + popup.maxValue
                         color: "#1A4DB5"
-                        font.pixelSize: 13
+                        font.pixelSize: 15
 
                         Layout.fillWidth: true
                     }
@@ -187,7 +187,7 @@ Item {
             Text {
                 text: popup.errorText
                 color: "#FF5252"
-                font.pixelSize: 13
+                font.pixelSize: 15
 
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter

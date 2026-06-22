@@ -290,6 +290,24 @@ Popup {
         }
     }
 
+    function roleInitial(role)
+    {
+        switch(role)
+        {
+        case "Admin":
+            return "A"
+
+        case "Operator":
+            return "O"
+
+        case "Supervisor":
+            return "S"
+
+        default:
+            return "U"
+        }
+    }
+
     // =====================================================
     // QT 6.5 KEYBOARD FIX
     // =====================================================
