@@ -100,6 +100,36 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 
     QPixmap logo(logoPath);
 
+    auto drawLogo = [&](int pageWidth)
+    {
+        if (logo.isNull())
+            return;
+
+        const int logoW = 150;
+        const int logoH = 65;
+        const int marginRight = 15;
+        const int top = 10;
+        const int padding = 4;
+
+        QRect logoRect(
+            pageWidth - logoW - marginRight,
+            top,
+            logoW,
+            logoH);
+
+        QSize scaledSize = logo.size().scaled(
+            logoRect.size() - QSize(2 * padding, 2 * padding),
+            Qt::KeepAspectRatio);
+
+        QRect target(
+            logoRect.center().x() - scaledSize.width() / 2,
+            logoRect.center().y() - scaledSize.height() / 2,
+            scaledSize.width(),
+            scaledSize.height());
+
+        painter.drawPixmap(target, logo);
+    };
+
     const int pageWidth  = writer.width();
 
     const int rowHeight = 20;
@@ -118,35 +148,21 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 
     {
 
-        const int logoSize = 65;
-        const int margin = 15;
+       drawLogo(pageWidth);
 
-        QRect logoRect(
-            pageWidth - logoSize - margin,
-            10,
-            logoSize,
-            logoSize);
+        painter.setFont(QFont("Arial",12,QFont::Bold));
 
-        if (!logo.isNull())
-        {
-            painter.drawPixmap(
-                logoRect,
-                logo.scaled(
-                    logoRect.size(),
-                    Qt::KeepAspectRatio,
-                    Qt::SmoothTransformation));
-        }
-
-        painter.setFont(QFont("Arial", 12, QFont::Bold));
-        painter.drawText(QRect(0, 25, pageWidth, 25),
-                         Qt::AlignCenter,
-                         "A&D Instruments (India) Pvt Ltd.");
+        painter.drawText(
+            QRect(0,20,pageWidth,20),
+            Qt::AlignCenter,
+            "A&D Instruments (India) Pvt Ltd.");
 
         if (page == 0)
         {
-            painter.drawText(QRect(0, 50, pageWidth, 25),
-                             Qt::AlignCenter,
-                             "AUDIT TRAIL REPORT");
+            painter.drawText(
+                QRect(0,45,pageWidth,20),
+                Qt::AlignCenter,
+                "AUDIT TRAIL REPORT");
 
             painter.setFont(QFont("Arial", 9));
 
@@ -296,6 +312,35 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
         + "/Logo.png";
 
     QPixmap logo(logoPath);
+    auto drawLogo = [&](int pageWidth)
+    {
+        if (logo.isNull())
+            return;
+
+        const int logoW = 150;
+        const int logoH = 65;
+        const int marginRight = 15;
+        const int top = 10;
+        const int padding = 4;
+
+        QRect logoRect(
+            pageWidth - logoW - marginRight,
+            top,
+            logoW,
+            logoH);
+
+        QSize scaledSize = logo.size().scaled(
+            logoRect.size() - QSize(2 * padding, 2 * padding),
+            Qt::KeepAspectRatio);
+
+        QRect target(
+            logoRect.center().x() - scaledSize.width() / 2,
+            logoRect.center().y() - scaledSize.height() / 2,
+            scaledSize.width(),
+            scaledSize.height());
+
+        painter.drawPixmap(target, logo);
+    };
 
     const int pageWidth  = writer.width();
     const int pageHeight = writer.height();
@@ -326,35 +371,19 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
         // HEADER AREA
         // =====================================================
 
-        const int logoSize = 65;
-        const int margin = 15;
+        drawLogo(pageWidth);
 
-        const QRect logoRect(
-            pageWidth - logoSize - margin,
-            10,
-            logoSize,
-            logoSize);
+        painter.setFont(QFont("Arial",12,QFont::Bold));
 
-        if (!logo.isNull())
-        {
-            painter.drawPixmap(
-                logoRect,
-                logo.scaled(
-                    logoRect.size(),
-                    Qt::KeepAspectRatio,
-                    Qt::SmoothTransformation));
-        }
 
         // ---------------- Company Name ----------------
 
         painter.setFont(QFont("Arial", 11, QFont::Bold));
 
         painter.drawText(
-            QRect(0, 15, pageWidth, 22),
+            QRect(0,20,pageWidth,20),
             Qt::AlignCenter,
-            "A&D Instruments (India) Pvt Ltd., Tablet Metal Detector (TMD)"
-            );
-
+            "A&D Instruments (India) Pvt Ltd.");
 
         // ---------------- Report Title ----------------
 

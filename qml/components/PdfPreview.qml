@@ -61,16 +61,70 @@ Popup {
                     height: 12
                     color: "#1A4DB5"
                 }
+
                 RowLayout {
                     anchors.fill: parent
                     anchors.margins: 12
+                    spacing: 8
+
                     Text {
                         text: "PDF Preview"
                         color: "white"
                         font.pixelSize: pdfTypography.body
                         Layout.alignment: Qt.AlignVCenter
                     }
+
                     Item { Layout.fillWidth: true }
+
+                    // UP BUTTON
+                    Rectangle {
+                        width: 40
+                        height: 36
+                        radius: 6
+                        color: upArea.pressed ? "#0D3A8A" : "#2D6AD4"
+                        Layout.alignment: Qt.AlignVCenter
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "▲"
+                            color: "white"
+                            font.pixelSize: 16
+                        }
+
+                        MouseArea {
+                            id: upArea
+                            anchors.fill: parent
+                            onClicked: {
+                                if (pdfView.currentPage > 0)
+                                    pdfView.currentPage = pdfView.currentPage - 1
+                            }
+                        }
+                    }
+
+                    // DOWN BUTTON
+                    Rectangle {
+                        width: 40
+                        height: 36
+                        radius: 6
+                        color: downArea.pressed ? "#0D3A8A" : "#2D6AD4"
+                        Layout.alignment: Qt.AlignVCenter
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "▼"
+                            color: "white"
+                            font.pixelSize: 16
+                        }
+
+                        MouseArea {
+                            id: downArea
+                            anchors.fill: parent
+                            onClicked: {
+                                if (pdfView.currentPage < pdfDoc.pageCount - 1)
+                                    pdfView.currentPage = pdfView.currentPage + 1
+                            }
+                        }
+                    }
                 }
             }
 
@@ -85,8 +139,8 @@ Popup {
                 PdfDocument {
                     id: pdfDoc
                     source: root.pdfSource
-                    onStatusChanged: {
-                        if (status === PdfDocument.Ready) {
+                    onStatusChanged: function() {
+                        if (pdfDoc.status === PdfDocument.Ready) {
                             Qt.callLater(root.computeRenderScale)
                         }
                     }
