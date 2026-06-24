@@ -15,6 +15,9 @@
 
 int main(int argc, char *argv[])
 {
+
+    qputenv("QT_QUICK_FLICKABLE_POINTER_HANDLING", "1");
+
     QGuiApplication::setAttribute(
         Qt::AA_SynthesizeTouchForUnhandledMouseEvents);
 

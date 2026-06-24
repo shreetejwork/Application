@@ -23,11 +23,7 @@ Popup {
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
     property url pdfSource: ""
-    
-    // =========================================================
-    // TYPOGRAPHY FOR PDF PREVIEW
-    // =========================================================
-    
+
     Typography {
         id: pdfTypography
         scale: 1.0
@@ -38,10 +34,7 @@ Popup {
     function computeRenderScale() {
         if (pdfDoc.status === PdfDocument.Ready && pdfDoc.pageCount > 0) {
             var pageSize = pdfDoc.pagePointSize(0)
-
-            // Fit page width exactly to container
             var scale = pdfContainer.width / pageSize.width
-
             pdfView.renderScale = scale
         }
     }
@@ -61,7 +54,6 @@ Popup {
                 Layout.fillWidth: true
                 height: 54
                 color: "#1A4DB5"
-                // Only top corners rounded
                 radius: 12
                 Rectangle {
                     anchors.bottom: parent.bottom
@@ -69,19 +61,15 @@ Popup {
                     height: 12
                     color: "#1A4DB5"
                 }
-
                 RowLayout {
                     anchors.fill: parent
                     anchors.margins: 12
-
                     Text {
                         text: "PDF Preview"
                         color: "white"
                         font.pixelSize: pdfTypography.body
-
                         Layout.alignment: Qt.AlignVCenter
                     }
-
                     Item { Layout.fillWidth: true }
                 }
             }
@@ -111,56 +99,16 @@ Popup {
                     focus: true
                     activeFocusOnTab: true
                     renderScale: 1.0
-
-                    Component.onCompleted: {
-                        if (pdfView.flickable) {
-                            pdfView.flickable.interactive = true
-                            pdfView.flickable.boundsBehavior = Flickable.DragAndOvershootBounds
-                        }
-                    }
-                }
-
-                MouseArea {
-                    anchors.fill: parent
-                    z: 999
-                    propagateComposedEvents: true
-
-                    property real lastY: 0
-                    property bool dragging: false
-
-                    onPressed: (mouse) => {
-                        lastY = mouse.y
-                        dragging = true
-                        mouse.accepted = true
-                        if (pdfView.flickable) {
-                            pdfView.flickable.cancelFlick()
-                        }
-                    }
-
-                    onPositionChanged: (mouse) => {
-                        if (!dragging || !pdfView.flickable) return
-                        var delta = mouse.y - lastY
-                        lastY = mouse.y
-                        var newY = pdfView.flickable.contentY - delta
-                        newY = Math.max(0, Math.min(newY,
-                            pdfView.flickable.contentHeight - pdfView.flickable.height))
-                        pdfView.flickable.contentY = newY
-                        console.log("SET contentY to:", newY)
-                    }
-
-                    onReleased: (mouse) => {
-                        dragging = false
-                    }
                 }
 
                 onWidthChanged: Qt.callLater(root.computeRenderScale)
             }
+
             // ===== FOOTER =====
             Rectangle {
                 Layout.fillWidth: true
                 height: 50
                 color: "#FFFFFF"
-                // Only bottom corners rounded
                 radius: 12
                 Rectangle {
                     anchors.top: parent.top
@@ -168,25 +116,20 @@ Popup {
                     height: 12
                     color: "#FFFFFF"
                 }
-
                 RowLayout {
                     anchors.centerIn: parent
                     spacing: 16
-
                     Rectangle {
                         width: 120
                         height: 40
                         radius: 6
                         color: "#1A4DB5"
-
                         Text {
                             anchors.centerIn: parent
                             text: "Close"
                             color: "white"
                             font.pixelSize: pdfTypography.caption
-
                         }
-
                         MouseArea {
                             anchors.fill: parent
                             onClicked: root.close()
