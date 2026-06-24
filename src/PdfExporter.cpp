@@ -118,14 +118,24 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 
     {
 
-        QRect logoRect(20, 10, 55, 55);
+        const int logoSize = 65;
+        const int margin = 15;
 
-        painter.drawPixmap(
-            logoRect,
-            logo.scaled(
-                logoRect.size(),
-                Qt::KeepAspectRatio,
-                Qt::SmoothTransformation));
+        QRect logoRect(
+            pageWidth - logoSize - margin,
+            10,
+            logoSize,
+            logoSize);
+
+        if (!logo.isNull())
+        {
+            painter.drawPixmap(
+                logoRect,
+                logo.scaled(
+                    logoRect.size(),
+                    Qt::KeepAspectRatio,
+                    Qt::SmoothTransformation));
+        }
 
         painter.setFont(QFont("Arial", 12, QFont::Bold));
         painter.drawText(QRect(0, 25, pageWidth, 25),
@@ -316,7 +326,14 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
         // HEADER AREA
         // =====================================================
 
-        const QRect logoRect(20, 10, 55, 55);
+        const int logoSize = 65;
+        const int margin = 15;
+
+        const QRect logoRect(
+            pageWidth - logoSize - margin,
+            10,
+            logoSize,
+            logoSize);
 
         if (!logo.isNull())
         {

@@ -104,16 +104,27 @@ Popup {
                     }
                 }
 
-                PdfMultiPageView {
-                    id: pdfView
+                Flickable {
+                    id: flick
 
                     anchors.fill: parent
 
-                    document: pdfDoc
+                    contentWidth: pdfView.width
+                    contentHeight: pdfView.height
 
-                    focus: true
+                    clip: true
 
-                    renderScale: 1.0
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    PdfMultiPageView {
+                        id: pdfView
+
+                        width: flick.width
+
+                        document: pdfDoc
+
+                        renderScale: 1.0
+                    }
                 }
 
                 onWidthChanged: Qt.callLater(root.computeRenderScale)
