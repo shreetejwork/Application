@@ -111,15 +111,8 @@ Popup {
                     focus: true
                     activeFocusOnTab: true
                     renderScale: 1.0
-
-                    Component.onCompleted: {
-                        if (pdfView.flickable) {
-                            pdfView.flickable.interactive = false
-                        }
-                    }
                 }
 
-                // Transparent overlay — captures ALL finger touches anywhere
                 MouseArea {
                     anchors.fill: parent
                     z: 999
