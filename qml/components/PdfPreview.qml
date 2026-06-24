@@ -114,12 +114,38 @@ Popup {
 
                     Component.onCompleted: {
                         if (pdfView.flickable) {
-                            pdfView.flickable.interactive = true
-                            pdfView.flickable.flickableDirection = Flickable.VerticalFlick
-                            pdfView.flickable.boundsBehavior = Flickable.StopAtBounds
-                            pdfView.flickable.maximumFlickVelocity = 2500
-                            pdfView.flickable.flickDeceleration = 1500
+                            pdfView.flickable.interactive = false
                         }
+                    }
+                }
+
+                // Transparent overlay — captures ALL finger touches anywhere
+                MouseArea {
+                    anchors.fill: parent
+                    z: 999
+                    propagateComposedEvents: true
+
+                    property real lastY: 0
+                    property bool dragging: false
+
+                    onPressed: (mouse) => {
+                        lastY = mouse.y
+                        dragging = true
+                        mouse.accepted = true
+                    }
+
+                    onPositionChanged: (mouse) => {
+                        if (!dragging || !pdfView.flickable) return
+                        var delta = mouse.y - lastY
+                        lastY = mouse.y
+                        var newY = pdfView.flickable.contentY - delta
+                        newY = Math.max(0, Math.min(newY,
+                            pdfView.flickable.contentHeight - pdfView.flickable.height))
+                        pdfView.flickable.contentY = newY
+                    }
+
+                    onReleased: {
+                        dragging = false
                     }
                 }
 
