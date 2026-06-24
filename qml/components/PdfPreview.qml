@@ -111,6 +111,13 @@ Popup {
                     focus: true
                     activeFocusOnTab: true
                     renderScale: 1.0
+
+                    Component.onCompleted: {
+                        if (pdfView.flickable) {
+                            pdfView.flickable.interactive = true
+                            pdfView.flickable.boundsBehavior = Flickable.DragAndOvershootBounds
+                        }
+                    }
                 }
 
                 MouseArea {
@@ -125,6 +132,9 @@ Popup {
                         lastY = mouse.y
                         dragging = true
                         mouse.accepted = true
+                        if (pdfView.flickable) {
+                            pdfView.flickable.cancelFlick()
+                        }
                     }
 
                     onPositionChanged: (mouse) => {
@@ -135,9 +145,10 @@ Popup {
                         newY = Math.max(0, Math.min(newY,
                             pdfView.flickable.contentHeight - pdfView.flickable.height))
                         pdfView.flickable.contentY = newY
+                        console.log("SET contentY to:", newY)
                     }
 
-                    onReleased: {
+                    onReleased: (mouse) => {
                         dragging = false
                     }
                 }
