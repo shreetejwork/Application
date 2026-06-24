@@ -104,26 +104,18 @@ Popup {
                     }
                 }
 
-                Flickable {
-                    id: flick
-
+                PdfMultiPageView {
+                    id: pdfView
                     anchors.fill: parent
+                    document: pdfDoc
 
-                    contentWidth: pdfView.width
-                    contentHeight: pdfView.height
+                    TapHandler {
+                        onTapped: console.log("Tapped")
+                    }
 
-                    clip: true
-
-                    boundsBehavior: Flickable.StopAtBounds
-
-                    PdfMultiPageView {
-                        id: pdfView
-
-                        width: flick.width
-
-                        document: pdfDoc
-
-                        renderScale: 1.0
+                    DragHandler {
+                        onActiveChanged:
+                            console.log("Dragging:", active)
                     }
                 }
 
