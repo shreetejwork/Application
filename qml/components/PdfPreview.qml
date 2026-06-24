@@ -111,16 +111,14 @@ Popup {
                     focus: true
                     activeFocusOnTab: true
                     renderScale: 1.0
-                }
 
-                // This makes finger drag work anywhere on the PDF
-                WheelHandler {
-                    id: wheelHandler
-                    target: pdfView
-                    acceptedDevices: PointerDevice.TouchScreen | PointerDevice.TouchPad | PointerDevice.Mouse
-                    acceptedButtons: Qt.NoButton
-                    property: "contentY"
-                    rotationScale: 4
+                    Component.onCompleted: {
+                        if (pdfView.flickable) {
+                            pdfView.flickable.interactive = true
+                            pdfView.flickable.flickableDirection = Flickable.VerticalFlick
+                            pdfView.flickable.boundsBehavior = Flickable.StopAtBounds
+                        }
+                    }
                 }
 
                 onWidthChanged: Qt.callLater(root.computeRenderScale)
