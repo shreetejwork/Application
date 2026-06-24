@@ -117,6 +117,8 @@ Popup {
                             pdfView.flickable.interactive = true
                             pdfView.flickable.flickableDirection = Flickable.VerticalFlick
                             pdfView.flickable.boundsBehavior = Flickable.StopAtBounds
+                            pdfView.flickable.maximumFlickVelocity = 2500
+                            pdfView.flickable.flickDeceleration = 1500
                         }
                     }
                 }
