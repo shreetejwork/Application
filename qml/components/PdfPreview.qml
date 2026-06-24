@@ -77,7 +77,7 @@ Popup {
                     Text {
                         text: "PDF Preview"
                         color: "white"
-                        font.pixelSize: pdfTypography.caption
+                        font.pixelSize: pdfTypography.body
 
                         Layout.alignment: Qt.AlignVCenter
                     }
@@ -91,7 +91,7 @@ Popup {
                 id: pdfContainer
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                color: "#ffffff"   // white bg like a real PDF viewer
+                color: "#ffffff"
                 clip: true
 
                 PdfDocument {
@@ -108,20 +108,23 @@ Popup {
                     id: pdfView
                     anchors.fill: parent
                     document: pdfDoc
+                    focus: true
+                    activeFocusOnTab: true
+                    renderScale: 1.0
+                }
 
-                    TapHandler {
-                        onTapped: console.log("Tapped")
-                    }
-
-                    DragHandler {
-                        onActiveChanged:
-                            console.log("Dragging:", active)
-                    }
+                // This makes finger drag work anywhere on the PDF
+                WheelHandler {
+                    id: wheelHandler
+                    target: pdfView
+                    acceptedDevices: PointerDevice.TouchScreen | PointerDevice.TouchPad | PointerDevice.Mouse
+                    acceptedButtons: Qt.NoButton
+                    property: "contentY"
+                    rotationScale: 4
                 }
 
                 onWidthChanged: Qt.callLater(root.computeRenderScale)
             }
-
             // ===== FOOTER =====
             Rectangle {
                 Layout.fillWidth: true
@@ -150,6 +153,7 @@ Popup {
                             anchors.centerIn: parent
                             text: "Close"
                             color: "white"
+                            font.pixelSize: pdfTypography.caption
 
                         }
 

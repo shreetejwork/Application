@@ -125,16 +125,16 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
 
-                            if (GlobalState.loggedInUserRole === "")
-                            {
-                                accessDeniedPopup.popupTitle = "Access Denied !"
+                            // if (GlobalState.loggedInUserRole === "")
+                            // {
+                            //     accessDeniedPopup.popupTitle = "Access Denied !"
 
-                                accessDeniedPopup.popupMessage =
-                                        "Please login first"
+                            //     accessDeniedPopup.popupMessage =
+                            //             "Please login first"
 
-                                accessDeniedPopup.open()
-                                return
-                            }
+                            //     accessDeniedPopup.open()
+                            //     return
+                            // }
 
                             navigateTo("Reports")
                         }
