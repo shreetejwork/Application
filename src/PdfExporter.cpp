@@ -12,6 +12,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QFile>
+#include <QPixmap>
 
 PdfExporter::PdfExporter(QObject *parent)
     : QObject(parent)
@@ -93,6 +94,12 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 
     QPainter painter(&writer);
 
+    QString logoPath =
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+        + "/Logo.png";
+
+    QPixmap logo(logoPath);
+
     const int pageWidth  = writer.width();
 
     const int rowHeight = 20;
@@ -108,15 +115,26 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 
     // ================= HEADER =================
     auto drawHeader = [&](int page, int totalPages)
+
     {
+
+        QRect logoRect(20, 10, 55, 55);
+
+        painter.drawPixmap(
+            logoRect,
+            logo.scaled(
+                logoRect.size(),
+                Qt::KeepAspectRatio,
+                Qt::SmoothTransformation));
+
         painter.setFont(QFont("Arial", 12, QFont::Bold));
-        painter.drawText(QRect(0, 20, pageWidth, 25),
+        painter.drawText(QRect(0, 25, pageWidth, 25),
                          Qt::AlignCenter,
                          "A&D Instruments (India) Pvt Ltd.");
 
         if (page == 0)
         {
-            painter.drawText(QRect(0, 45, pageWidth, 25),
+            painter.drawText(QRect(0, 50, pageWidth, 25),
                              Qt::AlignCenter,
                              "AUDIT TRAIL REPORT");
 
@@ -263,6 +281,12 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
 
     QPainter painter(&writer);
 
+    QString logoPath =
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+        + "/Logo.png";
+
+    QPixmap logo(logoPath);
+
     const int pageWidth  = writer.width();
     const int pageHeight = writer.height();
 
@@ -287,69 +311,158 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
     auto drawPageHeader = [&](int page)
     {
         const int marginL = 24;
-        const int marginR = pageWidth - 24;
-        int y = 16;
 
-        // ===== COMPANY TITLE =====
+        // =====================================================
+        // HEADER AREA
+        // =====================================================
+
+        const QRect logoRect(20, 10, 55, 55);
+
+        if (!logo.isNull())
+        {
+            painter.drawPixmap(
+                logoRect,
+                logo.scaled(
+                    logoRect.size(),
+                    Qt::KeepAspectRatio,
+                    Qt::SmoothTransformation));
+        }
+
+        // ---------------- Company Name ----------------
+
         painter.setFont(QFont("Arial", 11, QFont::Bold));
-        painter.drawText(QRect(0, y, pageWidth, 20),
-                         Qt::AlignCenter,
-                         "A&D Instruments (India) Pvt Ltd., Tablet Metal Detector (TMD)");
-        y += 22;
+
+        painter.drawText(
+            QRect(0, 15, pageWidth, 22),
+            Qt::AlignCenter,
+            "A&D Instruments (India) Pvt Ltd., Tablet Metal Detector (TMD)"
+            );
+
+
+        // ---------------- Report Title ----------------
+
+        painter.setFont(QFont("Arial", 10, QFont::Bold));
+
+        painter.drawText(
+            QRect(0, 38, pageWidth, 20),
+            Qt::AlignCenter,
+            "PRODUCT / BATCH REPORT"
+            );
+
+
+        // Everything below starts after logo area
+        int y = 78;
+
+
+        // =====================================================
+        // PAGE 1
+        // =====================================================
 
         if (page == 0)
         {
-            // ===== REPORT TITLE =====
-            painter.setFont(QFont("Arial", 10, QFont::Bold));
-            painter.drawText(QRect(0, y, pageWidth, 18),
-                             Qt::AlignCenter,
-                             "PRODUCT / BATCH REPORT");
-            y += 22;
-
             painter.setFont(QFont("Arial", 9));
-            painter.drawText(marginL, y, "File created on " + now);
-            y += 16;
 
-            // ===== MACHINE SUMMARY =====
+            painter.drawText(
+                marginL,
+                y,
+                "File created on " + now);
+
+            y += 20;
+
+
+            // ================= MACHINE SUMMARY =================
+
             painter.setFont(QFont("Arial", 10, QFont::Bold));
-            painter.drawText(marginL, y, "Machine Summary");
+
+            painter.drawText(
+                marginL,
+                y,
+                "Machine Summary");
+
             y += 6;
 
-            QRect machineBox(marginL, y, pageWidth - 2 * marginL, 60);
+
+            QRect machineBox(
+                marginL,
+                y,
+                pageWidth - 2 * marginL,
+                60);
+
             painter.drawRect(machineBox);
 
+
             painter.setFont(QFont("Arial", 9));
+
             int boxY = y + 16;
 
-            painter.drawText(marginL + 10, boxY,     "User:");
-            painter.drawText(marginL + 10, boxY + 16,"Location:");
-            painter.drawText(marginL + 10, boxY + 32,"Machine ID: PHMX");
+
+            painter.drawText(
+                marginL + 10,
+                boxY,
+                "User:");
+
+            painter.drawText(
+                marginL + 10,
+                boxY + 16,
+                "Location:");
+
+            painter.drawText(
+                marginL + 10,
+                boxY + 32,
+                "Machine ID: PHMX");
+
 
             y += machineBox.height() + 18;
 
-            // ===== PRODUCT / BATCH SUMMARY =====
+
+
+            // ================= PRODUCT SUMMARY =================
+
             painter.setFont(QFont("Arial", 10, QFont::Bold));
-            painter.drawText(marginL, y, "Product Summary / Batch Summary");
+
+            painter.drawText(
+                marginL,
+                y,
+                "Product Summary / Batch Summary");
+
             y += 6;
 
-            QRect productBox(marginL, y, pageWidth - 2 * marginL, 130);
+
+
+            QRect productBox(
+                marginL,
+                y,
+                pageWidth - 2 * marginL,
+                130);
+
             painter.drawRect(productBox);
+
+
 
             painter.setFont(QFont("Arial", 9));
 
-            int lineY = y + 16;
+
+            int lineY  = y + 16;
             int labelX = marginL + 10;
             int valueX = marginL + 150;
 
-            auto drawRow = [&](const QString &label, const QString &value) {
+
+            auto drawRow =
+                [&](const QString &label,
+                    const QString &value)
+            {
                 painter.drawText(labelX, lineY, label);
                 painter.drawText(valueX, lineY, value);
+
                 lineY += 16;
             };
 
-            QString endText = (ended == "---" || ended.isEmpty())
-                                  ? "Batch is still running...."
-                                  : ended;
+
+            QString endText =
+                (ended == "---" || ended.isEmpty())
+                    ? "Batch is still running...."
+                    : ended;
+
 
             drawRow("Product Loaded on:", started);
             drawRow("Product loaded by:", "Machine");
@@ -359,43 +472,91 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
             drawRow("Batch Number:", batchName);
             drawRow("Batch End Time:", endText);
 
-            // Page number aligned right
-            painter.drawText(pageWidth - 140, y + productBox.height() - 6,
-                             "Page: 1 / " + QString::number(totalPages));
+
+
+            // Page number
+
+            painter.drawText(
+                pageWidth - 140,
+                y + productBox.height() - 6,
+                "Page: 1 / " + QString::number(totalPages));
+
+
 
             y += productBox.height() + 18;
 
-            // ===== REJECTION SUMMARY =====
+
+
+            // ================= REJECTION SUMMARY =================
+
             painter.setFont(QFont("Arial", 10, QFont::Bold));
-            painter.drawText(marginL, y, "Rejection Summary");
+
+            painter.drawText(
+                marginL,
+                y,
+                "Rejection Summary");
+
             y += 6;
 
-            QRect rejBox(marginL, y, pageWidth - 2 * marginL, 40);
+
+
+            QRect rejBox(
+                marginL,
+                y,
+                pageWidth - 2 * marginL,
+                40);
+
             painter.drawRect(rejBox);
 
+
+
             int totalRej = 0;
+
             for (const QVariant &v : rejectionData)
                 totalRej += v.toMap()["rejectCount"].toInt();
 
+
+
             painter.setFont(QFont("Arial", 9));
-            painter.drawText(marginL + 10, y + 24,
-                             "Total Rejection Count: " + QString::number(totalRej));
+
+            painter.drawText(
+                marginL + 10,
+                y + 24,
+                "Total Rejection Count: "
+                    + QString::number(totalRej));
         }
+
+
+
+        // =====================================================
+        // DETAIL PAGES
+        // =====================================================
+
         else
         {
-            // ===== DETAIL PAGE HEADER =====
             painter.setFont(QFont("Arial", 10, QFont::Bold));
-            painter.drawText(QRect(0, y, pageWidth, 18),
-                             Qt::AlignCenter,
-                             "Rejection Details");
-            y += 20;
+
+            painter.drawText(
+                QRect(0, 78, pageWidth, 18),
+                Qt::AlignCenter,
+                "Rejection Details");
+
 
             painter.setFont(QFont("Arial", 9));
-            painter.drawText(marginL, y, "File created on " + now);
 
-            painter.drawText(pageWidth - 150, y,
-                             "Page: " + QString::number(page + 1) +
-                                 " / " + QString::number(totalPages));
+            painter.drawText(
+                marginL,
+                100,
+                "File created on " + now);
+
+
+            painter.drawText(
+                pageWidth - 150,
+                100,
+                "Page: "
+                    + QString::number(page + 1)
+                    + " / "
+                    + QString::number(totalPages));
         }
     };
 
