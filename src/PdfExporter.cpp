@@ -1,18 +1,28 @@
 #include "PdfExporter.h"
 
-#include <QPdfWriter>
-#include <QPainter>
-#include <QPageSize>
-#include <QStandardPaths>
-#include <QDir>
-#include <QFileInfo>
-#include <QDateTime>
-#include <QDebug>
+
 
 #include <QDesktopServices>
 #include <QUrl>
 #include <QFile>
+
+#include <QApplication>
+#include <QPdfWriter>
+#include <QPainter>
+#include <QFont>
+#include <QFontDatabase>
 #include <QPixmap>
+#include <QStandardPaths>
+#include <QDateTime>
+#include <QDir>
+#include <QFileInfo>
+#include <QVariantList>
+#include <QVariantMap>
+#include <QStringList>
+#include <QRect>
+#include <QPageSize>
+#include <QMarginsF>
+#include <QDebug>
 
 PdfExporter::PdfExporter(QObject *parent)
     : QObject(parent)
@@ -74,180 +84,327 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
                                       const QString &toDate,
                                       const QString &filePath)
 {
+    // ── PATH SETUP ──────────────────────────────────────────────────────────
     QString path = filePath;
-
-    //  FORCE SAVE INSIDE REPORTS FOLDER
     if (path.isEmpty()) {
-        QString ts = QDateTime::currentDateTime().toString("dd-MM-yyyy_HH-mm-ss");
-
+        QString ts     = QDateTime::currentDateTime().toString("dd-MM-yyyy_HH-mm-ss");
         QString folder = getReportsFolderPath();
-
         path = folder + "/Audit_Report_" + ts + ".pdf";
     }
-
     QDir().mkpath(QFileInfo(path).absolutePath());
 
+    // ── WRITER ──────────────────────────────────────────────────────────────
     QPdfWriter writer(path);
     writer.setPageSize(QPageSize(QPageSize::A4));
     writer.setResolution(96);
-    writer.setPageMargins(QMarginsF(15,15,15,15));
+    // No margins on writer — we control all layout manually
+    writer.setPageMargins(QMarginsF(0, 0, 0, 0));
 
     QPainter painter(&writer);
 
-    QString logoPath =
-        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-        + "/Logo.png";
+    // ── FONT (Roboto Condensed) ──────────────────────────────────────────────
+    // Load from app resources or system; fall back to Arial gracefully
+    int fontId = QFontDatabase::addApplicationFont(":/fonts/RobotoCondensed-Regular.ttf");
+    int fontBoldId = QFontDatabase::addApplicationFont(":/fonts/RobotoCondensed-Bold.ttf");
+    QString fontFamily = "Arial";
+    if (fontId != -1) {
+        QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+        if (!families.isEmpty()) fontFamily = families.first();
+    }
 
+    auto fontR  = [&](int pt) { return QFont(fontFamily, pt, QFont::Normal); };
+    auto fontB  = [&](int pt) { return QFont(fontFamily, pt, QFont::Bold); };
+
+    // ── LOGO ────────────────────────────────────────────────────────────────
+    QString logoPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                       + "/Logo.png";
     QPixmap logo(logoPath);
 
-    auto drawLogo = [&](int pageWidth)
-    {
-        if (logo.isNull())
-            return;
+    // ── PAGE GEOMETRY ───────────────────────────────────────────────────────
+    const int pageW  = writer.width();
+    const int pageH  = writer.height();
 
-        const int logoW = 150;
-        const int logoH = 65;
-        const int marginRight = 15;
-        const int top = 10;
-        const int padding = 4;
+    const int marginL = 40;   // left margin
+    const int marginR = 40;   // right margin
+    const int marginT = 20;   // top margin
+    const int marginB = 30;   // bottom margin
 
-        QRect logoRect(
-            pageWidth - logoW - marginRight,
-            top,
-            logoW,
-            logoH);
+    const int contentW = pageW - marginL - marginR;
 
-        QSize scaledSize = logo.size().scaled(
-            logoRect.size() - QSize(2 * padding, 2 * padding),
-            Qt::KeepAspectRatio);
+    // ── COLUMN WIDTHS (sum must equal contentW) ──────────────────────────────
+    // S/No | Date | Time | User | Old | New | Details
+    const int nCols = 7;
+    int colW[nCols];
+    colW[0] = 45;    // S/No
+    colW[1] = 80;    // Date
+    colW[2] = 65;    // Time
+    colW[3] = 80;    // User
+    colW[4] = 90;    // Old Value
+    colW[5] = 90;    // New Value
+    colW[6] = contentW - (colW[0]+colW[1]+colW[2]+colW[3]+colW[4]+colW[5]); // Details
 
-        QRect target(
-            logoRect.center().x() - scaledSize.width() / 2,
-            logoRect.center().y() - scaledSize.height() / 2,
-            scaledSize.width(),
-            scaledSize.height());
+    const int rowH      = 22;   // data row height
+    const int thH       = 24;   // table header row height
 
+    // ── VERTICAL ZONES ──────────────────────────────────────────────────────
+    // We'll calculate header/footer heights dynamically
+
+    const int lineThick     = 2;   // bold divider lines (px at 96dpi)
+    const int thinLine      = 1;   // table cell borders (still visible at 1px on 96dpi)
+
+    // ── PEN HELPERS ─────────────────────────────────────────────────────────
+    auto setPen = [&](int width, QColor color = Qt::black) {
+        QPen p(color);
+        p.setWidth(width);
+        painter.setPen(p);
+    };
+
+    // ── LOGO DRAW HELPER ────────────────────────────────────────────────────
+    auto drawLogo = [&]() {
+        if (logo.isNull()) return;
+        const int logoW = 130;
+        const int logoH = 55;
+        QRect logoRect(pageW - marginR - logoW, marginT, logoW, logoH);
+        const int pad = 4;
+        QSize scaled = logo.size().scaled(logoRect.size() - QSize(2*pad, 2*pad),
+                                          Qt::KeepAspectRatio);
+        QRect target(logoRect.center().x() - scaled.width()/2,
+                     logoRect.center().y() - scaled.height()/2,
+                     scaled.width(), scaled.height());
         painter.drawPixmap(target, logo);
     };
 
-    const int pageWidth  = writer.width();
+    const int headerFullH    = 148;
+    const int headerCompactH = 65;
+    const int footerH        = 38;
 
-    const int rowHeight = 20;
-    const int yStart    = 160;
-
-    const int colWidths[] = {
-        50, 90, 80, 90, 100, 100,
-        pageWidth - 510
+    auto rowsPerPage = [&](int pg) -> int {
+        int hdrH = (pg == 0) ? headerFullH : headerCompactH;
+        int available = pageH - marginT - hdrH - footerH - marginB - thH;
+        return available / rowH;
     };
 
     int totalRows = data.size();
-    QString now = QDateTime::currentDateTime().toString("dd/MM/yyyy HH:mm:ss");
-
-    // ================= HEADER =================
-    auto drawHeader = [&](int page, int totalPages)
-
+    int totalPages = 0;
     {
-
-       drawLogo(pageWidth);
-
-        painter.setFont(QFont("Arial",12,QFont::Bold));
-
-        painter.drawText(
-            QRect(0,20,pageWidth,20),
-            Qt::AlignCenter,
-            "A&D Instruments (India) Pvt Ltd.");
-
-        if (page == 0)
-        {
-            painter.drawText(
-                QRect(0,45,pageWidth,20),
-                Qt::AlignCenter,
-                "AUDIT TRAIL REPORT");
-
-            painter.setFont(QFont("Arial", 9));
-
-            painter.drawText(20, 90, "From: " + fromDate);
-            painter.drawText(pageWidth/3, 90, "Customer: ---");
-            painter.drawText(2*pageWidth/3, 90, "Machine ID: PHMX");
-
-            painter.drawText(20, 110, "To: " + toDate);
-            painter.drawText(pageWidth/3, 110, "Location: ---");
-            painter.drawText(2*pageWidth/3, 110,
-                             "Page: " + QString::number(page+1) + "/" + QString::number(totalPages));
-
-            painter.drawText(20, 130, "File Created: " + now);
+        int counted = 0;
+        int pg = 0;
+        if (totalRows == 0) {
+            totalPages = 1;
+        } else {
+            while (counted < totalRows) {
+                counted += rowsPerPage(pg);
+                pg++;
+            }
+            totalPages = pg;
         }
-        else
-        {
-            painter.setFont(QFont("Arial", 9));
-            painter.drawText(20, 90, "Machine ID: PHMX");
-            painter.drawText(pageWidth/3, 90, "Generated: " + now);
-            painter.drawText(2*pageWidth/3, 90,
-                             "Page: " + QString::number(page+1) + "/" + QString::number(totalPages));
-        }
+    }
+
+    // ── DRAW HEADER (full — page 0) ─────────────────────────────────────────
+    auto drawHeaderFull = [&](int pageNum) {
+        int y = marginT;
+
+        // Company name — centered in content area (not counting logo space)
+        painter.setFont(fontB(12));
+        setPen(1);
+        painter.drawText(QRect(marginL, y, contentW, 22),
+                         Qt::AlignHCenter | Qt::AlignVCenter,
+                         "A&D Instruments (India) Pvt. Ltd.");
+        y += 22;
+
+        painter.setFont(fontB(11));
+        painter.drawText(QRect(marginL, y, contentW, 20),
+                         Qt::AlignHCenter | Qt::AlignVCenter,
+                         "AUDIT TRAIL REPORT");
+        y += 20;
+
+        painter.setFont(fontR(9));
+        painter.drawText(QRect(marginL, y, contentW, 16),
+                         Qt::AlignHCenter | Qt::AlignVCenter,
+                         "(Metal Detector)");
+        y += 16;
+
+        drawLogo();
+
+        // Thin divider under title block
+        setPen(lineThick);
+        painter.drawLine(marginL, y + 4, pageW - marginR, y + 4);
+        y += 12;
+
+        // Meta grid: 3 columns x 2 rows
+        painter.setFont(fontR(9));
+        setPen(1);
+
+        int col1x = marginL;
+        int col2x = marginL + contentW / 3;
+        int col3x = marginL + 2 * contentW / 3;
+        int metaLineH = 18;
+
+        // Row 1
+        auto drawMeta = [&](int x, int yy, const QString &label, const QString &val) {
+            painter.setFont(fontB(9));
+            painter.drawText(x, yy, label);
+            painter.setFont(fontR(9));
+            painter.drawText(x + painter.fontMetrics().horizontalAdvance(label) + 4, yy, val);
+        };
+
+        drawMeta(col1x, y + metaLineH, "From:", fromDate);
+        drawMeta(col2x, y + metaLineH, "Customer:", "---");
+        drawMeta(col3x, y + metaLineH, "Machine ID:", "PHMX");
+
+        QString now = QDateTime::currentDateTime().toString("dd/MM/yyyy @ HH:mm:ss");
+        drawMeta(col1x, y + 2*metaLineH, "To:", toDate);
+        drawMeta(col2x, y + 2*metaLineH, "Location:", "---");
+        drawMeta(col3x, y + 2*metaLineH, "File Created:", now);
+
+        drawMeta(col1x, y + 3*metaLineH, "Serial No:", "---");
+
+        y += 3*metaLineH + 6;
+
+        // Bold divider closing header
+        setPen(lineThick);
+        painter.drawLine(marginL, y + 4, pageW - marginR, y + 4);
+        y += 12;
+
+        return y; // returns Y where table should start
     };
 
-    // ================= FOOTER =================
-    auto drawFooter = [&]()
-    {
-        painter.setFont(QFont("Arial", 9, QFont::Bold));
+    // ── DRAW HEADER (compact — subsequent pages) ──────────────────────────────
+    auto drawHeaderCompact = [&](int pageNum) {
+        int y = marginT;
 
-        QRect pageRect = writer.pageLayout().paintRectPixels(writer.resolution());
+        painter.setFont(fontB(11));
+        setPen(1);
+        painter.drawText(QRect(marginL, y, contentW, 22),
+                         Qt::AlignHCenter | Qt::AlignVCenter,
+                         "A&D Instruments (India) Pvt. Ltd.");
+        y += 22;
 
-        int left   = pageRect.left();
-        int right  = pageRect.right();
-        int bottom = pageRect.bottom();
+        drawLogo();
 
-        int y = bottom - 10;
+        painter.setFont(fontR(9));
+        QString now = QDateTime::currentDateTime().toString("dd/MM/yyyy HH:mm:ss");
 
-        painter.drawText(left, y, "Generated By: ADMIN");
-        painter.drawText(right - 200, y, "Approved By: ADMIN");
+        int col1x = marginL;
+        int col2x = marginL + contentW / 3;
+        int col3x = marginL + 2 * contentW / 3;
+
+        painter.setFont(fontB(9));
+        painter.drawText(col1x, y + 16, "Machine ID:");
+        painter.setFont(fontR(9));
+        painter.drawText(col1x + 70, y + 16, "PHMX");
+
+        painter.setFont(fontB(9));
+        painter.drawText(col2x, y + 16, "Generated:");
+        painter.setFont(fontR(9));
+        painter.drawText(col2x + 65, y + 16, now);
+
+        painter.setFont(fontB(9));
+        painter.drawText(col3x, y + 16, "Serial No:");
+        painter.setFont(fontR(9));
+        painter.drawText(col3x + 65, y + 16, "---");
+
+        y += 22;
+
+        setPen(lineThick);
+        painter.drawLine(marginL, y + 4, pageW - marginR, y + 4);
+        y += 12;
+
+        return y;
     };
 
+    // ── DRAW TABLE HEADER ROW ─────────────────────────────────────────────────
+    QStringList headers = {"S/No", "Date", "Time", "User", "Old Value", "New Value", "Details / Remarks"};
+
+    auto drawTableHeader = [&](int y) {
+        painter.setFont(fontB(9));
+        setPen(thinLine);
+
+        // Light gray fill for table header
+        painter.fillRect(marginL, y, contentW, thH, QColor(220, 220, 220));
+
+        int x = marginL;
+        for (int i = 0; i < nCols; ++i) {
+            // cell border
+            setPen(2);
+            painter.drawRect(x, y, colW[i], thH);
+            setPen(1);
+            painter.setFont(fontB(9));
+            painter.drawText(QRect(x + 3, y, colW[i] - 6, thH),
+                             Qt::AlignVCenter | Qt::AlignHCenter,
+                             headers[i]);
+            x += colW[i];
+        }
+        return y + thH;
+    };
+
+    // ── DRAW FOOTER ───────────────────────────────────────────────────────────
+    auto drawFooter = [&](int pageNum) {
+        int footerY = pageH - marginB - 22;
+
+        // Bold divider above footer
+        setPen(lineThick);
+        painter.drawLine(marginL, footerY - 8, pageW - marginR, footerY - 8);
+
+        setPen(1);
+
+        // Left: Generated By / Approved By
+        painter.setFont(fontB(9));
+        painter.drawText(marginL, footerY + 12,
+                         "Generated By: A - Admin      Approved By: A - Admin");
+
+        // Right: Audit Trail Report | Page No
+        QString rightText = "Audit Trail Report";
+        QString pageText  = QString("Page No: %1 / %2")
+                               .arg(pageNum + 1)
+                               .arg(totalPages);
+
+        QFontMetrics fm(fontB(9));
+        int pageTextW = fm.horizontalAdvance(pageText);
+        int sepX      = pageW - marginR - pageTextW - 16;
+
+        painter.drawText(QRect(marginL, footerY, contentW - pageTextW - 20, 22),
+                         Qt::AlignRight | Qt::AlignVCenter,
+                         rightText);
+
+        // Vertical separator
+        setPen(2);
+        painter.drawLine(sepX, footerY + 2, sepX, footerY + 18);
+
+        setPen(1);
+        painter.setFont(fontB(9));
+        painter.drawText(pageW - marginR - pageTextW, footerY + 12, pageText);
+    };
+
+    // ── MAIN RENDER LOOP ──────────────────────────────────────────────────────
     int dataIndex = 0;
-    int page = 0;
+    int page      = 0;
 
-    while (dataIndex < totalRows || page == 0)
-    {
+    while (dataIndex < totalRows || page == 0) {
         if (page > 0)
             writer.newPage();
 
-        int totalPagesEstimate =
-            (totalRows == 0) ? 1 : (totalRows / 45) + 1;
+        // Draw header, get Y where table starts
+        int tableTop;
+        if (page == 0)
+            tableTop = drawHeaderFull(page);
+        else
+            tableTop = drawHeaderCompact(page);
 
-        drawHeader(page, totalPagesEstimate);
+        // Draw table column header
+        int y = drawTableHeader(tableTop);
 
-        int y = yStart;
+        // Calculate footer top so rows don't overlap it
+        int footerTopY = pageH - marginB - 22 - 12; // footer divider position
 
-        QRect pageRect = writer.pageLayout().paintRectPixels(writer.resolution());
-        int footerTopY = pageRect.bottom() - 40;
+        // Draw data rows
+        painter.setFont(fontR(9));
 
-        // ===== TABLE HEADER =====
-        QStringList headers = {"S/No","Date","Time","User","Old","New","Details"};
-
-        painter.setFont(QFont("Arial", 9, QFont::Bold));
-
-        int x = 0;
-        for (int i = 0; i < headers.size(); ++i)
-        {
-            painter.drawRect(x, y, colWidths[i], rowHeight);
-            painter.drawText(QRect(x, y, colWidths[i], rowHeight),
-                             Qt::AlignCenter, headers[i]);
-            x += colWidths[i];
-        }
-
-        y += rowHeight;
-
-        painter.setFont(QFont("Arial", 9));
-
-        // ===== DATA ROWS =====
-        while (dataIndex < totalRows)
-        {
-            if (y + rowHeight > footerTopY)
+        while (dataIndex < totalRows) {
+            if (y + rowH > footerTopY)
                 break;
 
             QVariantMap m = data[dataIndex].toMap();
-
             QStringList row = {
                 m["sr"].toString(),
                 m["date"].toString(),
@@ -258,24 +415,30 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
                 m["remark"].toString()
             };
 
-            int x = 0;
+            // Alternating row background
+            if (dataIndex % 2 == 1)
+                painter.fillRect(marginL, y, contentW, rowH, QColor(247, 247, 247));
 
-            for (int c = 0; c < row.size(); ++c)
-            {
-                painter.drawRect(x, y, colWidths[c], rowHeight);
+            int x = marginL;
+            for (int c = 0; c < nCols; ++c) {
+                setPen(2);
+                painter.drawRect(x, y, colW[c], rowH);
+                setPen(1);
+                painter.setFont(fontR(9));
 
-                painter.drawText(QRect(x+4, y, colWidths[c]-8, rowHeight),
-                                 Qt::AlignVCenter | Qt::AlignLeft,
-                                 row[c]);
+                Qt::Alignment align = (c == 0)
+                                          ? (Qt::AlignVCenter | Qt::AlignHCenter)
+                                          : (Qt::AlignVCenter | Qt::AlignLeft);
 
-                x += colWidths[c];
+                painter.drawText(QRect(x + 4, y, colW[c] - 8, rowH), align, row[c]);
+                x += colW[c];
             }
 
-            y += rowHeight;
+            y += rowH;
             dataIndex++;
         }
 
-        drawFooter();
+        drawFooter(page);
         page++;
     }
 
@@ -286,440 +449,434 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 }
 
 // ================= EXPORT BATCH / PRODUCT PDF =================
-QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
+QString PdfExporter::exportBatchToPdf(const QVariantMap  &batchData,
                                       const QVariantList &rejectionData,
-                                      const QString &filePath)
+                                      const QString      &filePath)
 {
+    // ── PATH SETUP ───────────────────────────────────────────────────────────
     QString path = filePath;
-
     if (path.isEmpty()) {
         QString ts     = QDateTime::currentDateTime().toString("dd-MM-yyyy_HH-mm-ss");
         QString folder = getReportsFolderPath();
-        path = folder + "/Batch_Report" + ts + ".pdf";
+        path = folder + "/Batch_Report_" + ts + ".pdf";
     }
-
     QDir().mkpath(QFileInfo(path).absolutePath());
 
+    // ── WRITER ───────────────────────────────────────────────────────────────
     QPdfWriter writer(path);
     writer.setPageSize(QPageSize(QPageSize::A4));
     writer.setResolution(96);
-    writer.setPageMargins(QMarginsF(15, 15, 15, 15));
+    writer.setPageMargins(QMarginsF(0, 0, 0, 0));
 
     QPainter painter(&writer);
 
-    QString logoPath =
-        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-        + "/Logo.png";
+    // ── FONT ─────────────────────────────────────────────────────────────────
+    int fontId = QFontDatabase::addApplicationFont(":/fonts/RobotoCondensed-Regular.ttf");
+    QFontDatabase::addApplicationFont(":/fonts/RobotoCondensed-Bold.ttf");
+    QString fontFamily = "Arial";
+    if (fontId != -1) {
+        QStringList fams = QFontDatabase::applicationFontFamilies(fontId);
+        if (!fams.isEmpty()) fontFamily = fams.first();
+    }
+    auto fontR = [&](int pt) { return QFont(fontFamily, pt, QFont::Normal); };
+    auto fontB = [&](int pt) { return QFont(fontFamily, pt, QFont::Bold);   };
 
+    // ── LOGO ─────────────────────────────────────────────────────────────────
+    QString logoPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
+                       + "/Logo.png";
     QPixmap logo(logoPath);
-    auto drawLogo = [&](int pageWidth)
-    {
-        if (logo.isNull())
-            return;
 
-        const int logoW = 150;
-        const int logoH = 65;
-        const int marginRight = 15;
-        const int top = 10;
-        const int padding = 4;
+    // ── PAGE GEOMETRY ────────────────────────────────────────────────────────
+    const int pageW    = writer.width();
+    const int pageH    = writer.height();
+    const int marginL  = 40;
+    const int marginR  = 40;
+    const int marginT  = 20;
+    const int marginB  = 30;
+    const int contentW = pageW - marginL - marginR;
 
-        QRect logoRect(
-            pageWidth - logoW - marginRight,
-            top,
-            logoW,
-            logoH);
+    // ── TABLE GEOMETRY ───────────────────────────────────────────────────────
+    const int rowH  = 22;
+    const int thH   = 24;
+    const int nCols = 4;
+    int colW[nCols];
+    colW[0] = 55;
+    colW[1] = 110;
+    colW[2] = 100;
+    colW[3] = contentW - colW[0] - colW[1] - colW[2];
 
-        QSize scaledSize = logo.size().scaled(
-            logoRect.size() - QSize(2 * padding, 2 * padding),
-            Qt::KeepAspectRatio);
+    const int lineThick = 2;
 
-        QRect target(
-            logoRect.center().x() - scaledSize.width() / 2,
-            logoRect.center().y() - scaledSize.height() / 2,
-            scaledSize.width(),
-            scaledSize.height());
-
-        painter.drawPixmap(target, logo);
+    // ── PEN HELPER ───────────────────────────────────────────────────────────
+    auto setPen = [&](int w, QColor c = Qt::black) {
+        QPen p(c); p.setWidth(w); painter.setPen(p);
     };
 
-    const int pageWidth  = writer.width();
-    const int pageHeight = writer.height();
+    // ── LOGO HELPER ──────────────────────────────────────────────────────────
+    auto drawLogo = [&]() {
+        if (logo.isNull()) return;
+        const int lw = 130, lh = 52, pad = 4;
+        QRect lr(pageW - marginR - lw, marginT, lw, lh);
+        QSize sc = logo.size().scaled(lr.size() - QSize(2*pad, 2*pad), Qt::KeepAspectRatio);
+        QRect tg(lr.center().x() - sc.width()/2,
+                 lr.center().y() - sc.height()/2,
+                 sc.width(), sc.height());
+        painter.drawPixmap(tg, logo);
+    };
 
-    QString now = QDateTime::currentDateTime().toString("dd/MM/yyyy @ HH:mm:ss");
-
-    // ===== Extract batch fields =====
-    QString sno         = batchData["sno"].toString();
+    // ── BATCH DATA ───────────────────────────────────────────────────────────
+    QString now         = QDateTime::currentDateTime().toString("dd/MM/yyyy @ HH:mm:ss");
     QString batchName   = batchData["batch"].toString();
     QString productName = batchData["product"].toString();
     QString started     = batchData["started"].toString();
     QString ended       = batchData["ended"].toString();
     QString productCode = batchData.value("productCode", "default code").toString();
     QString productSno  = batchData.value("productSno",  "01-001").toString();
-
-    int totalPages = (rejectionData.size() == 0)
-                         ? 1
-                         : 1 + (rejectionData.size() / 50) + (rejectionData.size() % 50 > 0 ? 1 : 0);
-
-    // =====================================================
-    // ===== HELPER: Draw page header (all pages)    =====
-    // =====================================================
-    auto drawPageHeader = [&](int page)
-    {
-        const int marginL = 24;
-
-        // =====================================================
-        // HEADER AREA
-        // =====================================================
-
-        drawLogo(pageWidth);
-
-        painter.setFont(QFont("Arial",12,QFont::Bold));
-
-
-        // ---------------- Company Name ----------------
-
-        painter.setFont(QFont("Arial", 11, QFont::Bold));
-
-        painter.drawText(
-            QRect(0,20,pageWidth,20),
-            Qt::AlignCenter,
-            "A&D Instruments (India) Pvt Ltd.");
-
-        // ---------------- Report Title ----------------
-
-        painter.setFont(QFont("Arial", 10, QFont::Bold));
-
-        painter.drawText(
-            QRect(0, 38, pageWidth, 20),
-            Qt::AlignCenter,
-            "PRODUCT / BATCH REPORT"
-            );
-
-
-        // Everything below starts after logo area
-        int y = 78;
-
-
-        // =====================================================
-        // PAGE 1
-        // =====================================================
-
-        if (page == 0)
-        {
-            painter.setFont(QFont("Arial", 9));
-
-            painter.drawText(
-                marginL,
-                y,
-                "File created on " + now);
-
-            y += 20;
-
-
-            // ================= MACHINE SUMMARY =================
-
-            painter.setFont(QFont("Arial", 10, QFont::Bold));
-
-            painter.drawText(
-                marginL,
-                y,
-                "Machine Summary");
-
-            y += 6;
-
-
-            QRect machineBox(
-                marginL,
-                y,
-                pageWidth - 2 * marginL,
-                60);
-
-            painter.drawRect(machineBox);
-
-
-            painter.setFont(QFont("Arial", 9));
-
-            int boxY = y + 16;
-
-
-            painter.drawText(
-                marginL + 10,
-                boxY,
-                "User:");
-
-            painter.drawText(
-                marginL + 10,
-                boxY + 16,
-                "Location:");
-
-            painter.drawText(
-                marginL + 10,
-                boxY + 32,
-                "Machine ID: PHMX");
-
-
-            y += machineBox.height() + 18;
-
-
-
-            // ================= PRODUCT SUMMARY =================
-
-            painter.setFont(QFont("Arial", 10, QFont::Bold));
-
-            painter.drawText(
-                marginL,
-                y,
-                "Product Summary / Batch Summary");
-
-            y += 6;
-
-
-
-            QRect productBox(
-                marginL,
-                y,
-                pageWidth - 2 * marginL,
-                130);
-
-            painter.drawRect(productBox);
-
-
-
-            painter.setFont(QFont("Arial", 9));
-
-
-            int lineY  = y + 16;
-            int labelX = marginL + 10;
-            int valueX = marginL + 150;
-
-
-            auto drawRow =
-                [&](const QString &label,
-                    const QString &value)
-            {
-                painter.drawText(labelX, lineY, label);
-                painter.drawText(valueX, lineY, value);
-
-                lineY += 16;
-            };
-
-
-            QString endText =
-                (ended == "---" || ended.isEmpty())
-                    ? "Batch is still running...."
-                    : ended;
-
-
-            drawRow("Product Loaded on:", started);
-            drawRow("Product loaded by:", "Machine");
-            drawRow("Product S/No:", productSno);
-            drawRow("Product Name:", productName);
-            drawRow("Product Code:", productCode);
-            drawRow("Batch Number:", batchName);
-            drawRow("Batch End Time:", endText);
-
-
-
-            // Page number
-
-            painter.drawText(
-                pageWidth - 140,
-                y + productBox.height() - 6,
-                "Page: 1 / " + QString::number(totalPages));
-
-
-
-            y += productBox.height() + 18;
-
-
-
-            // ================= REJECTION SUMMARY =================
-
-            painter.setFont(QFont("Arial", 10, QFont::Bold));
-
-            painter.drawText(
-                marginL,
-                y,
-                "Rejection Summary");
-
-            y += 6;
-
-
-
-            QRect rejBox(
-                marginL,
-                y,
-                pageWidth - 2 * marginL,
-                40);
-
-            painter.drawRect(rejBox);
-
-
-
-            int totalRej = 0;
-
-            for (const QVariant &v : rejectionData)
-                totalRej += v.toMap()["rejectCount"].toInt();
-
-
-
-            painter.setFont(QFont("Arial", 9));
-
-            painter.drawText(
-                marginL + 10,
-                y + 24,
-                "Total Rejection Count: "
-                    + QString::number(totalRej));
+    QString totalDur    = batchData.value("totalDuration",  "---").toString();
+    QString runDur      = batchData.value("runDuration",    "---").toString();
+    QString pauseDur    = batchData.value("pauseDuration",  "---").toString();
+    QString serialNo = batchData.value("serialNo", "---").toString();
+
+    int totalRej = 0;
+    for (const QVariant &v : rejectionData)
+        totalRej += v.toMap()["rejectCount"].toInt();
+
+    QString endText = (ended == "---" || ended.isEmpty())
+                          ? "Batch is still running...."
+                          : ended;
+
+    // ── FOOTER ZONE ──────────────────────────────────────────────────────────
+    const int footerDivY  = pageH - marginB - 28;
+    const int footerTextY = pageH - marginB - 10;
+
+    // ── DRAW FOOTER ──────────────────────────────────────────────────────────
+    auto drawFooter = [&](int pageNum, int totalPages) {
+        // divider
+        setPen(lineThick);
+        painter.drawLine(marginL, footerDivY, pageW - marginR, footerDivY);
+
+        painter.setFont(fontB(9));
+        setPen(1);
+
+        // left: Generated By / Approved By
+        painter.drawText(marginL, footerTextY,
+                         "Generated By: A - Admin      Approved By: A - Admin");
+
+        // right: "Batch Report  |  Page No: X / Y"
+        // Build strings and measure them to avoid overlap
+        QString repLabel = "Batch Report";
+        QString pageStr  = QString("Page No: %1 / %2").arg(pageNum + 1).arg(totalPages);
+
+        QFontMetrics fm = painter.fontMetrics();
+        int repLabelW = fm.horizontalAdvance(repLabel);
+        int pageStrW  = fm.horizontalAdvance(pageStr);
+        int sepW      = 10;   // gap each side of separator
+        int sepLineW  = 2;
+
+        // total right block width = repLabelW + sepW + sepLineW + sepW + pageStrW
+        int blockW   = repLabelW + sepW + sepLineW + sepW + pageStrW;
+        int blockX   = pageW - marginR - blockW;
+
+        painter.drawText(blockX, footerTextY, repLabel);
+
+        int sepX = blockX + repLabelW + sepW;
+        setPen(lineThick);
+        painter.drawLine(sepX, footerDivY + 4, sepX, footerTextY);
+
+        setPen(1);
+        painter.setFont(fontB(9));
+        painter.drawText(sepX + sepW, footerTextY, pageStr);
+    };
+
+    // ── DRAW FULL HEADER (page 0) ─────────────────────────────────────────
+    auto drawHeaderFull = [&]() -> int {
+        int y = marginT;
+        drawLogo();
+
+        setPen(1);
+        painter.setFont(fontB(12));
+        painter.drawText(QRect(marginL, y, contentW, 22),
+                         Qt::AlignHCenter | Qt::AlignVCenter,
+                         "A&D Instruments (India) Pvt. Ltd.");
+        y += 22;
+
+        painter.setFont(fontB(10));
+        painter.drawText(QRect(marginL, y, contentW, 20),
+                         Qt::AlignHCenter | Qt::AlignVCenter,
+                         "PRODUCT / BATCH REPORT");
+        y += 20;
+
+        // ensure divider clears the logo (logo top = marginT, height = 52, + 6px gap)
+        int logoBottom = marginT + 52 + 6;
+        if (y + 3 < logoBottom)
+            y = logoBottom;
+
+        // bold divider under title block
+        setPen(lineThick);
+        painter.drawLine(marginL, y + 3, pageW - marginR, y + 3);
+        y += 10;
+
+        // file created
+        setPen(1);
+        painter.setFont(fontR(9));
+        painter.drawText(marginL, y + 12, "File created on: " + now);
+        y += 20;
+
+        return y;
+    };
+
+    // ── DRAW COMPACT HEADER (page 1+) ────────────────────────────────────
+    auto drawHeaderCompact = [&](int pageNum, int totalPages) -> int {
+        Q_UNUSED(totalPages)
+        int y = marginT;
+        drawLogo();
+
+        setPen(1);
+        painter.setFont(fontB(11));
+        painter.drawText(QRect(marginL, y, contentW, 22),
+                         Qt::AlignHCenter | Qt::AlignVCenter,
+                         "A&D Instruments (India) Pvt. Ltd.");
+        y += 22;
+
+        // ensure divider clears the logo
+        int logoBottom = marginT + 52 + 6;
+        if (y + 2 < logoBottom)
+            y = logoBottom;
+
+        setPen(lineThick);
+        painter.drawLine(marginL, y + 2, pageW - marginR, y + 2);
+        y += 12;
+
+        int c1 = marginL;
+        int c2 = marginL + contentW / 3;
+
+        painter.setFont(fontB(9)); setPen(1);
+        painter.drawText(c1, y + 12, "Machine ID:");
+        painter.setFont(fontR(9));
+        painter.drawText(c1 + 72, y + 12, "PHMX");
+
+        painter.setFont(fontB(9));
+        painter.drawText(c2, y + 12, "Generated:");
+        painter.setFont(fontR(9));
+        painter.drawText(c2 + 68, y + 12, now);
+
+        y += 20;
+
+        setPen(lineThick);
+        painter.drawLine(marginL, y + 2, pageW - marginR, y + 2);
+        y += 10;
+
+        return y;
+    };
+
+    // ── DRAW TABLE HEADER ROW ────────────────────────────────────────────
+    QStringList tHeaders = {"S/No.", "Date", "Time", "Reject Count"};
+    auto drawTableHeader = [&](int y) -> int {
+        painter.fillRect(marginL, y, contentW, thH, QColor(220, 220, 220));
+        painter.setFont(fontB(9));
+        int x = marginL;
+        for (int i = 0; i < nCols; ++i) {
+            setPen(lineThick);
+            painter.drawRect(x, y, colW[i], thH);
+            setPen(1);
+            painter.drawText(QRect(x + 3, y, colW[i] - 6, thH),
+                             Qt::AlignVCenter | Qt::AlignHCenter, tHeaders[i]);
+            x += colW[i];
         }
+        return y + thH;
+    };
 
-
-
-        // =====================================================
-        // DETAIL PAGES
-        // =====================================================
-
-        else
-        {
-            painter.setFont(QFont("Arial", 10, QFont::Bold));
-
-            painter.drawText(
-                QRect(0, 78, pageWidth, 18),
-                Qt::AlignCenter,
-                "Rejection Details");
-
-
-            painter.setFont(QFont("Arial", 9));
-
-            painter.drawText(
-                marginL,
-                100,
-                "File created on " + now);
-
-
-            painter.drawText(
-                pageWidth - 150,
-                100,
-                "Page: "
-                    + QString::number(page + 1)
-                    + " / "
-                    + QString::number(totalPages));
+    // ── DRAW ONE DATA ROW ────────────────────────────────────────────────
+    auto drawDataRow = [&](int y, int idx, const QVariantMap &m) {
+        if (idx % 2 == 1)
+            painter.fillRect(marginL, y, contentW, rowH, QColor(247, 247, 247));
+        QStringList row = {
+            QString::number(idx + 1),
+            m["date"].toString(),
+            m["time"].toString(),
+            m["rejectCount"].toString()
+        };
+        int x = marginL;
+        for (int c = 0; c < nCols; ++c) {
+            setPen(lineThick);
+            painter.drawRect(x, y, colW[c], rowH);
+            setPen(1);
+            painter.setFont(fontR(9));
+            Qt::Alignment al = (c == 0)
+                                   ? (Qt::AlignVCenter | Qt::AlignHCenter)
+                                   : (Qt::AlignVCenter | Qt::AlignLeft);
+            painter.drawText(QRect(x + 4, y, colW[c] - 8, rowH), al, row[c]);
+            x += colW[c];
         }
     };
 
-    // =====================================================
-    // ===== HELPER: Draw footer                     =====
-    // =====================================================
-    auto drawFooter = [&]()
-    {
-        painter.setFont(QFont("Arial", 9, QFont::Bold));
-
-        int y = pageHeight - 10;
-        painter.drawText(20, y, "Batch REPORT");
-
-        int midX = pageWidth / 2;
-        painter.drawText(midX - 80, y, "Generated By: ADMIN");
-        painter.drawText(pageWidth - 160, y, "Approved By: A_ADMIN");
+    // ── SECTION BOX HELPER ───────────────────────────────────────────────
+    // Draws bold section title, returns Y after title
+    auto drawSectionTitle = [&](int y, const QString &title) -> int {
+        painter.setFont(fontB(10));
+        setPen(1);
+        painter.drawText(marginL, y + 12, title);
+        return y + 16;
     };
 
-    // =====================================================
-    // ===== PAGE 1 — Summary page                   =====
-    // =====================================================
-    drawPageHeader(0);
-    drawFooter();
+    // Key-value pair inside a box: lbl in bold, val in regular
+    // valueOffsetX = px from cell left to value text
+    auto drawKVLine = [&](int x, int y, const QString &lbl, const QString &val,
+                          int valueOffsetX = 145) {
+        painter.setFont(fontB(9)); setPen(1);
+        painter.drawText(x + 8, y, lbl);
+        painter.setFont(fontR(9));
+        painter.drawText(x + 8 + valueOffsetX, y, val);
+    };
 
-    // =====================================================
-    // ===== PAGES 2+ — Rejection detail table       =====
-    // =====================================================
-    if (!rejectionData.isEmpty())
-    {
-        // Table column layout — matches your PDF exactly
-        const int colWidths[] = { 60, 110, 100, pageWidth - 270 };  // S/No, Date, Time, Reject Count
-        const QStringList headers = { "S/No.", "Date", "Time", "Reject Count" };
-        const int rowHeight = 20;
+    // ── PRE-CALCULATE TOTAL PAGES ────────────────────────────────────────
+    const int footerH     = pageH - footerDivY + 10;
+    // Page 0 fixed content height estimate:
+    //   header ~74, machine box ~52, product box ~172, rej summary box ~34
+    //   section titles: 3 × 16 = 48, gaps ~30, table header 24
+   const int summaryH    = 74 + 16 + 62 + 16 + 172 + 16 + 34 + 16 + 24;
+    const int availPage0  = pageH - summaryH - footerH - 10;
+    const int rowsPage0   = qMax(0, availPage0 / rowH);
 
-        int dataIndex = 0;
-        int page      = 1;  // page 0 is summary
+    const int compactHdrH = 76;
+    const int availPageN  = pageH - compactHdrH - thH - footerH - marginB;
+    const int rowsPageN   = qMax(1, availPageN / rowH);
 
-        while (dataIndex < rejectionData.size())
-        {
-            writer.newPage();
-            drawPageHeader(page);
+    int totalPages = 1;
+    if (!rejectionData.isEmpty() && rejectionData.size() > rowsPage0) {
+        int remaining = rejectionData.size() - rowsPage0;
+        totalPages += (remaining + rowsPageN - 1) / rowsPageN;
+    }
 
-            // Table starts lower on first detail page, same on subsequent
-            int y = (page == 1) ? 72 : 72;
+    // ════════════════════════════════════════════════════════════════════
+    // PAGE 0
+    // ════════════════════════════════════════════════════════════════════
+    int y = drawHeaderFull();
 
-            QRect pageRect = writer.pageLayout().paintRectPixels(writer.resolution());
-            int footerTopY = pageRect.bottom() - 30;
+    // ── Machine Summary ──────────────────────────────────────────────────
+    y = drawSectionTitle(y, "Machine Summary");
+    int boxTop = y;
+    int lColX  = marginL;
+    int rColX  = marginL + contentW / 2;
+    // 2 rows: row1 = User + Machine ID, row2 = Location
+    int r1y = boxTop + 16;
+    int r2y = boxTop + 33;
+    int r3y = boxTop + 50;
+    drawKVLine(lColX, r1y, "User:",      "---");
+    drawKVLine(rColX, r1y, "Machine ID:", "PHMX", 90);
+    drawKVLine(rColX, r2y, "Serial No:", serialNo, 90);
+    drawKVLine(lColX, r2y, "Location:",  "---");
+    int machineBoxH = 62;
+    setPen(lineThick);
+    painter.drawRect(marginL, boxTop, contentW, machineBoxH);
+    y = boxTop + machineBoxH + 10;
 
-            // ===== TABLE HEADER =====
-            painter.setFont(QFont("Arial", 9, QFont::Bold));
+    // ── Product / Batch Summary ──────────────────────────────────────────
+    y = drawSectionTitle(y, "Product Summary / Batch Summary");
+    boxTop = y;
 
-            int x = 20;
-            for (int i = 0; i < headers.size(); ++i)
-            {
-                painter.drawRect(x, y, colWidths[i], rowHeight);
-                painter.drawText(QRect(x + 4, y, colWidths[i] - 8, rowHeight),
-                                 Qt::AlignVCenter | Qt::AlignLeft,
-                                 headers[i]);
-                x += colWidths[i];
-            }
-            y += rowHeight;
+    // Left column rows
+    struct KVPair { QString lbl; QString val; };
+    QList<KVPair> leftRows = {
+        {"Product Loaded on:", started},
+        {"Product Loaded by:", "Machine"},
+        {"Product Code:",      productCode},
+        {"Batch Start Time:",  started},
+        {"Batch End Time:",    endText},
+        {"Batch Run Duration:", runDur}
+    };
+    QList<KVPair> rightRows = {
+        {"Product S/No:",         productSno},
+        {"Product Name:",         productName},
+        {"Batch Number:",         batchName},
+        {"Total Batch Duration:", totalDur},
+        {"Batch Pause Duration:", pauseDur},
+        {"", ""}   // empty to align with Batch Run Duration
+    };
 
-            // ===== DATA ROWS =====
-            painter.setFont(QFont("Arial", 9));
+    int nRows     = leftRows.size();
+    int lineH     = 17;
+    int boxPadTop = 14;
 
-            while (dataIndex < rejectionData.size())
-            {
-                if (y + rowHeight > footerTopY)
-                    break;
+    for (int i = 0; i < nRows; ++i) {
+        int rowY = boxTop + boxPadTop + i * lineH;
+        drawKVLine(lColX, rowY, leftRows[i].lbl,  leftRows[i].val);
+        if (!rightRows[i].lbl.isEmpty())
+            drawKVLine(rColX, rowY, rightRows[i].lbl, rightRows[i].val, 155);
+    }
 
-                QVariantMap m = rejectionData[dataIndex].toMap();
+    int productBoxH = boxPadTop + nRows * lineH + 8;
+    setPen(lineThick);
+    painter.drawRect(marginL, boxTop, contentW, productBoxH);
+    y = boxTop + productBoxH + 10;
 
-                QStringList row = {
-                    QString::number(dataIndex + 1),
-                    m["date"].toString(),
-                    m["time"].toString(),
-                    m["rejectCount"].toString()
-                };
+    // ── Rejection Summary ────────────────────────────────────────────────
+    y = drawSectionTitle(y, "Rejection Summary");
+    boxTop = y;
+    drawKVLine(lColX, boxTop + 16, "Total Rejection Count:", QString::number(totalRej));
+    int rejBoxH = 28;
+    setPen(lineThick);
+    painter.drawRect(marginL, boxTop, contentW, rejBoxH);
+    y = boxTop + rejBoxH + 10;
 
-                int x = 20;
-                for (int c = 0; c < row.size(); ++c)
-                {
-                    painter.drawRect(x, y, colWidths[c], rowHeight);
-                    painter.drawText(QRect(x + 4, y, colWidths[c] - 8, rowHeight),
-                                     Qt::AlignVCenter | Qt::AlignLeft,
-                                     row[c]);
-                    x += colWidths[c];
-                }
+    // ── Rejection Details table (starts page 0 if space available) ───────
+    int dataIndex = 0;
+    if (!rejectionData.isEmpty()) {
+        painter.setFont(fontB(10)); setPen(1);
+        painter.drawText(marginL, y + 12, "Rejection Details");
+        y += 16;
+        y = drawTableHeader(y);
 
-                // ===== LAST ROW — print total =====
-                if (dataIndex == rejectionData.size() - 1)
-                {
-                    int totalRej = 0;
-                    for (const QVariant &v : rejectionData)
-                        totalRej += v.toMap()["rejectCount"].toInt();
+        while (dataIndex < rejectionData.size()) {
+            if (y + rowH > footerDivY - 6) break;
+            drawDataRow(y, dataIndex, rejectionData[dataIndex].toMap());
+            y += rowH;
+            dataIndex++;
+        }
 
-                    y += rowHeight + 6;
-                    painter.setFont(QFont("Arial", 9, QFont::Bold));
-                    painter.drawText(20 + colWidths[0] + colWidths[1] + colWidths[2], y,
-                                     "Total Rejection Count : " + QString::number(totalRej));
-                    painter.setFont(QFont("Arial", 9));
-                }
-
-                y += rowHeight;
-                dataIndex++;
-            }
-
-            drawFooter();
-            page++;
+        // total row if all fit on page 0
+        if (dataIndex == rejectionData.size() && y + 16 <= footerDivY - 6) {
+            painter.setFont(fontB(9)); setPen(1);
+            painter.drawText(marginL + colW[0] + colW[1] + colW[2] + 6,
+                             y + 14,
+                             "Total Rejection Count: " + QString::number(totalRej));
         }
     }
 
-    painter.end();
+    drawFooter(0, totalPages);
 
+    // ════════════════════════════════════════════════════════════════════
+    // PAGES 1+ — rejection table continuation
+    // ════════════════════════════════════════════════════════════════════
+    int page = 1;
+    while (dataIndex < rejectionData.size()) {
+        writer.newPage();
+        y = drawHeaderCompact(page, totalPages);
+        y = drawTableHeader(y);
+
+        while (dataIndex < rejectionData.size()) {
+            if (y + rowH > footerDivY - 6) break;
+            drawDataRow(y, dataIndex, rejectionData[dataIndex].toMap());
+            y += rowH;
+            dataIndex++;
+        }
+
+        if (dataIndex == rejectionData.size() && y + 16 <= footerDivY - 6) {
+            painter.setFont(fontB(9)); setPen(1);
+            painter.drawText(marginL + colW[0] + colW[1] + colW[2] + 6,
+                             y + 14,
+                             "Total Rejection Count: " + QString::number(totalRej));
+        }
+
+        drawFooter(page, totalPages);
+        page++;
+    }
+
+    painter.end();
     qDebug() << "Batch PDF saved at:" << path;
     return path;
 }
+
 
 // =========== Check USB =========
 
