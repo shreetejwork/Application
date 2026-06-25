@@ -104,8 +104,8 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 
     // ── FONT (Roboto Condensed) ──────────────────────────────────────────────
     // Load from app resources or system; fall back to Arial gracefully
-    int fontId = QFontDatabase::addApplicationFont(":/fonts/RobotoCondensed-Regular.ttf");
-    int fontBoldId = QFontDatabase::addApplicationFont(":/fonts/RobotoCondensed-Bold.ttf");
+    int fontId = QFontDatabase::addApplicationFont(":/assets/images/RobotoCondensed-Regular.ttf");
+    int fontBoldId = QFontDatabase::addApplicationFont(":/assets/images/RobotoCondensed-Bold.ttf");
     QString fontFamily = "Arial";
     if (fontId != -1) {
         QStringList families = QFontDatabase::applicationFontFamilies(fontId);
@@ -606,6 +606,12 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap  &batchData,
                          "PRODUCT / BATCH REPORT");
         y += 20;
 
+        painter.setFont(fontR(9));
+        painter.drawText(QRect(marginL, y, contentW, 16),
+                         Qt::AlignHCenter | Qt::AlignVCenter,
+                         "(Metal Detector)");
+        y += 16;
+
         // ensure divider clears the logo (logo top = marginT, height = 52, + 6px gap)
         int logoBottom = marginT + 52 + 6;
         if (y + 3 < logoBottom)
@@ -754,7 +760,7 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap  &batchData,
     int y = drawHeaderFull();
 
     // ── Machine Summary ──────────────────────────────────────────────────
-    y = drawSectionTitle(y, "Machine Summary");
+    y = drawSectionTitle(y, "Machine Summary :");
     int boxTop = y;
     int lColX  = marginL;
     int rColX  = marginL + contentW / 2;
@@ -762,36 +768,38 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap  &batchData,
     int r1y = boxTop + 16;
     int r2y = boxTop + 33;
     int r3y = boxTop + 50;
-    drawKVLine(lColX, r1y, "User:",      "---");
-    drawKVLine(rColX, r1y, "Machine ID:", "PHMX", 90);
-    drawKVLine(rColX, r2y, "Serial No:", serialNo, 90);
-    drawKVLine(lColX, r2y, "Location:",  "---");
+    drawKVLine(lColX, r1y, "User",      ": ---");
+    drawKVLine(rColX, r1y, "Machine ID", ": PHMX", 90);
+    drawKVLine(rColX, r2y, "M/C Sr. No.", ": " + serialNo, 90);
+    drawKVLine(lColX, r2y, "Location",  ": ---");
     int machineBoxH = 62;
     setPen(lineThick);
     painter.drawRect(marginL, boxTop, contentW, machineBoxH);
     y = boxTop + machineBoxH + 10;
 
     // ── Product / Batch Summary ──────────────────────────────────────────
-    y = drawSectionTitle(y, "Product Summary / Batch Summary");
+    y = drawSectionTitle(y, "Product Summary / Batch Summary :");
     boxTop = y;
 
     // Left column rows
     struct KVPair { QString lbl; QString val; };
     QList<KVPair> leftRows = {
-        {"Product Loaded on:", started},
-        {"Product Loaded by:", "Machine"},
-        {"Product Code:",      productCode},
-        {"Batch Start Time:",  started},
-        {"Batch End Time:",    endText},
-        {"Batch Run Duration:", runDur}
+        {"Product Loaded on", ": " + started},
+        {"Product Loaded by", ": Machine"},
+        {"Product Code",      ": " + productCode},
+        {"Product S/No",         ": " + productSno},
+        {"Product Name",         ": " + productName},
+        {"", ""}
     };
+
     QList<KVPair> rightRows = {
-        {"Product S/No:",         productSno},
-        {"Product Name:",         productName},
-        {"Batch Number:",         batchName},
-        {"Total Batch Duration:", totalDur},
-        {"Batch Pause Duration:", pauseDur},
-        {"", ""}   // empty to align with Batch Run Duration
+        {"Batch Name",         ": " + batchName},
+        {"Batch Start Time",  ": " + started},
+        {"Batch End Time",    ": " + endText},
+        {"Batch Run Duration",": " + runDur},
+        {"Batch Pause Duration", ": " + pauseDur},
+        {"Total Batch Duration", ": " + totalDur},
+
     };
 
     int nRows     = leftRows.size();
@@ -811,9 +819,9 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap  &batchData,
     y = boxTop + productBoxH + 10;
 
     // ── Rejection Summary ────────────────────────────────────────────────
-    y = drawSectionTitle(y, "Rejection Summary");
+    y = drawSectionTitle(y, "Rejection Summary :");
     boxTop = y;
-    drawKVLine(lColX, boxTop + 16, "Total Rejection Count:", QString::number(totalRej));
+    drawKVLine(lColX, boxTop + 16, "Total Rejection Count  :",QString::number(totalRej));
     int rejBoxH = 28;
     setPen(lineThick);
     painter.drawRect(marginL, boxTop, contentW, rejBoxH);
@@ -839,7 +847,7 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap  &batchData,
             painter.setFont(fontB(9)); setPen(1);
             painter.drawText(marginL + colW[0] + colW[1] + colW[2] + 6,
                              y + 14,
-                             "Total Rejection Count: " + QString::number(totalRej));
+                             "Total Rejection Count : " + QString::number(totalRej));
         }
     }
 
