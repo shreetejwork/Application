@@ -241,32 +241,40 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
         int metaLineH = 18;
 
         // Row 1
-        auto drawMeta = [&](int x, int yy, const QString &label, const QString &val) {
+        auto drawMeta = [&](int x, int yy, const QString &label, const QString &val)
+        {
+            constexpr int colonOffset = 78;   // adjust once if needed
+
             painter.setFont(fontB(9));
             painter.drawText(x, yy, label);
+
             painter.setFont(fontR(9));
-            painter.drawText(x + painter.fontMetrics().horizontalAdvance(label) + 4, yy, val);
+            painter.drawText(x + colonOffset, yy, ": " + val);
         };
 
-        drawMeta(col1x, y + metaLineH, "From:", fromDate);
-        drawMeta(col2x, y + metaLineH, "Customer:", "---");
-        drawMeta(col3x, y + metaLineH, "Machine ID:", "PHMX");
-
         QString now = QDateTime::currentDateTime().toString("dd/MM/yyyy @ HH:mm:ss");
-        drawMeta(col1x, y + 2*metaLineH, "To:", toDate);
-        drawMeta(col2x, y + 2*metaLineH, "Location:", "---");
-        drawMeta(col3x, y + 2*metaLineH, "File Created:", now);
 
-        drawMeta(col1x, y + 3*metaLineH, "Serial No:", "---");
+        // Row 1
+        drawMeta(col1x, y + metaLineH,     "User",         "---");
+        drawMeta(col2x, y + metaLineH,     "File Created", now);
+        drawMeta(col3x, y + metaLineH,     "Machine ID",   "PHMX");
+
+        // Row 2
+        drawMeta(col1x, y + 2*metaLineH,   "Location",     "---");
+        drawMeta(col2x, y + 2*metaLineH,   "From",         fromDate);
+        drawMeta(col3x, y + 2*metaLineH,   "M/C Sr. No.",  "---");
+
+        // Row 3
+        drawMeta(col2x, y + 3*metaLineH,   "To",           toDate);
 
         y += 3*metaLineH + 6;
 
-        // Bold divider closing header
         setPen(lineThick);
         painter.drawLine(marginL, y + 4, pageW - marginR, y + 4);
-        y += 12;
+        y += 20;
 
         return y; // returns Y where table should start
+
     };
 
     // ── DRAW HEADER (compact — subsequent pages) ──────────────────────────────
@@ -289,26 +297,12 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
         int col2x = marginL + contentW / 3;
         int col3x = marginL + 2 * contentW / 3;
 
-        painter.setFont(fontB(9));
-        painter.drawText(col1x, y + 16, "Machine ID:");
-        painter.setFont(fontR(9));
-        painter.drawText(col1x + 70, y + 16, "PHMX");
-
-        painter.setFont(fontB(9));
-        painter.drawText(col2x, y + 16, "Generated:");
-        painter.setFont(fontR(9));
-        painter.drawText(col2x + 65, y + 16, now);
-
-        painter.setFont(fontB(9));
-        painter.drawText(col3x, y + 16, "Serial No:");
-        painter.setFont(fontR(9));
-        painter.drawText(col3x + 65, y + 16, "---");
 
         y += 22;
 
         setPen(lineThick);
         painter.drawLine(marginL, y + 4, pageW - marginR, y + 4);
-        y += 12;
+        y += 20;
 
         return y;
     };
@@ -316,26 +310,37 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
     // ── DRAW TABLE HEADER ROW ─────────────────────────────────────────────────
     QStringList headers = {"S/No", "Date", "Time", "User", "Old Value", "New Value", "Details / Remarks"};
 
-    auto drawTableHeader = [&](int y) {
-        painter.setFont(fontB(9));
-        setPen(thinLine);
+    auto drawTableHeader = [&](int y)
+    {
+        const int radius = 6;
+        const QColor headerBg(52, 58, 64);      // dark grey
+        const QColor headerText(Qt::white);
 
-        // Light gray fill for table header
-        painter.fillRect(marginL, y, contentW, thH, QColor(220, 220, 220));
+        painter.save();
+
+        // Header background
+        painter.setPen(Qt::NoPen);
+        painter.setBrush(headerBg);
+        painter.drawRoundedRect(marginL, y, contentW, thH, radius, radius);
+
+        painter.setPen(headerText);
+        painter.setFont(fontB(9));
 
         int x = marginL;
-        for (int i = 0; i < nCols; ++i) {
-            // cell border
-            setPen(2);
-            painter.drawRect(x, y, colW[i], thH);
-            setPen(1);
-            painter.setFont(fontB(9));
-            painter.drawText(QRect(x + 3, y, colW[i] - 6, thH),
-                             Qt::AlignVCenter | Qt::AlignHCenter,
-                             headers[i]);
+
+        for (int i = 0; i < nCols; ++i)
+        {
+            painter.drawText(
+                QRect(x + 6, y, colW[i] - 12, thH),
+                Qt::AlignCenter,
+                headers[i]);
+
             x += colW[i];
         }
-        return y + thH;
+
+        painter.restore();
+
+        return y + thH + 4;
     };
 
     // ── DRAW FOOTER ───────────────────────────────────────────────────────────
@@ -415,26 +420,63 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
                 m["remark"].toString()
             };
 
-            // Alternating row background
-            if (dataIndex % 2 == 1)
-                painter.fillRect(marginL, y, contentW, rowH, QColor(247, 247, 247));
+            // Alternate row background
+            if (dataIndex % 2)
+            {
+                painter.fillRect(
+                    marginL,
+                    y,
+                    contentW,
+                    rowH,
+                    QColor(248,248,248));
+            }
+
 
             int x = marginL;
-            for (int c = 0; c < nCols; ++c) {
-                setPen(2);
-                painter.drawRect(x, y, colW[c], rowH);
-                setPen(1);
+
+            for (int c = 0; c < nCols; ++c)
+            {
                 painter.setFont(fontR(9));
+                painter.setPen(QColor(45,45,45));
 
-                Qt::Alignment align = (c == 0)
-                                          ? (Qt::AlignVCenter | Qt::AlignHCenter)
-                                          : (Qt::AlignVCenter | Qt::AlignLeft);
+                Qt::Alignment align;
 
-                painter.drawText(QRect(x + 4, y, colW[c] - 8, rowH), align, row[c]);
+                if (c == 0)
+                {
+                    align = Qt::AlignCenter;
+                }
+                else if (c == 6)
+                {
+                    align = Qt::AlignLeft | Qt::AlignVCenter;
+                }
+                else
+                {
+                    align = Qt::AlignCenter;
+                }
+
+                painter.drawText(
+                    QRect(
+                        x + 6,
+                        y,
+                        colW[c] - 12,
+                        rowH),
+                    align,
+                    row[c]);
+
                 x += colW[c];
             }
 
-            y += rowH;
+
+            // separator line
+            setPen(1, QColor(230,230,230));
+
+            painter.drawLine(
+                marginL + 12,
+                y + rowH + 2,
+                marginL + contentW - 12,
+                y + rowH + 2);
+
+           y += rowH;
             dataIndex++;
         }
 
@@ -535,7 +577,7 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap  &batchData,
     QString totalDur    = batchData.value("totalDuration",  "---").toString();
     QString runDur      = batchData.value("runDuration",    "---").toString();
     QString pauseDur    = batchData.value("pauseDuration",  "---").toString();
-    QString serialNo = batchData.value("serialNo", "---").toString();
+    QString serialNo = batchData.value("M/C Sr. No.", "---").toString();
 
     int totalRej = 0;
     for (const QVariant &v : rejectionData)
