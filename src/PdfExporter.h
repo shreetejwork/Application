@@ -23,7 +23,9 @@ public:
     Q_INVOKABLE QString exportTableToPdf(const QVariantList &data,
                                          const QString &fromDate,
                                          const QString &toDate,
-                                         const QString &filePath = QString());
+                                         const QString &filePath,
+                                         const QVariantMap &sessionData = QVariantMap());
+
 
     Q_INVOKABLE QString exportBatchToPdf(const QVariantMap  &batchData,
                                          const QVariantList &rejectionData,

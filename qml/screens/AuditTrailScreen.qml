@@ -581,7 +581,9 @@ Item {
                                         var path = PdfExporter.exportTableToPdf(
                                             filtered,
                                             root.fromDate,
-                                            root.toDate
+                                            root.toDate,
+                                            "",          // filePath — empty string triggers auto-generated path
+                                            /*sessionInfo*/  // your session QVariantMap
                                         )
 
                                         // NOTIFICATION

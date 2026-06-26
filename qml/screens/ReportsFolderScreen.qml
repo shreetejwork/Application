@@ -235,7 +235,7 @@ Item {
             return
         }
 
-        var ok = PdfExporter.moveFilesToUsb(paths, GlobalState.machineSerialNumber)
+        var ok = PdfExporter.moveFilesToUsb(paths, GlobalState.machineId)
 
         if (ok) {
 

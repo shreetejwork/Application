@@ -27,6 +27,17 @@ Item {
         NumberAnimation { duration: 260; easing.type: Easing.OutQuart }
     }
 
+    Component.onCompleted: {
+
+        var data = databaseManager.getMachineInfo()
+
+        GlobalState.supplierName = data.supplierName || ""
+        GlobalState.serialNumber = data.serialNumber || ""
+        GlobalState.machineId    = data.machineId || "PHMX"
+        GlobalState.userName     = data.userName || ""
+        GlobalState.location     = data.location || ""
+    }
+
     // ── Background ──────────────────────────────────────────
     Rectangle {
         anchors.fill: parent
@@ -239,11 +250,41 @@ Item {
                 GlobalState.loginKeyboardRequest = false
             }
             onConfirmed: (id, val) => {
-                if (id === "supplierName")      { GlobalState.supplierName  = val; if (root.notify) root.notify("✓ Supplier Name Saved") }
-                else if (id === "machineId")    { GlobalState.machineId     = val; if (root.notify) root.notify("✓ Machine ID Saved") }
-                else if (id === "user")         { GlobalState.userName       = val; if (root.notify) root.notify("✓ User Saved") }
-                else if (id === "location")     { GlobalState.location       = val; if (root.notify) root.notify("✓ Location Saved") }
-                else if (id === "serialNumber") { GlobalState.serialNumber   = val; if (root.notify) root.notify("✓ Serial Number Saved") }
+
+                if (id === "supplierName") {
+                    GlobalState.supplierName = val
+                    if (root.notify) root.notify("✓ Supplier Name Saved")
+                }
+                else if (id === "machineId") {
+                    GlobalState.machineId = val
+                    if (root.notify) root.notify("✓ Machine ID Saved")
+                }
+                else if (id === "user") {
+                    GlobalState.userName = val
+                    if (root.notify) root.notify("✓ User Saved")
+                }
+                else if (id === "location") {
+                    GlobalState.location = val
+                    if (root.notify) root.notify("✓ Location Saved")
+                }
+                else if (id === "serialNumber") {
+                    GlobalState.serialNumber = val
+                    if (root.notify) root.notify("✓ Serial Number Saved")
+                }
+
+
+                // Save everything to database
+                             databaseManager.saveMachineInfo(
+
+                                 GlobalState.supplierName,
+                                 GlobalState.serialNumber,
+                                 GlobalState.machineId,
+                                 GlobalState.userName,
+                                 GlobalState.location
+
+                             )
+
+
                 root.activeCardId = ""
                 GlobalState.loginKeyboardRequest = false
             }

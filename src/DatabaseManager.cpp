@@ -7,6 +7,7 @@
 #include <QDebug>
 #include <QDate>
 #include <QDir>
+#include <QVariantMap>
 
 
 DatabaseManager::DatabaseManager(QObject *parent)
@@ -75,6 +76,20 @@ void DatabaseManager::createTables()
             data TEXT
         );
     )");
+
+
+
+    // Machine Info
+    query.exec(R"(
+CREATE TABLE IF NOT EXISTS machineinfo(
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    supplierName TEXT,
+    serialNumber TEXT,
+    machineId TEXT,
+    userName TEXT,
+    location TEXT
+);
+)");
 
     // SYSTEM SETTINGS
     query.exec(R"(
@@ -179,6 +194,8 @@ void DatabaseManager::createTables()
     );
 )");
 
+
+
     // Create default admin user if it doesn't exist
     QSqlQuery checkUser;
     checkUser.prepare(
@@ -277,6 +294,87 @@ bool DatabaseManager::insertUser(
     }
 
     return true;
+}
+
+bool DatabaseManager::saveMachineInfo(
+    const QString &supplierName,
+    const QString &serialNumber,
+    const QString &machineId,
+    const QString &userName,
+    const QString &location)
+{
+    QSqlQuery query;
+
+    query.exec("DELETE FROM machineinfo");
+
+    query.prepare(
+        "INSERT INTO machineinfo "
+        "(supplierName, serialNumber, machineId, userName, location) "
+        "VALUES (?, ?, ?, ?, ?)"
+        );
+
+    query.addBindValue(supplierName);
+    query.addBindValue(serialNumber);
+    query.addBindValue(machineId);
+    query.addBindValue(userName);
+    query.addBindValue(location);
+
+    qDebug() << "Bound values:"
+             << supplierName
+             << serialNumber
+             << machineId
+             << userName
+             << location;
+
+    if (!query.exec())
+    {
+        qDebug() << "Machine save failed:"
+                 << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+QVariantMap DatabaseManager::getMachineInfo()
+{
+
+    QVariantMap data;
+
+
+    QSqlQuery query;
+
+    query.prepare(
+
+        "SELECT * FROM machineinfo "
+        "LIMIT 1"
+
+        );
+
+
+    if(query.exec() && query.next())
+    {
+
+        data["supplierName"] =
+            query.value("supplierName");
+
+        data["serialNumber"] =
+            query.value("serialNumber");
+
+        data["machineId"] =
+            query.value("machineId");
+
+        data["userName"] =
+            query.value("userName");
+
+        data["location"] =
+            query.value("location");
+
+    }
+
+
+    return data;
+
 }
 
 // READ USERS

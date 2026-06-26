@@ -63,6 +63,12 @@ QtObject {
     property string loggedInUserName: ""
     property string loggedInUserRole: ""
 
+    property string supplierName: ""
+    property string serialNumber: ""
+    property string machineId: ""
+    property string userName: ""
+    property string location: ""
+
 
     // =========================================================
     //  MODELS (3 SEPARATE LOG STORES)

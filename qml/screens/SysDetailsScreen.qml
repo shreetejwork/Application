@@ -14,13 +14,62 @@ Item {
     property real baseHeight: 700
     property real scale: Math.max(0.9, Math.min(1.8, height / baseHeight))
 
+    Component.onCompleted: {
+
+        var data = databaseManager.getMachineInfo()
+
+        GlobalState.supplierName =
+                data.supplierName || ""
+
+        GlobalState.serialNumber =
+                data.serialNumber || ""
+
+        GlobalState.userName =
+                data.userName || ""
+
+        GlobalState.machineId =
+                data.machineId || "PHMX"
+
+        GlobalState.location =
+                data.location || ""
+    }
+
     property var sysDetails: [
-        { label: "Supplier Name",  value: GlobalState.supplierName  ?? "..." },
-        { label: "Serial Number",  value: GlobalState.serialNumber  ?? "..." },
-        { label: "User",           value: GlobalState.userName      ?? "..." },
-        { label: "Machine ID",     value: GlobalState.machineId     ?? "PHMX" },
-        { label: "Location",       value: GlobalState.location      ?? "..." },
-        { label: "Version",        value: "v4.0.1" }
+
+        {
+            label: "Supplier Name",
+            value: GlobalState.supplierName.length ?
+                   GlobalState.supplierName : "..."
+        },
+
+        {
+            label: "Serial Number",
+            value: GlobalState.serialNumber.length ?
+                   GlobalState.serialNumber : "..."
+        },
+
+        {
+            label: "User",
+            value: GlobalState.userName.length ?
+                   GlobalState.userName : "..."
+        },
+
+        {
+            label: "Machine ID",
+            value: GlobalState.machineId.length ?
+                   GlobalState.machineId : "PHMX"
+        },
+
+        {
+            label: "Location",
+            value: GlobalState.location.length ?
+                   GlobalState.location : "..."
+        },
+
+        {
+            label: "Version",
+            value: "v4.0.1"
+        }
     ]
 
     Rectangle {

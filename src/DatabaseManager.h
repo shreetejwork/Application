@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QStringList>
+#include <QVariantMap>
 
 class DatabaseManager : public QObject
 {
@@ -51,6 +52,17 @@ public:
 
 private:
     void createTables();
+
+public:
+
+    Q_INVOKABLE bool saveMachineInfo(
+        const QString &supplierName,
+        const QString &serialNumber,
+        const QString &machineId,
+        const QString &userName,
+        const QString &location);
+
+    Q_INVOKABLE QVariantMap getMachineInfo();
 };
 
 #endif // DATABASEMANAGER_H
