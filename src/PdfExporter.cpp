@@ -1133,29 +1133,65 @@ QString PdfExporter::getUsbPath()
 bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
                                  const QString &serialNumber)
 {
-    QString usbPath = getUsbPath();
+    QString usbPath = getUsbPath().trimmed();
+
+    qDebug() << "USB Path :" << usbPath;
+
     if (usbPath.isEmpty())
+    {
+        qDebug() << "USB path is empty";
         return false;
+    }
 
     QString folderName = serialNumber.trimmed().isEmpty()
                              ? "MDReports"
-                             : QString("MDReports_%1").arg(serialNumber.trimmed());
+                             : QString("MDReports_%1")
+                                   .arg(serialNumber.trimmed());
 
-    QString destDir = usbPath + "/" + folderName;
-    QDir().mkpath(destDir);
+    QDir usbDir(usbPath);
+
+    QString destDir = usbDir.filePath(folderName);
+
+    qDebug() << "Destination directory :" << destDir;
+
+    if (!QDir().mkpath(destDir))
+    {
+        qDebug() << "Failed to create directory";
+        return false;
+    }
 
     bool allOk = true;
 
-    for (const QString &file : filePaths)
+    for (const QString &srcFile : filePaths)
     {
-        QFileInfo info(file);
-        QString dest = destDir + "/" + info.fileName();
+        QFileInfo fi(srcFile);
 
-        if (QFile::exists(dest))
-            QFile::remove(dest);
-
-        if (!QFile::copy(file, dest))
+        if (!fi.exists())
+        {
+            qDebug() << "Source file does not exist:"
+                     << srcFile;
             allOk = false;
+            continue;
+        }
+
+        QString dstFile = QDir(destDir).filePath(fi.fileName());
+
+        qDebug() << "Copying";
+        qDebug() << "From :" << srcFile;
+        qDebug() << "To   :" << dstFile;
+
+        QFile::remove(dstFile);
+
+        if (!QFile::copy(srcFile, dstFile))
+        {
+            qDebug() << "Copy failed:"
+                     << srcFile;
+
+            qDebug() << "Reason:"
+                     << QFile(srcFile).errorString();
+
+            allOk = false;
+        }
     }
 
     return allOk;
