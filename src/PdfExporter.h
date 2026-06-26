@@ -31,7 +31,8 @@ public:
 
     Q_INVOKABLE bool isUsbMounted();
     Q_INVOKABLE QString getUsbPath();
-    Q_INVOKABLE bool moveFilesToUsb(const QStringList &filePaths);
+    Q_INVOKABLE bool moveFilesToUsb(const QStringList &filePaths,
+                                    const QString &serialNumber);
 };
 
 #endif // PDFEXPORTER_H

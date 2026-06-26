@@ -1130,20 +1130,26 @@ QString PdfExporter::getUsbPath()
 
 // ============ Move selected files to USB ===========
 
-bool PdfExporter::moveFilesToUsb(const QStringList &filePaths)
+bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
+                                 const QString &serialNumber)
 {
     QString usbPath = getUsbPath();
     if (usbPath.isEmpty())
         return false;
 
-    QDir().mkpath(usbPath + "/Reports");
+    QString folderName = serialNumber.trimmed().isEmpty()
+                             ? "MDReports"
+                             : QString("MDReports_%1").arg(serialNumber.trimmed());
+
+    QString destDir = usbPath + "/" + folderName;
+    QDir().mkpath(destDir);
 
     bool allOk = true;
 
     for (const QString &file : filePaths)
     {
         QFileInfo info(file);
-        QString dest = usbPath + "/Reports/" + info.fileName();
+        QString dest = destDir + "/" + info.fileName();
 
         if (QFile::exists(dest))
             QFile::remove(dest);
