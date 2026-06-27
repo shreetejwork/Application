@@ -87,7 +87,8 @@ CREATE TABLE IF NOT EXISTS machineinfo(
     serialNumber TEXT,
     machineId TEXT,
     userName TEXT,
-    location TEXT
+    location TEXT,
+    machineType TEXT
 );
 )");
 
@@ -301,7 +302,8 @@ bool DatabaseManager::saveMachineInfo(
     const QString &serialNumber,
     const QString &machineId,
     const QString &userName,
-    const QString &location)
+    const QString &location,
+    const QString &machineType)
 {
     QSqlQuery query;
 
@@ -309,31 +311,17 @@ bool DatabaseManager::saveMachineInfo(
 
     query.prepare(
         "INSERT INTO machineinfo "
-        "(supplierName, serialNumber, machineId, userName, location) "
-        "VALUES (?, ?, ?, ?, ?)"
-        );
+        "(supplierName, serialNumber, machineId, userName, location, machineType) "
+        "VALUES (?, ?, ?, ?, ?, ?)");
 
     query.addBindValue(supplierName);
     query.addBindValue(serialNumber);
     query.addBindValue(machineId);
     query.addBindValue(userName);
     query.addBindValue(location);
+    query.addBindValue(machineType);
 
-    qDebug() << "Bound values:"
-             << supplierName
-             << serialNumber
-             << machineId
-             << userName
-             << location;
-
-    if (!query.exec())
-    {
-        qDebug() << "Machine save failed:"
-                 << query.lastError().text();
-        return false;
-    }
-
-    return true;
+    return query.exec();
 }
 
 QVariantMap DatabaseManager::getMachineInfo()
@@ -369,6 +357,9 @@ QVariantMap DatabaseManager::getMachineInfo()
 
         data["location"] =
             query.value("location");
+
+        data["machineType"] =
+            query.value("machineType");
 
     }
 

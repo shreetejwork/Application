@@ -274,13 +274,18 @@ Item {
 
 
                 // Save everything to database
+                             var machineType = GlobalState.showDDuster
+                                     ? "Combo (MD+DD)"
+                                     : "Only MD"
+
                              databaseManager.saveMachineInfo(
 
                                  GlobalState.supplierName,
                                  GlobalState.serialNumber,
                                  GlobalState.machineId,
                                  GlobalState.userName,
-                                 GlobalState.location
+                                 GlobalState.location,
+                                 machineType
 
                              )
 

@@ -561,7 +561,13 @@ Item {
                                                 // Pass rejection rows
                                                 var rejections = []
 
-                                                var savedPath = PdfExporter.exportBatchToPdf(batchInfo, rejections)
+                                                var sessionInfo = {
+                                                    "loggedInUserName": GlobalState.loggedInUserName,
+                                                    "loggedInUserRole": GlobalState.loggedInUserRole
+                                                }
+
+
+                                                var savedPath = PdfExporter.exportBatchToPdf(batchInfo, rejections, sessionInfo)
 
 
                                                 if (globalTopBar && globalTopBar.showNotification)

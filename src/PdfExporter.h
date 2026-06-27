@@ -1,11 +1,16 @@
 #ifndef PDFEXPORTER_H
 #define PDFEXPORTER_H
 
+#include "DatabaseManager.h"
+
+
 #include <QObject>
 #include <QVariantList>
 #include <QVariantMap>
 #include <QString>
 #include <QStringList>
+
+
 
 class PdfExporter : public QObject
 {
@@ -27,14 +32,22 @@ public:
                                          const QVariantMap &sessionData = QVariantMap());
 
 
-    Q_INVOKABLE QString exportBatchToPdf(const QVariantMap  &batchData,
-                                         const QVariantList &rejectionData,
-                                         const QString      &filePath = QString());
+    Q_INVOKABLE QString exportBatchToPdf(
+        const QVariantMap &batchData,
+        const QVariantList &rejectionData,
+        const QVariantMap &sessionData,
+        const QString &filePath = "");
+
 
     Q_INVOKABLE bool isUsbMounted();
     Q_INVOKABLE QString getUsbPath();
     Q_INVOKABLE bool moveFilesToUsb(const QStringList &filePaths,
                                     const QString &serialNumber);
+
+private:
+    QVariantMap getMachineDetails();
 };
+
+
 
 #endif // PDFEXPORTER_H

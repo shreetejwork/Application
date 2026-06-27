@@ -55,12 +55,12 @@ private:
 
 public:
 
-    Q_INVOKABLE bool saveMachineInfo(
-        const QString &supplierName,
-        const QString &serialNumber,
-        const QString &machineId,
-        const QString &userName,
-        const QString &location);
+   Q_INVOKABLE bool saveMachineInfo(const QString &supplierName,
+                         const QString &serialNumber,
+                         const QString &machineId,
+                         const QString &userName,
+                         const QString &location,
+                         const QString &machineType);
 
     Q_INVOKABLE QVariantMap getMachineInfo();
 };
