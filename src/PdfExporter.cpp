@@ -457,7 +457,7 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
             };
 
             if (dataIndex % 2)
-                painter.fillRect(marginL, y, contentW, rowH, QColor(230, 230, 230));
+                painter.fillRect(marginL, y, contentW, rowH, QColor(220, 235, 255));
 
             int x = marginL;
             for (int c = 0; c < nCols; ++c) {
@@ -900,8 +900,8 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap  &batchData,
     drawKVLine(lColX, r1y, "User",        ": " + userName);         // ← was "---"
     drawKVLine(rColX, r1y, "Machine ID.",  ": " + machineId,  90);   // ← was "PHMX"
     drawKVLine(rColX, r2y, "M/c Sr. No.", ": " + serialNo,   90);
-    drawKVLine(lColX, r2y, "Location",    ": " + location);    // ← was "---"
     drawKVLine(lColX, r2y + 17, "M/c Type", ": " + machineType);
+    drawKVLine(lColX, r2y, "Location",    ": " + location);    // ← was "---
     int machineBoxH = 72;
     setPen(lineThick);
     painter.drawRect(marginL, boxTop, contentW, machineBoxH);

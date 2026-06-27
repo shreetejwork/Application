@@ -93,6 +93,19 @@ Item {
 
                             onToggledChanged: {
                                 GlobalState.showDDuster = toggled
+
+                                var machineType = toggled
+                                    ? "Combo (MD+DD)"
+                                    : "Only MD"
+
+                                databaseManager.saveMachineInfo(
+                                    GlobalState.supplierName,
+                                    GlobalState.serialNumber,
+                                    GlobalState.machineId,
+                                    GlobalState.userName,
+                                    GlobalState.location,
+                                    machineType
+                                )
                             }
                         }
                     }
