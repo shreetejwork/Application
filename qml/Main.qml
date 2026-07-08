@@ -276,12 +276,7 @@ ApplicationWindow {
                     layer.enabled: true
                     layer.smooth: true
                 }
-                CoilOutputScreen {
-                    showTopBar: false
-                    globalTopBar: mainTopBar
-                    layer.enabled: true
-                    layer.smooth: true
-                }
+
                 SysDetailsScreen {
                     showTopBar: false
                     globalTopBar: mainTopBar
@@ -333,7 +328,6 @@ ApplicationWindow {
                 "Dashboard",
                 GlobalState.showDDuster ? "Batch & DD" : "Batch Menu",
                 "Tracking Phase",
-                "Coil Output",
                 "About Machine"
             ]
 

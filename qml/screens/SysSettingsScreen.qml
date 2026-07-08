@@ -173,7 +173,6 @@ Item {
                 pageNames: GlobalState.showNetworkScreen
                            ? [
                                  "Parameters",
-                                 "XY - Plot",
                                  "Date & Time",
                                  "Validation Time",
                                  "About Machine",
@@ -182,7 +181,6 @@ Item {
                              ]
                            : [
                                  "Parameters",
-                                 "XY - Plot",
                                  "Date & Time",
                                  "Validation Time",
                                  "About Machine",
@@ -242,7 +240,6 @@ Item {
     property var pageModel: {
         var pages = [
             screen1,
-            screennew,
             screen2,
             screen3,
             screen4
@@ -298,34 +295,6 @@ Item {
                     onFieldClicked: function(label) {
                         console.log("Clicked:", label)
                     }
-                }
-            }
-        }
-    }
-
-    // =====================================================
-    // SCREEN NEW
-    // =====================================================
-
-    Component {
-        id: screennew
-
-        Rectangle {
-            color: "#F5F7FC"
-
-            Item {
-                anchors.centerIn: parent
-
-                width:
-                    Math.min(parent.width * 0.9,
-                             900 * root.uiScale)
-
-                height:
-                    Math.min(parent.height * 0.9,
-                             520 * root.uiScale)
-
-                XyPlotScreen {
-                    anchors.fill: parent
                 }
             }
         }

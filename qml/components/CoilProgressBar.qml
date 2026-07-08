@@ -30,10 +30,6 @@ Item {
 
         // ================= TRACK =================
         Item {
-    Typography {
-        id: componentTypography
-        scale: root.scale || 1.0
-    }
             id: track
             width: parent.width
             height: 24
@@ -100,36 +96,38 @@ Item {
                            Math.min(root.value - 5200, 2000) / root.maxValue * parent.width + 1
                 }
 
-                //  ORANGE → RED
+                // ================= ORANGE → RED =================
                 Rectangle {
                     height: parent.height
 
-                    // slightly overlap both sides for perfect connection
-                    x: (7000 / root.maxValue) * parent.width - 1
+                    // Start gradient at 5500
+                    x: (5500 / root.maxValue) * parent.width - 1
 
-                    width: root.value <= 7000 ? 0 :
-                           Math.min(root.value - 7000, 2000) / root.maxValue * parent.width + 2
+                    width: root.value <= 5500 ? 0 :
+                           Math.min(root.value - 5500, 3300) / root.maxValue * parent.width + 2
 
                     gradient: Gradient {
                         orientation: Gradient.Horizontal
 
-
-                        GradientStop { position: 0.0;  color: "#F39C34" } // orange
-                        GradientStop { position: 0.25; color: "#F07F2F" } // orange-red
-                        GradientStop { position: 0.5;  color: "#EC5E2B" } // deeper
-                        GradientStop { position: 0.75; color: "#E84A2F" } // near red
-                        GradientStop { position: 1.0;  color: "#E53935" } // red
+                        GradientStop { position: 0.0;  color: "#F39C34" } // Orange
+                        GradientStop { position: 0.25; color: "#F07F2F" } // Orange-Red
+                        GradientStop { position: 0.50; color: "#EC5E2B" } // Deep Orange
+                        GradientStop { position: 0.75; color: "#E84A2F" } // Near Red
+                        GradientStop { position: 1.0;  color: "#E53935" } // Red
                     }
 
-                    Behavior on width { NumberAnimation { duration: 150 } }
+                    Behavior on width {
+                        NumberAnimation { duration: 150 }
+                    }
                 }
 
-                // RED
+                // ================= SOLID RED =================
                 Rectangle {
                     height: parent.height
                     color: "#E53935"
 
-                    x: (8700 / root.maxValue) * parent.width - 1
+                    // Start solid red after gradient ends
+                    x: (8800 / root.maxValue) * parent.width - 1
 
                     width: root.value <= 8800 ? 0 :
                            (root.value - 8800) / root.maxValue * parent.width + 1
@@ -151,7 +149,7 @@ Item {
             // ===== NEEDLE =====
             Rectangle {
                 id: needle
-                width: 8
+                width: 5
                 height: track.height + 8
                 radius: 6
                 color: "black"
@@ -190,35 +188,35 @@ Item {
 
             Text {
                 text: root.label
-                font.pixelSize: Typography.body
+                font.pixelSize: componentTypography.body
 
                 color: "#1A4DB5"
             }
 
             Text {
                 text: ":"
-                font.pixelSize: Typography.body
+                font.pixelSize: componentTypography.body
 
             }
 
             Text {
                 text: root.value
-                font.pixelSize: Typography.body
+                font.pixelSize: componentTypography.body
 
             }
         }
 
         // ================= SLIDER (LIVE TEST) =================
-        Slider {
-            id: testSlider
-            width: parent.width
-            from: 0
-            to: root.maxValue
-            value: root.value
+        // Slider {
+        //     id: testSlider
+        //     width: parent.width
+        //     from: 0
+        //     to: root.maxValue
+        //     value: root.value
 
-            onValueChanged: {
-                root.value = Math.round(value)
-            }
-        }
+        //     onValueChanged: {
+        //         root.value = Math.round(value)
+        //     }
+        // }
     }
 }

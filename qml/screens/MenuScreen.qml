@@ -192,7 +192,7 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
 
-                            navigateTo("Diagnosis")
+                            navigateTo("SysDiagnosis")
                         }
                     }
                 }

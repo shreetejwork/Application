@@ -39,31 +39,31 @@ Item {
         {
             label: "Supplier Name",
             value: GlobalState.supplierName.length ?
-                   GlobalState.supplierName : "..."
+                       GlobalState.supplierName : "..."
         },
 
         {
             label: "Serial Number",
             value: GlobalState.serialNumber.length ?
-                   GlobalState.serialNumber : "..."
+                       GlobalState.serialNumber : "..."
         },
 
         {
             label: "User",
             value: GlobalState.userName.length ?
-                   GlobalState.userName : "..."
+                       GlobalState.userName : "..."
         },
 
         {
             label: "Machine ID",
             value: GlobalState.machineId.length ?
-                   GlobalState.machineId : "PHMX"
+                       GlobalState.machineId : "PHMX"
         },
 
         {
             label: "Location",
             value: GlobalState.location.length ?
-                   GlobalState.location : "..."
+                       GlobalState.location : "..."
         },
 
         {
@@ -73,104 +73,133 @@ Item {
     ]
 
     Rectangle {
+
         Typography {
             id: screenTypography
-            scale: root.scale || 1.0
+            scale: root.scale
         }
+
         anchors.fill: parent
         color: "#F5F7FC"
 
-        // ===== CENTER WRAPPER =====
         Item {
-            anchors.centerIn: parent
-            width: Math.min(parent.width * 0.92, 900 * root.scale)
-            height: centerColumn.implicitHeight
+            anchors {
+                fill: parent
+                leftMargin: 30 * root.scale
+                rightMargin: 30 * root.scale
+                topMargin: 10 * root.scale
+                bottomMargin: 12 * root.scale
+            }
 
             Column {
                 id: centerColumn
 
-                anchors.horizontalCenter: parent.horizontalCenter
-                anchors.verticalCenter: parent.verticalCenter
+                anchors.centerIn: parent
 
-                width: Math.min(parent.width * 0.9, 720 * root.scale)
-                spacing: 24 * root.scale
+                width: Math.min(720 * root.scale, parent.width * 0.82)
 
-                // ===== HEADER =====
+                spacing: 12 * root.scale
+
+                // ================= HEADING =================
+
                 Column {
-                    spacing: 6 * root.scale
+
+                    spacing: 4 * root.scale
 
                     Text {
                         text: "About Machine"
-                        font.pixelSize: 26
+                        font.pixelSize: 24 * root.scale
                         color: "#1A4DB5"
                     }
 
                     Rectangle {
-                        width: 80 * root.scale
+                        width: 72 * root.scale
                         height: 4 * root.scale
-                        radius: 2 * root.scale
+                        radius: 2
                         color: "#1A4DB5"
                     }
                 }
 
-                // ================= CARD =================
-                Rectangle {
-                    width: parent.width
-                    height: gridContent.implicitHeight + (80 * root.scale)
+                // ================= COIL OUTPUT =================
 
-                    radius: 24 * root.scale
+                CoilProgressBar {
+                    width: parent.width
+                    height: 78 * root.scale
+
+                    scale: root.scale
+
+                    value: 2208
+                    maxValue: 10000
+                    label: "Coil Output"
+                }
+
+                // ================= CARD =================
+
+                Rectangle {
+
+                    width: parent.width * 0.92
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    height: gridContent.implicitHeight + (90 * root.scale)
+
+                    radius: 22 * root.scale
                     color: "#FFFFFF"
 
                     border.width: 2
                     border.color: "#6F95D6"
 
-                    anchors.horizontalCenter: parent.horizontalCenter
-
                     Column {
+
                         id: gridContent
 
                         anchors.centerIn: parent
-                        width: parent.width * 0.9
+                        width: parent.width * 0.90
 
-                        spacing: 20 * root.scale
+                        spacing: 12 * root.scale
 
                         GridLayout {
+
                             width: parent.width
+
                             columns: 2
 
-                            rowSpacing: 18 * root.scale
-                            columnSpacing: 18 * root.scale
+                            rowSpacing: 10 * root.scale
+                            columnSpacing: 14 * root.scale
 
                             Repeater {
+
                                 model: root.sysDetails
 
                                 delegate: Rectangle {
-                                    Layout.fillWidth: true
-                                    Layout.preferredHeight: 80 * root.scale
 
-                                    radius: 14 * root.scale
+                                    Layout.fillWidth: true
+                                    Layout.preferredHeight: 62 * root.scale
+
+                                    radius: 12 * root.scale
                                     color: "#F7F9FF"
 
                                     border.width: 1
                                     border.color: "#D7E2F5"
 
                                     Column {
+
                                         anchors.fill: parent
-                                        anchors.margins: 14 * root.scale
-                                        spacing: 6 * root.scale
+                                        anchors.margins: 10 * root.scale
+
+                                        spacing: 2 * root.scale
 
                                         Text {
                                             text: modelData.label
-                                            font.pixelSize: 16
+                                            font.pixelSize: 18 * root.scale
                                             color: "#5B6B8C"
                                         }
 
                                         Text {
                                             text: modelData.value
-                                            font.pixelSize: 20
+                                            font.pixelSize: 20 * root.scale
                                             color: "#1A4DB5"
-                                            elide: Text.ElideRight
+
                                             width: parent.width
+                                            elide: Text.ElideRight
                                         }
                                     }
                                 }

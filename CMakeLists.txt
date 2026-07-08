@@ -94,6 +94,9 @@ qt_add_qml_module(appApplication
         assets/images/backspace.png
         assets/images/backspaceBlue.png
         assets/images/capslock.png
+        assets/images/axis.png
+        assets/images/cpu.png
+        assets/images/barchart.png
         assets/images/RobotoCondensed-Bold.ttf
         assets/images/RobotoCondensed-Regular.ttf
 
@@ -115,7 +118,6 @@ qt_add_qml_module(appApplication
         QML_FILES qml/screens/BatchHistoryScreen.qml
         QML_FILES qml/components/AddProductPopup.qml
         QML_FILES qml/screens/CoilOutputScreen.qml
-        QML_FILES qml/components/XyPlotScreen.qml
         SOURCES src/PlotItem.h
         SOURCES src/PlotItem.cpp
         QML_FILES qml/components/AnimationEffect.qml
@@ -123,6 +125,8 @@ qt_add_qml_module(appApplication
         QML_FILES qml/components/AccessDeniedPopup.qml
         SOURCES src/SerialManager.h
         SOURCES src/SerialManager.cpp
+        QML_FILES qml/screens/SysDiagnosisScreen.qml
+        QML_FILES qml/screens/XyPlotScreen.qml
 )
 
 set_target_properties(appApplication PROPERTIES
