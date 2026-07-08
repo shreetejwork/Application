@@ -22,6 +22,10 @@
 #include <QPageSize>
 #include <QMarginsF>
 #include <QDebug>
+#include <QImage>
+#include <QFile>
+#include <QPageLayout>
+
 
 PdfExporter::PdfExporter(QObject *parent)
     : QObject(parent)
@@ -1146,4 +1150,56 @@ bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
         }
     }
     return allOk;
+}
+
+//====================== X-Y PLOT PDF ============================
+
+QString PdfExporter::exportXYPlotToPdf(const QString &imagePath)
+{
+    QString reportsFolder = getReportsFolderPath();
+    QDir().mkpath(reportsFolder);
+
+    QString pdfName =
+        QString("XY_Plot_%1.pdf")
+            .arg(QDateTime::currentDateTime()
+                     .toString("dd-MM-yyyy-HH-mm"));
+
+    QString pdfPath = reportsFolder + "/" + pdfName;
+
+    QPdfWriter writer(pdfPath);
+
+    writer.setPageSize(QPageSize(QPageSize::A4));
+    writer.setResolution(300);
+
+    QPainter painter(&writer);
+
+    painter.fillRect(writer.pageLayout().paintRectPixels(writer.resolution()),
+                     Qt::white);
+
+    QImage image(imagePath);
+
+    if (!image.isNull()) {
+
+        QRect page =
+            writer.pageLayout().paintRectPixels(writer.resolution());
+
+        QSize scaled =
+            image.size().scaled(page.size() - QSize(120,120),
+                                Qt::KeepAspectRatio);
+
+        QRect target(
+            (page.width()-scaled.width())/2,
+            (page.height()-scaled.height())/2,
+            scaled.width(),
+            scaled.height());
+
+        painter.drawImage(target, image);
+    }
+
+    painter.end();
+
+    // Delete temporary image immediately
+    QFile::remove(imagePath);
+
+    return pdfPath;
 }

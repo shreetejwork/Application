@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtCore
 
 import CustomComponents 1.0
 
@@ -24,7 +25,7 @@ Item {
     property real scale: Math.min(
                              width  / baseWidth,
                              height / baseHeight
-                         )
+                             )
 
     // =========================================================
     // TYPOGRAPHY FOR XY PLOT SCREEN
@@ -33,6 +34,20 @@ Item {
     Typography {
         id: plotTypography
         scale: root.scale
+    }
+
+    function exportPdf()
+    {
+        graphCard.grabToImage(function(result) {
+
+            var tempImage =
+                    StandardPaths.writableLocation(StandardPaths.TempLocation)
+                    + "/xyplot_tmp.png"
+
+            result.saveToFile(tempImage)
+
+            pdfExporter.exportXYPlotToPdf(tempImage)
+        })
     }
 
     property real bodyFont:  13 * scale
@@ -57,30 +72,33 @@ Item {
     }
 
     ColumnLayout {
-        anchors.fill:         parent
-        anchors.leftMargin:   10 * root.scale
-        anchors.rightMargin:  10 * root.scale
-        anchors.topMargin:    10 * root.scale
+        anchors.fill: parent
+        anchors.leftMargin: 10 * root.scale
+        anchors.rightMargin: 10 * root.scale
+        anchors.topMargin: 10 * root.scale
         anchors.bottomMargin: 10 * root.scale
         spacing: 8 * root.scale
 
-        // ── SCREEN TITLE ──────────────────────────────────────────────────────
-        // Column {
-        //     spacing: 10 * root.scale
+        // =========================================================
+        // TOP BAR
+        // =========================================================
 
-        //     Text {
-        //         text: "XY - Plot"
-        //         font.pixelSize: plotTypography.title
-        //         color: "#1A4DB5"
-        //     }
+        RowLayout {
+            Layout.fillWidth: true
 
-        //     Rectangle {
-        //         width:  60 * root.scale
-        //         height:  3 * root.scale
-        //         radius:  2 * root.scale
-        //         color:  "#1A4DB5"
-        //     }
-        // }
+            Item {
+                Layout.fillWidth: true
+            }
+
+            Button {
+                text: "Save PDF"
+
+                Layout.preferredWidth: 140 * root.scale
+                Layout.preferredHeight: 40 * root.scale
+
+                onClicked: exportPdf()
+            }
+        }
 
         // ── MAIN ROW ──────────────────────────────────────────────────────────
         RowLayout {
@@ -196,6 +214,9 @@ Item {
 
             // ── GRAPH CARD ────────────────────────────────────────────────────
             Rectangle {
+
+                id: graphCard
+
                 Layout.fillWidth:  true
                 Layout.fillHeight: true
 
