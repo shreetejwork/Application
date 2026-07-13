@@ -136,9 +136,26 @@ Item {
     }
 
     function matchesFilter(fileName) {
-        if (activeFilter === "All") return true
-        if (activeFilter === "Audit Report")    return fileName.toLowerCase().indexOf("audit")   !== -1
-        if (activeFilter === "Batch Report") return fileName.toLowerCase().indexOf("batch") !== -1
+
+        var n = fileName.toLowerCase()
+
+        if (activeFilter === "All")
+            return true
+
+        if (activeFilter === "Audit Report")
+            return n.indexOf("audit") !== -1
+
+        if (activeFilter === "Batch Report")
+            return n.indexOf("batch") !== -1
+
+        if (activeFilter === "X-Y Plot")
+            return n.indexOf("x-y") !== -1 ||
+                   n.indexOf("xy") !== -1 ||
+                   n.indexOf("plot") !== -1
+
+        if (activeFilter === "Coil Output")
+            return n.indexOf("coil") !== -1
+
         return true
     }
 
@@ -397,7 +414,13 @@ Item {
                             spacing: 4 * root.scale
 
                             Repeater {
-                                model: ["All", "Audit Report", "Batch Report"]
+                                model: [
+                                       "All",
+                                       "Audit Report",
+                                       "Batch Report",
+                                       "X-Y Plot",
+                                       "Coil Output"
+                                   ]
 
                                 Rectangle {
                                     property bool active: root.activeFilter === modelData
@@ -681,8 +704,21 @@ Item {
                                     radius: 14 * root.scale
                                     color: {
                                         var n = fileName.toLowerCase()
-                                        if (n.indexOf("audit")   !== -1) return "#E8F5E9"
-                                        if (n.indexOf("batch") !== -1) return "#FFF3E0"
+
+                                        if (n.indexOf("audit") !== -1)
+                                            return "#E8F5E9"
+
+                                        if (n.indexOf("batch") !== -1)
+                                            return "#FFF3E0"
+
+                                        if (n.indexOf("x-y") !== -1 ||
+                                            n.indexOf("xy")  !== -1 ||
+                                            n.indexOf("plot") !== -1)
+                                            return "#E3F2FD"
+
+                                        if (n.indexOf("coil") !== -1)
+                                            return "#F3E5F5"
+
                                         return "#EDF1FA"
                                     }
 
@@ -693,14 +729,40 @@ Item {
                                         font.weight: Font.Medium
                                         color: {
                                             var n = fileName.toLowerCase()
-                                            if (n.indexOf("audit")   !== -1) return "#2E7D32"
-                                            if (n.indexOf("batch") !== -1) return "#E65100"
+
+                                            if (n.indexOf("audit") !== -1)
+                                                return "#2E7D32"
+
+                                            if (n.indexOf("batch") !== -1)
+                                                return "#E65100"
+
+                                            if (n.indexOf("x-y") !== -1 ||
+                                                n.indexOf("xy")  !== -1 ||
+                                                n.indexOf("plot") !== -1)
+                                                return "#1565C0"
+
+                                            if (n.indexOf("coil") !== -1)
+                                                return "#6A1B9A"
+
                                             return "#4A5E8A"
                                         }
                                         text: {
                                             var n = fileName.toLowerCase()
-                                            if (n.indexOf("audit")   !== -1) return "Audit Trail Report"
-                                            if (n.indexOf("batch") !== -1) return "Batch Report"
+
+                                            if (n.indexOf("audit") !== -1)
+                                                return "Audit Trail Report"
+
+                                            if (n.indexOf("batch") !== -1)
+                                                return "Batch Report"
+
+                                            if (n.indexOf("x-y") !== -1 ||
+                                                n.indexOf("xy")  !== -1 ||
+                                                n.indexOf("plot") !== -1)
+                                                return "X-Y Plot"
+
+                                            if (n.indexOf("coil") !== -1)
+                                                return "Coil Output"
+
                                             return "General"
                                         }
                                     }
