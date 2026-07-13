@@ -2,8 +2,9 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtCore
-
+import AppState 1.0
 import CustomComponents 1.0
+
 
 import "../components"
 
@@ -27,6 +28,10 @@ Item {
                              height / baseHeight
                              )
 
+    // Holds the async grabToImage result so it isn't garbage-collected
+    // before the callback fires
+    property var pendingGrab: null
+
     // =========================================================
     // TYPOGRAPHY FOR XY PLOT SCREEN
     // =========================================================
@@ -36,17 +41,58 @@ Item {
         scale: root.scale
     }
 
+
     function exportPdf()
     {
-        graphCard.grabToImage(function(result) {
+        if (typeof PdfExporter === "undefined" || !PdfExporter) {
+            console.log("ERROR: PdfExporter is not available in this screen's context!")
+            return
+        }
+
+        pendingGrab = graphCard.grabToImage(function(result) {
+
+            if (!result) {
+                console.log("Grab failed: result is null")
+                pendingGrab = null
+                return
+            }
 
             var tempImage =
                     StandardPaths.writableLocation(StandardPaths.TempLocation)
                     + "/xyplot_tmp.png"
 
-            result.saveToFile(tempImage)
+            var ok = result.saveToFile(tempImage)
+            console.log("Temp image saved:", ok, tempImage)
 
-            pdfExporter.exportXYPlotToPdf(tempImage)
+            if (!ok) {
+                console.log("Failed to save temp grab image to:", tempImage)
+                pendingGrab = null
+                return
+            }
+
+            try {
+                var sessionInfo = {
+                    "loggedInUserName": GlobalState.loggedInUserName,
+                    "loggedInUserRole": GlobalState.loggedInUserRole
+                }
+
+                var savedPath = PdfExporter.exportXYPlotToPdf(
+                        tempImage,
+                        productPhaseText.text,
+                        signalText.text,
+                        amplitudeText.text,
+                        sessionInfo
+                )
+                console.log("XY Plot PDF saved at:", savedPath)
+
+                if (notify) {
+                    notify("PDF saved: " + savedPath)
+                }
+            } catch (e) {
+                console.log("EXCEPTION calling exportXYPlotToPdf:", e)
+            }
+
+            pendingGrab = null
         })
     }
 
@@ -91,12 +137,29 @@ Item {
             }
 
             Button {
+                id: savePdfButton
+
                 text: "Save PDF"
 
                 Layout.preferredWidth: 140 * root.scale
                 Layout.preferredHeight: 40 * root.scale
 
                 onClicked: exportPdf()
+
+                contentItem: Text {
+                    text: savePdfButton.text
+                    font.pixelSize: plotTypography.body
+                    color: "#FFFFFF"
+                    horizontalAlignment: Text.AlignHCenter
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: Rectangle {
+                    radius: 10 * root.scale
+                    color: savePdfButton.pressed ? "#153F94" : "#1A4DB5"
+                    border.width: 1
+                    border.color: "#DCE5F5"
+                }
             }
         }
 
@@ -145,7 +208,8 @@ Item {
                             }
 
                             Text {
-                                text: "—"
+                                id: productPhaseText
+                                text: "40"
                                 font.pixelSize: plotTypography.body
                                 color: "#1A4DB5"
                             }
@@ -174,6 +238,7 @@ Item {
                             }
 
                             Text {
+                                id: signalText
                                 text: "400"
                                 font.pixelSize: plotTypography.body
                                 color: "#0F8A60"
@@ -203,7 +268,8 @@ Item {
                             }
 
                             Text {
-                                text: "—"
+                                id: amplitudeText
+                                text: "250"
                                 font.pixelSize: plotTypography.body
                                 color: "#D64545"
                             }

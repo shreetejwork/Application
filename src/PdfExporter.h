@@ -44,7 +44,13 @@ public:
     Q_INVOKABLE bool moveFilesToUsb(const QStringList &filePaths,
                                     const QString &serialNumber);
 
-    Q_INVOKABLE QString exportXYPlotToPdf(const QString &imagePath);
+    Q_INVOKABLE QString exportXYPlotToPdf(
+        const QString &imagePath,
+        const QString &productPhase,
+        const QString &signal,
+        const QString &amplitude,
+        const QVariantMap &sessionData = QVariantMap());
+
 
 private:
     QVariantMap getMachineDetails();
