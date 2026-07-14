@@ -1,10 +1,12 @@
 #pragma once
 
+#include "DatabaseManager.h"
+
 #include <QObject>
 #include <QByteArray>
 #include <QSerialPort>
 #include <QSerialPortInfo>
-
+#include <QVector>
 #include <QTimer>
 
 class SerialManager : public QObject
@@ -29,6 +31,8 @@ class SerialManager : public QObject
 
 public:
     explicit SerialManager(QObject *parent = nullptr);
+
+    void setDatabaseManager(DatabaseManager *databaseManager);
 
     double productPhase() const
     {
@@ -96,11 +100,15 @@ private:
 
     void sendCommand(const QString &cmd);
 
-// private slots:
-//     void generateDummyPacket();
+private:
 
-// private:
-//     QTimer m_dummyTimer;
+    DatabaseManager *m_databaseManager = nullptr;
+
+    QVector<int> m_coilBuffer;
+    QTimer m_coilAverageTimer;
+
+    void processCoilBuffer();
+
 
 
     QSerialPort serial;

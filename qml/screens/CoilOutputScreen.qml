@@ -15,6 +15,8 @@ Item {
     property real baseHeight: 700
     property real scale: Math.max(0.9, Math.min(1.8, height / baseHeight))
 
+    property var pendingCoilGrab: null
+
     property int statAvg: 0
     property int statMin: 0
     property int statMax: 0
@@ -50,12 +52,119 @@ Item {
         var idx     = (day - 1) * root.readingsPerDay
         var targetX = idx * histogramCard.barStride + histogramCard.barSpacing
         flickArea.contentX = Math.max(
-            0,
-            Math.min(targetX, flickArea.contentWidth - flickArea.width))
+                    0,
+                    Math.min(targetX, flickArea.contentWidth - flickArea.width))
     }
 
     // ─── Initialisation ──────────────────────────────────────────────────────
-    Component.onCompleted: { loadData() }
+    Component.onCompleted:
+    {
+        loadData()
+
+        Qt.callLater(function(){
+
+            Qt.callLater(function(){
+
+                histogramCard.setInitialZoom()
+
+            })
+
+        })
+    }
+
+    function exportCoilPdf()
+    {
+        if (typeof PdfExporter === "undefined" || !PdfExporter) {
+            console.log("ERROR: PdfExporter is not available")
+            return
+        }
+
+
+        // Capture only graph area
+        pendingCoilGrab = graphArea.grabToImage(
+            function(result){
+
+                if (!result) {
+                    console.log("Coil graph capture failed")
+                    pendingCoilGrab = null
+                    return
+                }
+
+
+                var tempImage =
+                        StandardPaths.writableLocation(
+                            StandardPaths.TempLocation
+                        )
+                        + "/coil_output_tmp.png"
+
+
+                var ok = result.saveToFile(tempImage)
+
+
+                console.log(
+                    "Coil graph image saved:",
+                    ok,
+                    tempImage
+                )
+
+
+                if(!ok)
+                {
+                    pendingCoilGrab = null
+                    return
+                }
+
+
+                try
+                {
+                    var sessionInfo = {
+                        "loggedInUserName":
+                            GlobalState.loggedInUserName,
+
+                        "loggedInUserRole":
+                            GlobalState.loggedInUserRole
+                    }
+
+
+                    var savedPath =
+                            PdfExporter.exportCoilOutputToPdf(
+                                tempImage,
+                                statAvg.toString(),
+                                statMin.toString(),
+                                statMax.toString(),
+                                sessionInfo
+                            )
+
+
+                    console.log(
+                        "Coil Output PDF saved:",
+                        savedPath
+                    )
+
+
+                    if(notify)
+                        notify("PDF saved: " + savedPath)
+
+                }
+                catch(e)
+                {
+                    console.log(
+                        "EXCEPTION exportCoilOutputToPdf:",
+                        e
+                    )
+                }
+
+
+                pendingCoilGrab = null
+
+
+            },
+            Qt.size(
+                graphArea.width * 2,
+                graphArea.height * 2
+            )
+        )
+    }
 
     function loadData() {
 
@@ -144,12 +253,12 @@ Item {
                     mx = v
 
                 arr.push({
-                    dd: dd,
-                    mon: 1,
-                    hhmm: hhS + ":" + mmS,
-                    val: v,
-                    dayIndex: day - 1
-                })
+                             dd: dd,
+                             mon: 1,
+                             hhmm: hhS + ":" + mmS,
+                             val: v,
+                             dayIndex: day - 1
+                         })
             }
         }
 
@@ -210,7 +319,7 @@ Item {
     function updateTooltip(mouseX) {
         var stride = histogramCard.barStride
         var globalIdx = Math.floor(
-            (mouseX - histogramCard.barSpacing) / stride)
+                    (mouseX - histogramCard.barSpacing) / stride)
 
         if (globalIdx < 0 || globalIdx >= rawValues.length) {
             tooltipItem = null
@@ -221,7 +330,7 @@ Item {
         tooltipItem  = item
 
         var fraction = (item.val - histogramCard.yMin)
-                     / (histogramCard.yMax - histogramCard.yMin)
+                / (histogramCard.yMax - histogramCard.yMin)
 
         tooltipBarX = globalIdx * stride + histogramCard.barWidth / 2
         tooltipBarY = flickArea.height - Math.max(2, fraction * flickArea.height)
@@ -242,24 +351,73 @@ Item {
         border.color: "#6F95D6"
         clip:         true
 
+        function setInitialZoom()
+        {
+            if (plotW <= 0)
+                return
+
+
+            var daysToShow = 15
+
+
+            var totalBars =
+                    daysToShow * root.readingsPerDay
+
+
+            var availableWidth =
+                    plotW
+
+
+            // required pixel distance per bar
+            var targetStride =
+                    availableWidth / totalBars
+
+
+            var defaultStride =
+                    (44 + 6) * root.scale
+
+
+            var initialZoom =
+                    targetStride / defaultStride
+
+
+            zoomFactor = Math.max(
+                        minZoomFactor,
+                        Math.min(
+                            2.0,
+                            initialZoom
+                            )
+                        )
+
+
+            Qt.callLater(function(){
+
+                flickArea.contentX = 0
+
+                root.updateVisibleWindow()
+
+            })
+        }
+
         // ─── Zoom state ──────────────────────────────────────────────────────
-        property real minZoomFactor: 0.01
-        property real zoomFactor:    minZoomFactor
+        property real minZoomFactor: 0.003
+        property real zoomFactor: 0.003
         property real _pinchZoom:    minZoomFactor
 
         property real detailThresh: 0.5
         property bool isDetail:     zoomFactor >= detailThresh
 
         // ─── Bar geometry ────────────────────────────────────────────────────
-        property real barWidth:   Math.max(1, 44 * root.scale * zoomFactor)
-        property real barSpacing: Math.max(0.5, 6 * root.scale * zoomFactor)
-        property real barStride:  barWidth + barSpacing
+
+        property real barWidth: Math.max(0.15, 44 * root.scale * zoomFactor)
+        property real barSpacing: Math.max(0.05, 6 * root.scale * zoomFactor)
+        property real barStride: barWidth + barSpacing
 
         // ─── Y range ─────────────────────────────────────────────────────────
         property real yMin: 0
         property real yMax: root.visualMax > 0
-                             ? root.visualMax * 0.92
-                             : 100
+                            ? root.visualMax * 0.92
+                            : 100
         property int  ySteps: 5
 
         // ─── Layout constants ─────────────────────────────────────────────────
@@ -280,7 +438,7 @@ Item {
         property int visibleDay: {
             var firstBar = Math.floor(flickArea.contentX / histogramCard.barStride)
             return Math.max(1, Math.min(root.totalDays,
-                Math.floor(firstBar / root.readingsPerDay) + 1))
+                                        Math.floor(firstBar / root.readingsPerDay) + 1))
         }
 
         property real graphTop: {
@@ -294,10 +452,47 @@ Item {
         property real plotW:      width - padH * 2 - yAxisW
         property real barAreaH:   Math.max(80 * root.scale, graphH - xAxisH - topPad)
         property real totalBarsW: Math.max(plotW,
-            rawValues.length * barStride + barSpacing * 2)
+                                           rawValues.length * barStride + barSpacing * 2)
 
         // ─── Zoom changed → rebuild window ────────────────────────────────────
-        onBarStrideChanged: Qt.callLater(root.updateVisibleWindow)
+        onBarStrideChanged: {
+            Qt.callLater(root.updateVisibleWindow)
+        }
+
+
+        function applyZoom(newZoom, centerX)
+        {
+            var oldZoom = zoomFactor
+
+            newZoom = Math.max(
+                        minZoomFactor,
+                        Math.min(2.0, newZoom)
+                        )
+
+            if (Math.abs(oldZoom - newZoom) < 0.00001)
+                return
+
+
+            // Keep mouse/center position fixed while zooming
+            var contentPos = flickArea.contentX + centerX
+
+            zoomFactor = newZoom
+
+
+            Qt.callLater(function(){
+
+                flickArea.contentX = Math.max(
+                            0,
+                            Math.min(
+                                contentPos * (newZoom / oldZoom) - centerX,
+                                flickArea.contentWidth - flickArea.width
+                                )
+                            )
+
+                root.updateVisibleWindow()
+
+            })
+        }
 
         // ─── Pinch zoom ───────────────────────────────────────────────────────
         PinchHandler {
@@ -311,15 +506,23 @@ Item {
             }
 
             onActiveScaleChanged: {
+
                 var oldZ = histogramCard.zoomFactor
-                var newZ = Math.max(histogramCard.minZoomFactor,
-                           Math.min(2.0, histogramCard._pinchZoom * activeScale))
-                if (Math.abs(newZ - oldZ) < 0.005) return
+
+                var newZ = Math.max(
+                            histogramCard.minZoomFactor,
+                            Math.min(2.0,
+                                     histogramCard._pinchZoom * activeScale))
+
+                if (Math.abs(newZ - oldZ) < 0.005)
+                    return
 
                 var cx = flickArea.contentX + flickArea.width / 2
-                histogramCard.zoomFactor = newZ
-                flickArea.contentX = Math.max(0,
-                    cx * (newZ / oldZ) - flickArea.width / 2)
+
+                histogramCard.applyZoom(
+                            newZ,
+                            flickArea.width / 2
+                            )
             }
         }
 
@@ -408,7 +611,7 @@ Item {
                             Layout.preferredHeight: 46 * root.scale
                             radius: 14 * root.scale
                             color: zoomOutMa.pressed ? "#CFE1FF"
-                                 : zoomOutMa.containsMouse ? "#E3EEFF" : "#FFFFFF"
+                                                     : zoomOutMa.containsMouse ? "#E3EEFF" : "#FFFFFF"
                             border.width: 1; border.color: "#6F95D6"
                             scale: zoomOutMa.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
@@ -422,13 +625,12 @@ Item {
                                 cursorShape: Qt.PointingHandCursor
                                 property bool holdActive: false
 
-                                function doZoomOut() {
-                                    var oldZ = histogramCard.zoomFactor
-                                    var newZ = Math.max(histogramCard.minZoomFactor, oldZ * 0.85)
-                                    if (Math.abs(newZ - oldZ) < 0.001) return
-                                    var cx = flickArea.contentX + flickArea.width / 2
-                                    histogramCard.zoomFactor = newZ
-                                    flickArea.contentX = Math.max(0, cx * (newZ / oldZ) - flickArea.width / 2)
+                                function doZoomOut()
+                                {
+                                    histogramCard.applyZoom(
+                                                histogramCard.zoomFactor * 0.85,
+                                                flickArea.width / 2
+                                                )
                                 }
 
                                 onClicked:      { if (!holdActive) doZoomOut() }
@@ -454,7 +656,21 @@ Item {
                             Column {
                                 anchors.centerIn: parent; spacing: 0
                                 Text { anchors.horizontalCenter: parent.horizontalCenter; text: "ZOOM"; font.pixelSize: 9; color: "#8EA2C8" }
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: Math.round(histogramCard.zoomFactor * 100) + "%"; font.pixelSize: 15; color: "#1A4DB5" }
+                                Text {
+                                    anchors.horizontalCenter: parent.horizontalCenter
+
+                                    text: Math.round(
+                                              Math.log(histogramCard.zoomFactor /
+                                                       histogramCard.minZoomFactor)
+                                              /
+                                              Math.log(2.0 /
+                                                       histogramCard.minZoomFactor)
+                                              * 100
+                                              ) + "%"
+
+                                    font.pixelSize: 15
+                                    color: "#1A4DB5"
+                                }
                             }
                         }
 
@@ -464,7 +680,7 @@ Item {
                             Layout.preferredHeight: 46 * root.scale
                             radius: 14 * root.scale
                             color: zoomInMa.pressed ? "#CFE1FF"
-                                 : zoomInMa.containsMouse ? "#E3EEFF" : "#FFFFFF"
+                                                    : zoomInMa.containsMouse ? "#E3EEFF" : "#FFFFFF"
                             border.width: 1; border.color: "#6F95D6"
                             scale: zoomInMa.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
@@ -477,13 +693,12 @@ Item {
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
 
-                                function zoomInStep() {
-                                    var oldZ = histogramCard.zoomFactor
-                                    var newZ = Math.min(2.0, oldZ * 1.15)
-                                    if (Math.abs(newZ - oldZ) < 0.001) return
-                                    var cx = flickArea.contentX + flickArea.width / 2
-                                    histogramCard.zoomFactor = newZ
-                                    flickArea.contentX = Math.max(0, cx * (newZ / oldZ) - flickArea.width / 2)
+                                function zoomInStep()
+                                {
+                                    histogramCard.applyZoom(
+                                                histogramCard.zoomFactor * 1.15,
+                                                flickArea.width / 2
+                                                )
                                 }
 
                                 onClicked:  { zoomInStep() }
@@ -497,6 +712,31 @@ Item {
                                 }
                             }
                         }
+                    }
+                }
+                Button {
+                    id: savePdfButton
+
+                    text: "Save PDF"
+
+                    Layout.preferredWidth: 140 * root.scale
+                    Layout.preferredHeight: 55 * root.scale
+
+                    onClicked: exportCoilPdf()
+
+                    contentItem: Text {
+                        text: savePdfButton.text
+                        font.pixelSize: 18 * root.scale
+                        color: "#FFFFFF"
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    background: Rectangle {
+                        radius: 10 * root.scale
+                        color: savePdfButton.pressed ? "#153F94" : "#1A4DB5"
+                        border.width: 1
+                        border.color: "#DCE5F5"
                     }
                 }
             }
@@ -619,9 +859,9 @@ Item {
                     function onVisibleDayChanged() {
                         var itemWidth = (44 * root.scale) + (7 * root.scale)
                         var targetX   = (histogramCard.visibleDay - 1) * itemWidth
-                                      - dayPillFlick.width / 2 + itemWidth / 2
+                                - dayPillFlick.width / 2 + itemWidth / 2
                         dayPillFlick.contentX = Math.max(0,
-                            Math.min(targetX, dayPillFlick.contentWidth - dayPillFlick.width))
+                                                         Math.min(targetX, dayPillFlick.contentWidth - dayPillFlick.width))
                     }
                 }
             }
@@ -629,456 +869,233 @@ Item {
 
         Rectangle { x: 0; y: navRow.y + navRow.height; width: histogramCard.width; height: histogramCard.needsNav ? 1 : 0; color: "#E1E8F5" }
 
-        // =====================================================================
-        // Y AXIS
-        // =====================================================================
         Item {
-            id: yAxisItem
-            x: histogramCard.padH
-            y: histogramCard.graphTop + histogramCard.topPad
-            width: histogramCard.yAxisW; height: histogramCard.barAreaH
+            id: graphArea
 
-            Rectangle { anchors.right: parent.right; anchors.top: parent.top; anchors.bottom: parent.bottom; width: 2; color: "#4A5E8A" }
+            width: histogramCard.width
+            height:
+                histogramCard.graphTop +
+                histogramCard.topPad +
+                histogramCard.barAreaH +
+                histogramCard.xAxisH +
+                histogramCard.padV
 
-            Repeater {
-                model: histogramCard.ySteps + 1
-                delegate: Item {
-                    width: histogramCard.yAxisW - 4 * root.scale; height: 18 * root.scale
-                    y: (index / histogramCard.ySteps) * yAxisItem.height - height / 2
-                    Text {
-                        anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
-                        anchors.rightMargin: 6 * root.scale
-                        property real frac:     1.0 - index / histogramCard.ySteps
-                        property real labelVal: histogramCard.yMin + frac * (histogramCard.yMax - histogramCard.yMin)
-                        text: {
+            clip: false
 
-                            var v = Math.round(labelVal)
-
-                            if (v >= 1000000)
-                                return Math.round(v / 1000000) + "M"
-
-                            if (v >= 1000)
-                                return Math.round(v / 1000) + "k"
-
-                            return v.toString()
-                        }
-                        font.pixelSize: 10; color: "#4A5E8A"
-                    }
-                }
-            }
-        }
-
-        // =====================================================================
-        // GRAPH AREA
-        // =====================================================================
-        Flickable {
-            id: flickArea
-
-            interactive: histogramCard.interactionUnlocked
-
-            x: histogramCard.padH + histogramCard.yAxisW
-            y: histogramCard.graphTop + histogramCard.topPad
-            width:  histogramCard.plotW
-            height: histogramCard.barAreaH
-            clip:   true
-
-
-
-            boundsBehavior:    Flickable.StopAtBounds
-            flickableDirection: Flickable.HorizontalFlick
-
-            contentWidth:  histogramCard.totalBarsW
-            contentHeight: height
-
-            ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
-
-            onContentXChanged: Qt.callLater(root.updateVisibleWindow)
-            onWidthChanged:    Qt.callLater(root.updateVisibleWindow)
-
-            WheelHandler {
-                acceptedDevices: PointerDevice.Mouse
-                onWheel: function(ev) {
-                    var oldZ   = histogramCard.zoomFactor
-                    var factor = ev.angleDelta.y > 0 ? 1.08 : 0.92
-                    var newZ   = Math.max(histogramCard.minZoomFactor, Math.min(2.0, oldZ * factor))
-                    var mouseX = flickArea.contentX + ev.x
-                    histogramCard.zoomFactor = newZ
-                    flickArea.contentX = Math.max(0, mouseX * (newZ / oldZ) - ev.x)
-                }
-            }
-
+            // =====================================================================
+            // Y AXIS
+            // =====================================================================
             Item {
-                id: plotItem
-                width:  flickArea.contentWidth
-                height: flickArea.height
+                id: yAxisItem
+                x: histogramCard.padH
+                y: histogramCard.graphTop + histogramCard.topPad
+                width: histogramCard.yAxisW; height: histogramCard.barAreaH
 
-                // ── Single hover handler covers the whole plot area ───────────
-                MouseArea {
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    // Absolute x relative to plotItem origin
-                    onPositionChanged: function(mouse) { root.updateTooltip(mouse.x) }
-                    onExited:          { root.tooltipItem = null }
-                }
+                Rectangle { anchors.right: parent.right; anchors.top: parent.top; anchors.bottom: parent.bottom; width: 2; color: "#4A5E8A" }
 
-                // ── Virtualized bar Repeater ──────────────────────────────────
                 Repeater {
-                    id: barRepeater
-                    model: root.windowSize
-
+                    model: histogramCard.ySteps + 1
                     delegate: Item {
-                        id: barSlot
-
-                        readonly property int  globalIdx: root.windowStart + index
-                        // Guard against rawValues not yet populated
-                        readonly property bool dataValid: globalIdx < root.rawValues.length
-
-                        readonly property var  barData:   dataValid ? root.rawValues[globalIdx] : null
-
-                        readonly property real fraction:  dataValid
-                            ? (barData.val - histogramCard.yMin) / (histogramCard.yMax - histogramCard.yMin)
-                            : 0
-
-                        readonly property real barH: Math.max(
-                            6 * root.scale,
-                            fraction * (plotItem.height * 0.96)
-                        )
-
-                        x: globalIdx * histogramCard.barStride + histogramCard.barSpacing
-                        width:  histogramCard.barWidth
-                        height: plotItem.height
-
-                        // Bar
-                        Rectangle {
-                            anchors.bottom: parent.bottom
-                            width:  parent.width
-                            height: parent.barH
-                            radius: Math.min(4 * root.scale, width * 0.4)
-                            color:  "#1A4DB5"
-                        }
-
-                        // Value label (detail mode only)
+                        width: histogramCard.yAxisW - 4 * root.scale; height: 18 * root.scale
+                        y: (index / histogramCard.ySteps) * yAxisItem.height - height / 2
                         Text {
-                            visible: histogramCard.isDetail && barSlot.dataValid
-                            anchors.bottom:           parent.bottom
-                            anchors.bottomMargin:     parent.barH + (4 * root.scale)
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            text: barSlot.dataValid ? barData.val.toLocaleString() : ""
-                            font.pixelSize: 9
+                            anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
+                            anchors.rightMargin: 6 * root.scale
+                            property real frac:     1.0 - index / histogramCard.ySteps
+                            property real labelVal: histogramCard.yMin + frac * (histogramCard.yMax - histogramCard.yMin)
+                            text: {
 
-                            color: "#1A4DB5"
-                            renderType: Text.NativeRendering
+                                var v = Math.round(labelVal)
+
+                                if (v >= 1000000)
+                                    return Math.round(v / 1000000) + "M"
+
+                                if (v >= 1000)
+                                    return Math.round(v / 1000) + "k"
+
+                                return v.toString()
+                            }
+                            font.pixelSize: 10; color: "#4A5E8A"
                         }
                     }
                 }
             }
-        }
 
-        // =====================================================================
-        // X AXIS  — uses same window as bars, no separate model needed
-        // =====================================================================
-        Item {
-            id: xAxisItem
-            x:      histogramCard.padH + histogramCard.yAxisW
-            y:      histogramCard.graphTop + histogramCard.topPad + histogramCard.barAreaH
-            width:  histogramCard.plotW
-            height: histogramCard.xAxisH
-            clip:   true
+            // =====================================================================
+            // GRAPH AREA
+            // =====================================================================
+            Flickable {
+                id: flickArea
 
-            Rectangle { anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; height: 2; color: "#4A5E8A" }
+                interactive: histogramCard.interactionUnlocked
 
-            // Offset layer follows scroll without any model
+                x: histogramCard.padH + histogramCard.yAxisW
+                y: histogramCard.graphTop + histogramCard.topPad
+                width:  histogramCard.plotW
+                height: histogramCard.barAreaH
+                clip:   true
+
+
+
+                boundsBehavior:    Flickable.StopAtBounds
+                flickableDirection: Flickable.HorizontalFlick
+
+                contentWidth:  histogramCard.totalBarsW
+                contentHeight: height
+
+                ScrollBar.horizontal: ScrollBar { policy: ScrollBar.AlwaysOff }
+
+                onContentXChanged: Qt.callLater(root.updateVisibleWindow)
+                onWidthChanged:    Qt.callLater(root.updateVisibleWindow)
+
+                WheelHandler {
+
+                    acceptedDevices: PointerDevice.Mouse
+
+                    onWheel: function(ev)
+                    {
+                        var factor =
+                                ev.angleDelta.y > 0 ? 1.12 : 0.88
+
+                        histogramCard.applyZoom(
+                                    histogramCard.zoomFactor * factor,
+                                    ev.x
+                                    )
+                    }
+                }
+
+                Item {
+                    id: plotItem
+                    width:  flickArea.contentWidth
+                    height: flickArea.height
+
+                    // ── Single hover handler covers the whole plot area ───────────
+                    MouseArea {
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        // Absolute x relative to plotItem origin
+                        onPositionChanged: function(mouse) { root.updateTooltip(mouse.x) }
+                        onExited:          { root.tooltipItem = null }
+                    }
+
+                    // ── Virtualized bar Repeater ──────────────────────────────────
+                    Repeater {
+                        id: barRepeater
+                        model: root.windowSize
+
+                        delegate: Item {
+                            id: barSlot
+
+                            readonly property int  globalIdx: root.windowStart + index
+                            // Guard against rawValues not yet populated
+                            readonly property bool dataValid: globalIdx < root.rawValues.length
+
+                            readonly property var  barData:   dataValid ? root.rawValues[globalIdx] : null
+
+                            readonly property real fraction:  dataValid
+                                                              ? (barData.val - histogramCard.yMin) / (histogramCard.yMax - histogramCard.yMin)
+                                                              : 0
+
+                            readonly property real barH: Math.max(
+                                                             6 * root.scale,
+                                                             fraction * (plotItem.height * 0.96)
+                                                             )
+
+                            x: globalIdx * histogramCard.barStride + histogramCard.barSpacing
+                            width:  histogramCard.barWidth
+                            height: plotItem.height
+
+                            // Bar
+                            Rectangle {
+                                anchors.bottom: parent.bottom
+                                width:  parent.width
+                                height: parent.barH
+                                radius: Math.min(4 * root.scale, width * 0.4)
+                                color:  "#1A4DB5"
+                            }
+
+                            // Value label (detail mode only)
+                            Text {
+                                visible: histogramCard.isDetail && barSlot.dataValid
+                                anchors.bottom:           parent.bottom
+                                anchors.bottomMargin:     parent.barH + (4 * root.scale)
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: barSlot.dataValid ? barData.val.toLocaleString() : ""
+                                font.pixelSize: 9
+
+                                color: "#1A4DB5"
+                                renderType: Text.NativeRendering
+                            }
+                        }
+                    }
+                }
+            }
+
+
+            // =====================================================================
+            // X AXIS  — uses same window as bars, no separate model needed
+            // =====================================================================
             Item {
-                x:      -flickArea.contentX
-                width:  histogramCard.totalBarsW
-                height: parent.height
+                id: xAxisItem
 
-                Repeater {
-                    model: root.windowSize   // mirrors bar window exactly
+                x: histogramCard.padH + histogramCard.yAxisW
 
-                    delegate: Item {
-                        readonly property int  globalIdx: root.windowStart + index
-                        readonly property bool dataValid: globalIdx < root.rawValues.length
-                        readonly property var  axisData: dataValid ? root.rawValues[globalIdx] : null
+                y:
+                    histogramCard.topPad +
+                    histogramCard.graphTop +
+                    histogramCard.barAreaH
 
-                        x:      dataValid ? globalIdx * histogramCard.barStride + histogramCard.barSpacing : 0
-                        width:  histogramCard.barStride
-                        height: xAxisItem.height
-                        visible: dataValid
+                width:  histogramCard.plotW
+                height: histogramCard.xAxisH
+                clip:   true
 
-                        // Tick mark
-                        Rectangle { x: parent.width / 2; y: 2; width: 1; height: 5 * root.scale; color: "#4A5E8A" }
+                Rectangle { anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; height: 2; color: "#4A5E8A" }
 
-                        // Overview label (one per day, at first reading)
-                        Column {
-                            visible: !histogramCard.isDetail && dataValid && axisData.hhmm === "00:05"
-                            anchors.top:              parent.top
-                            anchors.topMargin:        9 * root.scale
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 2 * root.scale
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.dd : ""; font.pixelSize: 11; color: "#1A4DB5" }
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? root.monthName(axisData.mon) : ""; font.pixelSize: 9; color: "#4A5E8A" }
+                // Offset layer follows scroll without any model
+                Item {
+                    x:      -flickArea.contentX
+                    width:  histogramCard.totalBarsW
+                    height: parent.height
+
+                    Repeater {
+                        model: root.windowSize   // mirrors bar window exactly
+
+                        delegate: Item {
+                            readonly property int  globalIdx: root.windowStart + index
+                            readonly property bool dataValid: globalIdx < root.rawValues.length
+                            readonly property var  axisData: dataValid ? root.rawValues[globalIdx] : null
+
+                            x:      dataValid ? globalIdx * histogramCard.barStride + histogramCard.barSpacing : 0
+                            width:  histogramCard.barStride
+                            height: xAxisItem.height
+                            visible: dataValid
+
+                            // Tick mark
+                            Rectangle { x: parent.width / 2; y: 2; width: 1; height: 5 * root.scale; color: "#4A5E8A" }
+
+                            // Overview label (one per day, at first reading)
+                            Column {
+                                visible: !histogramCard.isDetail && dataValid && axisData.hhmm === "00:05"
+                                anchors.top:              parent.top
+                                anchors.topMargin:        9 * root.scale
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 2 * root.scale
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.dd : ""; font.pixelSize: 11; color: "#1A4DB5" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? root.monthName(axisData.mon) : ""; font.pixelSize: 9; color: "#4A5E8A" }
+                            }
+
+                            // Detail label (day + time)
+                            Column {
+                                visible: histogramCard.isDetail && dataValid
+                                anchors.top:              parent.top
+                                anchors.topMargin:        9 * root.scale
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                spacing: 4 * root.scale
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.dd : ""; font.pixelSize: 11; color: "#1A4DB5" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? root.monthName(axisData.mon) : ""; font.pixelSize: 9; color: "#4A5E8A" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.hhmm : ""; font.pixelSize: 8; color: "#7B8FAD" }
+                            }
                         }
-
-                        // Detail label (day + time)
-                        Column {
-                            visible: histogramCard.isDetail && dataValid
-                            anchors.top:              parent.top
-                            anchors.topMargin:        9 * root.scale
-                            anchors.horizontalCenter: parent.horizontalCenter
-                            spacing: 4 * root.scale
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.dd : ""; font.pixelSize: 11; color: "#1A4DB5" }
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? root.monthName(axisData.mon) : ""; font.pixelSize: 9; color: "#4A5E8A" }
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.hhmm : ""; font.pixelSize: 8; color: "#7B8FAD" }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Y-axis / X-axis corner cover
-        Rectangle {
-            x:      histogramCard.padH
-            y:      histogramCard.graphTop + histogramCard.topPad + histogramCard.barAreaH
-            width:  histogramCard.yAxisW
-            height: histogramCard.xAxisH
-            color:  "#FFFFFF"
-            Rectangle { anchors.top: parent.top; anchors.left: parent.left; anchors.right: parent.right; height: 2; color: "#4A5E8A" }
-        }
-
-        // ==========================================================
-        // INTERACTION LOCK
-        // ==========================================================
-
-        property bool interactionUnlocked: false
-
-        // Smooth unlock animation
-        Behavior on opacity {
-            NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
-            }
-        }
-
-        // ==========================================================
-        // DISABLED OVERLAY
-        // ==========================================================
-
-        Rectangle {
-            id: lockOverlay
-
-            anchors.fill: parent
-
-            z: 999999
-
-            visible: !histogramCard.interactionUnlocked
-
-            color: "#F5F7FC"
-
-            opacity: overlayTap.pressed ? 0.92 : 0.96
-
-            radius: histogramCard.radius
-
-            border.width: 2
-            border.color: "#6F95D6"
-
-            // Smooth fade
-            Behavior on opacity {
-                NumberAnimation {
-                    duration: 160
-                }
-            }
-
-            // ======================================================
-            // BACKGROUND GLOW
-            // ======================================================
-
-            Rectangle {
-                width: 220 * root.scale
-                height: 220 * root.scale
-
-                radius: width / 2
-
-                anchors.centerIn: parent
-
-                color: "#DCE9FF"
-
-                opacity: pulseAnim.running ? 0.78 : 0.68
-
-                scale: pulseAnim.running ? 1.08 : 0.95
-
-                SequentialAnimation on scale {
-                    id: pulseAnim
-
-                    running: true
-                    loops: Animation.Infinite
-
-                    NumberAnimation {
-                        to: 1.08
-                        duration: 1200
-                        easing.type: Easing.OutQuad
-                    }
-
-                    NumberAnimation {
-                        to: 0.95
-                        duration: 1200
-                        easing.type: Easing.InOutQuad
-                    }
-                }
-
-                Behavior on opacity {
-                    NumberAnimation { duration: 300 }
-                }
-            }
-
-            // ======================================================
-            // CENTER CONTENT
-            // ======================================================
-
-            Column {
-                anchors.centerIn: parent
-
-                spacing: 18 * root.scale
-
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-
-                    text: "Coil Output Window"
-
-                    font.pixelSize: 26
-
-
-                    color: "#1A4DB5"
-                }
-
-                // Lock Icon Circle
-                Rectangle {
-                    width: 90 * root.scale
-                    height: 90 * root.scale
-
-                    radius: width / 2
-
-                    anchors.horizontalCenter: parent.horizontalCenter
-
-                    color: "#FFFFFF"
-
-                    border.width: 2
-                    border.color: "#6F95D6"
-
-                    scale: overlayTap.pressed ? 0.94 : 1.0
-
-                    Behavior on scale {
-                        NumberAnimation {
-                            duration: 120
-                            easing.type: Easing.OutQuad
-                        }
-                    }
-
-                    Text {
-                        anchors.centerIn: parent
-
-                        text: "🔒"
-
-                        font.pixelSize: 38
-                    }
-                }
-
-                // Main Text
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-
-                    text: "Tap Here to Unlock"
-
-                    font.pixelSize: 26
-
-
-                    color: "#1A4DB5"
-                }
-
-                // Subtitle
-                Text {
-                    anchors.horizontalCenter: parent.horizontalCenter
-
-                    text: "Enable zoom, scroll & interaction"
-
-                    font.pixelSize: 18
-
-                    color: "#6B7A99"
-                }
-            }
-
-            // ======================================================
-            // TAP AREA
-            // ======================================================
-
-            MouseArea {
-                id: overlayTap
-
-                anchors.fill: parent
-
-                hoverEnabled: true
-
-                cursorShape: Qt.PointingHandCursor
-
-                onClicked: {
-
-                    unlockAnim.start()
-                }
-            }
-
-            // ======================================================
-            // UNLOCK ANIMATION
-            // ======================================================
-
-            SequentialAnimation {
-                id: unlockAnim
-
-                PropertyAnimation {
-                    target: lockOverlay
-                    property: "scale"
-
-                    from: 1.0
-                    to: 0.96
-
-                    duration: 100
-                }
-
-                PropertyAnimation {
-                    target: lockOverlay
-                    property: "scale"
-
-                    from: 0.96
-                    to: 1.04
-
-                    duration: 140
-                }
-
-                ParallelAnimation {
-
-                    PropertyAnimation {
-                        target: lockOverlay
-                        property: "opacity"
-
-                        to: 0.0
-
-                        duration: 260
-                        easing.type: Easing.OutQuad
-                    }
-
-                    PropertyAnimation {
-                        target: lockOverlay
-                        property: "scale"
-
-                        to: 1.08
-
-                        duration: 260
-                        easing.type: Easing.OutQuad
-                    }
-                }
-
-                ScriptAction {
-                    script: {
-                        histogramCard.interactionUnlocked = true
                     }
                 }
             }

@@ -51,6 +51,14 @@ public:
         const QString &amplitude,
         const QVariantMap &sessionData = QVariantMap());
 
+    Q_INVOKABLE QString exportCoilOutputToPdf(
+        const QString &imagePath,
+        const QString &avg,
+        const QString &min,
+        const QString &max,
+        const QVariantMap &sessionData
+        );
+
 
 private:
     QVariantMap getMachineDetails();

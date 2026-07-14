@@ -12,12 +12,13 @@ SerialManager::SerialManager(QObject *parent)
             this,
             &SerialManager::onReadyRead);
 
-    // connect(&m_dummyTimer,
-    //         &QTimer::timeout,
-    //         this,
-    //         &SerialManager::generateDummyPacket);
+    connect(&m_coilAverageTimer,
+            &QTimer::timeout,
+            this,
+            &SerialManager::processCoilBuffer);
 
-    // m_dummyTimer.start(3000);
+    m_coilAverageTimer.start(5 * 60 * 1000);    // 5 minutes
+
 
 #ifdef Q_OS_MACOS
 
@@ -28,6 +29,11 @@ SerialManager::SerialManager(QObject *parent)
     openPort("/dev/ttyAMA0");
 
 #endif
+}
+
+void SerialManager::setDatabaseManager(DatabaseManager *databaseManager)
+{
+    m_databaseManager = databaseManager;
 }
 
 // =========== Batch Settings =================
@@ -187,9 +193,7 @@ void SerialManager::sendCommand(const QString &cmd)
     bool ok = serial.waitForBytesWritten(1000);
 
     qDebug() << "TX :" << cmd.trimmed();
-    // qDebug() << "Bytes :" << bytes;
-    // qDebug() << "Written :" << ok;
-    // qDebug() << "Pending :" << serial.bytesToWrite();
+
 }
 
 void SerialManager::setMachinePhase(int value)
@@ -338,6 +342,7 @@ void SerialManager::onReadyRead()
             emit coilOutputChanged();
         }
 
+        m_coilBuffer.append(coil);
 
         qDebug() << "Phase     :" << m_productPhase;
         qDebug() << "Signal    :" << m_signal;
@@ -346,61 +351,55 @@ void SerialManager::onReadyRead()
     }
 }
 
-// void SerialManager::generateDummyPacket()
-// {
-//     int phase =
-//         QRandomGenerator::global()->bounded(181);
+void SerialManager::processCoilBuffer()
+{
+    if (m_coilBuffer.isEmpty())
+    {
+        qDebug() << "No coil samples received in last 5 minutes.";
+        return;
+    }
 
-//     int signal =
-//         QRandomGenerator::global()->bounded(
-//             QRandomGenerator::global()->bounded(30001));
+    qint64 sum = 0;
 
-//     int amplitude =
-//         QRandomGenerator::global()->bounded(
-//             QRandomGenerator::global()->bounded(14001));
-
-//     int coil =
-//         QRandomGenerator::global()->bounded(
-//             QRandomGenerator::global()->bounded(10001));
+    for (int value : m_coilBuffer)
+        sum += value;
 
 
-//     QString packet =
-//         QString("N %1,%2,%3,%4 n")
-//             .arg(phase,5,10,QChar('0'))
-//             .arg(signal,5,10,QChar('0'))
-//             .arg(amplitude,5,10,QChar('0'))
-//             .arg(coil,5,10,QChar('0'));
+    int average =
+        static_cast<int>(
+            static_cast<double>(sum) /
+            m_coilBuffer.size()
+            );
 
 
-//     qDebug() << "Dummy RX :" << packet;
+    qDebug() << "--------------------------------";
+    qDebug() << "5 Minute Coil Statistics";
+    qDebug() << "Samples :" << m_coilBuffer.size();
+    qDebug() << "Average :" << average;
+    qDebug() << "--------------------------------";
 
 
-//     if (phase != m_productPhase)
-//     {
-//         m_productPhase = phase;
-//         emit productPhaseChanged();
-//     }
+    // Save 5 minute average into database
+    if (m_databaseManager)
+    {
+        bool saved =
+            m_databaseManager->saveCoilOutputAverage(average);
 
-//     if (signal != m_signal)
-//     {
-//         m_signal = signal;
-//         emit signalChanged();
-//     }
+        if(saved)
+        {
+            qDebug() << "Coil average saved successfully.";
+        }
+        else
+        {
+            qDebug() << "Failed to save coil average.";
+        }
+    }
+    else
+    {
+        qDebug() << "DatabaseManager not connected.";
+    }
 
-//     if (amplitude != m_amplitude)
-//     {
-//         m_amplitude = amplitude;
-//         emit amplitudeChanged();
-//     }
 
-//     if (coil != m_coilOutput)
-//     {
-//         m_coilOutput = coil;
-//         emit coilOutputChanged();
-//     }
-
-//     qDebug() << "Phase     :" << m_productPhase;
-//     qDebug() << "Signal    :" << m_signal;
-//     qDebug() << "Amplitude :" << m_amplitude;
-//     qDebug() << "Coil Out  :" << m_coilOutput;
-// }
+    // Clear buffer for next 5 minute cycle
+    m_coilBuffer.clear();
+}

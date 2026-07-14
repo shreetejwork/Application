@@ -6,6 +6,7 @@
 #include <QFile>
 #include <QDebug>
 #include <QDate>
+#include <QTime>
 #include <QDir>
 #include <QVariantMap>
 
@@ -237,6 +238,16 @@ CREATE TABLE IF NOT EXISTS machineinfo(
             }
         }
     }
+
+    // COIL OUTPUT HISTORY
+    query.exec(R"(
+    CREATE TABLE IF NOT EXISTS CoilOutputHistory(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        time TEXT,
+        date TEXT,
+        average INTEGER
+    );
+)");
 
     qDebug() << "All tables created!";
 }
@@ -592,4 +603,35 @@ int DatabaseManager::daysUntilPasswordExpiry(
             Qt::ISODate);
 
     return QDate::currentDate().daysTo(expiry);
+}
+
+bool DatabaseManager::saveCoilOutputAverage(int average)
+{
+    QSqlQuery query;
+
+    query.prepare(
+        "INSERT INTO CoilOutputHistory "
+        "(time, date, average) "
+        "VALUES (?, ?, ?)");
+
+    query.addBindValue(
+        QTime::currentTime().toString("HH:mm"));
+
+    query.addBindValue(
+        QDate::currentDate().toString("dd MMM"));
+
+    query.addBindValue(average);
+
+    if(!query.exec())
+    {
+        qDebug() << "Failed to save coil average:"
+                 << query.lastError().text();
+
+        return false;
+    }
+
+    qDebug() << "Coil average saved:"
+             << average;
+
+    return true;
 }

@@ -63,6 +63,8 @@ public:
                          const QString &machineType);
 
     Q_INVOKABLE QVariantMap getMachineInfo();
+
+    Q_INVOKABLE bool saveCoilOutputAverage(int average);
 };
 
 #endif // DATABASEMANAGER_H

@@ -90,6 +90,8 @@ int main(int argc, char *argv[])
     if (!dbManager.initialize())
         return -1;
 
+    serialManager.setDatabaseManager(&dbManager);
+
     engine.rootContext()->setContextProperty(
         "databaseManager",
         &dbManager);
