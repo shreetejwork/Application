@@ -82,16 +82,16 @@ void DatabaseManager::createTables()
 
     // Machine Info
     query.exec(R"(
-CREATE TABLE IF NOT EXISTS machineinfo(
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    supplierName TEXT,
-    serialNumber TEXT,
-    machineId TEXT,
-    userName TEXT,
-    location TEXT,
-    machineType TEXT
-);
-)");
+        CREATE TABLE IF NOT EXISTS machineinfo(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            supplierName TEXT,
+            serialNumber TEXT,
+            machineId TEXT,
+            userName TEXT,
+            location TEXT,
+            machineType TEXT
+        );
+    )");
 
     // SYSTEM SETTINGS
     query.exec(R"(
@@ -194,7 +194,7 @@ CREATE TABLE IF NOT EXISTS machineinfo(
         role VARCHAR(20),
         password_expiry_date TEXT
     );
-)");
+    )");
 
 
 
@@ -239,15 +239,21 @@ CREATE TABLE IF NOT EXISTS machineinfo(
         }
     }
 
-    // COIL OUTPUT HISTORY
     query.exec(R"(
-    CREATE TABLE IF NOT EXISTS CoilOutputHistory(
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        time TEXT,
-        date TEXT,
-        average INTEGER
-    );
-)");
+        CREATE TABLE IF NOT EXISTS CoilOutputHistory(
+
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            average INTEGER,
+
+            reading_date TEXT,
+
+            reading_time TEXT,
+
+            created_date TEXT
+        );
+    )");
+
 
     qDebug() << "All tables created!";
 }
@@ -607,31 +613,131 @@ int DatabaseManager::daysUntilPasswordExpiry(
 
 bool DatabaseManager::saveCoilOutputAverage(int average)
 {
-    QSqlQuery query;
+    QDate today =
+        QDate::currentDate();
 
+    QString currentTime =
+        QTime::currentTime()
+            .toString("HH:mm");
+
+    QString displayDate =
+        today.toString("dd MMM");
+
+    QString fullDate =
+        today.toString("yyyy-MM-dd");
+
+    QSqlQuery query;
     query.prepare(
         "INSERT INTO CoilOutputHistory "
-        "(time, date, average) "
-        "VALUES (?, ?, ?)");
-
-    query.addBindValue(
-        QTime::currentTime().toString("HH:mm"));
-
-    query.addBindValue(
-        QDate::currentDate().toString("dd MMM"));
+        "(average, reading_date, reading_time, created_date) "
+        "VALUES (?, ?, ?, ?)"
+        );
 
     query.addBindValue(average);
 
+    // reading_date — used for display in QML (e.g. "14 Jul")
+    query.addBindValue(
+        displayDate
+        );
+
+    // reading_time — used for display in QML (e.g. "00:05")
+    query.addBindValue(
+        currentTime
+        );
+
+    // created_date — used internally for sorting/deleting (e.g. "2026-07-14")
+    query.addBindValue(
+        fullDate
+        );
+
     if(!query.exec())
     {
-        qDebug() << "Failed to save coil average:"
-                 << query.lastError().text();
-
+        qDebug()
+        << "Failed to save coil average:"
+        << query.lastError().text();
         return false;
     }
 
-    qDebug() << "Coil average saved:"
-             << average;
+    /*
+        Keep only latest 30 days
+        Example:
+        31 July:
+        delete 01 July
+        Keep:
+        02 July - 31 July
+        01 August:
+        delete 02 July
+        Keep:
+        03 July - 01 August
+    */
+    QDate deleteLimit =
+        today.addDays(-29);
+
+    QString deleteDate =
+        deleteLimit.toString("yyyy-MM-dd");
+
+    QSqlQuery deleteQuery;
+    deleteQuery.prepare(
+        "DELETE FROM CoilOutputHistory "
+        "WHERE created_date < ?"
+        );
+    deleteQuery.addBindValue(
+        deleteDate
+        );
+
+    if(!deleteQuery.exec())
+    {
+        qDebug()
+        << "Old coil data deletion failed:"
+        << deleteQuery.lastError().text();
+    }
+
+    qDebug()
+        << "Coil Average Saved:"
+        << average
+        << currentTime
+        << displayDate;
 
     return true;
+}
+
+QVariantList DatabaseManager::getCoilOutputHistory()
+{
+    QVariantList list;
+
+    QSqlQuery query;
+    query.prepare(
+        "SELECT average, reading_date, reading_time, created_date "
+        "FROM CoilOutputHistory "
+        "ORDER BY created_date ASC, id ASC"
+        );
+
+    if(!query.exec())
+    {
+        qDebug()
+        << "Coil history fetch error:"
+        << query.lastError().text();
+        return list;
+    }
+
+    while(query.next())
+    {
+        QVariantMap item;
+
+        item["value"] =
+            query.value("average");
+
+        item["date"] =
+            query.value("reading_date");   // e.g. "14 Jul"
+
+        item["time"] =
+            query.value("reading_time");   // e.g. "00:05"
+
+        item["created_date"] =
+            query.value("created_date");   // e.g. "2026-07-14" — sortable
+
+        list.append(item);
+    }
+
+    return list;
 }

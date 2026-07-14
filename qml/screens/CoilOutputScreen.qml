@@ -22,11 +22,13 @@ Item {
     property int statMax: 0
     property int visualMax: 100
 
-    property int readingsPerDay: 288
-    property int totalDays: 30
+    property int totalDays: 0
 
     // Full dataset — never mutated after loadData()
     property var rawValues: []
+
+
+    property var dayBoundaries: []
 
     // ─── Windowed-render state ────────────────────────────────────────────────
     property int windowStart: 0
@@ -34,7 +36,13 @@ Item {
     property int windowSize:  0
 
 
+    property int windowStep: 1
+
+
     readonly property int renderBuffer: 80
+
+
+    readonly property int maxRenderBars: 1200
 
     // ─── Tooltip cache ───────────────────────────────────────────────────────
     property var  tooltipItem: null   // cached object from rawValues
@@ -42,18 +50,34 @@ Item {
     property real tooltipBarY: 0
 
     // ─── Helpers ─────────────────────────────────────────────────────────────
-    function monthName(m) {
-        var names = ["JAN","FEB","MAR","APR","MAY","JUN",
-                     "JUL","AUG","SEP","OCT","NOV","DEC"]
-        return names[m - 1]
+    function monthName(m)
+    {
+        var months = [
+            "", "Jan", "Feb", "Mar", "Apr", "May",
+            "Jun", "Jul", "Aug","Sep", "Oct", "Nov","Dec"
+        ]
+
+        return months[m]
     }
 
-    function jumpToDay(day) {
-        var idx     = (day - 1) * root.readingsPerDay
-        var targetX = idx * histogramCard.barStride + histogramCard.barSpacing
-        flickArea.contentX = Math.max(
-                    0,
-                    Math.min(targetX, flickArea.contentWidth - flickArea.width))
+
+    function formatAxisValue(v)
+    {
+        v = Math.round(v)
+
+        if (v >= 1000000) {
+            var m  = v / 1000000
+            var rm = Math.round(m * 10) / 10
+            return (rm % 1 === 0 ? rm.toFixed(0) : rm.toFixed(1)) + "M"
+        }
+
+        if (v >= 1000) {
+            var k  = v / 1000
+            var rk = Math.round(k * 10) / 10
+            return (rk % 1 === 0 ? rk.toFixed(0) : rk.toFixed(1)) + "k"
+        }
+
+        return v.toString()
     }
 
     // ─── Initialisation ──────────────────────────────────────────────────────
@@ -166,127 +190,196 @@ Item {
         )
     }
 
-    function loadData() {
+    function loadData()
+    {
+
+        var dbData =
+                databaseManager.getCoilOutputHistory()
+
 
         var arr = []
+
+
         var sum = 0
-        var mn  = 999999999
-        var mx  = 0
 
-        for (var day = 1; day <= totalDays; day++) {
+        var mn = 999999999
 
-            for (var r = 0; r < readingsPerDay; r++) {
+        var mx = 0
 
-                var totalMin = r * 5
 
-                var hh = Math.floor(totalMin / 60)
-                var mm = totalMin % 60
 
-                var hhS = hh < 10 ? "0" + hh : "" + hh
-                var mmS = mm < 10 ? "0" + mm : "" + mm
-                var dd  = day < 10 ? "0" + day : "" + day
+        for(var i = 0; i < dbData.length; i++)
+        {
 
-                // -------------------------------------------------
-                // REALISTIC LIVE-LIKE VALUES (0 → 2k)
-                // -------------------------------------------------
+            var item = dbData[i]
 
-                var rand = Math.random()
 
-                var baseMax = 0
+            var value =
+                    item.value
 
-                // 80% → low range
-                if (rand < 0.80) {
 
-                    baseMax = 300 + Math.random() * 900
-                    // 300 → 1200
+            sum += value
+
+
+            if(value < mn)
+                mn = value
+
+
+            if(value > mx)
+                mx = value
+
+
+
+            var axisDateStr = item.date  !== undefined ? item.date  : ""
+            var axisTimeStr = item.time  !== undefined ? item.time  : ""
+
+
+            var sortKey  = item.created_date !== undefined
+                                ? item.created_date
+                                : axisDateStr
+
+            var dayStr   = "01"
+            var monStr   = "Jan"
+            var yearNum  = 1970
+
+            if (item.created_date !== undefined) {
+                var cdParts = ("" + item.created_date).split("-")
+                if (cdParts.length === 3) {
+                    yearNum = parseInt(cdParts[0])
+                    monStr  = root.monthName(parseInt(cdParts[1]))
+                    dayStr  = cdParts[2]
                 }
+            }
 
-                // 18% → medium range
-                else if (rand < 0.98) {
+            var dayKey = sortKey
 
-                    baseMax = 1200 + Math.random() * 500
-                    // 1200 → 1700
-                }
 
-                // 2% → high spikes
-                else {
+            arr.push({
 
-                    baseMax = 1700 + Math.random() * 300
-                    // 1700 → 2000
-                }
+                date: dayStr + " " + monStr + " " + yearNum,
 
-                // smooth movement
-                var wave =
-                        (Math.sin(r / 10) * 0.35) +
-                        (Math.sin(r / 22) * 0.22) +
-                        0.50
+                time: axisTimeStr,
 
-                // random noise
-                var noise = Math.random() * 0.25
+                day: dayStr,
 
-                // final factor
-                var factor = Math.max(0.05, wave + noise)
+                month: monStr,
 
-                // raw value
-                var base = factor * baseMax
+                hhmm: axisTimeStr,
 
-                // occasional dips
-                if (Math.random() < 0.05)
-                    base *= 0.15
+                axisDate: axisDateStr,
 
-                // tiny spikes
-                if (Math.random() < 0.01)
-                    base *= 1.15
+                axisTime: axisTimeStr,
 
-                // final clamp
-                var v = Math.max(
-                            0,
-                            Math.min(2000, Math.round(base))
-                            )
+                dayKey: dayKey,
 
-                sum += v
+                isDayStart: false, // computed below once sorted
 
-                if (v < mn)
-                    mn = v
+                val: value
 
-                if (v > mx)
-                    mx = v
+            })
 
-                arr.push({
-                             dd: dd,
-                             mon: 1,
-                             hhmm: hhS + ":" + mmS,
-                             val: v,
-                             dayIndex: day - 1
-                         })
+        }
+
+
+
+        arr.sort(function(a, b) {
+            if (a.dayKey === b.dayKey)
+                return a.hhmm < b.hhmm ? -1 : (a.hhmm > b.hhmm ? 1 : 0)
+            return a.dayKey < b.dayKey ? -1 : 1
+        })
+
+
+
+        var boundaries = []
+        var lastDayKey = null
+
+        for (var j = 0; j < arr.length; j++) {
+            if (arr[j].dayKey !== lastDayKey) {
+                arr[j].isDayStart = true
+                boundaries.push({
+                    index:    j,
+                    axisDate: arr[j].axisDate,
+                    dayKey:   arr[j].dayKey
+                })
+                lastDayKey = arr[j].dayKey
             }
         }
 
+
         rawValues = arr
 
-        statAvg = Math.round(sum / arr.length)
-        statMin = mn
-        statMax = mx
+        dayBoundaries = boundaries
 
-        // -------------------------------------------------
-        // SMART VISUAL MAX
-        // -------------------------------------------------
+        totalDays = boundaries.length
 
-        function nextNiceStep(v) {
 
-            if (v <= 500)
-                return 500
 
-            return Math.ceil(v / 500) * 500
+        if(arr.length > 0)
+        {
+
+            statAvg =
+                    Math.round(sum / arr.length)
+
+
+            statMin =
+                    mn
+
+
+            statMax =
+                    mx
+
+
+
+            visualMax =
+                    Math.ceil((statMax * 1.12) / 100) * 100
+
+        }
+        else
+        {
+
+            statAvg = 0
+            statMin = 0
+            statMax = 0
+            visualMax = 100
+
         }
 
-        visualMax = nextNiceStep(statMax)
 
-        // Reset window
+
         windowStart = 0
-        windowEnd   = 0
-        windowSize  = 0
+
+        windowEnd = 0
+
+        windowSize = 0
+
+        windowStep = 1
+
         tooltipItem = null
+
+
+        updateVisibleWindow()
+
+    }
+
+
+    function jumpToDay(dayNumber)
+    {
+        if (!flickArea || !histogramCard) return
+        if (dayNumber < 1 || dayNumber > dayBoundaries.length) return
+
+        var boundary = dayBoundaries[dayNumber - 1]
+        var stride = histogramCard.barStride
+
+        if (stride <= 0) return
+
+        var targetX = boundary.index * stride
+
+        targetX = Math.max(
+                    0,
+                    Math.min(targetX, flickArea.contentWidth - flickArea.width)
+                    )
+
+        flickArea.contentX = targetX
 
         updateVisibleWindow()
     }
@@ -307,12 +400,26 @@ Item {
 
         var newStart = Math.max(0, firstVisible - renderBuffer)
         var newEnd   = Math.min(total - 1, lastVisible + renderBuffer)
-        var newSize  = newEnd - newStart + 1
+
+        // Guard against an out-of-range start (e.g. stray contentX values)
+        newStart = Math.min(newStart, total - 1)
+        newEnd   = Math.max(newEnd, newStart)
+
+        var rangeSize = newEnd - newStart + 1
+        var newStep = 1
+        var newSize = rangeSize
+
+
+        if (rangeSize > maxRenderBars) {
+            newStep = Math.ceil(rangeSize / maxRenderBars)
+            newSize = Math.ceil(rangeSize / newStep)
+        }
 
         // Only update properties that actually changed to avoid binding churn
         if (newStart !== windowStart) windowStart = newStart
         if (newEnd   !== windowEnd)   windowEnd   = newEnd
         if (newSize  !== windowSize)  windowSize  = newSize
+        if (newStep  !== windowStep)  windowStep  = newStep
     }
 
     // ─── Tooltip helper ──────────────────────────────────────────────────────
@@ -327,7 +434,7 @@ Item {
         }
 
         var item     = rawValues[globalIdx]
-        tooltipItem  = item
+        tooltipItem  = item   // carries date, time, axisDate, axisTime, val
 
         var fraction = (item.val - histogramCard.yMin)
                 / (histogramCard.yMax - histogramCard.yMin)
@@ -357,11 +464,27 @@ Item {
                 return
 
 
+
             var daysToShow = 15
 
+            var totalBarsForRange
 
-            var totalBars =
-                    daysToShow * root.readingsPerDay
+
+            if (root.dayBoundaries.length > daysToShow) {
+
+
+                totalBarsForRange = root.dayBoundaries[daysToShow].index
+
+            } else {
+
+
+                totalBarsForRange = root.rawValues.length
+
+            }
+
+
+            if (totalBarsForRange <= 0)
+                totalBarsForRange = 100
 
 
             var availableWidth =
@@ -370,7 +493,7 @@ Item {
 
             // required pixel distance per bar
             var targetStride =
-                    availableWidth / totalBars
+                    availableWidth / totalBarsForRange
 
 
             var defaultStride =
@@ -409,14 +532,15 @@ Item {
 
         // ─── Bar geometry ────────────────────────────────────────────────────
 
-        property real barWidth: Math.max(0.15, 44 * root.scale * zoomFactor)
-        property real barSpacing: Math.max(0.05, 6 * root.scale * zoomFactor)
+        property real barWidth: Math.max(0.15 * root.scale, 44 * root.scale * zoomFactor)
+        property real barSpacing: Math.max(0.05 * root.scale, 6 * root.scale * zoomFactor)
         property real barStride: barWidth + barSpacing
 
         // ─── Y range ─────────────────────────────────────────────────────────
         property real yMin: 0
+
         property real yMax: root.visualMax > 0
-                            ? root.visualMax * 0.92
+                            ? root.visualMax
                             : 100
         property int  ySteps: 5
 
@@ -435,10 +559,24 @@ Item {
             return totalW > plotW + 10
         }
 
+        // Which day (1-based, indexed into root.dayBoundaries) the first
+        // visible bar currently belongs to.
         property int visibleDay: {
             var firstBar = Math.floor(flickArea.contentX / histogramCard.barStride)
-            return Math.max(1, Math.min(root.totalDays,
-                                        Math.floor(firstBar / root.readingsPerDay) + 1))
+            var boundaries = root.dayBoundaries
+
+            if (boundaries.length === 0)
+                return 1
+
+            var dayNum = 1
+            for (var i = 0; i < boundaries.length; i++) {
+                if (boundaries[i].index <= firstBar)
+                    dayNum = i + 1
+                else
+                    break
+            }
+
+            return Math.max(1, Math.min(root.totalDays, dayNum))
         }
 
         property real graphTop: {
@@ -903,18 +1041,7 @@ Item {
                             anchors.rightMargin: 6 * root.scale
                             property real frac:     1.0 - index / histogramCard.ySteps
                             property real labelVal: histogramCard.yMin + frac * (histogramCard.yMax - histogramCard.yMin)
-                            text: {
-
-                                var v = Math.round(labelVal)
-
-                                if (v >= 1000000)
-                                    return Math.round(v / 1000000) + "M"
-
-                                if (v >= 1000)
-                                    return Math.round(v / 1000) + "k"
-
-                                return v.toString()
-                            }
+                            text: root.formatAxisValue(labelVal)
                             font.pixelSize: 10; color: "#4A5E8A"
                         }
                     }
@@ -986,7 +1113,7 @@ Item {
                         delegate: Item {
                             id: barSlot
 
-                            readonly property int  globalIdx: root.windowStart + index
+                            readonly property int  globalIdx: root.windowStart + index * root.windowStep
                             // Guard against rawValues not yet populated
                             readonly property bool dataValid: globalIdx < root.rawValues.length
 
@@ -996,9 +1123,10 @@ Item {
                                                               ? (barData.val - histogramCard.yMin) / (histogramCard.yMax - histogramCard.yMin)
                                                               : 0
 
+
                             readonly property real barH: Math.max(
                                                              6 * root.scale,
-                                                             fraction * (plotItem.height * 0.96)
+                                                             fraction * (plotItem.height * 0.90)
                                                              )
 
                             x: globalIdx * histogramCard.barStride + histogramCard.barSpacing
@@ -1008,7 +1136,7 @@ Item {
                             // Bar
                             Rectangle {
                                 anchors.bottom: parent.bottom
-                                width:  parent.width
+                                width:  Math.max(1.2 * root.scale, parent.width)
                                 height: parent.barH
                                 radius: Math.min(4 * root.scale, width * 0.4)
                                 color:  "#1A4DB5"
@@ -1061,7 +1189,7 @@ Item {
                         model: root.windowSize   // mirrors bar window exactly
 
                         delegate: Item {
-                            readonly property int  globalIdx: root.windowStart + index
+                            readonly property int  globalIdx: root.windowStart + index * root.windowStep
                             readonly property bool dataValid: globalIdx < root.rawValues.length
                             readonly property var  axisData: dataValid ? root.rawValues[globalIdx] : null
 
@@ -1073,27 +1201,29 @@ Item {
                             // Tick mark
                             Rectangle { x: parent.width / 2; y: 2; width: 1; height: 5 * root.scale; color: "#4A5E8A" }
 
-                            // Overview label (one per day, at first reading)
+
                             Column {
-                                visible: !histogramCard.isDetail && dataValid && axisData.hhmm === "00:05"
-                                anchors.top:              parent.top
-                                anchors.topMargin:        9 * root.scale
+                                visible: !histogramCard.isDetail && dataValid && axisData.isDayStart
+                                anchors.top: parent.top
+                                anchors.topMargin: 9 * root.scale
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                spacing: 2 * root.scale
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.dd : ""; font.pixelSize: 11; color: "#1A4DB5" }
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? root.monthName(axisData.mon) : ""; font.pixelSize: 9; color: "#4A5E8A" }
+                                spacing: 1 * root.scale
+
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.axisDate.split(" ")[0] : ""; font.pixelSize: 11; font.bold: true; color: "#1A4DB5" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.axisDate.split(" ")[1] : ""; font.pixelSize: 10; color: "#1A4DB5" }
                             }
 
-                            // Detail label (day + time)
+
                             Column {
                                 visible: histogramCard.isDetail && dataValid
-                                anchors.top:              parent.top
-                                anchors.topMargin:        9 * root.scale
+                                anchors.top: parent.top
+                                anchors.topMargin: 9 * root.scale
                                 anchors.horizontalCenter: parent.horizontalCenter
-                                spacing: 4 * root.scale
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.dd : ""; font.pixelSize: 11; color: "#1A4DB5" }
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? root.monthName(axisData.mon) : ""; font.pixelSize: 9; color: "#4A5E8A" }
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.hhmm : ""; font.pixelSize: 8; color: "#7B8FAD" }
+                                spacing: 1 * root.scale
+
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.day : ""; font.pixelSize: 11; font.bold: true; color: "#1A4DB5" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.month : ""; font.pixelSize: 10; color: "#1A4DB5" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.axisTime : ""; font.pixelSize: 8; color: "#7B8FAD" }
                             }
                         }
                     }

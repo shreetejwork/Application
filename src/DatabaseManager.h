@@ -48,6 +48,8 @@ public:
     //     const QString &username,
     //     const QString &newPassword);
 
+    Q_INVOKABLE bool saveCoilOutputAverage(int average);
+
     void printAllUsers();
 
 private:
@@ -64,7 +66,7 @@ public:
 
     Q_INVOKABLE QVariantMap getMachineInfo();
 
-    Q_INVOKABLE bool saveCoilOutputAverage(int average);
+    Q_INVOKABLE QVariantList getCoilOutputHistory();
 };
 
 #endif // DATABASEMANAGER_H
