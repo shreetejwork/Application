@@ -144,7 +144,15 @@ Item {
                 Layout.preferredWidth: 140 * root.scale
                 Layout.preferredHeight: 40 * root.scale
 
-                onClicked: exportPdf()
+                onClicked: {
+                    var path = exportPdf()
+
+                    if (path !== "") {
+                        if (globalTopBar && globalTopBar.showNotification) {
+                            globalTopBar.showNotification("✓ PDF saved successfully")
+                        }
+                    }
+                }
 
                 contentItem: Text {
                     text: savePdfButton.text

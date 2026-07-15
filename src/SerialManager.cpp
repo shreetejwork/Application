@@ -31,6 +31,17 @@ SerialManager::SerialManager(QObject *parent)
 #endif
 }
 
+void SerialManager::setCoilBalancingStatus(bool status)
+{
+    if(m_coilBalancingOn == status)
+        return;
+
+    m_coilBalancingOn = status;
+
+    qDebug() << "SerialManager Coil Balancing:"
+             << (m_coilBalancingOn ? "ON" : "OFF");
+}
+
 void SerialManager::setDatabaseManager(DatabaseManager *databaseManager)
 {
     m_databaseManager = databaseManager;
@@ -336,13 +347,23 @@ void SerialManager::onReadyRead()
         }
 
 
+        // Always update UI coil output value
         if (coil != m_coilOutput)
         {
             m_coilOutput = coil;
             emit coilOutputChanged();
         }
 
-        m_coilBuffer.append(coil);
+
+        // Only store samples when Coil Balancing is OFF
+        if(!m_coilBalancingOn)
+        {
+            m_coilBuffer.append(coil);
+        }
+        else
+        {
+            qDebug() << "Coil Balancing ON - Display only, not storing coil value";
+        }
 
         qDebug() << "Phase     :" << m_productPhase;
         qDebug() << "Signal    :" << m_signal;

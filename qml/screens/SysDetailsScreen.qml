@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Layouts
 import QtQuick.Controls
 import AppState 1.0
+import Backend 1.0
 
 import "../components"
 
@@ -13,6 +14,20 @@ Item {
 
     property real baseHeight: 700
     property real scale: Math.max(0.9, Math.min(1.8, height / baseHeight))
+
+    Connections {
+        target: GlobalState
+
+        function onCoilBalancingOnChanged() {
+
+            SerialManager.setCoilBalancingStatus(
+                        GlobalState.coilBalancingOn
+                        )
+
+            console.log("Global Coil Balancing Changed:",
+                        GlobalState.coilBalancingOn ? "ON" : "OFF")
+        }
+    }
 
     Component.onCompleted: {
 
@@ -122,15 +137,72 @@ Item {
 
                 // ================= COIL OUTPUT =================
 
-                CoilProgressBar {
-                    width: parent.width
-                    height: 78 * root.scale
+                Rectangle {
+                    width: parent.width * 0.92
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    height: 155 * root.scale
 
-                    scale: root.scale
+                    radius: 22 * root.scale
+                    color: "#FFFFFF"
 
-                    value: 2208
-                    maxValue: 10000
-                    label: "Coil Output"
+                    border.width: 2
+                    border.color: "#6F95D6"
+
+
+                    Column {
+                        anchors.fill: parent
+                        anchors.margins: 14 * root.scale
+                        spacing: 10 * root.scale
+
+                        Item {
+                            width: parent.width
+                            height: 40 * root.scale
+
+                            Button {
+                                id: coilBalanceButton
+
+                                anchors.centerIn: parent
+
+                                width: 150 * root.scale
+                                height: 40 * root.scale
+
+                                text: GlobalState.coilBalancingOn
+                                      ? "Coil Balancing ON"
+                                      : "Coil Balancing OFF"
+
+                                onClicked: {
+
+                                    GlobalState.coilBalancingOn = !GlobalState.coilBalancingOn
+
+                                }
+
+                                contentItem: Text {
+                                    text: coilBalanceButton.text
+                                    font.pixelSize: 16 * root.scale
+                                    color: "#FFFFFF"
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+                                }
+
+                                background: Rectangle {
+                                    radius: 10 * root.scale
+                                    color: coilBalanceButton.pressed ? "#153F94" : "#1A4DB5"
+                                    border.width: 1
+                                    border.color: "#DCE5F5"
+                                }
+                            }
+                        }
+
+                        CoilProgressBar {
+                            width: parent.width
+                            height: 78 * root.scale
+
+                            scale: root.scale
+                            value: SerialManager.coilOutput
+                            maxValue: 10000
+                            label: "Coil Output"
+                        }
+                    }
                 }
 
                 // ================= CARD =================

@@ -83,6 +83,8 @@ public slots:
     // Batch Settings
     void setBatch(int state);
 
+    void setCoilBalancingStatus(bool status);
+
 signals:
     void productPhaseChanged();
 
@@ -99,6 +101,8 @@ private:
     bool openPort(const QString &port);
 
     void sendCommand(const QString &cmd);
+
+    bool m_coilBalancingOn = false;
 
 private:
 
