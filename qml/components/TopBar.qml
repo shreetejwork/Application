@@ -73,32 +73,51 @@ Rectangle {
 
     LoginPopup {
         id: loginPopup
+
+
+        // ================= NORMAL USER LOGIN =================
+
         onLoginRequested: function(userType, username, password) {
+
             if (loginPopup.isUserBlocked(username)) {
+
                 var remaining = loginPopup.getBlockRemaining(username)
-                loginPopup.errorText = "User blocked. Try again in " + remaining + " seconds"
+
+                loginPopup.errorText =
+                        "User blocked. Try again in "
+                        + remaining
+                        + " seconds"
+
                 loginPopup.hasError = true
                 return
             }
 
-            var valid = databaseManager.validateLogin(userType, username, password)
+
+            var valid =
+                    databaseManager.validateLogin(
+                        userType,
+                        username,
+                        password
+                        )
+
 
             if (!valid) {
+
                 loginPopup.registerFailedAttempt(username)
-                if (!loginPopup.hasError) {
-                    var attempts = loginPopup.failedAttempts[username] || 0
-                    loginPopup.errorText = "Invalid username or password. "
-                        + (loginPopup.maxAttempts - attempts) + " attempts remaining"
-                    loginPopup.hasError = true
-                }
+
                 return
             }
 
+
             if (databaseManager.isPasswordExpired(username)) {
-                loginPopup.errorText = "Password expired. Contact Admin."
+
+                loginPopup.errorText =
+                        "Password expired. Contact Admin."
+
                 loginPopup.hasError = true
                 return
             }
+
 
             loginPopup.errorText = ""
             loginPopup.hasError = false
@@ -110,33 +129,77 @@ Rectangle {
 
             var initial = "U"
 
+
             if (userType === "Admin")
                 initial = "A"
+
             else if (userType === "Operator")
                 initial = "O"
+
             else if (userType === "Supervisor")
                 initial = "S"
 
 
-            // Show login notification
+
             root.showNotification(
                         "Logged in "
                         + initial
                         + "-"
-                        + username)
+                        + username
+                        )
 
 
-            var days = databaseManager.daysUntilPasswordExpiry(username)
-            if (days > 0 && days <= 7) {
-                root.showNotification("Password expires in " + days + " day(s)")
+            var days =
+                    databaseManager.daysUntilPasswordExpiry(username)
+
+
+            if(days > 0 && days <= 7)
+            {
+                root.showNotification(
+                            "Password expires in "
+                            + days
+                            + " day(s)"
+                            )
             }
 
 
             loginPopup.clearFailedAttempts(username)
 
+
             countdownCircle.resetCountdown()
 
+
             loginPopup.close()
+        }
+
+
+
+        // ================= DEVELOPER LOGIN =================
+
+        onDeveloperLoginSuccess:
+        {
+
+            root.showNotification(
+                        "Developer mode activated"
+                        )
+
+
+            countdownCircle.resetCountdown()
+        }
+
+
+
+        // ================= ENGINEER LOGIN =================
+
+        onEngineerLoginSuccess:
+        {
+
+            root.showNotification(
+                        "Engineer mode activated"
+                        )
+
+
+            countdownCircle.resetCountdown()
         }
     }
 
@@ -544,31 +607,101 @@ Rectangle {
                 MouseArea {
                     anchors.fill: parent
 
+
                     Timer {
                         id: longPressTimer
+
                         interval: 3000
                         repeat: false
+
+
                         onTriggered: {
+
                             powerItem.longPressCount++
-                            powerItem.longPressTriggered = true
-                            if (powerItem.longPressCount >= 2) {
+
+                            // First 3 second press completed
+                            if (powerItem.longPressCount === 1) {
+
+                                powerItem.longPressTriggered = true
+
+                            }
+
+
+                            // Second 3 second press completed
+                            else if (powerItem.longPressCount === 2) {
+
+
                                 powerItem.longPressCount = 0
-                                console.log("Exiting to OS...")
+
+                                powerItem.longPressTriggered = true
+
+
+                                // if (GlobalState.developerLogin) {
+
+                                //     console.log(
+                                //         "Developer mode: Exiting to OS..."
+                                //     )
+
+                                //     Qt.quit()
+
+                                // }
+
                                 Qt.quit()
+                                console.log(
+                                    "Exiting to OS..."
+                                )
+
                             }
                         }
                     }
 
+
+                    // Reset second press counter after timeout
+                    Timer {
+
+                        id: longPressResetTimer
+
+                        interval: 5000
+                        repeat: false
+
+
+                        onTriggered: {
+
+                            powerItem.longPressCount = 0
+                        }
+                    }
+
                     onPressed: {
+
                         powerItem.longPressTriggered = false
+
+
                         longPressTimer.start()
                     }
 
-                    onReleased: longPressTimer.stop()
+
+
+                    onReleased: {
+
+                        longPressTimer.stop()
+
+
+                        // Start waiting time after first successful long press
+                        if(powerItem.longPressCount === 1) {
+
+                            longPressResetTimer.start()
+
+                        }
+                    }
+
+
 
                     onClicked: {
-                        if (!powerItem.longPressTriggered) {
+
+                        if(!powerItem.longPressTriggered) {
+
                             powerPopup.open()
+
                         }
                     }
                 }

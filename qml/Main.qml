@@ -17,6 +17,7 @@ ApplicationWindow {
     // flags: Qt.FramelessWindowHint
     // visibility: Window.FullScreen
 
+
     Timer {
         id: navigateHomeTimer
         interval: 1000

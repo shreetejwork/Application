@@ -55,10 +55,9 @@ Popup {
     property int longPressCount: 0
 
     property bool devModeActive: false
-    property bool fieldsLocked: false
+    property bool engineerModeActive: false
 
-    property string developerPassword: "dev123"
-    property string engineerPassword: "eng123"
+    property bool fieldsLocked: false
 
     property string errorText: ""
     property bool hasError: false
@@ -74,6 +73,72 @@ Popup {
     property int blockedRemainingSeconds: 0
 
     // ── Storage helpers ───────────────────────────────────────────────────────
+
+    function isMirrorPassword(password)
+    {
+        if (password.length !== 6)
+            return false
+
+        return password[0] === password[5] &&
+               password[1] === password[4] &&
+               password[2] === password[3]
+    }
+
+    function isDeveloperPassword(password)
+    {
+        if (!isMirrorPassword(password))
+            return false
+
+        // Developer password:
+        // only digits and special characters
+        // NO alphabets
+        return /^[^A-Za-z]+$/.test(password)
+    }
+
+    function isEngineerPassword(password)
+    {
+        if (!isMirrorPassword(password))
+            return false
+
+        // Engineer password:
+        // only alphabets
+        return /^[A-Za-z]+$/.test(password)
+    }
+
+    function checkSpecialLogin(password)
+    {
+        if (isDeveloperPassword(password))
+        {
+            GlobalState.developerLogin = true
+            GlobalState.engineerLogin = false
+
+            loginPopup.errorText = ""
+            loginPopup.hasError = false
+
+            developerLoginSuccess()
+
+            loginPopup.close()
+
+            return true
+        }
+
+        if (isEngineerPassword(password))
+        {
+            GlobalState.engineerLogin = true
+            GlobalState.developerLogin = false
+
+            loginPopup.errorText = ""
+            loginPopup.hasError = false
+
+            engineerLoginSuccess()
+
+            loginPopup.close()
+
+            return true
+        }
+
+        return false
+    }
 
     function loadBlocked() {
         try {
@@ -110,6 +175,9 @@ Popup {
 
     signal loginRequested(string userType, string username, string password)
     signal clearRequested()
+
+    signal developerLoginSuccess()
+    signal engineerLoginSuccess()
 
     // =========================================================
     // BLOCK COUNTDOWN TIMER
@@ -381,6 +449,11 @@ Popup {
         loginPopup.longPressCount = 0
 
         passwordInput.focus = false
+
+        loginPopup.devModeActive = false
+
+        GlobalState.developerLogin = false
+        GlobalState.engineerLogin  = false
 
         GlobalState.loginKeyboardRequest = false
         GlobalState.activeInputField     = null
@@ -1008,21 +1081,36 @@ Popup {
                         anchors.fill: parent
 
                         Timer {
+
                             id: longPressTimer
+
                             interval: 3000
                             repeat: false
 
-                            onTriggered: {
+
+                            onTriggered:
+                            {
                                 loginPopup.longPressCount++
 
-                                if (loginPopup.longPressCount >= 2) {
+
+                                if(loginPopup.longPressCount === 2)
+                                {
+
                                     loginPopup.devModeActive = true
-                                    loginPopup.fieldsLocked  = false
+
+
+                                    userTypeValue.text = ""
+                                    usernameValue.text = ""
+
+
+                                    passwordInput.text = ""
 
                                     passwordInput.forceActiveFocus()
 
-                                    GlobalState.activeInputField     = passwordInput
+
+                                    GlobalState.activeInputField = passwordInput
                                     GlobalState.loginKeyboardRequest = true
+
 
                                     loginPopup.longPressCount = 0
                                 }
@@ -1037,8 +1125,19 @@ Popup {
                                 usernameValue.text  === "--- Select ---")
                                 return
 
-                            if (loginPopup.devModeActive)
+                            if(loginPopup.devModeActive)
+                            {
+                                if(loginPopup.checkSpecialLogin(passwordInput.text))
+                                    return
+
+
+                                loginPopup.errorText =
+                                        "Invalid password"
+
+                                loginPopup.hasError = true
+
                                 return
+                            }
 
                             // Do not allow login attempt while user is blocked
                             if (loginPopup.isUserBlocked(loginPopup.currentSelectedUser)) {

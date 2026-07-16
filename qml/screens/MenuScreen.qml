@@ -82,7 +82,9 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
 
-                            if (GlobalState.loggedInUserRole !== "Admin")
+                            if (GlobalState.loggedInUserRole !== "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin)
                             {
                                 accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -91,7 +93,7 @@ Item {
 
                                 accessDeniedPopup.open()
                                 return
-                            }y
+                            }
 
                             navigateTo("User")
                         }
@@ -105,7 +107,9 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
 
-                            if (GlobalState.loggedInUserRole !== "Admin")
+                            if (GlobalState.loggedInUserRole !== "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin)
                             {
                                 accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -125,16 +129,18 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
 
-                            // if (GlobalState.loggedInUserRole === "")
-                            // {
-                            //     accessDeniedPopup.popupTitle = "Access Denied !"
+                            if (GlobalState.loggedInUserRole === ""
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin)
+                            {
+                                accessDeniedPopup.popupTitle = "Access Denied !"
 
-                            //     accessDeniedPopup.popupMessage =
-                            //             "Please login first"
+                                accessDeniedPopup.popupMessage =
+                                        "Please login first"
 
-                            //     accessDeniedPopup.open()
-                            //     return
-                            // }
+                                accessDeniedPopup.open()
+                                return
+                            }
 
                             navigateTo("Reports")
                         }
@@ -152,9 +158,11 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
 
-                            if (GlobalState.loggedInUserRole !== "Admin")
+                            if (GlobalState.loggedInUserRole != "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin)
                             {
-                                accessDeniedPopup.popupTitle = "Access Denied !"
+                                accessDeniedPopup.popupTitle = "Access Denied!"
 
                                 accessDeniedPopup.popupMessage =
                                         "Only Admin can access"
@@ -172,7 +180,9 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
 
-                            if (GlobalState.loggedInUserRole === "")
+                            if (GlobalState.loggedInUserRole === ""
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin)
                             {
                                 accessDeniedPopup.popupTitle = "Access Denied !"
 

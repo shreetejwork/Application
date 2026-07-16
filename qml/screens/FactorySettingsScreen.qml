@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import AppState 1.0
 import "../components"
 
 Item {
@@ -155,10 +156,12 @@ Item {
                     // ── SLOT 1: Add your future PNG here ───
 
                     MenuTile {
+
+                        visible: GlobalState.developerLogin
+
                         iconSource: "qrc:/qt/qml/Application/assets/images/coding.png"
                         label:      "Developer Settings"
                         iconSize:   100 * root.scale
-                        visible: true
                         enabled: true
                         onTileClicked: navigateTo("DeveloperSettings")
                     }

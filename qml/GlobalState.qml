@@ -55,6 +55,9 @@ QtObject {
     property real signalThreshold: 500
     property real amplitudeThreshold: 180
 
+    property bool developerLogin: false
+    property bool engineerLogin: false
+
     property bool coilBalancingOn: false
 
     property bool loginKeyboardRequest: false
