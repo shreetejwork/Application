@@ -624,6 +624,10 @@ Item {
                         border.color: "#E5E7EB"
                         border.width: 1
 
+                        enabled: ddBtn.toggled
+
+                        opacity: enabled ? 1.0 : 0.5
+
                         Text {
                             text: "Power (Volt)"
                             font.pixelSize: 15
@@ -653,6 +657,13 @@ Item {
 
                                 onSaveClicked: function(val)
                                 {
+                                    if (GlobalState.loggedInUserRole === "")
+                                    {
+                                        accessDeniedPopup.popupTitle = "Access Denied !"
+                                        accessDeniedPopup.popupMessage = "Please login first"
+                                        accessDeniedPopup.open()
+                                        return
+                                    }
 
                                     root.notify("✓ DD Power Saved : " + val)
                                 }
@@ -667,6 +678,10 @@ Item {
                         color: "#FFFFFF"
                         border.color: "#E5E7EB"
                         border.width: 1
+
+                        enabled: ddBtn.toggled && GlobalState.loggedInUserRole !== ""
+
+                        opacity: enabled ? 1.0 : 0.5
 
                         Text {
                             text: "Frequency (Hz)"
