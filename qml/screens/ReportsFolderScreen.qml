@@ -229,7 +229,7 @@ Item {
 
         GlobalState.saveLogs()
 
-        notify("✓ File deleted")
+        notify("✓ File(s) deleted")
 
         loadFiles()
     }
@@ -265,7 +265,7 @@ Item {
 
             GlobalState.saveLogs()
 
-            notify("✓ File moved to USB")
+            notify("✓ File(s) moved to USB")
             loadFiles()
         }
     }

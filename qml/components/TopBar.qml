@@ -346,27 +346,64 @@ Rectangle {
 
                 Rectangle {
                     id: notificationBanner
+
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.verticalCenter: parent.verticalCenter
+
                     height: Math.max(34, root.height * 0.28)
+
                     radius: 8
                     color: "#2C63D6"
+
                     border.color: "#80FFFFFF"
                     border.width: 1
+
                     opacity: root.notificationVisible ? 1 : 0
+
                     visible: opacity > 0
 
-                    Behavior on opacity { NumberAnimation { duration: 220 } }
+                    property real popupScale: root.notificationVisible ? 1.0 : 0.85
+
+
+                    scale: popupScale
+
+
+                    transformOrigin: Item.Center
+
+
+                    Behavior on opacity {
+                        NumberAnimation {
+                            duration: 200
+                            easing.type: Easing.OutCubic
+                        }
+                    }
+
+
+                    Behavior on scale {
+                        NumberAnimation {
+                            duration: 450
+                            easing.type: Easing.OutBack
+                            easing.overshoot: 2.0
+                        }
+                    }
+
 
                     Text {
                         anchors.fill: parent
+
                         anchors.margins: Math.max(8, root.height * 0.08)
+
                         text: root.notificationText
+
                         color: "white"
+
                         elide: Text.ElideRight
+
                         horizontalAlignment: Text.AlignHCenter
+
                         verticalAlignment: Text.AlignVCenter
+
                         font.pixelSize: topBarTypography.subHeading
                     }
                 }
