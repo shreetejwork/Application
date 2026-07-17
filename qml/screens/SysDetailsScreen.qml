@@ -171,24 +171,39 @@ Item {
                                       : "Coil Balancing OFF"
 
                                 onClicked: {
-
                                     GlobalState.coilBalancingOn = !GlobalState.coilBalancingOn
-
                                 }
 
                                 contentItem: Text {
                                     text: coilBalanceButton.text
                                     font.pixelSize: 16 * root.scale
-                                    color: "#FFFFFF"
+                                    font.bold: true
+
+                                    color: GlobalState.coilBalancingOn
+                                           ? "#1A4DB5"
+                                           : "#FFFFFF"
+
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                 }
 
                                 background: Rectangle {
                                     radius: 10 * root.scale
-                                    color: coilBalanceButton.pressed ? "#153F94" : "#1A4DB5"
+
+                                    color: GlobalState.coilBalancingOn
+                                           ? "#FFFFFF"
+                                           : (coilBalanceButton.pressed ? "#153F94" : "#1A4DB5")
+
                                     border.width: 1
-                                    border.color: "#DCE5F5"
+                                    border.color: "#1A4DB5"
+
+                                    Behavior on color {
+                                        ColorAnimation { duration: 150 }
+                                    }
+
+                                    Behavior on border.color {
+                                        ColorAnimation { duration: 150 }
+                                    }
                                 }
                             }
                         }

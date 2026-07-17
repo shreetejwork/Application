@@ -35,16 +35,19 @@ bool DatabaseManager::initialize()
 
     if (firstRun) {
         qDebug() << "First run: Creating DB & tables...";
-        createTables();
+
     } else {
         qDebug() << "DB already exists, opening...";
     }
+
+    createTables();
 
     QSqlQuery query;
 
     query.exec(
         "ALTER TABLE usertable "
-        "ADD COLUMN password_expiry_date TEXT");
+        "ADD COLUMN IF NOT EXISTS password_expiry_date TEXT"
+        );
 
     query.exec(
         "UPDATE usertable "
@@ -96,14 +99,6 @@ void DatabaseManager::createTables()
     // SYSTEM SETTINGS
     query.exec(R"(
         CREATE TABLE IF NOT EXISTS systemsettings (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            data TEXT
-        );
-    )");
-
-    // FILTER SETTINGS
-    query.exec(R"(
-        CREATE TABLE IF NOT EXISTS filtersettings (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             data TEXT
         );
@@ -251,6 +246,67 @@ void DatabaseManager::createTables()
             reading_time TEXT,
 
             created_date TEXT
+        );
+    )");
+
+    query.exec(R"(
+        CREATE TABLE IF NOT EXISTS machineparameters (
+            id INTEGER PRIMARY KEY,
+            machinePhase INTEGER,
+            signalThr INTEGER,
+            ampThr INTEGER,
+            ddPower INTEGER,
+            ddFreq REAL
+        );
+    )");
+
+    query.exec(R"(
+        INSERT OR IGNORE INTO machineparameters
+            (id, machinePhase, signalThr, ampThr, ddPower, ddFreq)
+            VALUES
+        (1, 0, 0, 0, 0, 25.0);
+
+    )");
+
+    // S1 SETTINGS PARAMETERS
+    query.exec(R"(
+        CREATE TABLE IF NOT EXISTS filtersettings (
+            id INTEGER PRIMARY KEY,
+
+            lpf REAL,
+            hpf REAL,
+
+            operateDelay INTEGER,
+            holdDelay INTEGER,
+            relayDelay INTEGER,
+
+            digitalGain REAL,
+            analogGain REAL
+        );
+    )");
+
+    query.exec(R"(
+        INSERT OR IGNORE INTO filtersettings
+        (
+            id,
+            lpf,
+            hpf,
+            operateDelay,
+            holdDelay,
+            relayDelay,
+            digitalGain,
+            analogGain
+        )
+        VALUES
+        (
+            1,
+            10,
+            2.0,
+            0,
+            250,
+            250,
+            1.0,
+            1.0
         );
     )");
 
@@ -740,4 +796,202 @@ QVariantList DatabaseManager::getCoilOutputHistory()
     }
 
     return list;
+}
+
+// ==================== Machine Parameters ===============================
+
+bool DatabaseManager::saveMachinePhaseSettings(
+    const QString &machinePhase,
+    int signalThr,
+    int ampThr)
+{
+    QSqlQuery query;
+
+    query.prepare(
+        "UPDATE machineparameters "
+        "SET machinePhase = ?, "
+        "signalThr = ?, "
+        "ampThr = ? "
+        "WHERE id = 1");
+
+    query.addBindValue(machinePhase);
+    query.addBindValue(signalThr);
+    query.addBindValue(ampThr);
+
+    if (!query.exec())
+    {
+        qDebug() << query.lastError().text();
+        return false;
+    }
+
+    return true;
+}
+
+bool DatabaseManager::saveDDPower(int ddPower)
+{
+    QSqlQuery query;
+
+    query.prepare(
+        "UPDATE machineparameters "
+        "SET ddPower = ? "
+        "WHERE id = 1"
+        );
+
+    query.addBindValue(ddPower);
+
+    if(!query.exec())
+    {
+        qDebug() << "DD Power save failed:"
+                 << query.lastError().text();
+
+        return false;
+    }
+
+    return true;
+}
+
+bool DatabaseManager::saveDDFrequency(double ddFreq)
+{
+    QSqlQuery query;
+
+    query.prepare(
+        "UPDATE machineparameters "
+        "SET ddFreq = ? "
+        "WHERE id = 1"
+        );
+
+    query.addBindValue(ddFreq);
+
+    if(!query.exec())
+    {
+        qDebug() << "DD Frequency save failed:"
+                 << query.lastError().text();
+
+        return false;
+    }
+
+    return true;
+}
+
+QVariantMap DatabaseManager::getMachinePhaseSettings()
+{
+    QVariantMap data;
+
+    QSqlQuery query;
+
+    query.prepare(
+        "SELECT machinePhase, signalThr, ampThr "
+        "FROM machineparameters "
+        "WHERE id = 1");
+
+    if (query.exec() && query.next())
+    {
+        data["machinePhase"] = query.value("machinePhase");
+        data["signalThr"] = query.value("signalThr");
+        data["ampThr"] = query.value("ampThr");
+    }
+
+    return data;
+}
+
+QVariantMap DatabaseManager::getDDSettings()
+{
+    QVariantMap data;
+
+    QSqlQuery query;
+
+    query.prepare(
+        "SELECT ddPower, ddFreq "
+        "FROM machineparameters "
+        "WHERE id = 1");
+
+    if (query.exec() && query.next())
+    {
+        data["ddPower"] = query.value("ddPower");
+        data["ddFreq"] = query.value("ddFreq");
+    }
+
+    return data;
+}
+
+
+// =================== Filter Settings ======================
+
+bool DatabaseManager::saveS1Settings(
+    double lpf,
+    double hpf,
+    int operateDelay,
+    int holdDelay,
+    int relayDelay,
+    double digitalGain,
+    double analogGain)
+{
+    QSqlQuery query;
+
+    query.prepare(
+        "UPDATE filtersettings SET "
+        "lpf = ?, "
+        "hpf = ?, "
+        "operateDelay = ?, "
+        "holdDelay = ?, "
+        "relayDelay = ?, "
+        "digitalGain = ?, "
+        "analogGain = ? "
+        "WHERE id = 1"
+        );
+
+
+    query.addBindValue(lpf);
+    query.addBindValue(hpf);
+    query.addBindValue(operateDelay);
+    query.addBindValue(holdDelay);
+    query.addBindValue(relayDelay);
+    query.addBindValue(digitalGain);
+    query.addBindValue(analogGain);
+
+
+    if(!query.exec())
+    {
+        qDebug() << "S1 settings save failed:"
+                 << query.lastError().text();
+
+        return false;
+    }
+
+
+    return true;
+}
+
+QVariantMap DatabaseManager::getS1Settings()
+{
+    QVariantMap data;
+
+    QSqlQuery query;
+
+    query.prepare(
+        "SELECT "
+        "lpf,"
+        "hpf,"
+        "operateDelay,"
+        "holdDelay,"
+        "relayDelay,"
+        "digitalGain,"
+        "analogGain "
+        "FROM filtersettings "
+        "WHERE id=1"
+        );
+
+
+    if(query.exec() && query.next())
+    {
+        data["lpf"] = query.value("lpf");
+        data["hpf"] = query.value("hpf");
+        data["operateDelay"] = query.value("operateDelay");
+        data["holdDelay"] = query.value("holdDelay");
+        data["relayDelay"] = query.value("relayDelay");
+        data["digitalGain"] = query.value("digitalGain");
+        data["analogGain"] = query.value("analogGain");
+    }
+
+    return data;
 }

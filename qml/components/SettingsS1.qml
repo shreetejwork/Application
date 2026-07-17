@@ -21,6 +21,33 @@ Item {
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
+
+    Component.onCompleted: {
+
+        var settings = databaseManager.getS1Settings()
+
+        if(settings.lpf !== undefined)
+            updateValue("lpf1", settings.lpf)
+
+        if(settings.hpf !== undefined)
+            updateValue("hpf1", settings.hpf)
+
+        if(settings.operateDelay !== undefined)
+            updateValue("od", settings.operateDelay)
+
+        if(settings.holdDelay !== undefined)
+            updateValue("hd", settings.holdDelay)
+
+        if(settings.relayDelay !== undefined)
+            updateValue("rd", settings.relayDelay)
+
+        if(settings.digitalGain !== undefined)
+            updateValue("dg", settings.digitalGain)
+
+        if(settings.analogGain !== undefined)
+            updateValue("ag", settings.analogGain)
+    }
+
     
     // =========================================================
     // TYPOGRAPHY FOR SETTINGS S1
@@ -147,6 +174,24 @@ Item {
                             SerialManager.setAnalogGain(newVal)
                             break
                         }
+
+                        databaseManager.saveS1Settings(
+
+                            Number(displayValue("lpf1")),
+
+                            Number(displayValue("hpf1")),
+
+                            Number(displayValue("od")),
+
+                            Number(displayValue("hd")),
+
+                            Number(displayValue("rd")),
+
+                            Number(displayValue("dg")),
+
+                            Number(displayValue("ag"))
+
+                        )
 
 
                         root.notify(

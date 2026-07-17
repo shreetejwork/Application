@@ -52,6 +52,31 @@ public:
 
     void printAllUsers();
 
+    Q_INVOKABLE bool saveMachinePhaseSettings(
+        const QString &machinePhase,
+        int signalThr,
+        int ampThr);
+
+    Q_INVOKABLE bool saveDDPower(int ddPower);
+
+    Q_INVOKABLE bool saveDDFrequency(double ddFreq);
+
+    Q_INVOKABLE QVariantMap getMachinePhaseSettings();
+
+    Q_INVOKABLE QVariantMap getDDSettings();
+
+    Q_INVOKABLE bool saveS1Settings(
+        double lpf,
+        double hpf,
+        int operateDelay,
+        int holdDelay,
+        int relayDelay,
+        double digitalGain,
+        double analogGain
+        );
+
+    Q_INVOKABLE QVariantMap getS1Settings();
+
 private:
     void createTables();
 

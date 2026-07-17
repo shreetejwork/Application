@@ -3,6 +3,8 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import AppState 1.0
 
+import Backend 1.0
+
 import "screens"
 import "components"
 
@@ -159,6 +161,162 @@ ApplicationWindow {
             applyFontToAllChildren(Overlay.overlay)
 
         tuneSwipeViewSmoothness()
+
+        startupTimer.start()
+    }
+
+    Timer {
+
+        id: startupTimer
+
+        interval: 1000
+        repeat: false
+
+
+        onTriggered: {
+
+            if (mainTopBar)
+                mainTopBar.showNotification("Sending parameters...")
+
+
+            // ================= MACHINE SETTINGS =================
+
+            var machineSettings =
+                    databaseManager.getMachinePhaseSettings()
+
+
+            if(machineSettings.machinePhase !== undefined)
+            {
+                GlobalState.machinePhase =
+                        machineSettings.machinePhase
+
+                SerialManager.setMachinePhase(
+                        Math.round(GlobalState.machinePhase * 10)
+                )
+            }
+
+
+            if(machineSettings.signalThr !== undefined)
+            {
+                GlobalState.signalThreshold =
+                        machineSettings.signalThr
+
+                SerialManager.setSignalThreshold(
+                        GlobalState.signalThreshold
+                )
+            }
+
+
+            if(machineSettings.ampThr !== undefined)
+            {
+                GlobalState.amplitudeThreshold =
+                        machineSettings.ampThr
+
+                SerialManager.setAmplitudeThreshold(
+                        GlobalState.amplitudeThreshold
+                )
+            }
+
+
+
+            // ================= DD SETTINGS =================
+
+
+            var ddSettings =
+                    databaseManager.getDDSettings()
+
+
+            if(ddSettings.ddPower !== undefined)
+            {
+                SerialManager.setDDPower(
+                        ddSettings.ddPower
+                )
+            }
+
+
+            if(ddSettings.ddFreq !== undefined)
+            {
+                SerialManager.setDDFrequency(
+                        Math.round(ddSettings.ddFreq * 10)
+                )
+            }
+
+
+
+            // ================= S1 SETTINGS =================
+
+
+            var s1Settings =
+                    databaseManager.getS1Settings()
+
+
+
+            if(s1Settings.lpf !== undefined)
+            {
+                SerialManager.setLPF(
+                        s1Settings.lpf
+                )
+            }
+
+
+            if(s1Settings.hpf !== undefined)
+            {
+                SerialManager.setHPF(
+                        Math.round(s1Settings.hpf * 10)
+                )
+            }
+
+
+            if(s1Settings.operateDelay !== undefined)
+            {
+                SerialManager.setOperateDelay(
+                        s1Settings.operateDelay
+                )
+            }
+
+
+            if(s1Settings.holdDelay !== undefined)
+            {
+                SerialManager.setHoldDelay(
+                        s1Settings.holdDelay
+                )
+            }
+
+
+            if(s1Settings.relayDelay !== undefined)
+            {
+                SerialManager.setRelayDelay(
+                        s1Settings.relayDelay
+                )
+            }
+
+
+            if(s1Settings.digitalGain !== undefined)
+            {
+                SerialManager.setDigitalGain(
+                        Math.round(s1Settings.digitalGain * 10)
+                )
+            }
+
+
+            if(s1Settings.analogGain !== undefined)
+            {
+                SerialManager.setAnalogGain(
+                        s1Settings.analogGain
+                )
+            }
+
+
+
+            Qt.callLater(function(){
+
+                if(mainTopBar)
+                    mainTopBar.showNotification(
+                        "✓ Parameters sent successfully"
+                    )
+            })
+
+        }
     }
 
 

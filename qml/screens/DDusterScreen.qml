@@ -18,6 +18,9 @@ Item {
     property string lastValidBatch: "General Batch"
     property string lastValidProduct: "Default Product"
 
+    property int ddPower: 0
+    property real ddFrequency: 25.0
+
     property bool batchRunning: false
     property bool batchPaused: false
 
@@ -32,7 +35,19 @@ Item {
 
     opacity: 0
     Behavior on opacity { NumberAnimation { duration: 400 } }
-    Component.onCompleted: opacity = 1
+
+    Component.onCompleted: {
+
+        opacity = 1
+
+        var settings = databaseManager.getDDSettings()
+
+        if (settings.ddPower !== undefined)
+            ddPower = settings.ddPower
+
+        if (settings.ddFreq !== undefined)
+            ddFrequency = settings.ddFreq
+    }
 
     Rectangle {
     Typography {
@@ -642,16 +657,23 @@ Item {
                             anchors.fill: parent
 
                             ValueControl {
+
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -parent.height * 0.1
                                 width: parent.width * 0.7
 
                                 minValue: 0
                                 maxValue: 100
-                                value: 0
+
+                                value: ddPower
+
+                                stepSize: 1
+                                decimals: 0
 
                                 onValueChangedDelayed: function(val)
                                 {
+                                    ddPower = val
+
                                     SerialManager.setDDPower(val)
                                 }
 
@@ -664,6 +686,8 @@ Item {
                                         accessDeniedPopup.open()
                                         return
                                     }
+
+                                    databaseManager.saveDDPower(val)
 
                                     root.notify("✓ DD Power Saved : " + val)
                                 }
@@ -697,19 +721,23 @@ Item {
                             anchors.fill: parent
 
                             ValueControl {
+
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -parent.height * 0.1
                                 width: parent.width * 0.7
 
                                 minValue: 25.0
                                 maxValue: 50.0
-                                value: 25.0
+
+                                value: ddFrequency
 
                                 stepSize: 0.1
                                 decimals: 1
 
                                 onValueChangedDelayed: function(val)
                                 {
+                                    ddFrequency = val
+
                                     var freq = Math.round(val * 10)
 
                                     SerialManager.setDDFrequency(freq)
@@ -717,18 +745,7 @@ Item {
 
                                 onSaveClicked: function(val)
                                 {
-                                    if (GlobalState.loggedInUserRole === "")
-                                    {
-                                        accessDeniedPopup.popupTitle = "Access Denied !"
-                                        accessDeniedPopup.popupMessage = "Please login first"
-                                        accessDeniedPopup.open()
-                                        return
-                                    }
-
-                                    // 25.0 -> 250
-                                    // 25.1 -> 251
-                                    // 49.9 -> 499
-                                    var freq = Math.round(val * 10)
+                                    databaseManager.saveDDFrequency(ddFrequency)
 
                                     root.notify("✓ DD Frequency Saved : " + val.toFixed(1))
                                 }

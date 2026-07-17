@@ -15,11 +15,27 @@ Item {
     property var navigateTo
 
 
-    Rectangle {
-    Typography {
-        id: screenTypography
-        scale: root.scale || 1.0
+
+    Component.onCompleted: {
+
+        var settings = databaseManager.getMachinePhaseSettings()
+
+        if (settings.machinePhase !== undefined)
+            GlobalState.machinePhase = settings.machinePhase
+
+        if (settings.signalThr !== undefined)
+            GlobalState.signalThreshold = settings.signalThr
+
+        if (settings.ampThr !== undefined)
+            GlobalState.amplitudeThreshold = settings.ampThr
     }
+
+
+    Rectangle {
+        Typography {
+            id: screenTypography
+            scale: root.scale || 1.0
+        }
         anchors.fill: parent
         color: "#F5F7FC"
 
@@ -250,10 +266,10 @@ Item {
                             color: mouseArea.pressed
                                    ? (modelData === "C" ? "#FF9999"
                                                         : modelData === "⌫" ? "#FFCC99"
-                                                                             : "#CCCCCC")
+                                                                            : "#CCCCCC")
                                    : (modelData === "C" ? "#FFCDD2"
                                                         : modelData === "⌫" ? "#FFE0B2"
-                                                                             : "#F0F0F0")
+                                                                            : "#F0F0F0")
 
                             border.color: "#E0E0E0"
                             border.width: 1
@@ -467,26 +483,30 @@ Item {
 
                         popup.open(
 
-                            "Machine Phase",
+                                    "Machine Phase",
 
-                            GlobalState.machinePhase,
+                                    GlobalState.machinePhase,
 
-                            function(val){
+                                    function(val){
 
-                                // 12.5 -> 125
-                                var phase = Math.round(val * 10)
+                                        var phase = Math.round(val * 10)
 
-                                SerialManager.setMachinePhase(phase)
+                                        SerialManager.setMachinePhase(phase)
 
-                                GlobalState.machinePhase = val
+                                        GlobalState.machinePhase = val
 
-                            },
+                                        databaseManager.saveMachinePhaseSettings(
+                                                    GlobalState.machinePhase,
+                                                    GlobalState.signalThreshold,
+                                                    GlobalState.amplitudeThreshold
+                                                    )
+                                    },
 
-                            0,
+                                    0,
 
-                            180
+                                    180
 
-                        )
+                                    )
 
                     }
                 }
@@ -663,21 +683,26 @@ Item {
 
                             popup.open(
 
-                                "Thr-S",
+                                        "Thr-S",
 
-                                signalGauge.threshold,
+                                        signalGauge.threshold,
 
-                                function(val){
+                                        function(val){
 
-                                    SerialManager.setSignalThreshold(val)
+                                            SerialManager.setSignalThreshold(val)
 
-                                    GlobalState.signalThreshold = val
+                                            GlobalState.signalThreshold = val
 
-                                },
+                                            databaseManager.saveMachinePhaseSettings(
+                                                GlobalState.machinePhase,
+                                                GlobalState.signalThreshold,
+                                                GlobalState.amplitudeThreshold
+                                            )
+                                        },
 
-                                10,
-                                30000
-                            )
+                                        10,
+                                        30000
+                                        )
                         }
                     }
                 }
@@ -765,8 +790,8 @@ Item {
 
                             onClicked: {
                                 globalTopBar.showNotification(
-                                    "✓ Manual Validation ON"
-                                )
+                                            "✓ Manual Validation ON"
+                                            )
                             }
                         }
 
@@ -856,24 +881,29 @@ Item {
 
                             popup.open(
 
-                                "Thr-A",
+                                        "Thr-A",
 
-                                ampGauge.threshold,
+                                        ampGauge.threshold,
 
 
-                                function(val){
+                                        function(val){
 
-                                    SerialManager.setAmplitudeThreshold(val)
+                                            SerialManager.setAmplitudeThreshold(val)
 
-                                    GlobalState.amplitudeThreshold = val
+                                            GlobalState.amplitudeThreshold = val
 
-                                },
+                                            databaseManager.saveMachinePhaseSettings(
+                                                GlobalState.machinePhase,
+                                                GlobalState.signalThreshold,
+                                                GlobalState.amplitudeThreshold
+                                            )
+                                        },
 
-                                800,
+                                        800,
 
-                                14000
+                                        14000
 
-                            )
+                                        )
 
                         }
 
