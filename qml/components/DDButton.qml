@@ -1,6 +1,8 @@
 import QtQuick
 import QtQuick.Controls
 
+import AppState 1.0
+
 Rectangle {
     Typography {
         id: componentTypography
@@ -89,6 +91,15 @@ Rectangle {
         onReleased: root.pressed = false
 
         onClicked: {
+
+            if (GlobalState.loggedInUserRole === "")
+            {
+                accessDeniedPopup.popupTitle = "Access Denied !"
+                accessDeniedPopup.popupMessage = "Please login first"
+                accessDeniedPopup.open()
+                return
+            }
+
             root.toggled = !root.toggled
             root.toggleRequested()
         }
