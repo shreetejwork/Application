@@ -241,19 +241,18 @@ ApplicationWindow {
                 )
             }
 
+            if(s1Settings.holdDelay !== undefined)
+            {
+                SerialManager.setHoldDelay(
+                        s1Settings.holdDelay
+                )
+            }
+
 
             if(s1Settings.operateDelay !== undefined)
             {
                 SerialManager.setOperateDelay(
                         s1Settings.operateDelay
-                )
-            }
-
-
-            if(s1Settings.holdDelay !== undefined)
-            {
-                SerialManager.setHoldDelay(
-                        s1Settings.holdDelay
                 )
             }
 
