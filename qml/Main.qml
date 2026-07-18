@@ -218,31 +218,6 @@ ApplicationWindow {
             }
 
 
-
-            // ================= DD SETTINGS =================
-
-
-            var ddSettings =
-                    databaseManager.getDDSettings()
-
-
-            if(ddSettings.ddPower !== undefined)
-            {
-                SerialManager.setDDPower(
-                        ddSettings.ddPower
-                )
-            }
-
-
-            if(ddSettings.ddFreq !== undefined)
-            {
-                SerialManager.setDDFrequency(
-                        Math.round(ddSettings.ddFreq * 10)
-                )
-            }
-
-
-
             // ================= S1 SETTINGS =================
 
 
@@ -306,7 +281,27 @@ ApplicationWindow {
                 )
             }
 
+            // ================= DD SETTINGS =================
 
+
+            var ddSettings =
+                    databaseManager.getDDSettings()
+
+
+            if(ddSettings.ddFreq !== undefined)
+            {
+                SerialManager.setDDFrequency(
+                        Math.round(ddSettings.ddFreq * 10)
+                )
+            }
+
+
+            if(ddSettings.ddPower !== undefined)
+            {
+                SerialManager.setDDPower(
+                        ddSettings.ddPower
+                )
+            }
 
             Qt.callLater(function(){
 
