@@ -6,7 +6,7 @@
 
 #include <QSerialPortInfo>
 
-QString SerialManager::findSerialPort()
+QString SerialManager::findAvailablePort()
 {
     QList<QSerialPortInfo> ports =
         QSerialPortInfo::availablePorts();
