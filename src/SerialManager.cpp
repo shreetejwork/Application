@@ -61,7 +61,7 @@ SerialManager::SerialManager(QObject *parent)
 
 #elif defined(Q_OS_LINUX)
 
-    QString detectedPort = findSerialPort();
+    QString detectedPort = findAvailablePort();
 
 
     if(!detectedPort.isEmpty())
