@@ -117,8 +117,6 @@ private:
 
     QSerialPort serial;
 
-    QString findAvailablePort();
-
     QByteArray rxBuffer;
 
     double m_productPhase = 0.0;   // 0 - 180

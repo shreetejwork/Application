@@ -4,38 +4,6 @@
 #include <QRandomGenerator>
 #include <QTimer>
 
-#include <QSerialPortInfo>
-
-QString SerialManager::findAvailablePort()
-{
-    QList<QSerialPortInfo> ports =
-        QSerialPortInfo::availablePorts();
-
-
-    qDebug() << "Available Serial Ports:";
-
-
-    for(const QSerialPortInfo &info : ports)
-    {
-        qDebug()
-        << "Port:"
-        << info.systemLocation()
-        << "Description:"
-        << info.description()
-        << "Manufacturer:"
-        << info.manufacturer();
-
-
-        // Return first available serial device
-        return info.systemLocation();
-    }
-
-
-    return QString();
-}
-
-
-
 SerialManager::SerialManager(QObject *parent)
     : QObject(parent)
 {
@@ -44,12 +12,10 @@ SerialManager::SerialManager(QObject *parent)
             this,
             &SerialManager::onReadyRead);
 
-
     connect(&m_coilAverageTimer,
             &QTimer::timeout,
             this,
             &SerialManager::processCoilBuffer);
-
 
     m_coilAverageTimer.start(5 * 60 * 1000);    // 5 minutes
 
@@ -58,32 +24,9 @@ SerialManager::SerialManager(QObject *parent)
 
     openPort("/dev/cu.usbserial-10");
 
-
 #elif defined(Q_OS_LINUX)
 
-    QString detectedPort = findAvailablePort();
-
-
-    if(!detectedPort.isEmpty())
-    {
-        qDebug() << "Detected Serial Port:"
-                 << detectedPort;
-
-
-        if(openPort(detectedPort))
-        {
-            qDebug() << "Serial communication started successfully";
-        }
-        else
-        {
-            qDebug() << "Failed to open serial port";
-        }
-    }
-    else
-    {
-        qDebug() << "No serial port detected";
-    }
-
+    openPort("/dev/ttyAMA0");
 
 #endif
 }
