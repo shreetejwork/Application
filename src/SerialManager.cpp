@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QRandomGenerator>
 #include <QTimer>
+#include <QFile>
 
 SerialManager::SerialManager(QObject *parent)
     : QObject(parent)
@@ -26,7 +27,45 @@ SerialManager::SerialManager(QObject *parent)
 
 #elif defined(Q_OS_LINUX)
 
-     openPort("/dev/serial0");
+    QStringList ports =
+        {
+            "/dev/serial0",
+            "/dev/ttyAMA0",
+            "/dev/ttyAMA10",
+            "/dev/ttyUSB0"
+        };
+
+
+    bool connected = false;
+
+
+    for(const QString &port : ports)
+    {
+        if(QFile::exists(port))
+        {
+            qDebug() << "Trying serial port:" << port;
+
+
+            if(openPort(port))
+            {
+                qDebug() << "Connected UART:" << port;
+
+                connected = true;
+                break;
+            }
+            else
+            {
+                qDebug() << "Failed to open:" << port;
+            }
+        }
+    }
+
+
+    if(!connected)
+    {
+        qDebug() << "No serial port available";
+    }
+
 
 #endif
 }
@@ -168,8 +207,9 @@ void SerialManager::setDDFrequency(int value)
 
 bool SerialManager::openPort(const QString &port)
 {
-    if (serial.isOpen())
+    if(serial.isOpen())
         serial.close();
+
 
     serial.setPortName(port);
 
@@ -179,11 +219,17 @@ bool SerialManager::openPort(const QString &port)
     serial.setStopBits(QSerialPort::OneStop);
     serial.setFlowControl(QSerialPort::NoFlowControl);
 
+
     bool ok = serial.open(QIODevice::ReadWrite);
 
-    qDebug() << "Opening :" << port;
-    qDebug() << "Status  :" << ok;
-    qDebug() << "Error   :" << serial.errorString();
+
+    qDebug() << "==============================";
+    qDebug() << "Opening Port :" << port;
+    qDebug() << "Status       :" << ok;
+    qDebug() << "Actual Port  :" << serial.portName();
+    qDebug() << "Error        :" << serial.errorString();
+    qDebug() << "==============================";
+
 
     return ok;
 }
