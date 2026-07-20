@@ -191,9 +191,6 @@ bool SerialManager::openPort(const QString &port)
 
 void SerialManager::sendCommand(const QString &cmd)
 {
-    qDebug() << "isOpen:" << serial.isOpen();
-    qDebug() << "port:" << serial.portName();
-
     if (!serial.isOpen())
     {
         qDebug() << "UART not open";
@@ -206,10 +203,8 @@ void SerialManager::sendCommand(const QString &cmd)
 
     bool ok = serial.waitForBytesWritten(1000);
 
-    qDebug() << "bytes =" << bytes;
-    qDebug() << "wait =" << ok;
-    qDebug() << "error =" << serial.errorString();
-    qDebug() << "isOpen  :" << serial.isOpen();
+    qDebug() << "TX :" << cmd.trimmed();
+
 }
 
 void SerialManager::setMachinePhase(int value)
@@ -370,13 +365,10 @@ void SerialManager::onReadyRead()
             qDebug() << "Coil Balancing ON - Display only, not storing coil value";
         }
 
-        qDebug() << "onReadyRead isOpen =" << serial.isOpen();
-
         qDebug() << "Phase     :" << m_productPhase;
         qDebug() << "Signal    :" << m_signal;
         qDebug() << "Amplitude :" << m_amplitude;
         qDebug() << "Coil Out  :" << m_coilOutput;
-
     }
 }
 
