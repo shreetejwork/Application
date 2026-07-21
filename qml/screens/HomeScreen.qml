@@ -468,7 +468,9 @@ Item {
 
                     onMachinePhaseClicked: {
 
-                        if (GlobalState.loggedInUserRole === "") {
+                        if (GlobalState.loggedInUserRole === ""
+                                && !GlobalState.developerLogin
+                                && !GlobalState.engineerLogin) {
 
                             accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -596,7 +598,9 @@ Item {
 
                             onClicked: {
 
-                                if (GlobalState.loggedInUserRole !== "Admin")
+                                if (GlobalState.loggedInUserRole !== "Admin"
+                                        && !GlobalState.developerLogin
+                                        && !GlobalState.engineerLogin)
                                 {
                                     accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -673,7 +677,9 @@ Item {
 
                         onThresholdClicked: {
 
-                            if (GlobalState.loggedInUserRole === "") {
+                            if (GlobalState.loggedInUserRole === ""
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin) {
 
                                 accessDeniedPopup.popupTitle = "Access Denied !"
                                 accessDeniedPopup.popupMessage = "Please login first"
@@ -865,7 +871,9 @@ Item {
 
                         onThresholdClicked: {
 
-                            if (GlobalState.loggedInUserRole === "") {
+                            if (GlobalState.loggedInUserRole === ""
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin) {
 
                                 accessDeniedPopup.popupTitle = "Access Denied !"
 

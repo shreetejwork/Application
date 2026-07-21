@@ -191,7 +191,9 @@ Item {
 
                                             onPressed: {
 
-                                                if (GlobalState.loggedInUserRole === "")
+                                                if (GlobalState.loggedInUserRole === ""
+                                                        && !GlobalState.developerLogin
+                                                        && !GlobalState.engineerLogin)
                                                 {
                                                     accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -250,7 +252,9 @@ Item {
 
                                         onClicked: {
 
-                                            if (GlobalState.loggedInUserRole === "")
+                                            if (GlobalState.loggedInUserRole === ""
+                                                    && !GlobalState.developerLogin
+                                                    && !GlobalState.engineerLogin)
                                             {
                                                 accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -358,7 +362,9 @@ Item {
 
                                             onPressed: {
 
-                                                if (GlobalState.loggedInUserRole === "")
+                                                if (GlobalState.loggedInUserRole === ""
+                                                        && !GlobalState.developerLogin
+                                                        && !GlobalState.engineerLogin)
                                                 {
                                                     accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -415,7 +421,9 @@ Item {
 
                                         onClicked: {
 
-                                            if (GlobalState.loggedInUserRole === "")
+                                            if (GlobalState.loggedInUserRole === ""
+                                                    && !GlobalState.developerLogin
+                                                    && !GlobalState.engineerLogin)
                                             {
                                                 accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -461,7 +469,9 @@ Item {
 
                                 onClicked: {
 
-                                    if (GlobalState.loggedInUserRole === "")
+                                    if (GlobalState.loggedInUserRole === ""
+                                            && !GlobalState.developerLogin
+                                            && !GlobalState.engineerLogin)
                                     {
                                         accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -495,7 +505,9 @@ Item {
 
                                 onClicked: {
 
-                                    if (GlobalState.loggedInUserRole === "")
+                                    if (GlobalState.loggedInUserRole === ""
+                                            && !GlobalState.developerLogin
+                                            && !GlobalState.engineerLogin)
                                     {
                                         accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -531,7 +543,9 @@ Item {
 
                                 onClicked: {
 
-                                    if (GlobalState.loggedInUserRole === "")
+                                    if (GlobalState.loggedInUserRole === ""
+                                            && !GlobalState.developerLogin
+                                            && !GlobalState.engineerLogin)
                                     {
                                         accessDeniedPopup.popupTitle = "Access Denied !"
 
@@ -679,7 +693,9 @@ Item {
 
                                 onSaveClicked: function(val)
                                 {
-                                    if (GlobalState.loggedInUserRole === "")
+                                    if (GlobalState.loggedInUserRole === ""
+                                            && !GlobalState.developerLogin
+                                            && !GlobalState.engineerLogin)
                                     {
                                         accessDeniedPopup.popupTitle = "Access Denied !"
                                         accessDeniedPopup.popupMessage = "Please login first"
@@ -703,7 +719,10 @@ Item {
                         border.color: "#E5E7EB"
                         border.width: 1
 
-                        enabled: ddBtn.toggled && GlobalState.loggedInUserRole !== ""
+                        enabled: ddBtn.toggled &&
+                                 GlobalState.loggedInUserRole !== "" &&
+                                 !GlobalState.developerLogin &&
+                                 !GlobalState.engineerLogin
 
                         opacity: enabled ? 1.0 : 0.5
 

@@ -92,7 +92,9 @@ Rectangle {
 
         onClicked: {
 
-            if (GlobalState.loggedInUserRole === "")
+            if (GlobalState.loggedInUserRole === ""
+                    && !GlobalState.developerLogin
+                    && !GlobalState.engineerLogin)
             {
                 accessDeniedPopup.popupTitle = "Access Denied !"
                 accessDeniedPopup.popupMessage = "Please login first"
