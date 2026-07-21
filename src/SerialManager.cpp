@@ -4,6 +4,7 @@
 #include <QRandomGenerator>
 #include <QTimer>
 #include <QFile>
+#include <QSerialPortInfo>
 
 SerialManager::SerialManager(QObject *parent)
     : QObject(parent)
@@ -25,47 +26,43 @@ SerialManager::SerialManager(QObject *parent)
 
     openPort("/dev/cu.usbserial-10");
 
+#include <QSerialPortInfo>
+
 #elif defined(Q_OS_LINUX)
-
-    QStringList ports =
-        {
-            "/dev/serial0",
-            "/dev/ttyAMA0",
-            "/dev/ttyAMA10",
-            "/dev/ttyUSB0"
-        };
-
 
     bool connected = false;
 
+    const QList<QSerialPortInfo> availablePorts =
+        QSerialPortInfo::availablePorts();
 
-    for(const QString &port : ports)
+    qDebug() << "Available Serial Ports:";
+
+    for (const QSerialPortInfo &info : availablePorts)
     {
-        if(QFile::exists(port))
+        qDebug() << "--------------------------------";
+        qDebug() << "Port Name      :" << info.portName();
+        qDebug() << "System Location:" << info.systemLocation();
+        qDebug() << "Description    :" << info.description();
+        qDebug() << "Manufacturer   :" << info.manufacturer();
+
+        QString port = info.systemLocation();
+
+        qDebug() << "Trying:" << port;
+
+        if (openPort(port))
         {
-            qDebug() << "Trying serial port:" << port;
-
-
-            if(openPort(port))
-            {
-                qDebug() << "Connected UART:" << port;
-
-                connected = true;
-                break;
-            }
-            else
-            {
-                qDebug() << "Failed to open:" << port;
-            }
+            qDebug() << "Connected to:" << port;
+            connected = true;
+            break;
         }
+
+        qDebug() << "Failed:" << port;
     }
 
-
-    if(!connected)
+    if (!connected)
     {
-        qDebug() << "No serial port available";
+        qDebug() << "No usable serial port found.";
     }
-
 
 #endif
 }
