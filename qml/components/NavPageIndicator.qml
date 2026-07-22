@@ -141,8 +141,8 @@ Item {
 
                                 font.pixelSize:
                                     Math.max(
-                                        15,
-                                        15 * root.scale)
+                                        17,
+                                        17 * root.scale)
 
                                 font.weight:
                                     index === root.currentPage

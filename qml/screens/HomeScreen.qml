@@ -680,7 +680,7 @@ Item {
                         label: "Signal <span style='font-size:18px; color:#6B7280;'>"
                              + "(× <span style='font-size:18px;'>"
                              + digitalGain.toFixed(1)
-                             + "</span> <span style='font-size:14px;'>D/g</span>"
+                             + "</span>"
                              + ")</span>"
 
                         threshold: GlobalState.signalThreshold
@@ -720,7 +720,7 @@ Item {
                                         },
 
                                         10,
-                                        30000
+                                        3000
                                         )
                         }
                     }

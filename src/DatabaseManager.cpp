@@ -273,15 +273,15 @@ void DatabaseManager::createTables()
         CREATE TABLE IF NOT EXISTS filtersettings (
             id INTEGER PRIMARY KEY,
 
-            lpf REAL,
-            hpf REAL,
+            lpf INTEGER,
+            hpf INTEGER,
 
             operateDelay INTEGER,
             holdDelay INTEGER,
             relayDelay INTEGER,
 
             digitalGain REAL,
-            analogGain REAL
+            analogGain INTEGER
         );
     )");
 

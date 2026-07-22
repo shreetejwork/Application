@@ -69,8 +69,8 @@ QtObject {
     property real productPhase: 0
     property real machinePhase: 180.0
 
-    property real signalThreshold: 500
-    property real amplitudeThreshold: 180
+    property int signalThreshold: 500
+    property int amplitudeThreshold: 180
 
     property bool developerLogin: false
     property bool engineerLogin: false
