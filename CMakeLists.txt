@@ -127,6 +127,7 @@ qt_add_qml_module(appApplication
         SOURCES src/SerialManager.cpp
         QML_FILES qml/screens/SysDiagnosisScreen.qml
         QML_FILES qml/screens/XyPlotScreen.qml
+        QML_FILES qml/components/ValidationAlarmPopup.qml
 )
 
 set_target_properties(appApplication PROPERTIES

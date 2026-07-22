@@ -22,6 +22,7 @@ Item {
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
+
     Component.onCompleted: {
 
         var settings = databaseManager.getS1Settings()
@@ -84,7 +85,7 @@ Item {
         ListElement { fieldId: "hd"; label: "H/D"; title: "Hold Delay"; value: "250"; unit: "mSec"; min: 250; max: 20000 }
         ListElement { fieldId: "rd"; label: "R/D"; title: "Relay Delay"; value: "250"; unit: "mSec"; min: 10; max: 50 }
 
-        ListElement { fieldId: "dg"; label: "D/G"; title: "Digital Gain"; value: "1.0"; unit: ""; min: 1.0; max: 10.0 }
+        ListElement { fieldId: "dg"; label: "D/G"; title: "Digital Gain"; value: "1.0"; unit: ""; min: 0.1; max: 10.0 }
         ListElement { fieldId: "ag"; label: "A/G"; title: "Analog Gain"; value: "1"; unit: ""; min: 1; max: 10 }
     }
 

@@ -83,8 +83,8 @@ Item {
 
         property string fieldName: ""
         property var onSaveCallback
-        property int minValue: 0
-        property int maxValue: 100
+        property real minValue: 0
+        property real maxValue: 100
         property string errorText: ""
         property bool hasError: false
 

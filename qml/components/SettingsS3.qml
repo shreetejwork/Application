@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import AppState 1.0
+
 Item {
     Typography {
         id: componentTypography
@@ -15,6 +17,8 @@ Item {
 
     // ONLY CHANGE: uniform scaling boost (keeps layout identical)
     property real scale: Math.min(width / baseWidth, height / baseHeight) * 1.10
+
+
     
     // =========================================================
     // TYPOGRAPHY FOR SETTINGS S3
@@ -36,10 +40,53 @@ Item {
     // ===== MODEL =====
     ListModel {
         id: timeModel
-        ListElement { time: "11:15"; enabled: false }
-        ListElement { time: "11:30"; enabled: false }
-        ListElement { time: "11:45"; enabled: false }
-        ListElement { time: "11:00"; enabled: false }
+    }
+
+    Component.onCompleted:
+    {
+        loadTimers()
+    }
+
+
+
+    function loadTimers()
+    {
+        var timers =
+                GlobalState.getValidationTimers()
+
+
+        timeModel.clear()
+
+
+        for(var i=0;i<timers.length;i++)
+        {
+            timeModel.append({
+                time:timers[i].time,
+                enabled:timers[i].enabled
+            })
+        }
+    }
+
+    function saveTimers()
+    {
+
+        var data=[]
+
+
+        for(var i=0;i<timeModel.count;i++)
+        {
+
+            data.push({
+
+                time:timeModel.get(i).time,
+
+                enabled:timeModel.get(i).enabled
+
+            })
+        }
+
+
+        GlobalState.saveValidationTimers(data)
     }
 
     // ===== MAIN WRAPPER =====
@@ -234,8 +281,16 @@ Item {
                                         knobSize: 35 * root.scale
                                         useSymbols: true
 
-                                        onToggledChanged: {
-                                            timeModel.setProperty(index, "enabled", toggled)
+                                        onToggledChanged:
+                                        {
+                                            if(timeModel.get(index).enabled !== toggled)
+                                            {
+                                                timeModel.setProperty(
+                                                    index,
+                                                    "enabled",
+                                                    toggled
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -450,9 +505,17 @@ Item {
                         }
 
                         MouseArea {
+
                             anchors.fill: parent
-                            onClicked: {
-                                if (notify)
+
+
+                            onClicked:
+                            {
+
+                                saveTimers()
+
+
+                                if(notify)
                                     notify("✓ Alarm Set")
                             }
                         }

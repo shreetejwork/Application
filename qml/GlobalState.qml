@@ -5,6 +5,8 @@ import Qt.labs.settings 1.1
 QtObject {
     id: root
 
+    signal validationAlarmTriggered()
+
     // =========================================================
     // SETTINGS (SAFE)
     // =========================================================
@@ -18,6 +20,12 @@ QtObject {
 
         property string blockedUsersJson:   "{}"
         property string failedAttemptsJson: "{}"
+
+        property string validationTimersJson:
+            '[{"time":"11:15","enabled":false},
+              {"time":"11:30","enabled":false},
+              {"time":"11:45","enabled":false},
+              {"time":"11:00","enabled":false}]'
 
     }
 
@@ -44,6 +52,15 @@ QtObject {
     onShowNetworkScreenChanged: settings.showNetworkScreen = showNetworkScreen
     onShowAuditTrailChanged: settings.showAuditTrail = showAuditTrail
     onShowProductLibChanged: settings.showProductLib = showProductLib
+
+    property string validationTimersJson:
+            settings.validationTimersJson
+
+
+    onValidationTimersJsonChanged:
+    {
+        settings.validationTimersJson = validationTimersJson
+    }
 
 
     // =========================================================
@@ -194,5 +211,28 @@ QtObject {
         })
 
         saveLogs()
+    }
+
+    function getValidationTimers()
+    {
+        return JSON.parse(validationTimersJson)
+    }
+
+
+
+    function saveValidationTimers(data)
+    {
+        validationTimersJson = JSON.stringify(data)
+
+        console.log(
+            "Saved Alarm Data:",
+            validationTimersJson
+        )
+    }
+
+    function triggerValidationAlarm()
+    {
+        console.log("GlobalState: Validation Alarm Signal Emitted")
+        validationAlarmTriggered()
     }
 }

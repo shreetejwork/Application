@@ -14,6 +14,8 @@ Item {
     property var globalTopBar: null
     property var navigateTo
 
+    property real digitalGain: 1.0
+
 
 
     Component.onCompleted: {
@@ -28,6 +30,13 @@ Item {
 
         if (settings.ampThr !== undefined)
             GlobalState.amplitudeThreshold = settings.ampThr
+
+        // Load S1 settings
+            var s1 = databaseManager.getS1Settings()
+
+            if (s1.digitalGain !== undefined)
+                digitalGain = s1.digitalGain
+
     }
 
 
@@ -668,7 +677,11 @@ Item {
 
                         value: SerialManager.signal
 
-                        label: "Signal"
+                        label: "Signal <span style='font-size:18px; color:#6B7280;'>"
+                             + "(× <span style='font-size:18px;'>"
+                             + digitalGain.toFixed(1)
+                             + "</span> <span style='font-size:14px;'>D/g</span>"
+                             + ")</span>"
 
                         threshold: GlobalState.signalThreshold
                         thresholdLabel: "Thr-S"

@@ -294,6 +294,7 @@ Item {
 
         Text {
             text: root.label
+            textFormat: Text.RichText
             font.pixelSize: gaugeTypography.small
 
             color: "#333"

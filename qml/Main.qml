@@ -19,7 +19,6 @@ ApplicationWindow {
     // flags: Qt.FramelessWindowHint
     // visibility: Window.FullScreen
 
-
     Timer {
         id: navigateHomeTimer
         interval: 1000
@@ -37,6 +36,13 @@ ApplicationWindow {
             if (GlobalState.loggedInUserRole === "") {
                 navigateHomeTimer.restart()
             }
+        }
+
+        function onValidationAlarmTriggered()
+        {
+            console.log("Main.qml: Alarm Received")
+
+            validationAlarmPopup.open()
         }
     }
 
@@ -357,6 +363,75 @@ ApplicationWindow {
         }
     }
 
+    property string lastTriggeredAlarmTime: ""
+
+
+    Timer {
+
+        id: validationAlarmTimer
+
+        interval: 1000
+
+        running: true
+
+        repeat: true
+
+
+        onTriggered:
+        {
+
+            var now = new Date()
+
+
+            var currentTime =
+                    Qt.formatTime(now,"HH:mm")
+
+
+            var alarms =
+                    GlobalState.getValidationTimers()
+
+            console.log(
+                "Current Time:",
+                currentTime,
+                "Alarm Data:",
+                JSON.stringify(alarms)
+            )
+
+
+            for(var i = 0; i < alarms.length; i++)
+            {
+
+                var alarm = alarms[i]
+
+
+                if(alarm.enabled &&
+                   alarm.time === currentTime)
+                {
+
+
+                    if(root.lastTriggeredAlarmTime !== currentTime)
+                    {
+
+                        root.lastTriggeredAlarmTime = currentTime
+
+
+                        console.log(
+                            "Validation alarm triggered:",
+                            currentTime
+                        )
+
+
+                        GlobalState.triggerValidationAlarm()
+
+                    }
+
+
+                    break
+                }
+            }
+        }
+    }
+
 
 
 
@@ -585,5 +660,16 @@ ApplicationWindow {
                 }
             }
         }
+    }
+
+    // ===== GLOBAL VALIDATION ALARM POPUP =====
+    ValidationAlarmPopup {
+
+        id: validationAlarmPopup
+
+        parent: Overlay.overlay
+
+        z: 20000
+
     }
 }
