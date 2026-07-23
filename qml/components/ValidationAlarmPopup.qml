@@ -22,6 +22,8 @@ Popup {
                                   Overlay.overlay.height / baseHeight
                               )
 
+    signal continueClicked()
+
     modal: true
     focus: true
     dim: true
@@ -268,7 +270,7 @@ Popup {
 
                             validationAlarmPopup.close()
 
-                            console.log("Validation Started")
+                            validationAlarmPopup.continueClicked()
                         }
                     }
                 }

@@ -651,12 +651,11 @@ ApplicationWindow {
 
     // ===== GLOBAL VALIDATION ALARM POPUP =====
     ValidationAlarmPopup {
-
         id: validationAlarmPopup
+        onContinueClicked: validationScreenPopup.open()
+    }
 
-        parent: Overlay.overlay
-
-        z: 20000
-
+    ValidationScreenPopup {
+        id: validationScreenPopup
     }
 }
