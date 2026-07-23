@@ -390,13 +390,6 @@ ApplicationWindow {
             var alarms =
                     GlobalState.getValidationTimers()
 
-            console.log(
-                "Current Time:",
-                currentTime,
-                "Alarm Data:",
-                JSON.stringify(alarms)
-            )
-
 
             for(var i = 0; i < alarms.length; i++)
             {
@@ -413,12 +406,6 @@ ApplicationWindow {
                     {
 
                         root.lastTriggeredAlarmTime = currentTime
-
-
-                        console.log(
-                            "Validation alarm triggered:",
-                            currentTime
-                        )
 
 
                         GlobalState.triggerValidationAlarm()

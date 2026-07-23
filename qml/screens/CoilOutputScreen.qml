@@ -696,20 +696,20 @@ Item {
 
                         ColumnLayout {
                             Layout.fillWidth: true
-                            Text { Layout.alignment: Qt.AlignHCenter; text: "AVG"; font.pixelSize: 10; color: "#8EA2C8" }
-                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statAvg.toLocaleString(); font.pixelSize: 17; color: "#1A4DB5" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: "AVG"; font.pixelSize: 13; color: "#8EA2C8" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statAvg.toLocaleString(); font.pixelSize: 20; color: "#1A4DB5" }
                         }
                         Rectangle { Layout.preferredWidth: 1; Layout.preferredHeight: 34 * root.scale; color: "#DCE5F5" }
                         ColumnLayout {
                             Layout.fillWidth: true
-                            Text { Layout.alignment: Qt.AlignHCenter; text: "MIN"; font.pixelSize: 10; color: "#8EA2C8" }
-                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statMin.toLocaleString(); font.pixelSize: 17; color: "#0F8A60" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: "MIN"; font.pixelSize: 13; color: "#8EA2C8" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statMin.toLocaleString(); font.pixelSize: 20; color: "#0F8A60" }
                         }
                         Rectangle { Layout.preferredWidth: 1; Layout.preferredHeight: 34 * root.scale; color: "#DCE5F5" }
                         ColumnLayout {
                             Layout.fillWidth: true
-                            Text { Layout.alignment: Qt.AlignHCenter; text: "MAX"; font.pixelSize: 10; color: "#8EA2C8" }
-                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statMax.toLocaleString(); font.pixelSize: 17; color: "#D64545" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: "MAX"; font.pixelSize: 13; color: "#8EA2C8" }
+                            Text { Layout.alignment: Qt.AlignHCenter; text: root.statMax.toLocaleString(); font.pixelSize: 20; color: "#D64545" }
                         }
                     }
                 }
@@ -754,7 +754,7 @@ Item {
                             scale: zoomOutMa.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
 
-                            Text { anchors.centerIn: parent; text: "−"; font.pixelSize: 26; color: "#1A4DB5" }
+                            Text { anchors.centerIn: parent; text: "−"; font.pixelSize: 28; color: "#1A4DB5" }
 
                             MouseArea {
                                 id: zoomOutMa
@@ -793,7 +793,7 @@ Item {
                             border.width: 1; border.color: "#DCE5F5"
                             Column {
                                 anchors.centerIn: parent; spacing: 0
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: "ZOOM"; font.pixelSize: 9; color: "#8EA2C8" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: "ZOOM"; font.pixelSize: 12; color: "#8EA2C8" }
                                 Text {
                                     anchors.horizontalCenter: parent.horizontalCenter
 
@@ -806,7 +806,7 @@ Item {
                                               * 100
                                               ) + "%"
 
-                                    font.pixelSize: 15
+                                    font.pixelSize: 20
                                     color: "#1A4DB5"
                                 }
                             }
@@ -823,7 +823,7 @@ Item {
                             scale: zoomInMa.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
 
-                            Text { anchors.centerIn: parent; text: "+"; font.pixelSize: 24; color: "#1A4DB5" }
+                            Text { anchors.centerIn: parent; text: "+"; font.pixelSize: 26; color: "#1A4DB5" }
 
                             MouseArea {
                                 id: zoomInMa
@@ -872,7 +872,7 @@ Item {
 
                     contentItem: Text {
                         text: savePdfButton.text
-                        font.pixelSize: 18 * root.scale
+                        font.pixelSize: 25 * root.scale
                         color: "#FFFFFF"
                         horizontalAlignment: Text.AlignHCenter
                         verticalAlignment: Text.AlignVCenter
@@ -1050,7 +1050,7 @@ Item {
                             property real frac:     1.0 - index / histogramCard.ySteps
                             property real labelVal: histogramCard.yMin + frac * (histogramCard.yMax - histogramCard.yMin)
                             text: root.formatAxisValue(labelVal)
-                            font.pixelSize: 10; color: "#4A5E8A"
+                            font.pixelSize: 13; color: "#4A5E8A"
                         }
                     }
                 }
@@ -1157,7 +1157,7 @@ Item {
                                 anchors.bottomMargin:     parent.barH + (4 * root.scale)
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: barSlot.dataValid ? barData.val.toLocaleString() : ""
-                                font.pixelSize: 9
+                                font.pixelSize: 12
 
                                 color: "#1A4DB5"
                                 renderType: Text.NativeRendering
@@ -1217,8 +1217,8 @@ Item {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 spacing: 1 * root.scale
 
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.axisDate.split(" ")[0] : ""; font.pixelSize: 11; font.bold: true; color: "#1A4DB5" }
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.axisDate.split(" ")[1] : ""; font.pixelSize: 10; color: "#1A4DB5" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.axisDate.split(" ")[0] : ""; font.pixelSize: 13; font.bold: true; color: "#1A4DB5" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.axisDate.split(" ")[1] : ""; font.pixelSize: 12; color: "#1A4DB5" }
                             }
 
 
@@ -1229,9 +1229,9 @@ Item {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 spacing: 1 * root.scale
 
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.day : ""; font.pixelSize: 11; font.bold: true; color: "#1A4DB5" }
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.month : ""; font.pixelSize: 10; color: "#1A4DB5" }
-                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.axisTime : ""; font.pixelSize: 8; color: "#7B8FAD" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.day : ""; font.pixelSize: 13; font.bold: true; color: "#1A4DB5" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.month : ""; font.pixelSize: 12; color: "#1A4DB5" }
+                                Text { anchors.horizontalCenter: parent.horizontalCenter; text: dataValid ? axisData.axisTime : ""; font.pixelSize: 10; color: "#7B8FAD" }
                             }
                         }
                     }

@@ -69,6 +69,8 @@ QtObject {
     property real productPhase: 0
     property real machinePhase: 180.0
 
+    property int rejectedCount: 0
+
     property int signalThreshold: 500
     property int amplitudeThreshold: 180
 
@@ -224,15 +226,10 @@ QtObject {
     {
         validationTimersJson = JSON.stringify(data)
 
-        console.log(
-            "Saved Alarm Data:",
-            validationTimersJson
-        )
     }
 
     function triggerValidationAlarm()
     {
-        console.log("GlobalState: Validation Alarm Signal Emitted")
         validationAlarmTriggered()
     }
 }

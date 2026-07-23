@@ -16,6 +16,9 @@ Item {
 
     property real digitalGain: 1.0
 
+    property bool signalAlreadyRejected: false
+    property bool rejectCycleStarted: false
+
 
 
     Component.onCompleted: {
@@ -37,6 +40,33 @@ Item {
             if (s1.digitalGain !== undefined)
                 digitalGain = s1.digitalGain
 
+    }
+
+    Connections {
+        target: SerialManager
+
+        function onSignalChanged() {
+
+            // Signal crossed threshold -> Reject cycle started
+            if (SerialManager.signal > GlobalState.signalThreshold) {
+
+                if (!homeScreen.rejectCycleStarted) {
+                    homeScreen.rejectCycleStarted = true
+                }
+
+            }
+            // Signal came back below threshold -> Reject cycle completed
+            else {
+
+                if (homeScreen.rejectCycleStarted) {
+
+                    GlobalState.rejectedCount++
+                    homeScreen.rejectCycleStarted = false
+
+                    console.log("Rejected Count :", GlobalState.rejectedCount)
+                }
+            }
+        }
     }
 
 
@@ -684,6 +714,7 @@ Item {
                              + ")</span>"
 
                         threshold: GlobalState.signalThreshold
+
                         thresholdLabel: "Thr-S"
 
                         maxValue: 1200
@@ -928,6 +959,26 @@ Item {
 
                         }
 
+                    }
+
+                    Item {
+                        width: 1
+                        height: 10
+                    }
+
+                    Text {
+                        text: GlobalState.rejectedCount + " : Rejected Count"
+
+                        font.pixelSize: screenTypography.bodySmall
+                        color: "#1A4DB5"
+
+                        width: parent.width
+                        horizontalAlignment: Text.AlignRight
+
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+
+                        anchors.topMargin: 50
                     }
                 }
             }
