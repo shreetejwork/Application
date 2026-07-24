@@ -93,6 +93,8 @@ QtObject {
     property string userName: ""
     property string location: ""
 
+    property real digitalGain: 1.0
+
 
     // =========================================================
     //  MODELS (3 SEPARATE LOG STORES)

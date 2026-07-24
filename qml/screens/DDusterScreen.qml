@@ -693,15 +693,6 @@ Item {
 
                                 onSaveClicked: function(val)
                                 {
-                                    if (GlobalState.loggedInUserRole === ""
-                                            && !GlobalState.developerLogin
-                                            && !GlobalState.engineerLogin)
-                                    {
-                                        accessDeniedPopup.popupTitle = "Access Denied !"
-                                        accessDeniedPopup.popupMessage = "Please login first"
-                                        accessDeniedPopup.open()
-                                        return
-                                    }
 
                                     databaseManager.saveDDPower(val)
 

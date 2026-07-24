@@ -78,8 +78,8 @@ Item {
     ListModel {
         id: fieldModel
 
-        ListElement { fieldId: "lpf1"; label: "LPF"; title: "LPF"; value: "10"; unit: "Hz"; min: 10; max: 40 }
-        ListElement { fieldId: "hpf1"; label: "HPF"; title: "HPF"; value: "2.0"; unit: "Hz"; min: 1; max: 35 }
+        ListElement { fieldId: "lpf1"; label: "LF"; title: "LPF"; value: "10"; unit: "Hz"; min: 1; max: 45 }
+        ListElement { fieldId: "hpf1"; label: "HF"; title: "HPF"; value: "2.0"; unit: "Hz"; min: 5; max: 50 }
 
         ListElement { fieldId: "od"; label: "O/D"; title: "Operate Delay"; value: "0"; unit: "mSec"; min: 0; max: 20000 }
         ListElement { fieldId: "hd"; label: "H/D"; title: "Hold Delay"; value: "250"; unit: "mSec"; min: 250; max: 2000 }
@@ -166,7 +166,9 @@ Item {
                         case "dg":
 
                             SerialManager.setDigitalGain(
-                                        Math.round(newVal*10))
+                                Math.round(newVal*10))
+
+                            GlobalState.digitalGain = newVal
 
                             break
 

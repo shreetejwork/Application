@@ -91,17 +91,6 @@ Rectangle {
         onReleased: root.pressed = false
 
         onClicked: {
-
-            if (GlobalState.loggedInUserRole === ""
-                    && !GlobalState.developerLogin
-                    && !GlobalState.engineerLogin)
-            {
-                accessDeniedPopup.popupTitle = "Access Denied !"
-                accessDeniedPopup.popupMessage = "Please login first"
-                accessDeniedPopup.open()
-                return
-            }
-
             root.toggled = !root.toggled
             root.toggleRequested()
         }

@@ -658,4 +658,118 @@ ApplicationWindow {
     ValidationScreenPopup {
         id: validationScreenPopup
     }
+
+    // =========== Floating window =========
+
+    Timer {
+        id: bubbleAutoCloseTimer
+
+        interval: 15 * 60 * 1000
+        repeat: false
+
+        onTriggered: {
+            validationAlarmPopup.minimized = false
+            validationAlarmPopup.close()
+        }
+    }
+
+    Rectangle {
+
+        id: validationBubble
+
+        visible: validationAlarmPopup.minimized
+
+        onVisibleChanged: {
+                if (visible)
+                    bubbleAutoCloseTimer.restart()
+                else
+                    bubbleAutoCloseTimer.stop()
+            }
+
+        width: 68
+        height: 68
+
+        radius: width / 2
+
+        color: "#1A4DB5"
+
+        border.width: 3
+        border.color: "white"
+
+        anchors.right: parent.right
+        anchors.bottom: parent.bottom
+
+        anchors.rightMargin: 22
+        anchors.bottomMargin: 26
+
+        z: 9999
+
+        layer.enabled: true
+
+        Rectangle {
+
+            anchors.fill: parent
+
+            radius: parent.radius
+
+            color: "transparent"
+
+            border.color: "#6EA8FF"
+
+            border.width: 3
+
+            opacity: 0.4
+        }
+
+        Image {
+
+            anchors.centerIn: parent
+
+            source: "qrc:/qt/qml/Application/assets/images/Bell.png"
+
+            width: parent.width * 0.45
+            height: parent.height * 0.45
+
+            fillMode: Image.PreserveAspectFit
+
+            smooth: true
+            mipmap: true
+        }
+
+        MouseArea {
+            anchors.fill: parent
+
+            drag.target: validationBubble
+
+            onClicked: {
+                bubbleAutoCloseTimer.stop()
+
+                validationAlarmPopup.minimized = false
+                validationAlarmPopup.open()
+            }
+        }
+
+        SequentialAnimation {
+
+            running: validationBubble.visible
+
+            loops: Animation.Infinite
+
+            NumberAnimation {
+                target: validationBubble
+                property: "scale"
+                from: 1
+                to: 1.1
+                duration: 600
+            }
+
+            NumberAnimation {
+                target: validationBubble
+                property: "scale"
+                from: 1.1
+                to: 1
+                duration: 600
+            }
+        }
+    }
 }

@@ -22,6 +22,8 @@ Popup {
                                   Overlay.overlay.height / baseHeight
                               )
 
+    property bool minimized: false
+
     signal continueClicked()
 
     modal: true
@@ -208,29 +210,44 @@ Popup {
             Row {
 
                 Layout.alignment: Qt.AlignHCenter
+                spacing: 18 * uiScale
 
-                spacing: 30 * uiScale
-
+                // Skip
                 Rectangle {
-
-                    width: 140 * uiScale
-                    height: 50 * uiScale
-
+                    width: 120 * uiScale
+                    height: 48 * uiScale
                     radius: 10 * uiScale
-
                     color: "white"
-
                     border.color: "#1A4DB5"
                     border.width: 2
 
                     Text {
-
                         anchors.centerIn: parent
-
                         text: "Skip"
-
                         color: "#1A4DB5"
+                        font.pixelSize: popupTypography.body
+                    }
 
+                    MouseArea {
+                        anchors.fill: parent
+                        onClicked: validationAlarmPopup.close()
+                    }
+                }
+
+                // Minimize
+                Rectangle {
+
+                    width: 120 * uiScale
+                    height: 48 * uiScale
+                    radius: 10 * uiScale
+                    color: "white"
+                    border.color: "#1A4DB5"
+                    border.width: 2
+
+                    Text {
+                        anchors.centerIn: parent
+                        text: "Minimize"
+                        color: "#1A4DB5"
                         font.pixelSize: popupTypography.body
                     }
 
@@ -238,27 +255,29 @@ Popup {
 
                         anchors.fill: parent
 
-                        onClicked: validationAlarmPopup.close()
+                        onClicked: {
+
+                            validationAlarmPopup.minimized = true
+
+                            validationAlarmPopup.visible = false
+                        }
                     }
                 }
 
+                // Continue
                 Rectangle {
 
-                    width: 140 * uiScale
-                    height: 50 * uiScale
+                    width: 120 * uiScale
+                    height: 48 * uiScale
 
                     radius: 10 * uiScale
 
                     color: "#1A4DB5"
 
                     Text {
-
                         anchors.centerIn: parent
-
                         text: "Continue"
-
                         color: "white"
-
                         font.pixelSize: popupTypography.body
                     }
 
@@ -269,7 +288,6 @@ Popup {
                         onClicked: {
 
                             validationAlarmPopup.close()
-
                             validationAlarmPopup.continueClicked()
                         }
                     }

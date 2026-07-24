@@ -35,11 +35,10 @@ Item {
             GlobalState.amplitudeThreshold = settings.ampThr
 
         // Load S1 settings
-            var s1 = databaseManager.getS1Settings()
+        var s1 = databaseManager.getS1Settings()
 
-            if (s1.digitalGain !== undefined)
-                digitalGain = s1.digitalGain
-
+        if (s1.digitalGain !== undefined)
+            GlobalState.digitalGain = s1.digitalGain
     }
 
     Connections {
@@ -708,8 +707,8 @@ Item {
                         value: SerialManager.signal
 
                         label: "Signal <span style='font-size:18px; color:#6B7280;'>"
-                             + "(× <span style='font-size:18px;'>"
-                             + digitalGain.toFixed(1)
+                             + "(×<span style='font-size:18px;'>"
+                             + GlobalState.digitalGain.toFixed(1)
                              + "</span>"
                              + ")</span>"
 
@@ -967,7 +966,7 @@ Item {
                     }
 
                     Text {
-                        text: GlobalState.rejectedCount + " : Rejected Count"
+                        text: GlobalState.rejectedCount + " : Rejection Count"
 
                         font.pixelSize: screenTypography.bodySmall
                         color: "#1A4DB5"

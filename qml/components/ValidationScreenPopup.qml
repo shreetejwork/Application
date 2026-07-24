@@ -9,7 +9,8 @@ Popup {
 
     Typography {
         id: vTypography
-        scale: 1.0
+
+        scale: validationScreenPopup.uiScale
     }
 
     property real baseWidth: 1024
@@ -30,10 +31,19 @@ Popup {
     }
 
     width: 850 * uiScale
-    height: 560 * uiScale
+    height: 540 * uiScale
 
     x: (Overlay.overlay.width - width) / 2
     y: (Overlay.overlay.height - height) / 2
+
+    Component.onCompleted: {
+        Qt.callLater(function() {
+            uiScale = Math.min(
+                Overlay.overlay.width / baseWidth,
+                Overlay.overlay.height / baseHeight
+            )
+        })
+    }
 
     // ============================================================
     // THEME HELPERS
@@ -182,6 +192,10 @@ Popup {
             border.color: validationScreenPopup.stateColor
             border.width: 3
             opacity: 0.18
+            // FIX: RPi's GPU driver doesn't antialias border strokes on
+            // rounded rects the way desktop OpenGL does by default —
+            // without this the glow ring looks jagged/stair-stepped.
+            antialiasing: true
 
             Behavior on border.color { ColorAnimation { duration: 250 } }
 
@@ -198,6 +212,7 @@ Popup {
         Rectangle {
             anchors.fill: parent
             radius: 24 * uiScale
+            antialiasing: true
 
             gradient: Gradient {
                 orientation: Gradient.Vertical
@@ -234,6 +249,7 @@ Popup {
                     color: "#E8EEFB"
                     border.color: "#D0D8EC"
                     border.width: 1
+                    antialiasing: true
                     visible: validationScreenPopup.validationState === "running"
 
                     Text {
@@ -251,6 +267,7 @@ Popup {
                     height: 34 * uiScale
                     width: statusBadgeText.implicitWidth + 28 * uiScale
                     color: validationScreenPopup.stateColor
+                    antialiasing: true
                     visible: validationScreenPopup.validationState !== "running"
 
                     Text {
@@ -277,6 +294,13 @@ Popup {
                 Canvas {
                     id: timerTrack
                     anchors.fill: parent
+                    // FIX: explicit render settings so the arc looks the
+                    // same regardless of which GPU/driver backend the
+                    // platform picks (RPi's eglfs backend can otherwise
+                    // pick a lower-quality path).
+                    renderTarget: Canvas.Image
+                    renderStrategy: Canvas.Immediate
+                    smooth: true
                     onPaint: {
                         var ctx = getContext("2d")
                         ctx.reset()
@@ -294,6 +318,9 @@ Popup {
                 Canvas {
                     id: timerArc
                     anchors.fill: parent
+                    renderTarget: Canvas.Image
+                    renderStrategy: Canvas.Immediate
+                    smooth: true
 
                     property real fraction: validationScreenPopup.remainingSeconds / validationScreenPopup.roundDuration
 
@@ -345,6 +372,7 @@ Popup {
                 height: 96 * uiScale
                 radius: width / 2
                 color: validationScreenPopup.stateColor
+                antialiasing: true
                 visible: validationScreenPopup.validationState !== "running"
                 opacity: 0.12
 
@@ -354,6 +382,7 @@ Popup {
                     height: width
                     radius: width / 2
                     color: validationScreenPopup.stateColor
+                    antialiasing: true
 
                     Text {
                         anchors.centerIn: parent
@@ -375,6 +404,7 @@ Popup {
                 color: "#FFFFFF"
                 border.color: validationScreenPopup.stateColor
                 border.width: 1.5
+                antialiasing: true
 
                 Behavior on border.color { ColorAnimation { duration: 250 } }
 
@@ -387,6 +417,7 @@ Popup {
                         height: 10 * uiScale
                         radius: width / 2
                         color: validationScreenPopup.stateColor
+                        antialiasing: true
                         Layout.alignment: Qt.AlignVCenter
 
                         SequentialAnimation on opacity {
@@ -435,6 +466,7 @@ Popup {
                             width: 34 * uiScale
                             height: 34 * uiScale
                             radius: width / 2
+                            antialiasing: true
 
                             color: validationScreenPopup.roundStatus[index] ? "#FF5252"
                                    : (validationScreenPopup.currentRound === index + 1
@@ -495,43 +527,13 @@ Popup {
                 visible: validationScreenPopup.validationState !== "running"
 
                 Rectangle {
-                    id: retryBtn
-                    width: 160 * uiScale
-                    height: 52 * uiScale
-                    radius: 12 * uiScale
-                    color: retryArea.pressed ? "#EEF2FF" : (retryArea.containsMouse ? "#F7F9FF" : "white")
-                    border.color: "#1A4DB5"
-                    border.width: 2
-                    visible: validationScreenPopup.validationState === "failed"
-                    scale: retryArea.pressed ? 0.96 : 1.0
-
-                    Behavior on scale { NumberAnimation { duration: 120 } }
-                    Behavior on color { ColorAnimation { duration: 150 } }
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "Retry"
-                        color: "#1A4DB5"
-                        font.pixelSize: vTypography.body
-                        font.bold: true
-                    }
-
-                    MouseArea {
-                        id: retryArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: validationScreenPopup.startValidation()
-                    }
-                }
-
-                Rectangle {
                     id: closeBtn
                     width: 160 * uiScale
                     height: 52 * uiScale
                     radius: 12 * uiScale
                     color: closeArea.pressed ? "#0D3BA8" : "#1A4DB5"
                     scale: closeArea.pressed ? 0.96 : 1.0
+                    antialiasing: true
 
                     Behavior on scale { NumberAnimation { duration: 120 } }
                     Behavior on color { ColorAnimation { duration: 150 } }
