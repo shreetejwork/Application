@@ -1,7 +1,6 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Shapes
 import AppState 1.0
 import Backend 1.0
 
@@ -17,6 +16,11 @@ Popup {
     property real baseWidth: 1024
     property real baseHeight: 600
 
+    // Pure binding — never assign to this imperatively anywhere (e.g. in
+    // Component.onCompleted). Doing so destroys the binding and freezes
+    // it at a stale value, which is especially bad on Raspberry Pi where
+    // Overlay.overlay's geometry can settle a frame or two later than
+    // on desktop.
     property real uiScale: Math.min(
                                 Overlay.overlay.width / baseWidth,
                                 Overlay.overlay.height / baseHeight
@@ -183,9 +187,6 @@ Popup {
             border.color: validationScreenPopup.stateColor
             border.width: 3
             opacity: 0.18
-            // FIX: RPi's GPU driver doesn't antialias border strokes on
-            // rounded rects the way desktop OpenGL does by default —
-            // without this the glow ring looks jagged/stair-stepped.
             antialiasing: true
 
             Behavior on border.color { ColorAnimation { duration: 250 } }
@@ -274,62 +275,74 @@ Popup {
 
             Item { Layout.preferredHeight: 4 * uiScale }
 
+            // ===== CIRCULAR TIMER =====
+            // Using Canvas here deliberately, NOT QtQuick.Shapes.
+            // QtQuick.Shapes' PathAngleArc collapsed to a near-zero
+            // bounding box on the actual Raspberry Pi hardware (visible
+            // in test photos) even though it rendered fine on desktop —
+            // a known timing issue where the Shape's implicit size can
+            // be computed before its anchors.fill parent geometry has
+            // settled, on slower/software-rendered embedded backends.
+            // Canvas does not have this failure mode.
             Item {
-                id: circularTimer
                 Layout.alignment: Qt.AlignHCenter
                 width: 190 * uiScale
                 height: 190 * uiScale
                 visible: validationScreenPopup.validationState === "running"
 
-                property real strokeW: 10 * uiScale
-                property real fraction: validationScreenPopup.remainingSeconds / validationScreenPopup.roundDuration
-
                 // track
-                Shape {
+                Canvas {
+                    id: timerTrack
                     anchors.fill: parent
-                    antialiasing: true
+                    renderTarget: Canvas.Image
+                    renderStrategy: Canvas.Immediate
+                    smooth: true
 
-                    ShapePath {
-                        strokeColor: "#E2E7F5"
-                        strokeWidth: circularTimer.strokeW
-                        fillColor: "transparent"
-                        capStyle: ShapePath.RoundCap
+                    onWidthChanged: requestPaint()
+                    onHeightChanged: requestPaint()
 
-                        PathAngleArc {
-                            centerX: circularTimer.width / 2
-                            centerY: circularTimer.height / 2
-                            radiusX: circularTimer.width / 2 - circularTimer.strokeW
-                            radiusY: circularTimer.height / 2 - circularTimer.strokeW
-                            startAngle: 0
-                            sweepAngle: 359.999
-                        }
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        ctx.reset()
+                        var cx = width / 2, cy = height / 2
+                        var r = Math.min(width, height) / 2 - 10 * uiScale
+                        ctx.lineWidth = 10 * uiScale
+                        ctx.strokeStyle = "#E2E7F5"
+                        ctx.beginPath()
+                        ctx.arc(cx, cy, r, 0, Math.PI * 2)
+                        ctx.stroke()
                     }
                 }
 
                 // progress arc
-                Shape {
+                Canvas {
+                    id: timerArc
                     anchors.fill: parent
-                    antialiasing: true
+                    renderTarget: Canvas.Image
+                    renderStrategy: Canvas.Immediate
+                    smooth: true
 
+                    property real fraction: validationScreenPopup.remainingSeconds / validationScreenPopup.roundDuration
 
-                    ShapePath {
-                        strokeColor: validationScreenPopup.remainingSeconds <= 10 ? "#FF5252" : "#1A4DB5"
-                        strokeWidth: circularTimer.strokeW
-                        fillColor: "transparent"
-                        capStyle: ShapePath.RoundCap
+                    onFractionChanged: requestPaint()
+                    onWidthChanged: requestPaint()
+                    onHeightChanged: requestPaint()
 
-                        Behavior on strokeColor { ColorAnimation { duration: 200 } }
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        ctx.reset()
+                        var cx = width / 2, cy = height / 2
+                        var r = Math.min(width, height) / 2 - 10 * uiScale
+                        var start = -Math.PI / 2
+                        var end = start + (Math.PI * 2 * fraction)
 
-                        PathAngleArc {
-                            centerX: circularTimer.width / 2
-                            centerY: circularTimer.height / 2
-                            radiusX: circularTimer.width / 2 - circularTimer.strokeW
-                            radiusY: circularTimer.height / 2 - circularTimer.strokeW
-                            startAngle: -90
-                            sweepAngle: 360 * circularTimer.fraction
-
-                            Behavior on sweepAngle { NumberAnimation { duration: 180; easing.type: Easing.OutQuad } }
-                        }
+                        ctx.lineWidth = 10 * uiScale
+                        ctx.lineCap = "round"
+                        ctx.strokeStyle = validationScreenPopup.remainingSeconds <= 10
+                                          ? "#FF5252" : "#1A4DB5"
+                        ctx.beginPath()
+                        ctx.arc(cx, cy, r, start, end, false)
+                        ctx.stroke()
                     }
                 }
 
@@ -408,6 +421,8 @@ Popup {
                         color: validationScreenPopup.stateColor
                         antialiasing: true
                         Layout.alignment: Qt.AlignVCenter
+                        Layout.preferredWidth: 10 * uiScale
+                        Layout.preferredHeight: 10 * uiScale
 
                         SequentialAnimation on opacity {
                             running: validationScreenPopup.validationState === "running"
@@ -457,6 +472,13 @@ Popup {
                             radius: width / 2
                             antialiasing: true
 
+                            // Belt-and-braces: pin explicit Layout sizes
+                            // too, so this can't collapse if the layout
+                            // pass resolves implicit sizing differently
+                            // on a slower/embedded platform.
+                            Layout.preferredWidth: 34 * uiScale
+                            Layout.preferredHeight: 34 * uiScale
+
                             color: validationScreenPopup.roundStatus[index] ? "#FF5252"
                                    : (validationScreenPopup.currentRound === index + 1
                                       && validationScreenPopup.validationState === "running")
@@ -500,6 +522,9 @@ Popup {
                             width: 46 * uiScale
                             height: 3
                             color: validationScreenPopup.roundStatus[index] ? "#FF5252" : "#D8DCE6"
+
+                            Layout.preferredWidth: 46 * uiScale
+                            Layout.preferredHeight: 3
 
                             Behavior on color { ColorAnimation { duration: 200 } }
                         }
