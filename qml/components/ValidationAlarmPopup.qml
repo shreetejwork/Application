@@ -130,6 +130,9 @@ Popup {
             border.width: 3
 
             opacity: 0.15
+
+
+            antialiasing: true
         }
 
         //--------------------------------------------------
@@ -146,6 +149,8 @@ Popup {
 
             border.color: "#C8C8C8"
             border.width: 1
+
+            antialiasing: true
         }
 
         //--------------------------------------------------
@@ -185,6 +190,8 @@ Popup {
 
                 border.color: "#1A4DB5"
 
+                antialiasing: true
+
                 Text {
 
                     anchors.centerIn: parent
@@ -220,6 +227,7 @@ Popup {
                     color: "white"
                     border.color: "#1A4DB5"
                     border.width: 2
+                    antialiasing: true
 
                     Text {
                         anchors.centerIn: parent
@@ -243,6 +251,7 @@ Popup {
                     color: "white"
                     border.color: "#1A4DB5"
                     border.width: 2
+                    antialiasing: true
 
                     Text {
                         anchors.centerIn: parent
@@ -273,6 +282,8 @@ Popup {
                     radius: 10 * uiScale
 
                     color: "#1A4DB5"
+
+                    antialiasing: true
 
                     Text {
                         anchors.centerIn: parent
