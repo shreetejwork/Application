@@ -286,10 +286,19 @@ Item {
         spacing: Math.max(6, sizeRef * 0.03)
 
         Text {
+            id: valueText
+
+            property bool toggleColor: false
+
             text: root.value
             font.pixelSize: gaugeTypography.heading
-            color: "#2446B8"
+            color: toggleColor ? "#2446B8" : "#EEF1F6"
+
             anchors.horizontalCenter: parent.horizontalCenter
+
+            onTextChanged: {
+                toggleColor = !toggleColor
+            }
         }
 
         Text {
