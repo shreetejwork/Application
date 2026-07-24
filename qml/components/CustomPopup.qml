@@ -341,10 +341,13 @@ Item {
                                 popup.onSaveCallback(val)
                             }
 
-                            if (popupRoot.globalTopBar && popupRoot.globalTopBar.showNotification) {
+                            if (popupRoot.globalTopBar) {
+
                                 popupRoot.globalTopBar.showNotification(
                                     "✓ " + popup.fieldName + " updated to " + val
                                 )
+
+                                popupRoot.globalTopBar.resetSessionTimer()
                             }
 
                             popup.closePopup()

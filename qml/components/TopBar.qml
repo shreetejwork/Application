@@ -216,6 +216,10 @@ Rectangle {
         notificationTimer.restart()
     }
 
+    function resetSessionTimer() {
+        countdownCircle.resetCountdown()
+    }
+
     property real baseHeight: 90
     property real scale: Math.max(0.6, height / baseHeight)
 

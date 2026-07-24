@@ -16,11 +16,7 @@ Popup {
     property real baseWidth: 1024
     property real baseHeight: 600
 
-    // Pure binding — never assign to this imperatively anywhere (e.g. in
-    // Component.onCompleted). Doing so destroys the binding and freezes
-    // it at a stale value, which is especially bad on Raspberry Pi where
-    // Overlay.overlay's geometry can settle a frame or two later than
-    // on desktop.
+
     property real uiScale: Math.min(
                                 Overlay.overlay.width / baseWidth,
                                 Overlay.overlay.height / baseHeight
@@ -276,14 +272,7 @@ Popup {
             Item { Layout.preferredHeight: 4 * uiScale }
 
             // ===== CIRCULAR TIMER =====
-            // Using Canvas here deliberately, NOT QtQuick.Shapes.
-            // QtQuick.Shapes' PathAngleArc collapsed to a near-zero
-            // bounding box on the actual Raspberry Pi hardware (visible
-            // in test photos) even though it rendered fine on desktop —
-            // a known timing issue where the Shape's implicit size can
-            // be computed before its anchors.fill parent geometry has
-            // settled, on slower/software-rendered embedded backends.
-            // Canvas does not have this failure mode.
+
             Item {
                 Layout.alignment: Qt.AlignHCenter
                 width: 190 * uiScale

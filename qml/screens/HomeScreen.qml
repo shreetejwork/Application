@@ -451,10 +451,13 @@ Item {
                                 if (popup.onSaveCallback)
                                     popup.onSaveCallback(val)
 
-                                if (globalTopBar)
+                                if (globalTopBar) {
                                     globalTopBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
-                                else
+                                    globalTopBar.resetSessionTimer()
+                                } else {
                                     topBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
+                                    topBar.resetSessionTimer()
+                                }
 
                                 popup.closePopup()
                                 popup.errorText = ""
