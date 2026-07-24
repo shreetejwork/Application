@@ -1,568 +1,587 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Shapes
+
 import AppState 1.0
 import Backend 1.0
 
+
 Popup {
-    id: validationScreenPopup
+
+    id: validationPopup
+
 
     Typography {
-        id: vTypography
-
-        scale: validationScreenPopup.uiScale
+        id: popupTypography
+        scale: uiScale
     }
+
 
     property real baseWidth: 1024
     property real baseHeight: 600
 
-    property real uiScale: Math.min(
-                                Overlay.overlay.width / baseWidth,
-                                Overlay.overlay.height / baseHeight
-                            )
+
+    property real uiScale:
+        Math.min(
+            Overlay.overlay.width / baseWidth,
+            Overlay.overlay.height / baseHeight
+        )
+
+
+    width: 750 * uiScale
+    height: 500 * uiScale
+
+
+    x: (Overlay.overlay.width - width)/2
+    y: (Overlay.overlay.height - height)/2
+
 
     modal: true
     focus: true
-    dim: true
+
     closePolicy: Popup.NoAutoClose
 
-    Overlay.modal: Rectangle {
-        color: "#66000000"
-    }
 
-    width: 850 * uiScale
-    height: 540 * uiScale
 
-    x: (Overlay.overlay.width - width) / 2
-    y: (Overlay.overlay.height - height) / 2
+    //==============================
+    // VALIDATION VARIABLES
+    //==============================
 
-    Component.onCompleted: {
-        Qt.callLater(function() {
-            uiScale = Math.min(
-                Overlay.overlay.width / baseWidth,
-                Overlay.overlay.height / baseHeight
-            )
-        })
-    }
-
-    // ============================================================
-    // THEME HELPERS
-    // ============================================================
-
-    property color stateColor: validationState === "failed" ? "#FF5252"
-                                : validationState === "passed" ? "#2ECC71"
-                                : "#1A4DB5"
-
-    // ============================================================
-    // STATE
-    // ============================================================
 
     property int totalRounds: 3
-    property int currentRound: 1
-    property var roundStatus: [false, false, false]
 
-    property int roundDuration: 180
-    property int remainingSeconds: roundDuration
+    property int currentRound: 0
 
-    property bool rejectCycleStarted: false
+    property int remainingSeconds: 180
 
-    // "running" | "passed" | "failed"
-    property string validationState: "running"
 
-    function formatTime(sec) {
-        var m = Math.floor(sec / 60)
-        var s = sec % 60
-        return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s
-    }
+    property bool rejectCycleStarted:false
 
-    function startValidation() {
-        currentRound = 1
-        roundStatus = [false, false, false]
-        remainingSeconds = roundDuration
-        rejectCycleStarted = false
-        validationState = "running"
-        countdownTimer.start()
-    }
+    property bool sampleRejected:false
 
-    function completeRound() {
-        var arr = roundStatus.slice()
-        arr[currentRound - 1] = true
-        roundStatus = arr
 
-        Qt.callLater(function() {
-            if (indicatorRepeater.itemAt(currentRound - 1))
-                indicatorRepeater.itemAt(currentRound - 1).pop()
-        })
+    property var roundStatus:[
+        false,
+        false,
+        false
+    ]
 
-        if (currentRound === totalRounds) {
-            validationState = "passed"
-            countdownTimer.stop()
-        } else {
-            currentRound++
-            remainingSeconds = roundDuration
-        }
-    }
 
-    onOpened: startValidation()
 
-    // ============================================================
+    //==============================
     // TIMER
-    // ============================================================
+    //==============================
+
 
     Timer {
-        id: countdownTimer
-        interval: 1000
-        repeat: true
-        running: false
+
+        id: validationTimer
+
+        interval:1000
+
+        repeat:true
+
+        running:false
+
 
         onTriggered: {
-            if (validationScreenPopup.remainingSeconds > 0) {
-                validationScreenPopup.remainingSeconds--
-            } else {
-                validationScreenPopup.validationState = "failed"
-                countdownTimer.stop()
+
+
+            if(validationPopup.remainingSeconds > 0)
+            {
+                validationPopup.remainingSeconds--
             }
+
+
+            else
+            {
+
+                validationPopup.roundFailed()
+
+            }
+
         }
     }
 
-    // ============================================================
-    // SIGNAL vs THRESHOLD LOGIC
-    // ============================================================
+
+
+    function startValidation()
+    {
+
+        currentRound = 0
+
+        remainingSeconds = 180
+
+        roundStatus=[
+                    false,
+                    false,
+                    false
+                    ]
+
+
+        validationMessage.text =
+                "Please pass the sample for validation"
+
+
+        validationTimer.start()
+
+    }
+
+
+
+    //==============================
+    // SIGNAL CHECK
+    //==============================
+
 
     Connections {
+
+
         target: SerialManager
-        enabled: validationScreenPopup.validationState === "running"
 
-        function onSignalChanged() {
 
-            if (SerialManager.signal > GlobalState.signalThreshold) {
+        function onSignalChanged()
+        {
 
-                if (!validationScreenPopup.rejectCycleStarted) {
-                    validationScreenPopup.rejectCycleStarted = true
+
+            if(!validationPopup.visible)
+                return
+
+
+
+            // signal crossed threshold
+
+            if(SerialManager.signal >
+                    GlobalState.signalThreshold)
+            {
+
+
+                if(!validationPopup.rejectCycleStarted)
+                {
+
+                    validationPopup.rejectCycleStarted=true
+
                 }
-            } else {
 
-                if (validationScreenPopup.rejectCycleStarted) {
-
-                    validationScreenPopup.rejectCycleStarted = false
-                    GlobalState.rejectedCount++
-                    validationScreenPopup.completeRound()
-                }
             }
+
+
+            // signal returned
+
+            else
+            {
+
+
+                if(validationPopup.rejectCycleStarted)
+                {
+
+
+                    validationPopup.rejectCycleStarted=false
+
+
+                    validationPopup.roundFailed()
+
+
+                }
+
+            }
+
         }
     }
 
-    // ============================================================
-    // OPEN / CLOSE ANIMATION
-    // ============================================================
 
-    enter: Transition {
-        ParallelAnimation {
-            NumberAnimation { property: "opacity"; from: 0; to: 1; duration: 350; easing.type: Easing.OutQuad }
-            NumberAnimation { property: "scale"; from: 0.85; to: 1.0; duration: 350; easing.type: Easing.OutBack }
+
+
+    function roundFailed()
+    {
+
+
+        validationTimer.stop()
+
+
+
+        if(currentRound < totalRounds)
+        {
+
+
+            roundStatus[currentRound]=true
+
+
+            currentRound++
+
+
+
+            // all 3 failed
+
+            if(currentRound >= totalRounds)
+            {
+
+                validationMessage.text =
+                        "Validation Failed"
+
+
+                return
+
+            }
+
+
+            // restart next sample
+
+            remainingSeconds=180
+
+
+            validationMessage.text =
+                    "Please pass the sample for validation"
+
+
+
+            validationTimer.start()
+
+
         }
+
     }
 
-    exit: Transition {
-        ParallelAnimation {
-            NumberAnimation { property: "opacity"; from: 1; to: 0; duration: 250; easing.type: Easing.InQuad }
-            NumberAnimation { property: "scale"; from: 1; to: 0.85; duration: 250; easing.type: Easing.InQuad }
-        }
+
+
+    function roundPassed()
+    {
+
+        validationTimer.stop()
+
+
+        validationMessage.text =
+                "Validation Passed"
+
+
+        console.log("Validation Successful")
+
+
+        close()
+
     }
 
-    // ============================================================
-    // BACKGROUND / CONTENT
-    // ============================================================
+
+
+
+
+    //================================
+    // DESIGN
+    //================================
+
 
     background: Item {
-        id: popupContent
-        implicitWidth: validationScreenPopup.width
-        implicitHeight: validationScreenPopup.height
-        transformOrigin: Item.Center
 
-        // ---- Outer glow ----
+
         Rectangle {
-            id: glowBorder
-            anchors.centerIn: parent
-            width: parent.width + 14 * uiScale
-            height: parent.height + 14 * uiScale
-            radius: 30 * uiScale
-            color: "transparent"
-            border.color: validationScreenPopup.stateColor
-            border.width: 3
-            opacity: 0.18
 
-            antialiasing: true
 
-            Behavior on border.color { ColorAnimation { duration: 250 } }
-
-            SequentialAnimation {
-                running: validationScreenPopup.validationState === "running"
-                loops: Animation.Infinite
-
-                NumberAnimation { target: glowBorder; property: "opacity"; from: 0.12; to: 0.32; duration: 800; easing.type: Easing.InOutQuad }
-                NumberAnimation { target: glowBorder; property: "opacity"; from: 0.32; to: 0.12; duration: 800; easing.type: Easing.InOutQuad }
-            }
-        }
-
-        // ---- Card surface with subtle gradient ----
-        Rectangle {
             anchors.fill: parent
-            radius: 24 * uiScale
-            antialiasing: true
 
-            gradient: Gradient {
-                orientation: Gradient.Vertical
-                GradientStop { position: 0.0; color: "#FFFFFF" }
-                GradientStop { position: 1.0; color: "#F0F3FA" }
-            }
 
-            border.color: "#D0D8EC"
-            border.width: 1
+            radius:25 * uiScale
+
+
+            color:"#FFFFFF"
+
+
+            border.color:"#D0D8EC"
+
+            border.width:2
+
+
+
         }
+
 
         ColumnLayout {
-            anchors.fill: parent
-            anchors.margins: 34 * uiScale
-            anchors.topMargin: 40 * uiScale
-            spacing: 16 * uiScale
 
-            // ===== HEADER ROW =====
-            RowLayout {
-                Layout.fillWidth: true
+
+            anchors.fill:parent
+
+
+            anchors.margins:35*uiScale
+
+
+            spacing:25*uiScale
+
+
+
+
+            Text {
+
+
+                Layout.alignment:
+                    Qt.AlignHCenter
+
+
+                text:"Validation Screen"
+
+
+                font.pixelSize:
+                    popupTypography.title
+
+
+                color:"#1A4DB5"
+
+            }
+
+
+
+
+
+            Rectangle {
+
+
+                Layout.fillWidth:true
+
+                height:70*uiScale
+
+
+                radius:12
+
+
+                color:"#F5F7FC"
+
+
+                border.color:"#1A4DB5"
+
+
 
                 Text {
-                    text: "Validation Screen"
-                    font.pixelSize: vTypography.title
-                    font.bold: true
-                    color: "#1A2E52"
-                    Layout.fillWidth: true
-                }
 
-                Rectangle {
-                    radius: 20 * uiScale
-                    height: 34 * uiScale
-                    width: roundBadgeText.implicitWidth + 28 * uiScale
-                    color: "#E8EEFB"
-                    border.color: "#D0D8EC"
-                    border.width: 1
-                    antialiasing: true
-                    visible: validationScreenPopup.validationState === "running"
 
-                    Text {
-                        id: roundBadgeText
-                        anchors.centerIn: parent
-                        text: "Round " + validationScreenPopup.currentRound + " / " + validationScreenPopup.totalRounds
-                        font.pixelSize: vTypography.bodySmall
-                        font.bold: true
-                        color: "#1A4DB5"
+                    anchors.centerIn:parent
+
+
+                    text:
+
+                    {
+
+                        var m=Math.floor(
+                                    validationPopup.remainingSeconds/60)
+
+                        var s=
+                        validationPopup.remainingSeconds%60
+
+
+                        return "Time Remaining  "
+                        +
+                        (m<10?"0":"")
+                        +m
+                        +
+                        ":"
+                        +
+                        (s<10?"0":"")
+                        +s
+
                     }
+
+
+                    font.pixelSize:
+                        popupTypography.heading
+
+
+                    color:"#1A4DB5"
+
                 }
 
-                Rectangle {
-                    radius: 20 * uiScale
-                    height: 34 * uiScale
-                    width: statusBadgeText.implicitWidth + 28 * uiScale
-                    color: validationScreenPopup.stateColor
-                    antialiasing: true
-                    visible: validationScreenPopup.validationState !== "running"
 
-                    Text {
-                        id: statusBadgeText
-                        anchors.centerIn: parent
-                        text: validationScreenPopup.validationState === "passed" ? "Passed" : "Failed"
-                        font.pixelSize: vTypography.bodySmall
-                        font.bold: true
-                        color: "white"
-                    }
-                }
             }
 
-            Item { Layout.preferredHeight: 4 * uiScale }
 
-            // ===== CIRCULAR TIMER =====
-            // FIX: replaced the previous Canvas-based arc drawing with
-            // QtQuick.Shapes. Canvas is a QPainter raster surface whose
-            // antialiasing/quality depends on the platform's paint
-            // backend, which looks noticeably different (jagged, thin,
-            // sometimes stale) on Raspberry Pi's eglfs/VC4 GPU stack vs
-            // desktop OpenGL on macOS. Shape/ShapePath is rendered by
-            // the Qt Quick scenegraph itself (same path as the
-            // Rectangles below), so it renders identically everywhere.
+
+
+
             Item {
-                id: circularTimer
-                Layout.alignment: Qt.AlignHCenter
-                width: 190 * uiScale
-                height: 190 * uiScale
-                visible: validationScreenPopup.validationState === "running"
 
-                property real strokeW: 10 * uiScale
-                property real fraction: validationScreenPopup.remainingSeconds / validationScreenPopup.roundDuration
+                Layout.fillHeight:true
 
-                // track
-                Shape {
-                    anchors.fill: parent
-                    antialiasing: true
-
-                    ShapePath {
-                        strokeColor: "#E2E7F5"
-                        strokeWidth: circularTimer.strokeW
-                        fillColor: "transparent"
-                        capStyle: ShapePath.RoundCap
-
-                        PathAngleArc {
-                            centerX: circularTimer.width / 2
-                            centerY: circularTimer.height / 2
-                            radiusX: circularTimer.width / 2 - circularTimer.strokeW
-                            radiusY: circularTimer.height / 2 - circularTimer.strokeW
-                            startAngle: 0
-                            sweepAngle: 359.999
-                        }
-                    }
-                }
-
-                // progress arc
-                Shape {
-                    anchors.fill: parent
-                    antialiasing: true
-
-
-                    ShapePath {
-                        strokeColor: validationScreenPopup.remainingSeconds <= 10 ? "#FF5252" : "#1A4DB5"
-                        strokeWidth: circularTimer.strokeW
-                        fillColor: "transparent"
-                        capStyle: ShapePath.RoundCap
-
-                        Behavior on strokeColor { ColorAnimation { duration: 200 } }
-
-                        PathAngleArc {
-                            centerX: circularTimer.width / 2
-                            centerY: circularTimer.height / 2
-                            radiusX: circularTimer.width / 2 - circularTimer.strokeW
-                            radiusY: circularTimer.height / 2 - circularTimer.strokeW
-                            startAngle: -90
-                            sweepAngle: 360 * circularTimer.fraction
-
-                            Behavior on sweepAngle { NumberAnimation { duration: 180; easing.type: Easing.OutQuad } }
-                        }
-                    }
-                }
-
-                Column {
-                    anchors.centerIn: parent
-                    spacing: 2
-
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: validationScreenPopup.formatTime(validationScreenPopup.remainingSeconds)
-                        font.pixelSize: vTypography.title * 1.5
-                        font.bold: true
-                        color: validationScreenPopup.remainingSeconds <= 10 ? "#FF5252" : "#1A2E52"
-                    }
-
-                    Text {
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        text: "remaining"
-                        font.pixelSize: vTypography.bodySmall * 0.85
-                        color: "#8A93A6"
-                    }
-                }
             }
 
-            // ===== RESULT ICON (passed / failed) =====
-            Rectangle {
-                Layout.alignment: Qt.AlignHCenter
-                width: 96 * uiScale
-                height: 96 * uiScale
-                radius: width / 2
-                color: validationScreenPopup.stateColor
-                antialiasing: true
-                visible: validationScreenPopup.validationState !== "running"
-                opacity: 0.12
 
-                Rectangle {
-                    anchors.centerIn: parent
-                    width: parent.width * 0.72
-                    height: width
-                    radius: width / 2
-                    color: validationScreenPopup.stateColor
-                    antialiasing: true
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: validationScreenPopup.validationState === "passed" ? "✓" : "✕"
-                        color: "white"
-                        font.pixelSize: vTypography.title * 1.3
-                        font.bold: true
-                    }
-                }
+
+
+            Text {
+
+
+                id:validationMessage
+
+
+                Layout.alignment:
+                    Qt.AlignHCenter
+
+
+                text:
+                "Please pass the sample for validation"
+
+
+                font.pixelSize:
+                    popupTypography.heading
+
+
+                color:"#1A1A2E"
+
+
             }
 
-            Item { Layout.fillHeight: true }
 
-            // ===== CENTER MESSAGE CARD =====
-            Rectangle {
-                Layout.fillWidth: true
-                Layout.preferredHeight: 76 * uiScale
-                radius: 14 * uiScale
-                color: "#FFFFFF"
-                border.color: validationScreenPopup.stateColor
-                border.width: 1.5
-                antialiasing: true
 
-                Behavior on border.color { ColorAnimation { duration: 250 } }
 
-                RowLayout {
-                    anchors.centerIn: parent
-                    spacing: 14 * uiScale
 
-                    Rectangle {
-                        width: 10 * uiScale
-                        height: 10 * uiScale
-                        radius: width / 2
-                        color: validationScreenPopup.stateColor
-                        antialiasing: true
-                        Layout.alignment: Qt.AlignVCenter
+            //=========================
+            // ROUND INDICATORS
+            //=========================
 
-                        SequentialAnimation on opacity {
-                            running: validationScreenPopup.validationState === "running"
-                            loops: Animation.Infinite
-                            NumberAnimation { from: 1; to: 0.25; duration: 600 }
-                            NumberAnimation { from: 0.25; to: 1; duration: 600 }
-                        }
-                    }
 
-                    Text {
-                        horizontalAlignment: Text.AlignHCenter
-                        font.pixelSize: vTypography.body
-                        font.bold: true
-                        color: "#1A2E52"
-                        text: {
-                            if (validationScreenPopup.validationState === "failed")
-                                return "Validation Failed"
-                            if (validationScreenPopup.validationState === "passed")
-                                return "Validation Passed"
-                            return "Please pass the sample for validation"
-                        }
-                    }
-                }
-            }
+            Row {
 
-            // ===== ROUND STEPPER =====
-            RowLayout {
-                Layout.alignment: Qt.AlignHCenter
-                Layout.topMargin: 6 * uiScale
-                spacing: 0
+
+                Layout.alignment:
+                    Qt.AlignHCenter
+
+
+                spacing:25
+
+
 
                 Repeater {
-                    id: indicatorRepeater
-                    model: validationScreenPopup.totalRounds
 
-                    delegate: RowLayout {
-                        spacing: 0
 
-                        function pop() {
-                            popAnim.start()
+                    model:3
+
+
+
+                    delegate:Rectangle {
+
+
+                        width:45*uiScale
+
+                        height:45*uiScale
+
+
+                        radius:25
+
+
+
+                        color:
+
+                        validationPopup.roundStatus[index]
+
+                        ?
+                        "#FF3B30"
+
+                        :
+                        "#C8C8C8"
+
+
+
+                        Text {
+
+
+                            anchors.centerIn:parent
+
+
+                            text:index+1
+
+
+                            color:"white"
+
+
+                            font.pixelSize:18*uiScale
+
                         }
 
-                        Rectangle {
-                            id: dot
-                            width: 34 * uiScale
-                            height: 34 * uiScale
-                            radius: width / 2
-                            antialiasing: true
 
-                            color: validationScreenPopup.roundStatus[index] ? "#FF5252"
-                                   : (validationScreenPopup.currentRound === index + 1
-                                      && validationScreenPopup.validationState === "running")
-                                     ? "#FFFFFF" : "#D8DCE6"
-
-                            border.width: (validationScreenPopup.currentRound === index + 1
-                                           && validationScreenPopup.validationState === "running") ? 3 : 0
-                            border.color: "#1A4DB5"
-
-                            Behavior on color { ColorAnimation { duration: 200 } }
-
-                            SequentialAnimation {
-                                id: popAnim
-                                NumberAnimation { target: dot; property: "scale"; from: 1.0; to: 1.35; duration: 140; easing.type: Easing.OutQuad }
-                                NumberAnimation { target: dot; property: "scale"; from: 1.35; to: 1.0; duration: 160; easing.type: Easing.OutBack }
-                            }
-
-                            Text {
-                                anchors.centerIn: parent
-                                visible: validationScreenPopup.roundStatus[index]
-                                text: "✓"
-                                color: "white"
-                                font.pixelSize: vTypography.bodySmall
-                                font.bold: true
-                            }
-
-                            Text {
-                                anchors.centerIn: parent
-                                visible: !validationScreenPopup.roundStatus[index]
-                                text: (index + 1)
-                                color: validationScreenPopup.currentRound === index + 1
-                                       && validationScreenPopup.validationState === "running"
-                                       ? "#1A4DB5" : "#8A93A6"
-                                font.pixelSize: vTypography.bodySmall
-                                font.bold: true
-                            }
-                        }
-
-                        Rectangle {
-                            visible: index < validationScreenPopup.totalRounds - 1
-                            width: 46 * uiScale
-                            height: 3
-                            color: validationScreenPopup.roundStatus[index] ? "#FF5252" : "#D8DCE6"
-
-                            Behavior on color { ColorAnimation { duration: 200 } }
-                        }
                     }
+
                 }
+
             }
 
-            Item { Layout.fillHeight: true }
 
-            // ===== BUTTONS =====
-            Row {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 22 * uiScale
-                visible: validationScreenPopup.validationState !== "running"
 
-                Rectangle {
-                    id: closeBtn
-                    width: 160 * uiScale
-                    height: 52 * uiScale
-                    radius: 12 * uiScale
-                    color: closeArea.pressed ? "#0D3BA8" : "#1A4DB5"
-                    scale: closeArea.pressed ? 0.96 : 1.0
-                    antialiasing: true
 
-                    Behavior on scale { NumberAnimation { duration: 120 } }
-                    Behavior on color { ColorAnimation { duration: 150 } }
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: validationScreenPopup.validationState === "passed" ? "Done" : "Close"
-                        color: "white"
-                        font.pixelSize: vTypography.body
-                        font.bold: true
-                    }
+            Item {
 
-                    MouseArea {
-                        id: closeArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            countdownTimer.stop()
-                            validationScreenPopup.close()
-                        }
-                    }
-                }
+                Layout.fillHeight:true
+
             }
+
+
+
+            Rectangle {
+
+
+                Layout.alignment:
+                    Qt.AlignHCenter
+
+
+                width:180*uiScale
+
+                height:55*uiScale
+
+
+                radius:12
+
+
+                color:"#1A4DB5"
+
+
+
+                Text {
+
+
+                    anchors.centerIn:parent
+
+
+                    text:"Cancel"
+
+
+                    color:"white"
+
+
+                    font.pixelSize:
+                        popupTypography.body
+
+                }
+
+
+
+                MouseArea {
+
+
+                    anchors.fill:parent
+
+
+                    onClicked:
+                    {
+
+                        validationTimer.stop()
+
+                        validationPopup.close()
+
+                    }
+
+                }
+
+            }
+
+
         }
+
     }
+
+
+
+    onOpened:
+    {
+
+        startValidation()
+
+    }
+
+
 }
