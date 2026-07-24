@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Shapes
 import AppState 1.0
 import Backend 1.0
 
@@ -89,7 +90,6 @@ Popup {
         arr[currentRound - 1] = true
         roundStatus = arr
 
-        roundPopAnim.target = null // reset trick to retrigger below
         Qt.callLater(function() {
             if (indicatorRepeater.itemAt(currentRound - 1))
                 indicatorRepeater.itemAt(currentRound - 1).pop()
@@ -192,9 +192,7 @@ Popup {
             border.color: validationScreenPopup.stateColor
             border.width: 3
             opacity: 0.18
-            // FIX: RPi's GPU driver doesn't antialias border strokes on
-            // rounded rects the way desktop OpenGL does by default —
-            // without this the glow ring looks jagged/stair-stepped.
+
             antialiasing: true
 
             Behavior on border.color { ColorAnimation { duration: 250 } }
@@ -284,63 +282,70 @@ Popup {
             Item { Layout.preferredHeight: 4 * uiScale }
 
             // ===== CIRCULAR TIMER =====
+            // FIX: replaced the previous Canvas-based arc drawing with
+            // QtQuick.Shapes. Canvas is a QPainter raster surface whose
+            // antialiasing/quality depends on the platform's paint
+            // backend, which looks noticeably different (jagged, thin,
+            // sometimes stale) on Raspberry Pi's eglfs/VC4 GPU stack vs
+            // desktop OpenGL on macOS. Shape/ShapePath is rendered by
+            // the Qt Quick scenegraph itself (same path as the
+            // Rectangles below), so it renders identically everywhere.
             Item {
+                id: circularTimer
                 Layout.alignment: Qt.AlignHCenter
                 width: 190 * uiScale
                 height: 190 * uiScale
                 visible: validationScreenPopup.validationState === "running"
 
+                property real strokeW: 10 * uiScale
+                property real fraction: validationScreenPopup.remainingSeconds / validationScreenPopup.roundDuration
+
                 // track
-                Canvas {
-                    id: timerTrack
+                Shape {
                     anchors.fill: parent
-                    // FIX: explicit render settings so the arc looks the
-                    // same regardless of which GPU/driver backend the
-                    // platform picks (RPi's eglfs backend can otherwise
-                    // pick a lower-quality path).
-                    renderTarget: Canvas.Image
-                    renderStrategy: Canvas.Immediate
-                    smooth: true
-                    onPaint: {
-                        var ctx = getContext("2d")
-                        ctx.reset()
-                        var cx = width / 2, cy = height / 2
-                        var r = width / 2 - 10 * uiScale
-                        ctx.lineWidth = 10 * uiScale
-                        ctx.strokeStyle = "#E2E7F5"
-                        ctx.beginPath()
-                        ctx.arc(cx, cy, r, 0, Math.PI * 2)
-                        ctx.stroke()
+                    antialiasing: true
+
+                    ShapePath {
+                        strokeColor: "#E2E7F5"
+                        strokeWidth: circularTimer.strokeW
+                        fillColor: "transparent"
+                        capStyle: ShapePath.RoundCap
+
+                        PathAngleArc {
+                            centerX: circularTimer.width / 2
+                            centerY: circularTimer.height / 2
+                            radiusX: circularTimer.width / 2 - circularTimer.strokeW
+                            radiusY: circularTimer.height / 2 - circularTimer.strokeW
+                            startAngle: 0
+                            sweepAngle: 359.999
+                        }
                     }
                 }
 
                 // progress arc
-                Canvas {
-                    id: timerArc
+                Shape {
                     anchors.fill: parent
-                    renderTarget: Canvas.Image
-                    renderStrategy: Canvas.Immediate
-                    smooth: true
+                    antialiasing: true
 
-                    property real fraction: validationScreenPopup.remainingSeconds / validationScreenPopup.roundDuration
 
-                    onFractionChanged: requestPaint()
+                    ShapePath {
+                        strokeColor: validationScreenPopup.remainingSeconds <= 10 ? "#FF5252" : "#1A4DB5"
+                        strokeWidth: circularTimer.strokeW
+                        fillColor: "transparent"
+                        capStyle: ShapePath.RoundCap
 
-                    onPaint: {
-                        var ctx = getContext("2d")
-                        ctx.reset()
-                        var cx = width / 2, cy = height / 2
-                        var r = width / 2 - 10 * uiScale
-                        var start = -Math.PI / 2
-                        var end = start + (Math.PI * 2 * fraction)
+                        Behavior on strokeColor { ColorAnimation { duration: 200 } }
 
-                        ctx.lineWidth = 10 * uiScale
-                        ctx.lineCap = "round"
-                        ctx.strokeStyle = validationScreenPopup.remainingSeconds <= 10
-                                          ? "#FF5252" : "#1A4DB5"
-                        ctx.beginPath()
-                        ctx.arc(cx, cy, r, start, end, false)
-                        ctx.stroke()
+                        PathAngleArc {
+                            centerX: circularTimer.width / 2
+                            centerY: circularTimer.height / 2
+                            radiusX: circularTimer.width / 2 - circularTimer.strokeW
+                            radiusY: circularTimer.height / 2 - circularTimer.strokeW
+                            startAngle: -90
+                            sweepAngle: 360 * circularTimer.fraction
+
+                            Behavior on sweepAngle { NumberAnimation { duration: 180; easing.type: Easing.OutQuad } }
+                        }
                     }
                 }
 
