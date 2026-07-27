@@ -222,12 +222,23 @@ Popup {
             RowLayout {
                 Layout.fillWidth: true
 
-                Text {
-                    text: "Validation Screen"
-                    font.pixelSize: vTypography.title
-                    font.bold: true
-                    color: "#1A2E52"
-                    Layout.fillWidth: true
+                Column {
+                    spacing: 6 * root.scale
+
+                    Text {
+                        text: "Validation Screen"
+                        font.pixelSize: vTypography.title
+                        Layout.fillWidth: true
+
+                        color: "#1A4DB5"
+                    }
+
+                    Rectangle {
+                        width: 80 * root.scale
+                        height: 4 * root.scale
+                        radius: 2 * root.scale
+                        color: "#1A4DB5"
+                    }
                 }
 
                 Rectangle {
@@ -378,7 +389,7 @@ Popup {
                     Text {
                         anchors.centerIn: parent
                         text: validationScreenPopup.validationState === "passed" ? "✓" : "✕"
-                        color: "white"
+                        color: "#333"
                         font.pixelSize: vTypography.title * 1.3
                         font.bold: true
                     }
@@ -461,10 +472,6 @@ Popup {
                             radius: width / 2
                             antialiasing: true
 
-                            // Belt-and-braces: pin explicit Layout sizes
-                            // too, so this can't collapse if the layout
-                            // pass resolves implicit sizing differently
-                            // on a slower/embedded platform.
                             Layout.preferredWidth: 34 * uiScale
                             Layout.preferredHeight: 34 * uiScale
 
@@ -510,7 +517,7 @@ Popup {
                             visible: index < validationScreenPopup.totalRounds - 1
                             width: 46 * uiScale
                             height: 3
-                            color: validationScreenPopup.roundStatus[index] ? "#FF5252" : "#D8DCE6"
+                            color: validationScreenPopup.roundStatus[index] ? "#2ECC71" : "#D8DCE6"
 
                             Layout.preferredWidth: 46 * uiScale
                             Layout.preferredHeight: 3
