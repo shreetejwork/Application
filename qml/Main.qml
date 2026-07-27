@@ -46,6 +46,16 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: SerialManager
+
+        function onMcuParameterRequestReceived() {
+            console.log("MCU requested parameters")
+
+            startupTimer.restart()
+        }
+    }
+
     function navigateToHome() {
 
         menuLoader.active = false

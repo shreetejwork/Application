@@ -67,6 +67,7 @@ SerialManager::SerialManager(QObject *parent)
 #endif
 }
 
+
 void SerialManager::setCoilBalancingStatus(bool status)
 {
     if(m_coilBalancingOn == status)
@@ -282,6 +283,16 @@ void SerialManager::setAmplitudeThreshold(int value)
 void SerialManager::onReadyRead()
 {
     rxBuffer += serial.readAll();
+
+    // MCU requesting parameters
+        if (rxBuffer.contains("{*****}"))
+    {
+        rxBuffer.replace("{*****}", "");
+
+        qDebug() << "MCU requested machine settings.";
+
+        emit mcuParameterRequestReceived();
+    }
 
     while (true)
     {

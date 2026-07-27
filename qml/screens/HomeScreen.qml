@@ -963,13 +963,17 @@ Item {
 
                     }
 
-                    Item {
+                    Item{
                         width: 1
-                        height: 10
+                        height: 2
                     }
 
                     Text {
-                        text: GlobalState.rejectedCount + " : Rejection Count"
+                        textFormat: Text.RichText
+
+                        text: GlobalState.rejectedCount
+                              + " : Total Rejections<br>"
+                              + "<span style='font-size:15px; color:#1A4DB5;'>(Since Power-On)</span>"
 
                         font.pixelSize: screenTypography.bodySmall
                         color: "#1A4DB5"
@@ -979,7 +983,6 @@ Item {
 
                         anchors.right: parent.right
                         anchors.rightMargin: 10
-
                         anchors.topMargin: 50
                     }
                 }

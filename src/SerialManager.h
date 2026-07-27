@@ -94,6 +94,8 @@ signals:
 
     void coilOutputChanged();
 
+    void mcuParameterRequestReceived();
+
 private slots:
     void onReadyRead();
 

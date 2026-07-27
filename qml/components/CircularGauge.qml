@@ -292,13 +292,9 @@ Item {
 
             text: root.value
             font.pixelSize: gaugeTypography.heading
-            color: toggleColor ? "#2446B8" : "#EEF1F6"
+            color: "#2446B8"
 
             anchors.horizontalCenter: parent.horizontalCenter
-
-            onTextChanged: {
-                toggleColor = !toggleColor
-            }
         }
 
         Text {
