@@ -253,33 +253,6 @@ Popup {
                 }
 
 
-                // ===== ROUND BADGE =====
-                Rectangle {
-                    radius: 10
-                    height: 34 * uiScale
-                    width: roundBadgeText.contentWidth + 30 * uiScale
-
-                    color: "#E8EEFB"
-
-                    border.width: 1
-                    border.color: "#D0D8EC"
-
-                    Text {
-                        id: roundBadgeText
-
-                        anchors.centerIn: parent
-
-                        text: "Round "
-                              + validationScreenPopup.currentRound
-                              + " / "
-                              + validationScreenPopup.totalRounds
-
-                        font.pixelSize: vTypography.bodySmall
-                        color: "#1A4DB5"
-                    }
-                }
-
-
                 // ===== STATUS BADGE =====
                 Rectangle {
                     radius: 20 * uiScale
@@ -318,32 +291,14 @@ Popup {
                 visible: validationScreenPopup.validationState === "running"
 
                 // track
-                Canvas {
-                    id: timerTrack
+                Rectangle {
                     anchors.fill: parent
-                    renderTarget: Canvas.Image
-                    renderStrategy: Canvas.Immediate
-                    smooth: true
+                    radius: width / 2
 
-                    onWidthChanged: requestPaint()
-                    onHeightChanged: requestPaint()
+                    color: "transparent"
 
-                    onPaint: {
-                        var ctx = getContext("2d")
-                        ctx.clearRect(0, 0, width, height)
-                        var cx = width / 2, cy = height / 2
-                        var r = Math.min(width, height) / 2 - 10 * uiScale
-
-                        if (r <= 0 || isNaN(r))
-                            return
-
-                        ctx.lineWidth = 10 * uiScale
-                        ctx.strokeStyle = "#E2E7F5"
-
-                        ctx.beginPath()
-                        ctx.arc(cx, cy, r, 0, Math.PI * 2)
-                        ctx.stroke()
-                    }
+                    border.width: 10 * uiScale
+                    border.color: "#E2E7F5"
                 }
 
                 // progress arc
@@ -387,7 +342,7 @@ Popup {
                         var start = -Math.PI / 2
                         var end = start + (Math.PI * 2 * fraction)
 
-                        ctx.lineWidth = 10 * uiScale
+                        ctx.lineWidth = 13 * uiScale
                         ctx.lineCap = "round"
 
                         ctx.strokeStyle = "#1A4DB5"
