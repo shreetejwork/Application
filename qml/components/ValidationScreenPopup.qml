@@ -308,8 +308,8 @@ Popup {
                     id: timerArc
                     anchors.fill: parent
 
-                    renderTarget: Canvas.Image
-                    renderStrategy: Canvas.Immediate
+                    renderTarget: Canvas.FramebufferObject
+                    renderStrategy: Canvas.Cooperative
 
                     antialiasing: true
 
