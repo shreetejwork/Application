@@ -518,8 +518,11 @@ ApplicationWindow {
                     showTopBar: false
                     globalTopBar: mainTopBar
 
+                    validationPopup: validationScreenPopup
+
                     layer.enabled: true
                     layer.smooth: true
+
                     navigateTo: function(screen) {
                         if (root.currentMenuScreen !== "")
                             root.menuStack.push(root.currentMenuScreen)

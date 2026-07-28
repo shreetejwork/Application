@@ -222,23 +222,12 @@ Popup {
             RowLayout {
                 Layout.fillWidth: true
 
-                Column {
-                    spacing: 6 * root.scale
+                Text {
+                    text: "Validation Screen"
+                    font.pixelSize: vTypography.title
+                    Layout.fillWidth: true
 
-                    Text {
-                        text: "Validation Screen"
-                        font.pixelSize: vTypography.title
-                        Layout.fillWidth: true
-
-                        color: "#1A4DB5"
-                    }
-
-                    Rectangle {
-                        width: 80 * root.scale
-                        height: 4 * root.scale
-                        radius: 2 * root.scale
-                        color: "#1A4DB5"
-                    }
+                    color: "#1A4DB5"
                 }
 
                 Rectangle {
@@ -303,11 +292,16 @@ Popup {
 
                     onPaint: {
                         var ctx = getContext("2d")
-                        ctx.reset()
+                        ctx.clearRect(0, 0, width, height)
                         var cx = width / 2, cy = height / 2
                         var r = Math.min(width, height) / 2 - 10 * uiScale
+
+                        if (r <= 0 || isNaN(r))
+                            return
+
                         ctx.lineWidth = 10 * uiScale
                         ctx.strokeStyle = "#E2E7F5"
+
                         ctx.beginPath()
                         ctx.arc(cx, cy, r, 0, Math.PI * 2)
                         ctx.stroke()
@@ -330,16 +324,21 @@ Popup {
 
                     onPaint: {
                         var ctx = getContext("2d")
-                        ctx.reset()
+                        ctx.clearRect(0, 0, width, height)
                         var cx = width / 2, cy = height / 2
                         var r = Math.min(width, height) / 2 - 10 * uiScale
+
+                        if (r <= 0 || isNaN(r))
+                            return
+
                         var start = -Math.PI / 2
                         var end = start + (Math.PI * 2 * fraction)
 
                         ctx.lineWidth = 10 * uiScale
                         ctx.lineCap = "round"
-                        ctx.strokeStyle = validationScreenPopup.remainingSeconds <= 10
-                                          ? "#FF5252" : "#1A4DB5"
+
+                        ctx.strokeStyle = "#1A4DB5"
+
                         ctx.beginPath()
                         ctx.arc(cx, cy, r, start, end, false)
                         ctx.stroke()
@@ -361,7 +360,7 @@ Popup {
                     Text {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: "remaining"
-                        font.pixelSize: vTypography.bodySmall * 0.85
+                        font.pixelSize: vTypography.body * 0.85
                         color: "#8A93A6"
                     }
                 }
@@ -434,9 +433,9 @@ Popup {
 
                     Text {
                         horizontalAlignment: Text.AlignHCenter
-                        font.pixelSize: vTypography.body
+                        font.pixelSize: vTypography.subHeading
                         font.bold: true
-                        color: "#1A2E52"
+                        color: "#1A4DB5"
                         text: {
                             if (validationScreenPopup.validationState === "failed")
                                 return "Validation Failed"
@@ -467,15 +466,15 @@ Popup {
 
                         Rectangle {
                             id: dot
-                            width: 34 * uiScale
-                            height: 34 * uiScale
+                            width: 40 * uiScale
+                            height: 40 * uiScale
                             radius: width / 2
                             antialiasing: true
 
-                            Layout.preferredWidth: 34 * uiScale
-                            Layout.preferredHeight: 34 * uiScale
+                            Layout.preferredWidth: 40 * uiScale
+                            Layout.preferredHeight: 40 * uiScale
 
-                            color: validationScreenPopup.roundStatus[index] ? "#FF5252"
+                            color: validationScreenPopup.roundStatus[index] ? "#2ECC71"
                                    : (validationScreenPopup.currentRound === index + 1
                                       && validationScreenPopup.validationState === "running")
                                      ? "#FFFFFF" : "#D8DCE6"

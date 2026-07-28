@@ -19,6 +19,8 @@ Item {
     property bool signalAlreadyRejected: false
     property bool rejectCycleStarted: false
 
+    property var validationPopup
+
 
 
     Component.onCompleted: {
@@ -844,6 +846,8 @@ Item {
                                 globalTopBar.showNotification(
                                             "✓ Manual Validation ON"
                                             )
+
+                                validationPopup.open()
                             }
                         }
 
@@ -973,7 +977,7 @@ Item {
 
                         text: GlobalState.rejectedCount
                               + " : Total Rejections<br>"
-                              + "<span style='font-size:15px; color:#1A4DB5;'>(Since Power-On)</span>"
+                              + "<span style='font-size:16px; color:#1A4DB5;'>(Since Power On)</span>"
 
                         font.pixelSize: screenTypography.bodySmall
                         color: "#1A4DB5"
