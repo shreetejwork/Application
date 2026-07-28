@@ -61,10 +61,13 @@ Item {
 
                 if (homeScreen.rejectCycleStarted) {
 
-                    GlobalState.rejectedCount++
-                    homeScreen.rejectCycleStarted = false
+                    if (!GlobalState.countRejection) {
+                        GlobalState.rejectedCount++
 
-                    console.log("Rejected Count :", GlobalState.rejectedCount)
+                        console.log("Rejected Count :", GlobalState.rejectedCount)
+                    }
+
+                    homeScreen.rejectCycleStarted = false
                 }
             }
         }

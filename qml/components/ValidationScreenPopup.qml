@@ -74,6 +74,9 @@ Popup {
         rejectCycleStarted = false
         validationState = "running"
         countdownTimer.start()
+
+        timerArc.requestPaint()
+        timerTrack.requestPaint()
     }
 
     function completeRound() {
@@ -95,7 +98,10 @@ Popup {
         }
     }
 
-    onOpened: startValidation()
+    onOpened: {
+        GlobalState.countRejection = true
+        startValidation()
+    }
 
     // ============================================================
     // TIMER
@@ -222,48 +228,80 @@ Popup {
             RowLayout {
                 Layout.fillWidth: true
 
-                Text {
-                    text: "Validation Screen"
-                    font.pixelSize: vTypography.title
+                // ===== TITLE =====
+                Column {
+                    spacing: 6 * uiScale
+
                     Layout.fillWidth: true
 
-                    color: "#1A4DB5"
-                }
-
-                Rectangle {
-                    radius: 20 * uiScale
-                    height: 34 * uiScale
-                    width: roundBadgeText.implicitWidth + 28 * uiScale
-                    color: "#E8EEFB"
-                    border.color: "#D0D8EC"
-                    border.width: 1
-                    antialiasing: true
-                    visible: validationScreenPopup.validationState === "running"
-
                     Text {
-                        id: roundBadgeText
-                        anchors.centerIn: parent
-                        text: "Round " + validationScreenPopup.currentRound + " / " + validationScreenPopup.totalRounds
-                        font.pixelSize: vTypography.bodySmall
-                        font.bold: true
+                        text: "Validation Screen"
+
+                        font.pixelSize: vTypography.title
+
+                        color: "#1A4DB5"
+                    }
+
+                    Rectangle {
+                        width: 80 * uiScale
+                        height: 4 * uiScale
+
+                        radius: 2 * uiScale
+
                         color: "#1A4DB5"
                     }
                 }
 
+
+                // ===== ROUND BADGE =====
+                Rectangle {
+                    radius: 10
+                    height: 34 * uiScale
+                    width: roundBadgeText.contentWidth + 30 * uiScale
+
+                    color: "#E8EEFB"
+
+                    border.width: 1
+                    border.color: "#D0D8EC"
+
+                    Text {
+                        id: roundBadgeText
+
+                        anchors.centerIn: parent
+
+                        text: "Round "
+                              + validationScreenPopup.currentRound
+                              + " / "
+                              + validationScreenPopup.totalRounds
+
+                        font.pixelSize: vTypography.bodySmall
+                        color: "#1A4DB5"
+                    }
+                }
+
+
+                // ===== STATUS BADGE =====
                 Rectangle {
                     radius: 20 * uiScale
                     height: 34 * uiScale
-                    width: statusBadgeText.implicitWidth + 28 * uiScale
+
+                    width: statusBadgeText.contentWidth + 28 * uiScale
+
                     color: validationScreenPopup.stateColor
-                    antialiasing: true
+
                     visible: validationScreenPopup.validationState !== "running"
 
                     Text {
                         id: statusBadgeText
+
                         anchors.centerIn: parent
-                        text: validationScreenPopup.validationState === "passed" ? "Passed" : "Failed"
+
+                        text: validationScreenPopup.validationState === "passed"
+                              ? "Passed"
+                              : "Failed"
+
                         font.pixelSize: vTypography.bodySmall
-                        font.bold: true
+
                         color: "white"
                     }
                 }
@@ -312,11 +350,26 @@ Popup {
                 Canvas {
                     id: timerArc
                     anchors.fill: parent
-                    renderTarget: Canvas.Image
-                    renderStrategy: Canvas.Immediate
-                    smooth: true
 
-                    property real fraction: validationScreenPopup.remainingSeconds / validationScreenPopup.roundDuration
+                    renderTarget: Canvas.FramebufferObject
+                    renderStrategy: Canvas.Cooperative
+
+                    antialiasing: true
+
+                    property real fraction: 1.0
+
+                    Connections {
+                        target: validationScreenPopup
+
+                        function onRemainingSecondsChanged() {
+
+                            timerArc.fraction =
+                                    validationScreenPopup.remainingSeconds /
+                                    validationScreenPopup.roundDuration
+
+                            timerArc.requestPaint()
+                        }
+                    }
 
                     onFractionChanged: requestPaint()
                     onWidthChanged: requestPaint()
@@ -353,7 +406,6 @@ Popup {
                         anchors.horizontalCenter: parent.horizontalCenter
                         text: validationScreenPopup.formatTime(validationScreenPopup.remainingSeconds)
                         font.pixelSize: vTypography.title * 1.5
-                        font.bold: true
                         color: validationScreenPopup.remainingSeconds <= 10 ? "#FF5252" : "#1A2E52"
                     }
 
@@ -390,7 +442,6 @@ Popup {
                         text: validationScreenPopup.validationState === "passed" ? "✓" : "✕"
                         color: "#333"
                         font.pixelSize: vTypography.title * 1.3
-                        font.bold: true
                     }
                 }
             }
@@ -414,14 +465,14 @@ Popup {
                     spacing: 14 * uiScale
 
                     Rectangle {
-                        width: 10 * uiScale
-                        height: 10 * uiScale
+                        width: 15 * uiScale
+                        height: 15 * uiScale
                         radius: width / 2
                         color: validationScreenPopup.stateColor
                         antialiasing: true
                         Layout.alignment: Qt.AlignVCenter
-                        Layout.preferredWidth: 10 * uiScale
-                        Layout.preferredHeight: 10 * uiScale
+                        Layout.preferredWidth: 15 * uiScale
+                        Layout.preferredHeight: 15 * uiScale
 
                         SequentialAnimation on opacity {
                             running: validationScreenPopup.validationState === "running"
@@ -434,7 +485,6 @@ Popup {
                     Text {
                         horizontalAlignment: Text.AlignHCenter
                         font.pixelSize: vTypography.subHeading
-                        font.bold: true
                         color: "#1A4DB5"
                         text: {
                             if (validationScreenPopup.validationState === "failed")
@@ -508,7 +558,6 @@ Popup {
                                        && validationScreenPopup.validationState === "running"
                                        ? "#1A4DB5" : "#8A93A6"
                                 font.pixelSize: vTypography.bodySmall
-                                font.bold: true
                             }
                         }
 
@@ -552,7 +601,6 @@ Popup {
                         text: validationScreenPopup.validationState === "passed" ? "Done" : "Close"
                         color: "white"
                         font.pixelSize: vTypography.body
-                        font.bold: true
                     }
 
                     MouseArea {
@@ -562,6 +610,7 @@ Popup {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             countdownTimer.stop()
+                            GlobalState.countRejection = false
                             validationScreenPopup.close()
                         }
                     }
