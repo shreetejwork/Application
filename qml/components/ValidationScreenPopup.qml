@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Shapes
 import AppState 1.0
 import Backend 1.0
 
@@ -304,54 +305,63 @@ Popup {
                 }
 
                 // progress arc
-                Canvas {
+                Shape {
                     id: timerArc
+
                     anchors.fill: parent
 
-                    renderTarget: Canvas.FramebufferObject
-                    renderStrategy: Canvas.Cooperative
+                    property real fraction:
+                        validationScreenPopup.remainingSeconds /
+                        validationScreenPopup.roundDuration
 
-                    antialiasing: true
 
-                    property real fraction: 1.0
+                    ShapePath {
+
+                        strokeColor: "#1A4DB5"
+
+                        strokeWidth: 13 * uiScale
+
+                        fillColor: "transparent"
+
+                        capStyle: ShapePath.RoundCap
+
+
+                        PathAngleArc {
+
+                            centerX: timerArc.width / 2
+                            centerY: timerArc.height / 2
+
+
+                            radiusX:
+                                timerArc.width / 2 -
+                                13 * uiScale
+
+
+                            radiusY:
+                                timerArc.height / 2 -
+                                13 * uiScale
+
+
+                            startAngle: -90
+
+
+                            sweepAngle:
+                                timerArc.fraction * 360
+                        }
+                    }
+
 
                     Connections {
+
                         target: validationScreenPopup
+
 
                         function onRemainingSecondsChanged() {
 
                             timerArc.fraction =
-                                    validationScreenPopup.remainingSeconds /
-                                    validationScreenPopup.roundDuration
-
-                            timerArc.requestPaint()
+                                validationScreenPopup.remainingSeconds /
+                                validationScreenPopup.roundDuration
                         }
-                    }
-
-                    onFractionChanged: requestPaint()
-                    onWidthChanged: requestPaint()
-                    onHeightChanged: requestPaint()
-
-                    onPaint: {
-                        var ctx = getContext("2d")
-                        ctx.clearRect(0, 0, width, height)
-                        var cx = width / 2, cy = height / 2
-                        var r = Math.min(width, height) / 2 - 10 * uiScale
-
-                        if (r <= 0 || isNaN(r))
-                            return
-
-                        var start = -Math.PI / 2
-                        var end = start + (Math.PI * 2 * fraction)
-
-                        ctx.lineWidth = 13 * uiScale
-                        ctx.lineCap = "round"
-
-                        ctx.strokeStyle = "#1A4DB5"
-
-                        ctx.beginPath()
-                        ctx.arc(cx, cy, r, start, end, false)
-                        ctx.stroke()
                     }
                 }
 
