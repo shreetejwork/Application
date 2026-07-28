@@ -73,10 +73,12 @@ Popup {
         remainingSeconds = roundDuration
         rejectCycleStarted = false
         validationState = "running"
+
         countdownTimer.start()
 
-        timerArc.requestPaint()
-        timerTrack.requestPaint()
+        Qt.callLater(function() {
+            timerArc.requestPaint()
+        })
     }
 
     function completeRound() {
@@ -306,8 +308,8 @@ Popup {
                     id: timerArc
                     anchors.fill: parent
 
-                    renderTarget: Canvas.FramebufferObject
-                    renderStrategy: Canvas.Cooperative
+                    renderTarget: Canvas.Image
+                    renderStrategy: Canvas.Immediate
 
                     antialiasing: true
 
