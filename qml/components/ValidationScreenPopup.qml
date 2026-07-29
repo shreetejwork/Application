@@ -95,7 +95,7 @@ Popup {
         if (currentRound === totalRounds) {
             validationState = "passed"
             countdownTimer.stop()
-            GlobalState.countRejection = false
+            GlobalState.countRejection = true
             console.log("Count Rejection:", GlobalState.countRejection)
         } else {
             currentRound++
@@ -104,7 +104,7 @@ Popup {
     }
 
     onOpened: {
-        GlobalState.countRejection = true
+        GlobalState.countRejection = false
         startValidation()
         console.log("Count Rejection:",GlobalState.countRejection)
     }
@@ -125,7 +125,7 @@ Popup {
             } else {
                 validationScreenPopup.validationState = "failed"
                 countdownTimer.stop()
-                GlobalState.countRejection = false
+                GlobalState.countRejection = true
                 console.log("Count Rejection:", GlobalState.countRejection)
             }
         }
@@ -574,7 +574,7 @@ Popup {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             countdownTimer.stop()
-                            GlobalState.countRejection = false
+                            GlobalState.countRejection = true
                             validationScreenPopup.close()
                             console.log("Count Rejection:",GlobalState.countRejection)
                         }

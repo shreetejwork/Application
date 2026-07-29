@@ -178,6 +178,8 @@ ApplicationWindow {
 
         tuneSwipeViewSmoothness()
 
+        console.log("Count Rejection:", GlobalState.countRejection)
+
         startupTimer.start()
     }
 
