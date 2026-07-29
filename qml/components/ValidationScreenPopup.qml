@@ -95,6 +95,8 @@ Popup {
         if (currentRound === totalRounds) {
             validationState = "passed"
             countdownTimer.stop()
+            GlobalState.countRejection = false
+            console.log("Count Rejection:", GlobalState.countRejection)
         } else {
             currentRound++
             remainingSeconds = roundDuration
@@ -123,6 +125,8 @@ Popup {
             } else {
                 validationScreenPopup.validationState = "failed"
                 countdownTimer.stop()
+                GlobalState.countRejection = false
+                console.log("Count Rejection:", GlobalState.countRejection)
             }
         }
     }
@@ -312,17 +316,12 @@ Popup {
                     antialiasing: true
                 }
 
-                // ---- progress arc ----
-                // NOTE: Replaced QtQuick.Shapes (Shape/ShapePath/PathAngleArc) with a
-                // Canvas (QPainter-based). Shapes rendering depends on which Quick
-                // scenegraph/RHI backend and GPU driver is active, and on Raspberry Pi
-                // it can silently fall back to a path renderer that collapses
-                // PathAngleArc into a degenerate shape (the "blob" you saw next to the
-                // time text). Canvas is rasterized through QPainter the same way on
-                // every platform/backend, so it renders identically on Mac and Pi.
                 Canvas {
                     id: timerArcCanvas
                     anchors.fill: parent
+
+                    renderTarget: Canvas.Image
+                    renderStrategy: Canvas.Immediate
 
                     property real fraction:
                         validationScreenPopup.remainingSeconds /
@@ -333,10 +332,11 @@ Popup {
                     onFractionChanged: requestPaint()
                     onWidthChanged: requestPaint()
                     onHeightChanged: requestPaint()
+                    Component.onCompleted: requestPaint()
 
                     onPaint: {
                         var ctx = getContext("2d")
-                        ctx.reset()
+                        ctx.clearRect(0, 0, width, height)
 
                         var cx = width / 2
                         var cy = height / 2
