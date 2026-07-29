@@ -17,6 +17,7 @@ Item {
     property real digitalGain: 1.0
 
     property bool signalAlreadyRejected: false
+
     property bool rejectCycleStarted: false
 
     property var validationPopup
@@ -61,9 +62,8 @@ Item {
 
                 if (homeScreen.rejectCycleStarted) {
 
-                    if (!GlobalState.countRejection) {
+                    if (GlobalState.countRejection) {
                         GlobalState.rejectedCount++
-
                         console.log("Rejected Count :", GlobalState.rejectedCount)
                     }
 

@@ -157,7 +157,6 @@ Popup {
                 if (validationScreenPopup.rejectCycleStarted) {
 
                     validationScreenPopup.rejectCycleStarted = false
-                    GlobalState.rejectedCount++
                     validationScreenPopup.completeRound()
                 }
             }
