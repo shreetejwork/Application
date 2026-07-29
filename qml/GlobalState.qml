@@ -69,7 +69,7 @@ QtObject {
     property real productPhase: 0
     property real machinePhase: 180.0
 
-    property bool countRejection: false
+    property bool countRejection: true
 
     property int rejectedCount: 0
 
