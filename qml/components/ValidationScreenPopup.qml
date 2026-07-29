@@ -104,6 +104,7 @@ Popup {
     onOpened: {
         GlobalState.countRejection = true
         startValidation()
+        console.log("Count Rejection:",GlobalState.countRejection)
     }
 
     // ============================================================
@@ -579,6 +580,7 @@ Popup {
                             countdownTimer.stop()
                             GlobalState.countRejection = false
                             validationScreenPopup.close()
+                            console.log("Count Rejection:",GlobalState.countRejection)
                         }
                     }
                 }
