@@ -78,7 +78,7 @@ Popup {
         countdownTimer.start()
 
         Qt.callLater(function() {
-            timerArc.requestPaint()
+            timerArcCanvas.requestPaint()
         })
     }
 
@@ -125,6 +125,12 @@ Popup {
                 countdownTimer.stop()
             }
         }
+    }
+
+    // Repaint the ring any time remainingSeconds changes (drives the Canvas below)
+    onRemainingSecondsChanged: {
+        if (timerArcCanvas)
+            timerArcCanvas.requestPaint()
     }
 
     // ============================================================
@@ -303,66 +309,53 @@ Popup {
 
                     border.width: 10 * uiScale
                     border.color: "#E2E7F5"
+                    antialiasing: true
                 }
 
-                // progress arc
-                Shape {
-                    id: timerArc
-
+                // ---- progress arc ----
+                // NOTE: Replaced QtQuick.Shapes (Shape/ShapePath/PathAngleArc) with a
+                // Canvas (QPainter-based). Shapes rendering depends on which Quick
+                // scenegraph/RHI backend and GPU driver is active, and on Raspberry Pi
+                // it can silently fall back to a path renderer that collapses
+                // PathAngleArc into a degenerate shape (the "blob" you saw next to the
+                // time text). Canvas is rasterized through QPainter the same way on
+                // every platform/backend, so it renders identically on Mac and Pi.
+                Canvas {
+                    id: timerArcCanvas
                     anchors.fill: parent
 
                     property real fraction:
                         validationScreenPopup.remainingSeconds /
                         validationScreenPopup.roundDuration
 
+                    property real strokeW: 13 * uiScale
 
-                    ShapePath {
+                    onFractionChanged: requestPaint()
+                    onWidthChanged: requestPaint()
+                    onHeightChanged: requestPaint()
 
-                        strokeColor: "#1A4DB5"
+                    onPaint: {
+                        var ctx = getContext("2d")
+                        ctx.reset()
 
-                        strokeWidth: 13 * uiScale
+                        var cx = width / 2
+                        var cy = height / 2
+                        var radius = Math.min(width, height) / 2 - strokeW
 
-                        fillColor: "transparent"
+                        if (radius <= 0)
+                            return
 
-                        capStyle: ShapePath.RoundCap
+                        var startAngle = -Math.PI / 2
+                        var sweep = fraction * 2 * Math.PI
+                        var endAngle = startAngle + sweep
 
+                        ctx.lineWidth = strokeW
+                        ctx.lineCap = "round"
+                        ctx.strokeStyle = "#1A4DB5"
 
-                        PathAngleArc {
-
-                            centerX: timerArc.width / 2
-                            centerY: timerArc.height / 2
-
-
-                            radiusX:
-                                timerArc.width / 2 -
-                                13 * uiScale
-
-
-                            radiusY:
-                                timerArc.height / 2 -
-                                13 * uiScale
-
-
-                            startAngle: -90
-
-
-                            sweepAngle:
-                                timerArc.fraction * 360
-                        }
-                    }
-
-
-                    Connections {
-
-                        target: validationScreenPopup
-
-
-                        function onRemainingSecondsChanged() {
-
-                            timerArc.fraction =
-                                validationScreenPopup.remainingSeconds /
-                                validationScreenPopup.roundDuration
-                        }
+                        ctx.beginPath()
+                        ctx.arc(cx, cy, radius, startAngle, endAngle, false)
+                        ctx.stroke()
                     }
                 }
 
@@ -488,6 +481,7 @@ Popup {
                             height: 40 * uiScale
                             radius: width / 2
                             antialiasing: true
+                            smooth: true
 
                             Layout.preferredWidth: 40 * uiScale
                             Layout.preferredHeight: 40 * uiScale
@@ -498,8 +492,10 @@ Popup {
                                      ? "#FFFFFF" : "#D8DCE6"
 
                             border.width: (validationScreenPopup.currentRound === index + 1
-                                           && validationScreenPopup.validationState === "running") ? 3 : 0
-                            border.color: "#1A4DB5"
+                                           && validationScreenPopup.validationState === "running") ? 3 : 1
+                            border.color: (validationScreenPopup.currentRound === index + 1
+                                           && validationScreenPopup.validationState === "running")
+                                          ? "#1A4DB5" : "#D8DCE6"
 
                             Behavior on color { ColorAnimation { duration: 200 } }
 

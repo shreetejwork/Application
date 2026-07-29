@@ -18,6 +18,7 @@ int main(int argc, char *argv[])
 {
 
     qputenv("QT_QUICK_FLICKABLE_POINTER_HANDLING", "1");
+    qputenv("QSG_RHI_BACKEND", "opengl");
 
     // =========================================================
     // QT SCALING FIX FOR QT 6.5
