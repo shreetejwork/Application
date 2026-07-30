@@ -95,8 +95,11 @@ Popup {
         if (currentRound === totalRounds) {
             validationState = "passed"
             countdownTimer.stop()
-            GlobalState.countRejection = true
-            console.log("Count Rejection:", GlobalState.countRejection)
+
+            Qt.callLater(function() {
+                GlobalState.countRejection = true
+                console.log("Count Rejection:", GlobalState.countRejection)
+            })
         } else {
             currentRound++
             remainingSeconds = roundDuration
