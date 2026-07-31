@@ -178,6 +178,17 @@ void DatabaseManager::createTables()
         );
     )");
 
+    query.exec(R"(
+    CREATE TABLE IF NOT EXISTS usertable (
+        fpid VARCHAR(4),
+        id VARCHAR(3),
+        username VARCHAR(15),
+        password VARCHAR(20),
+        role VARCHAR(20),
+        password_expiry_date TEXT
+    );
+    )");
+
 
     // AUDIT TRAIL REPORT
 
