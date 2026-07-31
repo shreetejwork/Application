@@ -71,6 +71,29 @@ Rectangle {
         }
     }
 
+    Connections {
+        target: loginPopup
+
+        function onLoginRequested(userType, username, password)
+        {
+            var isValid =
+                    databaseManager.validateLogin(
+                        userType,
+                        username,
+                        password
+                    )
+
+            if (isValid)
+            {
+                loginPopup.onLoginSuccess(username)
+            }
+            else
+            {
+                loginPopup.onLoginFailure(username)
+            }
+        }
+    }
+
     LoginPopup {
         id: loginPopup
 
@@ -584,10 +607,68 @@ Rectangle {
 
                             countdownCircle.blink = false
 
+
+                            // ================= AUTO LOGOUT AUDIT =================
+
+                            var username = GlobalState.loggedInUserName
+                            var role = GlobalState.loggedInUserRole
+
+
+                            if (username && username !== "")
+                            {
+
+                                var initial = "U"
+
+                                if (role === "Admin")
+                                    initial = "A"
+
+                                else if (role === "Operator")
+                                    initial = "O"
+
+                                else if (role === "Supervisor")
+                                    initial = "S"
+
+
+                                var auditUser = initial + "-" + username
+
+
+                                var auditSaved =
+                                        databaseManager.addAuditTrailRecord(
+                                            auditUser,
+                                            "",
+                                            "",
+                                            "Auto Logout"
+                                        )
+
+
+                                if (auditSaved)
+                                {
+                                    console.log(
+                                        "Auto logout audit saved:",
+                                        auditUser
+                                    )
+                                }
+                                else
+                                {
+                                    console.log(
+                                        "Failed to save auto logout audit"
+                                    )
+                                }
+                            }
+
+
+                            // Clear login session
+
                             GlobalState.loggedInUserName = ""
                             GlobalState.loggedInUserRole = ""
 
-                            console.log("Auto logout")
+
+                            root.showNotification(
+                                        "Auto logout"
+                                        )
+
+
+                            console.log("Auto logout completed")
                         }
                     }
                 }

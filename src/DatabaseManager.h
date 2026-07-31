@@ -77,6 +77,15 @@ public:
 
     Q_INVOKABLE QVariantMap getS1Settings();
 
+    Q_INVOKABLE bool addAuditTrailRecord(
+        const QString &user,
+        const QString &oldValue,
+        const QString &newValue,
+        const QString &remark
+    );
+
+    Q_INVOKABLE QVariantList getAuditTrailReport();
+
 private:
     void createTables();
 

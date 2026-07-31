@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import AppState 1.0
+
 Popup {
 
     Typography {
@@ -11,6 +13,24 @@ Popup {
     id: logoutPopup
 
     signal logoutRequested()
+
+    function roleInitial(role)
+    {
+        switch (role)
+        {
+        case "Admin":
+            return "A"
+
+        case "Supervisor":
+            return "S"
+
+        case "Operator":
+            return "O"
+
+        default:
+            return "U"
+        }
+    }
 
     // =========================================================
     // TYPOGRAPHY FOR POPUP
@@ -149,9 +169,32 @@ Popup {
 
                     onClicked: {
 
-                        logoutPopup.logoutRequested()
+                        var username = GlobalState.loggedInUserName
+                        var role = GlobalState.loggedInUserRole
 
-                        logoutPopup.close()
+                        if (!username || username === "")
+                        {
+                            console.log("ERROR: No logged-in username available for logout audit")
+                            return
+                        }
+
+                        var roleCode = logoutPopup.roleInitial(role)
+
+                        var auditUser = roleCode + "-" + username
+
+                        var auditSaved =
+                                databaseManager.addAuditTrailRecord(
+                                    auditUser,
+                                    "",
+                                    "",
+                                    "User Logged Out"
+                                )
+
+                        if (auditSaved)
+                        {
+                            logoutPopup.logoutRequested()
+                            logoutPopup.close()
+                        }
                     }
                 }
             }

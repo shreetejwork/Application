@@ -143,8 +143,19 @@ Popup {
 
                 MouseArea {
                     anchors.fill: parent
+
                     onClicked: {
+
+                        var auditSaved =
+                            databaseManager.addAuditTrailRecord(
+                                "---",
+                                "",
+                                "",
+                                "M/C Switched OFF"
+                            )
+
                         powerPopup.close()
+
                         SystemController.shutdown()
                     }
                 }

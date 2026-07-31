@@ -178,17 +178,19 @@ void DatabaseManager::createTables()
         );
     )");
 
-    QString tableName = "A_" + QDate::currentDate().toString("dd_MM_yyyy");
+
+    // AUDIT TRAIL REPORT
 
     query.exec(R"(
-    CREATE TABLE IF NOT EXISTS usertable (
-        fpid VARCHAR(4),
-        id VARCHAR(3),
-        username VARCHAR(15),
-        password VARCHAR(20),
-        role VARCHAR(20),
-        password_expiry_date TEXT
-    );
+        CREATE TABLE IF NOT EXISTS audittrailreport (
+            sr_no INTEGER PRIMARY KEY AUTOINCREMENT,
+            date TEXT,
+            time TEXT,
+            user TEXT,
+            old_value TEXT,
+            new_value TEXT,
+            remark TEXT
+        );
     )");
 
 
@@ -994,4 +996,104 @@ QVariantMap DatabaseManager::getS1Settings()
     }
 
     return data;
+}
+
+
+//======================== Audit Trail Report ===============
+
+bool DatabaseManager::addAuditTrailRecord(
+    const QString &user,
+    const QString &oldValue,
+    const QString &newValue,
+    const QString &remark)
+{
+    QDate currentDate = QDate::currentDate();
+    QTime currentTime = QTime::currentTime();
+
+    QString date =
+        currentDate.toString("dd/MM/yyyy");
+
+    QString time =
+        currentTime.toString("HH:mm:ss");
+
+    // If old/new values are empty,
+    // store "---" instead
+    QString finalOldValue =
+        oldValue.isEmpty() ? "---" : oldValue;
+
+    QString finalNewValue =
+        newValue.isEmpty() ? "---" : newValue;
+
+    QSqlQuery query;
+
+    query.prepare(
+        "INSERT INTO audittrailreport "
+        "(date, time, user, old_value, new_value, remark) "
+        "VALUES (?, ?, ?, ?, ?, ?)"
+        );
+
+    query.addBindValue(date);
+    query.addBindValue(time);
+    query.addBindValue(user);
+    query.addBindValue(finalOldValue);
+    query.addBindValue(finalNewValue);
+    query.addBindValue(remark);
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed to save Audit Trail record:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    return true;
+}
+
+
+QVariantList DatabaseManager::getAuditTrailReport()
+{
+    QVariantList list;
+
+    QSqlQuery query;
+
+    query.prepare(
+        "SELECT "
+        "sr_no, "
+        "date, "
+        "time, "
+        "user, "
+        "old_value, "
+        "new_value, "
+        "remark "
+        "FROM audittrailreport "
+        "ORDER BY sr_no DESC"
+        );
+
+    if (!query.exec())
+    {
+        qDebug() << "AuditTrail Error:"
+                 << query.lastError().text();
+        return list;
+    }
+
+    while (query.next())
+    {
+        QVariantMap row;
+
+        row["sr"]     = query.value("sr_no");
+        row["date"]   = query.value("date");
+        row["time"]   = query.value("time");
+        row["user"]   = query.value("user");
+        row["old"]    = query.value("old_value");
+        row["newVal"] = query.value("new_value");
+        row["remark"] = query.value("remark");
+
+        list.append(row);
+    }
+
+    qDebug() << "Audit records loaded:" << list.count();
+
+    return list;
 }

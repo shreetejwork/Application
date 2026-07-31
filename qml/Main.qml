@@ -180,6 +180,18 @@ ApplicationWindow {
 
         console.log("Count Rejection:", GlobalState.countRejection)
 
+
+        // ================= APPLICATION START AUDIT =================
+
+        var auditSaved =
+                databaseManager.addAuditTrailRecord(
+                    "---",
+                    "",
+                    "",
+                    "M/C Switch ON"
+                )
+
+
         startupTimer.start()
     }
 

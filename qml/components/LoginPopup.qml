@@ -80,8 +80,8 @@ Popup {
             return false
 
         return password[0] === password[5] &&
-               password[1] === password[4] &&
-               password[2] === password[3]
+                password[1] === password[4] &&
+                password[2] === password[3]
     }
 
     function isDeveloperPassword(password)
@@ -202,14 +202,14 @@ Popup {
             }
 
             loginPopup.blockedRemainingSeconds =
-                loginPopup.getBlockRemaining(loginPopup.blockedUserName)
+                    loginPopup.getBlockRemaining(loginPopup.blockedUserName)
 
             // Only show the blocked message if this user is currently selected
             if (loginPopup.currentSelectedUser === loginPopup.blockedUserName) {
                 loginPopup.errorText =
-                    loginPopup.blockedUserName
-                    + " is blocked. Try again in "
-                    + loginPopup.formatRemaining(loginPopup.blockedRemainingSeconds)
+                        loginPopup.blockedUserName
+                        + " is blocked. Try again in "
+                        + loginPopup.formatRemaining(loginPopup.blockedRemainingSeconds)
                 loginPopup.hasError = true
             }
         }
@@ -279,17 +279,17 @@ Popup {
             loginPopup.blockedRemainingSeconds = loginPopup.getBlockRemaining(username)
 
             loginPopup.errorText =
-                username
-                + " is blocked. Try again in "
-                + loginPopup.formatRemaining(loginPopup.blockedRemainingSeconds)
+                    username
+                    + " is blocked. Try again in "
+                    + loginPopup.formatRemaining(loginPopup.blockedRemainingSeconds)
             loginPopup.hasError = true
 
             blockCountdownTimer.restart()
         } else {
             loginPopup.errorText =
-                "Wrong password. "
-                + left
-                + " attempt(s) remaining before lockout."
+                    "Wrong password. "
+                    + left
+                    + " attempt(s) remaining before lockout."
             loginPopup.hasError = true
         }
     }
@@ -329,9 +329,9 @@ Popup {
             loginPopup.blockedUserName = username
             loginPopup.blockedRemainingSeconds = loginPopup.getBlockRemaining(username)
             loginPopup.errorText =
-                username
-                + " is blocked. Try again in "
-                + loginPopup.formatRemaining(loginPopup.blockedRemainingSeconds)
+                    username
+                    + " is blocked. Try again in "
+                    + loginPopup.formatRemaining(loginPopup.blockedRemainingSeconds)
             loginPopup.hasError = true
             blockCountdownTimer.restart()
         } else {
@@ -341,9 +341,9 @@ Popup {
             if (used > 0) {
                 var left = maxAttempts - used
                 loginPopup.errorText =
-                    "Wrong password. "
-                    + left
-                    + " attempt(s) remaining before lockout."
+                        "Wrong password. "
+                        + left
+                        + " attempt(s) remaining before lockout."
                 loginPopup.hasError = true
             } else {
                 loginPopup.errorText = ""
@@ -732,11 +732,11 @@ Popup {
                     var blocked = loginPopup.isUserBlocked(entry.username)
                     var rem     = blocked ? loginPopup.getBlockRemaining(entry.username) : 0
                     updated.push({
-                        username:  entry.username,
-                        blocked:   blocked,
-                        remaining: rem,
-                        label:     blocked ? loginPopup.formatRemaining(rem) : ""
-                    })
+                                     username:  entry.username,
+                                     blocked:   blocked,
+                                     remaining: rem,
+                                     label:     blocked ? loginPopup.formatRemaining(rem) : ""
+                                 })
                 }
                 selectionPopup.richModel = updated
             }
@@ -809,10 +809,10 @@ Popup {
                         selectionPopup.title    = "Select User Type"
                         selectionPopup.richModel = []
                         selectionPopup.modelData = [
-                            "Admin",
-                            "Supervisor",
-                            "Operator"
-                        ]
+                                    "Admin",
+                                    "Supervisor",
+                                    "Operator"
+                                ]
 
                         selectionPopup.onSelectCallback = function(val) {
                             userTypeValue.text = val
@@ -876,11 +876,11 @@ Popup {
                             var blocked = loginPopup.isUserBlocked(name)
                             var rem     = blocked ? loginPopup.getBlockRemaining(name) : 0
                             rich.push({
-                                username:  name,
-                                blocked:   blocked,
-                                remaining: rem,
-                                label:     blocked ? loginPopup.formatRemaining(rem) : ""
-                            })
+                                          username:  name,
+                                          blocked:   blocked,
+                                          remaining: rem,
+                                          label:     blocked ? loginPopup.formatRemaining(rem) : ""
+                                      })
                         }
                         selectionPopup.richModel = rich
 
@@ -902,7 +902,7 @@ Popup {
                             if (databaseManager.isPasswordExpired(username)) {
 
                                 loginPopup.errorText =
-                                    "Password expired. Please change your password."
+                                        "Password expired. Please change your password."
 
                                 loginPopup.hasError = true
                                 return
@@ -914,9 +914,9 @@ Popup {
                             if (days >= 0 && days <= 7) {
 
                                 loginPopup.errorText =
-                                    days === 0
-                                    ? "Password expires today."
-                                    : "Password will expire in " + days + " day(s)."
+                                        days === 0
+                                        ? "Password expires today."
+                                        : "Password will expire in " + days + " day(s)."
 
                                 loginPopup.hasError = true
                             }
@@ -1039,9 +1039,9 @@ Popup {
                         anchors.fill: parent
                         onClicked: {
                             passwordInput.echoMode =
-                                passwordInput.echoMode === TextInput.Password
-                                ? TextInput.Normal
-                                : TextInput.Password
+                                    passwordInput.echoMode === TextInput.Password
+                                    ? TextInput.Normal
+                                    : TextInput.Password
                         }
                     }
                 }
@@ -1122,7 +1122,7 @@ Popup {
 
                         onClicked: {
                             if (userTypeValue.text  === "--- Select ---" ||
-                                usernameValue.text  === "--- Select ---")
+                                    usernameValue.text  === "--- Select ---")
                                 return
 
                             if(loginPopup.devModeActive)
@@ -1146,10 +1146,10 @@ Popup {
                             }
 
                             loginPopup.loginRequested(
-                                userTypeValue.text,
-                                usernameValue.text,
-                                passwordInput.text
-                            )
+                                        userTypeValue.text,
+                                        usernameValue.text,
+                                        passwordInput.text
+                                        )
                         }
                     }
                 }
@@ -1198,10 +1198,28 @@ Popup {
         }
     }
 
-    function onLoginSuccess(username) {
+    function onLoginSuccess(username)
+    {
         loginPopup.clearFailedAttempts(username)
+
+        var role = userTypeValue.text
+        var roleCode = loginPopup.roleInitial(role)
+        var auditUser = roleCode + "-" + username
+
+        GlobalState.loggedInUsername = username
+        GlobalState.loggedInUserRole = role
+
+        var auditSaved =
+                databaseManager.addAuditTrailRecord(
+                    auditUser,
+                    "",
+                    "",
+                    "User Logged In"
+                )
+
         loginPopup.errorText = ""
-        loginPopup.hasError  = false
+        loginPopup.hasError = false
+
         loginPopup.close()
     }
 

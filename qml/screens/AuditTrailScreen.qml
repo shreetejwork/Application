@@ -9,7 +9,9 @@ Item {
     id: root
     anchors.fill: parent
 
-
+    ListModel {
+        id: auditModel
+    }
 
     property var globalTopBar
     property var navigateTo
@@ -33,7 +35,10 @@ Item {
     // =====================================================
 
     Component.onCompleted: {
+
         openAnimation.start()
+
+        loadAuditTrail()
     }
 
     // =====================================================
@@ -108,20 +113,20 @@ Item {
 
     property string fromDate: ""
     property string toDate: ""
-    property string selectedUser: "All"
+    property string selectedUser: "All Users"
     property string searchText: ""
     property date pickerDate: new Date()
     property var activeRemarkFilters: []
 
     // ===== COLUMN WIDTHS =====
-    property real colSpacing: 16 * scale
+    property real colSpacing: 18 * scale
 
-    property real colSr: 50 * scale
-    property real colDate: 130 * scale
+    property real colSr: 70 * scale
+    property real colDate: 170 * scale
     property real colTime: 110 * scale
-    property real colUser: 110 * scale
-    property real colOld: 150 * scale
-    property real colNew: 160 * scale
+    property real colUser: 200 * scale
+    property real colOld: 80 * scale
+    property real colNew: 80 * scale
 
     function getTableData() {
         let arr = []
@@ -147,20 +152,37 @@ Item {
         var count = 0
         var from = parseDate(root.fromDate)
         var to   = parseDate(root.toDate)
-        for (var i = 0; i < tableList.count; i++) {
+
+        for (var i = 0; i < tableList.model.count; i++) {
+
             var m = tableList.model.get(i)
             var d = parseDate(m.date)
-            if (!d) { count++; continue }
-            if (from && d < from) continue
-            if (to   && d > to)   continue
-            var userOk   = root.selectedUser === "All" || m.user === root.selectedUser
+
+            if (!d) {
+                count++
+                continue
+            }
+
+            if (from && d < from)
+                continue
+
+            if (to && d > to)
+                continue
+
+            var userOk = root.userMatchesFilter(m.user)
             var searchOk = m.remark.toLowerCase().includes(root.searchText.toLowerCase())
-            var remarkOk = root.activeRemarkFilters.length === 0 ||
+
+            var remarkOk =
+                    root.activeRemarkFilters.length === 0 ||
                     root.activeRemarkFilters.some(function(f) {
-                        return m.remark.toLowerCase().includes(f.toLowerCase().replace(/\n/g, " "))
+                        return m.remark.toLowerCase().includes(
+                                    f.toLowerCase().replace(/\n/g, " "))
                     })
-            if (userOk && searchOk && remarkOk) count++
+
+            if (userOk && searchOk && remarkOk)
+                count++
         }
+
         return count
     }
 
@@ -200,12 +222,43 @@ Item {
     }
 
     function resetFilters() {
-        root.fromDate            = ""
-        root.toDate              = ""
-        root.selectedUser        = "All"
-        root.searchText          = ""
+        root.fromDate = ""
+        root.toDate = ""
+        root.selectedUser = "All Users"
+        userFilter.currentText = "All Users"
+        root.searchText = ""
         root.activeRemarkFilters = []
     }
+
+    function userMatchesFilter(userValue)
+    {
+        if (root.selectedUser === "All Users")
+            return true
+
+        if (root.selectedUser === "Admin")
+            return userValue.startsWith("A-")
+
+        if (root.selectedUser === "Supervisor")
+            return userValue.startsWith("S-")
+
+        if (root.selectedUser === "Operator")
+            return userValue.startsWith("O-")
+
+        return false
+    }
+
+
+    function loadAuditTrail()
+    {
+        auditModel.clear()
+
+        var data = databaseManager.getAuditTrailReport()
+
+        for (var i = 0; i < data.length; i++)
+            auditModel.append(data[i])
+    }
+
+
 
     Item {
         id: content
@@ -378,8 +431,8 @@ Item {
                     Item {
                         id: userFilter
 
-                        property var model: ["All", "Admin", "Supervisor", "Operator"]
-                        property string currentText: "All"
+                        property var model: ["All Users", "Admin", "Supervisor", "Operator"]
+                        property string currentText: "All Users"
 
                         width: 150 * root.scale
                         height: 36 * root.scale
@@ -553,7 +606,7 @@ Item {
 
                                             var item = tableList.model.get(i)
 
-                                            var userOk   = root.selectedUser === "All" || item.user === root.selectedUser
+                                            var userOk = root.userMatchesFilter(m.user)
                                             var searchOk = item.remark.toLowerCase().includes(root.searchText.toLowerCase())
                                             var dateOk   = root.dateInRange(item.date)
                                             var remarkOk = root.remarkInFilter(item.remark)
@@ -605,7 +658,9 @@ Item {
                                             date: Qt.formatDate(new Date(), "dd/MM/yyyy"),
                                             from: root.fromDate === "" ? "-" : root.fromDate,
                                             to: root.toDate === "" ? "-" : root.toDate,
-                                            by: root.selectedUser === "All" ? "System" : root.selectedUser,
+                                                                               by: root.selectedUser === "All Users"
+                                                                                       ? "System"
+                                                                                       : root.selectedUser,
                                             filePath: path
                                         })
 
@@ -653,15 +708,15 @@ Item {
                             spacing: root.colSpacing
 
                             Text { text: "Sr. No.";   width: root.colSr;   color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "Date"; width: root.colDate; color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "Time"; width: root.colTime; color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "User"; width: root.colUser; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "     Date"; width: root.colDate; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "  Time"; width: root.colTime; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "              User"; width: root.colUser; color: "#FFF"; font.pixelSize: 20 }
                             Text { text: "Old";  width: root.colOld;  color: "#FFF"; font.pixelSize: 20 }
                             Text { text: "New";  width: root.colNew;  color: "#FFF"; font.pixelSize: 20 }
 
                             // remaining space
                             Text {
-                                text: "Remark"
+                                text: "   Remark"
                                 width: parent.width
                                        - (root.colSr + root.colDate + root.colTime + root.colUser + root.colOld + root.colNew)
                                        - (root.colSpacing * 6)
@@ -679,27 +734,11 @@ Item {
                         clip: true
                         id: tableList
 
+                        model: auditModel
 
-                        model: ListModel {
-                            ListElement { sr: "1";  date: "1/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "2";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "3";  date: "11/03/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "4";  date: "11/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "5";  date: "11/04/2026"; time: "15:45:30"; user: "Operator";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "6";  date: "10/04/2026"; time: "02:22:06"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "7";  date: "10/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "8";  date: "10/04/2026"; time: "13:27:16"; user: "Admin"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "9";  date: "10/04/2026"; time: "14:10:05"; user: "Admin"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "10"; date: "10/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "11";  date: "14/04/2026"; time: "02:22:06"; user: "Operator";  old: "----"; newVal: "----";  remark: "M/c Switch ON" }
-                            ListElement { sr: "12";  date: "14/04/2026"; time: "02:22:10"; user: "Operator";  old: "----"; newVal: "01-001"; remark: "Last Active Product Loaded" }
-                            ListElement { sr: "13";  date: "20/04/2026"; time: "13:27:16"; user: "Supervisor"; old: "----"; newVal: "----";  remark: "Logged-in" }
-                            ListElement { sr: "14";  date: "21/04/2026"; time: "14:10:05"; user: "Supervisor"; old: "OFF";  newVal: "ON";    remark: "Setting Changed" }
-                            ListElement { sr: "15"; date: "13/04/2026"; time: "15:45:30"; user: "Supervisor";  old: "----"; newVal: "----";  remark: "Logged-in" }
-                        }
 
                         delegate: Rectangle {
-                            property bool userMatch:   root.selectedUser === "All" || user === root.selectedUser
+                           property bool userMatch: root.userMatchesFilter(user)
                             property bool searchMatch: remark.toLowerCase().includes(root.searchText.toLowerCase())
                             property bool dateMatch:   root.dateInRange(date)
                             property bool remarkMatch: root.remarkInFilter(remark)
@@ -730,20 +769,18 @@ Item {
                                     width: root.colUser
                                     height: 24 * root.scale
                                     radius: 4 * root.scale
+                                    color:  "transparent"
 
-                                    color: user === "Admin" ? "#E8EEFF"
-                                          : user === "Operator" ? "#E8F5E9"
-                                          : user === "Supervisor" ? "#FFF4E5"
-                                          : "transparent"
 
                                     Text {
                                         anchors.centerIn: parent
                                         text: user
                                         font.pixelSize: 18
                                         font.weight: Font.Medium
-                                        color: user === "Admin" ? "#1A4DB5"
-                                              : user === "Operator" ? "#2E7D32"
-                                              : user === "Supervisor" ? "#E65100"
+
+                                        color: user.startsWith("A-") ? "#1A4DB5"
+                                              : user.startsWith("O-") ? "#2E7D32"
+                                              : user.startsWith("S-") ? "#E65100"
                                               : "#888888"
                                     }
                                 }
@@ -808,7 +845,6 @@ Item {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             root.resetFilters()
-                                            searchInput.text = ""
                                             filterRepeater.resetAll()
                                         }
                                     }
@@ -1144,11 +1180,11 @@ Item {
         height: 420 * root.scale
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
-        // Temporary checked state storage (committed only on OK)
+
         property var pendingChecked: []
 
         onOpened: {
-            // Sync pending state from activeRemarkFilters
+
             var list = grid.filterList
             var pending = []
             for (var i = 0; i < list.length; i++) {
@@ -1216,8 +1252,8 @@ Item {
 
                     property var filterList: [
                         "M/C Switch ON","M/C Switched OFF","RC/Total RC","User Added",
-                        "User PW Changed","User Deleted","Loged-in_FP","Loged-in",
-                        "Loged-out","THR-S Changed",
+                        "User PW Changed","User Deleted","Loged-in_FP","User Logged In",
+                        "User Logged Out","THR-S Changed",
 
                         "Customer Name\nChanged","Customer Location\nChanged","Machine-ID\nChanged",
                         "THR-A Changed","MPHS Changed","Product Loaded",
@@ -1330,7 +1366,7 @@ Item {
                     }
                 }
 
-                // OK — commits pending checkboxes to activeRemarkFilters
+
                 Rectangle {
                     Layout.fillWidth: true
                     height: 42 * root.scale
