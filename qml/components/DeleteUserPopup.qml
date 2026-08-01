@@ -410,7 +410,7 @@ Popup {
 
 
                                 var auditUser =
-                                        loggedInitial + "-" + loggedUser
+                                        loggedInitial + "/" + loggedUser
 
 
 
@@ -431,7 +431,7 @@ Popup {
 
                                 var deletedUser =
                                         deletedInitial
-                                        + "-"
+                                        + "/"
                                         + confirmDeletePopup.selectedUsername
 
 

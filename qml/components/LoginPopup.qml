@@ -1204,7 +1204,7 @@ Popup {
 
         var role = userTypeValue.text
         var roleCode = loginPopup.roleInitial(role)
-        var auditUser = roleCode + "-" + username
+        var auditUser = roleCode + "/" + username
 
         GlobalState.loggedInUsername = username
         GlobalState.loggedInUserRole = role

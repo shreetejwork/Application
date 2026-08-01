@@ -194,7 +194,7 @@ void DatabaseManager::createTables()
 
     query.exec(R"(
         CREATE TABLE IF NOT EXISTS audittrailreport (
-            sr_no INTEGER PRIMARY KEY AUTOINCREMENT,
+            sr_no INTEGER,
             date TEXT,
             time TEXT,
             user TEXT,
@@ -1035,14 +1035,28 @@ bool DatabaseManager::addAuditTrailRecord(
     QString finalNewValue =
         newValue.isEmpty() ? "---" : newValue;
 
+    int nextSrNo = 1;
+
+    QSqlQuery srQuery;
+
+    if (srQuery.exec("SELECT sr_no FROM audittrailreport ORDER BY rowid DESC LIMIT 1")
+        && srQuery.next())
+    {
+        nextSrNo = srQuery.value(0).toInt() + 1;
+
+        if (nextSrNo > 9999)
+            nextSrNo = 1;
+    }
+
     QSqlQuery query;
 
     query.prepare(
         "INSERT INTO audittrailreport "
-        "(date, time, user, old_value, new_value, remark) "
-        "VALUES (?, ?, ?, ?, ?, ?)"
-        );
+        "(sr_no, date, time, user, old_value, new_value, remark) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)"
+    );
 
+    query.addBindValue(nextSrNo);
     query.addBindValue(date);
     query.addBindValue(time);
     query.addBindValue(user);
@@ -1079,8 +1093,8 @@ QVariantList DatabaseManager::getAuditTrailReport()
         "new_value, "
         "remark "
         "FROM audittrailreport "
-        "ORDER BY sr_no DESC"
-        );
+        "ORDER BY rowid DESC"
+    );
 
     if (!query.exec())
     {

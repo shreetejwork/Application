@@ -754,7 +754,7 @@ Popup {
 
 
                                 var auditUser =
-                                        loggedInitial + "-" + loggedUser
+                                        loggedInitial + "/" + loggedUser
 
 
 
@@ -772,7 +772,7 @@ Popup {
 
 
                                 var newUser =
-                                        newUserInitial + "-" + username
+                                        newUserInitial + "/" + username
 
 
 
@@ -783,25 +783,6 @@ Popup {
                                             newUser,
                                             "User Added"
                                         )
-
-
-                                if (auditSaved)
-                                {
-                                    console.log(
-                                        "User creation audit saved:",
-                                        auditUser,
-                                        "created",
-                                        newUser
-                                    )
-                                }
-                                else
-                                {
-                                    console.log(
-                                        "Failed to save user creation audit"
-                                    )
-                                }
-
-
 
                                 // ================= UI UPDATE =================
 

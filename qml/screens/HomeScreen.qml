@@ -88,7 +88,7 @@ Item {
             initial = "O"
 
 
-        var auditUser = initial + "-" + username
+        var auditUser = initial + "/" + username
 
 
         var saved =

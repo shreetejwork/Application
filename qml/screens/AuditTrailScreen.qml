@@ -236,13 +236,13 @@ Item {
             return true
 
         if (root.selectedUser === "Admin")
-            return userValue.startsWith("A-")
+            return userValue.startsWith("A/")
 
         if (root.selectedUser === "Supervisor")
-            return userValue.startsWith("S-")
+            return userValue.startsWith("S/")
 
         if (root.selectedUser === "Operator")
-            return userValue.startsWith("O-")
+            return userValue.startsWith("O/")
 
         return false
     }
@@ -778,9 +778,9 @@ Item {
                                         font.pixelSize: 18
                                         font.weight: Font.Medium
 
-                                        color: user.startsWith("A-") ? "#1A4DB5"
-                                              : user.startsWith("O-") ? "#2E7D32"
-                                              : user.startsWith("S-") ? "#E65100"
+                                        color: user.startsWith("A/") ? "#1A4DB5"
+                                              : user.startsWith("O/") ? "#2E7D32"
+                                              : user.startsWith("S/") ? "#E65100"
                                               : "#888888"
                                     }
                                 }
