@@ -62,6 +62,33 @@ Popup {
     signal updatePasswordRequested(string userType, string username, string newPassword)
     signal clearRequested()
 
+    function setLoggedInUser()
+    {
+        if(GlobalState.loggedInUserRole !== "Admin")
+        {
+            userTypeValue.text = GlobalState.loggedInUserRole
+            usernameValue.text = GlobalState.loggedInUserName
+        }
+    }
+
+    function roleInitial(role)
+    {
+        switch(role)
+        {
+        case "Admin":
+            return "A"
+
+        case "Supervisor":
+            return "S"
+
+        case "Operator":
+            return "O"
+
+        default:
+            return "U"
+        }
+    }
+
     // =====================================================
     // QT 6.5 KEYBOARD FIX
     // =====================================================
@@ -98,14 +125,23 @@ Popup {
 
     onOpened: {
 
-        userTypeValue.text = "--- Select ---"
-        usernameValue.text = "--- Select ---"
-
         newPasswordInput.text = ""
         confirmPasswordInput.text = ""
 
         GlobalState.loginKeyboardRequest = false
         GlobalState.activeInputField = null
+
+
+        if(GlobalState.loggedInUserRole === "Admin")
+        {
+            userTypeValue.text = "--- Select ---"
+            usernameValue.text = "--- Select ---"
+        }
+        else
+        {
+            setLoggedInUser()
+        }
+
 
         if (selectionPopup.visible)
             selectionPopup.close()
@@ -392,6 +428,8 @@ Popup {
                 MouseArea {
                     anchors.fill: parent
 
+                    enabled: GlobalState.loggedInUserRole === "Admin"
+
                     onClicked: {
 
                         selectionPopup.title = "Select User Type"
@@ -452,6 +490,8 @@ Popup {
 
                 MouseArea {
                     anchors.fill: parent
+
+                    enabled: GlobalState.loggedInUserRole === "Admin"
 
                     onClicked: {
 
@@ -803,6 +843,44 @@ Popup {
 
                             if (success)
                             {
+
+                                // =================================================
+                                // PASSWORD CHANGE AUDIT TRAIL
+                                // =================================================
+
+
+                                // User who performed password change
+                                var loggedRole = GlobalState.loggedInUserRole
+
+                                var loggedInitial =
+                                        editPasswordPopup.roleInitial(loggedRole)
+
+                                var changedBy =
+                                        loggedInitial + "/" + GlobalState.loggedInUserName
+
+
+
+                                // User whose password was changed
+                                var targetRole =
+                                        userTypeValue.text
+
+                                var targetInitial =
+                                        editPasswordPopup.roleInitial(targetRole)
+
+                                var passwordChangedFor =
+                                        targetInitial + "/" + usernameValue.text
+
+
+
+                                var auditSaved =
+                                        databaseManager.addAuditTrailRecord(
+                                            changedBy,
+                                            "",
+                                            passwordChangedFor,
+                                            "User PW Changed"
+                                        )
+
+
                                 if (editPasswordPopup.globalTopBar &&
                                         editPasswordPopup.globalTopBar.showNotification)
                                 {
@@ -810,6 +888,7 @@ Popup {
                                         "✓ Password updated successfully"
                                     )
                                 }
+
 
                                 userTypeValue.text = "--- Select ---"
                                 usernameValue.text = "--- Select ---"

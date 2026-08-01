@@ -237,7 +237,7 @@ Popup {
                     color: "#1A4DB5"
 
                     font.pixelSize: 20
-                    font.bold: true
+
                 }
             }
 
@@ -444,7 +444,7 @@ Popup {
 
                     property bool isPasswordField: false
 
-                    font.pixelSize: 18
+                    font.pixelSize: createUserTypography.body
 
                     maximumLength: 12
 
@@ -558,7 +558,7 @@ Popup {
 
                     echoMode: TextInput.Password
 
-                    font.pixelSize: createUserTypography.heading
+                    font.pixelSize: createUserTypography.body
 
 
                     color: "#000000"

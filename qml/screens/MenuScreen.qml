@@ -82,7 +82,7 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
 
-                            if (GlobalState.loggedInUserRole !== "Admin"
+                            if (GlobalState.loggedInUserRole === ""
                                     && !GlobalState.developerLogin
                                     && !GlobalState.engineerLogin)
                             {
@@ -158,7 +158,7 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
 
-                            if (GlobalState.loggedInUserRole != "Admin"
+                            if (GlobalState.loggedInUserRole !== "Admin"
                                     && !GlobalState.developerLogin
                                     && !GlobalState.engineerLogin)
                             {

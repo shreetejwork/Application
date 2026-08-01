@@ -1,5 +1,8 @@
 import QtQuick
 import QtQuick.Controls
+
+import AppState 1.0
+
 import "../components"
 
 
@@ -232,14 +235,65 @@ Item {
                     }
                 }
 
-                // ── TITLE ───────
-                Text {
-                    text: "User"
-                    anchors.horizontalCenter: parent.horizontalCenter
-                    font.pixelSize: 28
+                // Logged In User Card
+                Rectangle {
 
-                    font.family: "Roboto"
-                    color: "#1A1A2E"
+                    width: Math.max(300, 360 * root.scale)
+                    height: Math.max(100, 100 * root.scale)
+
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    radius: 16
+
+                    color: "white"
+
+                    border.color: "#D8E2FF"
+                    border.width: 2
+
+
+                    Column {
+
+                        anchors.centerIn: parent
+
+                        spacing: 6
+
+                        Rectangle {
+
+                            width: 110 * root.scale
+                            height: 28 * root.scale
+
+                            radius: height / 2
+
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            color: "#E8F0FF"
+
+
+                            Text {
+
+                                anchors.centerIn: parent
+
+                                text: GlobalState.loggedInUserRole
+
+                                font.pixelSize: 22 * root.scale
+
+                                color: "#1A4DB5"
+                            }
+                        }
+
+                        Text {
+
+                            text: GlobalState.loggedInUserName
+
+                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            font.pixelSize: 31 * root.scale
+
+                            font.family: "Roboto"
+
+                            color: "#1A4DB5"
+                        }
+                    }
                 }
 
                 // ── BUTTON ROW ─────
@@ -248,6 +302,9 @@ Item {
                     spacing: Math.max(16, 32 * root.scale)
 
                     ActionButton {
+
+                        visible: GlobalState.loggedInUserRole === "Admin"
+
                         label: "Add User"
                         onClicked: {
                             createUserPopup.open()
@@ -256,10 +313,17 @@ Item {
 
                     ActionButton {
                         label: "Change PW"
-                        onClicked: editPasswordPopup.open()
+                        onClicked: {
+
+                            editPasswordPopup.open()
+
+                        }
                     }
 
                     ActionButton {
+
+                        visible: GlobalState.loggedInUserRole === "Admin"
+
                         label: "Delete User"
                         onClicked: {
                             deleteUserPopup.open()

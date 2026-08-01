@@ -180,7 +180,7 @@ Popup {
 
                         var roleCode = logoutPopup.roleInitial(role)
 
-                        var auditUser = roleCode + "-" + username
+                        var auditUser = roleCode + "/" + username
 
                         var auditSaved =
                                 databaseManager.addAuditTrailRecord(
