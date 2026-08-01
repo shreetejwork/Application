@@ -381,14 +381,80 @@ Popup {
                                         confirmDeletePopup.selectedUserType,
                                         confirmDeletePopup.selectedUsername)
 
+
                             if (success)
                             {
+
+                                // ================= DELETE USER AUDIT =================
+
+
+                                // Current logged-in user (who deleted)
+                                var loggedUser =
+                                        GlobalState.loggedInUserName
+
+                                var loggedRole =
+                                        GlobalState.loggedInUserRole
+
+
+                                var loggedInitial = "U"
+
+
+                                if (loggedRole === "Admin")
+                                    loggedInitial = "A"
+
+                                else if (loggedRole === "Supervisor")
+                                    loggedInitial = "S"
+
+                                else if (loggedRole === "Operator")
+                                    loggedInitial = "O"
+
+
+                                var auditUser =
+                                        loggedInitial + "-" + loggedUser
+
+
+
+                                // Deleted user
+                                var deletedInitial = "U"
+
+
+                                if (confirmDeletePopup.selectedUserType === "Admin")
+                                    deletedInitial = "A"
+
+                                else if (confirmDeletePopup.selectedUserType === "Supervisor")
+                                    deletedInitial = "S"
+
+                                else if (confirmDeletePopup.selectedUserType === "Operator")
+                                    deletedInitial = "O"
+
+
+
+                                var deletedUser =
+                                        deletedInitial
+                                        + "-"
+                                        + confirmDeletePopup.selectedUsername
+
+
+
+                                var auditSaved =
+                                        databaseManager.addAuditTrailRecord(
+                                            auditUser,
+                                            deletedUser,
+                                            "",
+                                            "User Deleted"
+                                        )
+
+                                // ================= UI UPDATE =================
+
+
                                 if (deleteUserPopup.globalTopBar &&
                                         deleteUserPopup.globalTopBar.showNotification)
                                 {
                                     deleteUserPopup.globalTopBar.showNotification(
-                                        "✓ User deleted successfully")
+                                        "✓ User deleted successfully"
+                                    )
                                 }
+
 
                                 userTypeValue.text = "--- Select ---"
                                 usernameValue.text = "--- Select ---"

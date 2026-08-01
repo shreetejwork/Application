@@ -205,15 +205,24 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
     // ── COLUMN WIDTHS ────────────────────────────────────────────────────────
     const int nCols = 7;
     int colW[nCols];
-    colW[0] = 45;
-    colW[1] = 80;
-    colW[2] = 65;
-    colW[3] = 80;
-    colW[4] = 90;
-    colW[5] = 90;
-    colW[6] = contentW - (colW[0]+colW[1]+colW[2]+colW[3]+colW[4]+colW[5]);
 
-    const int rowH      = 22;
+    colW[0] = 40;     // S/No
+    colW[1] = 95;     // Date
+    colW[2] = 70;     // Time
+    colW[3] = 115;    // User
+    colW[4] = 100;    // Old Value
+    colW[5] = 140;    // New Value
+
+    // Remaining width for remarks
+    colW[6] = contentW
+              - (colW[0]
+                 + colW[1]
+                 + colW[2]
+                 + colW[3]
+                 + colW[4]
+                 + colW[5]);
+
+    const int rowH      = 26;
     const int thH       = 24;
     const int lineThick = 2;
     const int thinLine  = 1;

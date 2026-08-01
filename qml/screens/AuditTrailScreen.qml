@@ -122,11 +122,11 @@ Item {
     property real colSpacing: 18 * scale
 
     property real colSr: 70 * scale
-    property real colDate: 170 * scale
-    property real colTime: 110 * scale
+    property real colDate: 100 * scale
+    property real colTime: 50 * scale
     property real colUser: 200 * scale
-    property real colOld: 80 * scale
-    property real colNew: 80 * scale
+    property real colOld: 150 * scale
+    property real colNew: 150 * scale
 
     function getTableData() {
         let arr = []
@@ -606,7 +606,7 @@ Item {
 
                                             var item = tableList.model.get(i)
 
-                                            var userOk = root.userMatchesFilter(m.user)
+                                            var userOk = root.userMatchesFilter(item.user)
                                             var searchOk = item.remark.toLowerCase().includes(root.searchText.toLowerCase())
                                             var dateOk   = root.dateInRange(item.date)
                                             var remarkOk = root.remarkInFilter(item.remark)
@@ -707,12 +707,12 @@ Item {
                             anchors.margins: 12 * root.scale
                             spacing: root.colSpacing
 
-                            Text { text: "Sr. No.";   width: root.colSr;   color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "S/No.";   width: root.colSr;   color: "#FFF"; font.pixelSize: 20 }
                             Text { text: "     Date"; width: root.colDate; color: "#FFF"; font.pixelSize: 20 }
                             Text { text: "  Time"; width: root.colTime; color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "              User"; width: root.colUser; color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "Old";  width: root.colOld;  color: "#FFF"; font.pixelSize: 20 }
-                            Text { text: "New";  width: root.colNew;  color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "               User"; width: root.colUser; color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "  Old";  width: root.colOld;  color: "#FFF"; font.pixelSize: 20 }
+                            Text { text: "  New";  width: root.colNew;  color: "#FFF"; font.pixelSize: 20 }
 
                             // remaining space
                             Text {

@@ -73,6 +73,33 @@ Item {
         }
     }
 
+    function saveMachineSettingAudit(action, oldValue, newValue)
+    {
+        var role = GlobalState.loggedInUserRole
+        var username = GlobalState.loggedInUserName
+
+        var initial = "U"
+
+        if (role === "Admin")
+            initial = "A"
+        else if (role === "Supervisor")
+            initial = "S"
+        else if (role === "Operator")
+            initial = "O"
+
+
+        var auditUser = initial + "-" + username
+
+
+        var saved =
+                databaseManager.addAuditTrailRecord(
+                    auditUser,
+                    oldValue.toString(),
+                    newValue.toString(),
+                    action
+                )
+    }
+
 
     Rectangle {
         Typography {
@@ -537,17 +564,29 @@ Item {
 
                                     function(val){
 
+                                        var oldValue = GlobalState.machinePhase
+
+
                                         var phase = Math.round(val * 10)
 
                                         SerialManager.setMachinePhase(phase)
 
+
                                         GlobalState.machinePhase = val
 
+
                                         databaseManager.saveMachinePhaseSettings(
-                                                    GlobalState.machinePhase,
-                                                    GlobalState.signalThreshold,
-                                                    GlobalState.amplitudeThreshold
-                                                    )
+                                            GlobalState.machinePhase,
+                                            GlobalState.signalThreshold,
+                                            GlobalState.amplitudeThreshold
+                                        )
+
+
+                                        saveMachineSettingAudit(
+                                            "M/C Phase Changed",
+                                            oldValue,
+                                            val
+                                        )
                                     },
 
                                     0,
@@ -746,14 +785,27 @@ Item {
 
                                         function(val){
 
+                                            var oldValue =
+                                                    GlobalState.signalThreshold
+
+
                                             SerialManager.setSignalThreshold(val)
 
+
                                             GlobalState.signalThreshold = val
+
 
                                             databaseManager.saveMachinePhaseSettings(
                                                 GlobalState.machinePhase,
                                                 GlobalState.signalThreshold,
                                                 GlobalState.amplitudeThreshold
+                                            )
+
+
+                                            saveMachineSettingAudit(
+                                                "Thr-S Changed",
+                                                oldValue,
+                                                val
                                             )
                                         },
 
@@ -949,14 +1001,27 @@ Item {
 
                                         function(val){
 
+                                            var oldValue =
+                                                    GlobalState.amplitudeThreshold
+
+
                                             SerialManager.setAmplitudeThreshold(val)
 
+
                                             GlobalState.amplitudeThreshold = val
+
 
                                             databaseManager.saveMachinePhaseSettings(
                                                 GlobalState.machinePhase,
                                                 GlobalState.signalThreshold,
                                                 GlobalState.amplitudeThreshold
+                                            )
+
+
+                                            saveMachineSettingAudit(
+                                                "Thr-A Changed",
+                                                oldValue,
+                                                val
                                             )
                                         },
 

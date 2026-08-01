@@ -406,6 +406,19 @@ Popup {
             }
 
             // ── USERNAME ──
+
+            Text {
+                Layout.fillWidth: true
+
+                text: "Username is limited to 12 characters."
+
+                color: "#7A7A7A"
+
+                font.pixelSize: createUserTypography.small
+
+                wrapMode: Text.WordWrap
+            }
+
             Rectangle {
                 Layout.fillWidth: true
 
@@ -417,6 +430,8 @@ Popup {
 
                 border.color: createUserPopup.hasError ? "#FF5252" : "#1A4DB5"
                 border.width: createUserPopup.hasError ? 2 : 1
+
+
 
                 TextField {
                     id: usernameInput
@@ -431,6 +446,7 @@ Popup {
 
                     font.pixelSize: 18
 
+                    maximumLength: 12
 
                     color: "#1A1A2E"
 
@@ -714,6 +730,81 @@ Popup {
 
                             if (success)
                             {
+
+                                // ================= USER CREATED AUDIT =================
+
+                                // Current logged-in user (creator)
+                                var loggedUser =
+                                        GlobalState.loggedInUserName
+
+                                var loggedRole =
+                                        GlobalState.loggedInUserRole
+
+
+                                var loggedInitial = "U"
+
+                                if (loggedRole === "Admin")
+                                    loggedInitial = "A"
+
+                                else if (loggedRole === "Supervisor")
+                                    loggedInitial = "S"
+
+                                else if (loggedRole === "Operator")
+                                    loggedInitial = "O"
+
+
+                                var auditUser =
+                                        loggedInitial + "-" + loggedUser
+
+
+
+                                // Newly created user
+                                var newUserInitial = "U"
+
+                                if (userTypeValue.text === "Admin")
+                                    newUserInitial = "A"
+
+                                else if (userTypeValue.text === "Supervisor")
+                                    newUserInitial = "S"
+
+                                else if (userTypeValue.text === "Operator")
+                                    newUserInitial = "O"
+
+
+                                var newUser =
+                                        newUserInitial + "-" + username
+
+
+
+                                var auditSaved =
+                                        databaseManager.addAuditTrailRecord(
+                                            auditUser,
+                                            "",
+                                            newUser,
+                                            "User Added"
+                                        )
+
+
+                                if (auditSaved)
+                                {
+                                    console.log(
+                                        "User creation audit saved:",
+                                        auditUser,
+                                        "created",
+                                        newUser
+                                    )
+                                }
+                                else
+                                {
+                                    console.log(
+                                        "Failed to save user creation audit"
+                                    )
+                                }
+
+
+
+                                // ================= UI UPDATE =================
+
                                 if (createUserPopup.globalTopBar &&
                                         createUserPopup.globalTopBar.showNotification)
                                 {
@@ -721,6 +812,7 @@ Popup {
                                         "✓ User created successfully"
                                     )
                                 }
+
 
                                 GlobalState.loginKeyboardRequest = false
                                 GlobalState.activeInputField = null
