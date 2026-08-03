@@ -253,7 +253,7 @@ Popup {
                     text: selectionPopup.title
                     color: "#1A4DB5"
 
-                    font.pixelSize: 19
+                    font.pixelSize: 26
                 }
             }
 
@@ -292,7 +292,7 @@ Popup {
                                 anchors.left: parent.left
                                 anchors.leftMargin: 20 * scale
                                 text: modelData
-                                font.pixelSize: 18
+                                font.pixelSize: 22
 
                                 color: "#1A1A2E"
                             }

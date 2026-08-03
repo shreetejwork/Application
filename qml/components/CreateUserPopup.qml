@@ -236,7 +236,7 @@ Popup {
 
                     color: "#1A4DB5"
 
-                    font.pixelSize: 20
+                    font.pixelSize: 26
 
                 }
             }
@@ -288,7 +288,7 @@ Popup {
 
                                 text: modelData
 
-                                font.pixelSize: 18
+                                font.pixelSize: 22
                                 color: "#1A1A2E"
                             }
 
