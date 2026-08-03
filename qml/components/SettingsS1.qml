@@ -49,6 +49,32 @@ Item {
             updateValue("ag", settings.analogGain)
     }
 
+    function saveS1SettingAudit(action, oldValue, newValue)
+    {
+        var role = GlobalState.loggedInUserRole
+        var username = GlobalState.loggedInUserName
+
+        var initial = "U"
+
+        if (role === "Admin")
+            initial = "A"
+        else if (role === "Supervisor")
+            initial = "S"
+        else if (role === "Operator")
+            initial = "O"
+
+
+        var auditUser = initial + "/" + username
+
+
+        databaseManager.addAuditTrailRecord(
+            auditUser,
+            oldValue.toString(),
+            newValue.toString(),
+            action
+        )
+    }
+
     
     // =========================================================
     // TYPOGRAPHY FOR SETTINGS S1
@@ -78,8 +104,8 @@ Item {
     ListModel {
         id: fieldModel
 
-        ListElement { fieldId: "lpf1"; label: "LF"; title: "LPF"; value: "10"; unit: "Hz"; min: 1; max: 45 }
-        ListElement { fieldId: "hpf1"; label: "HF"; title: "HPF"; value: "2.0"; unit: "Hz"; min: 5; max: 50 }
+        ListElement { fieldId: "lpf1"; label: "LCF"; title: "LCF"; value: "10"; unit: "Hz"; min: 1; max: 45 }
+        ListElement { fieldId: "hpf1"; label: "HCF"; title: "HCF"; value: "2.0"; unit: "Hz"; min: 5; max: 50 }
 
         ListElement { fieldId: "od"; label: "O/D"; title: "Operate Delay"; value: "0"; unit: "mSec"; min: 0; max: 20000 }
         ListElement { fieldId: "hd"; label: "H/D"; title: "Hold Delay"; value: "250"; unit: "mSec"; min: 250; max: 2000 }
@@ -131,6 +157,8 @@ Item {
             "",
                     function(newVal)
                     {
+                        var oldValue = displayValue(fieldId)
+
                         updateValue(fieldId,newVal)
 
 
@@ -194,6 +222,12 @@ Item {
 
                             Number(displayValue("ag"))
 
+                        )
+
+                        saveS1SettingAudit(
+                            item.title + " Changed",
+                            oldValue,
+                            newVal
                         )
 
 

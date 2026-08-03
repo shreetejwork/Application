@@ -536,7 +536,7 @@ Item {
 
                                         Text {
                                             anchors.centerIn: parent
-                                            text: "Save PDF"
+                                            text: "Create PDF"
                                             font.pixelSize: 17
                                             font.weight: Font.Medium
                                             color: saveMouse.pressed ? "#FFFFFF" : "#1A4DB5"

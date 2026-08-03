@@ -569,10 +569,10 @@ Item {
 
                     // ACTION BUTTONS
                     Repeater {
-                        model: ["TODAY", "Save PDF"]
+                        model: ["TODAY", "Create PDF"]
 
                         delegate: Rectangle {
-                            width: 90 * root.scale
+                            width: 100 * root.scale
                             height: 36 * root.scale
                             radius: 6 * root.scale
                             color: modelData === "TODAY" ? "#1A4DB5" : "#FFFFFF"
@@ -598,7 +598,7 @@ Item {
                                         root.toDate   = today
                                     }
 
-                                    if (modelData === "Save PDF") {
+                                    if (modelData === "Create PDF") {
 
                                         var filtered = []
 

@@ -18,6 +18,9 @@ Item {
     property string lastValidBatch: "General Batch"
     property string lastValidProduct: "Default Product"
 
+    property int previousDDPower: 0
+    property real previousDDFrequency: 25.0
+
     property int ddPower: 0
     property real ddFrequency: 25.0
 
@@ -27,6 +30,34 @@ Item {
     function notify(msg) {
         if (globalTopBar && globalTopBar.showNotification)
             globalTopBar.showNotification(msg)
+    }
+
+    function saveDDAudit(action, oldValue, newValue)
+    {
+        var auditUser = "---"
+
+        if (GlobalState.loggedInUserRole !== "" &&
+            GlobalState.loggedInUserName !== "")
+        {
+            var initial = "U"
+
+            if (GlobalState.loggedInUserRole === "Admin")
+                initial = "A"
+            else if (GlobalState.loggedInUserRole === "Supervisor")
+                initial = "S"
+            else if (GlobalState.loggedInUserRole === "Operator")
+                initial = "O"
+
+            auditUser = initial + "/" + GlobalState.loggedInUserName
+        }
+
+
+        databaseManager.addAuditTrailRecord(
+            auditUser,
+            oldValue !== undefined ? String(oldValue) : "",
+            newValue !== undefined ? String(newValue) : "",
+            action
+        )
     }
 
     AccessDeniedPopup {
@@ -635,6 +666,12 @@ Item {
 
                                     SerialManager.setDDuster(toggled)
 
+
+                                    saveDDAudit(
+                                        toggled ? "DD ON" : "DD OFF"
+                                    )
+
+
                                     root.notify(
                                         toggled ? "✓ DD ON" : "✓ DD OFF"
                                     )
@@ -686,6 +723,9 @@ Item {
 
                                 onValueChangedDelayed: function(val)
                                 {
+                                    if (ddPower !== val)
+                                        previousDDPower = ddPower
+
                                     ddPower = val
 
                                     SerialManager.setDDPower(val)
@@ -693,10 +733,23 @@ Item {
 
                                 onSaveClicked: function(val)
                                 {
+                                    var settings = databaseManager.getDDSettings()
+
+                                    var oldValue = settings.ddPower
+
 
                                     databaseManager.saveDDPower(val)
 
+
+                                    saveDDAudit(
+                                        "DD Power Changed",
+                                        oldValue,
+                                        val
+                                    )
+
+
                                     root.notify("✓ DD Power Saved : " + val)
+                                    root.globalTopBar.resetSessionTimer()
                                 }
                             }
                         }
@@ -710,10 +763,7 @@ Item {
                         border.color: "#E5E7EB"
                         border.width: 1
 
-                        enabled: ddBtn.toggled &&
-                                 GlobalState.loggedInUserRole !== "" &&
-                                 !GlobalState.developerLogin &&
-                                 !GlobalState.engineerLogin
+                        enabled: ddBtn.toggled
 
                         opacity: enabled ? 1.0 : 0.5
 
@@ -746,6 +796,9 @@ Item {
 
                                 onValueChangedDelayed: function(val)
                                 {
+                                    if (ddFrequency !== val)
+                                        previousDDFrequency = ddFrequency
+
                                     ddFrequency = val
 
                                     var freq = Math.round(val * 10)
@@ -755,9 +808,23 @@ Item {
 
                                 onSaveClicked: function(val)
                                 {
-                                    databaseManager.saveDDFrequency(ddFrequency)
+                                    var settings = databaseManager.getDDSettings()
+
+                                    var oldValue = settings.ddFreq
+
+
+                                    databaseManager.saveDDFrequency(val)
+
+
+                                    saveDDAudit(
+                                        "DD Frequency Changed",
+                                        oldValue.toFixed(1),
+                                        val.toFixed(1)
+                                    )
+
 
                                     root.notify("✓ DD Frequency Saved : " + val.toFixed(1))
+                                    root.globalTopBar.resetSessionTimer()
                                 }
                             }
                         }
