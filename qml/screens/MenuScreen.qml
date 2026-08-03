@@ -89,7 +89,7 @@ Item {
                                 accessDeniedPopup.popupTitle = "Access Denied !"
 
                                 accessDeniedPopup.popupMessage =
-                                        "Only Admin can access"
+                                        "Please login first"
 
                                 accessDeniedPopup.open()
                                 return
