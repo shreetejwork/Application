@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import AppState 1.0
+
 Popup {
 
     Typography {
@@ -153,6 +155,12 @@ Popup {
                                 "",
                                 "M/C Switched OFF"
                             )
+
+                        GlobalState.setMachineShutdown()
+
+                        console.log(
+                            "Machine State:" + GlobalState.machinePowerState
+                        )
 
                         powerPopup.close()
 

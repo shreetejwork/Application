@@ -183,6 +183,21 @@ ApplicationWindow {
 
         // ================= APPLICATION START AUDIT =================
 
+        if(GlobalState.machinePowerState === "Running")
+        {
+            // power failure happened
+
+            GlobalState.savePowerFailureTime()
+
+            databaseManager.addAuditTrailRecord(
+                "---",
+                GlobalState.powerFailureDate,
+                GlobalState.powerFailureTime,
+                "M/C OFF (Power Failure)"
+            )
+
+        }
+
         var auditSaved =
                 databaseManager.addAuditTrailRecord(
                     "---",
@@ -193,6 +208,10 @@ ApplicationWindow {
 
 
         startupTimer.start()
+        GlobalState.setMachineRunning()
+        console.log(
+            "Machine State:" + GlobalState.machinePowerState
+        )
     }
 
     property var parameterQueue: []

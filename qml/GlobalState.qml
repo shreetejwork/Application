@@ -28,6 +28,11 @@ QtObject {
               {"time":"11:45","enabled":false},
               {"time":"11:00","enabled":false}]'
 
+        property string machinePowerState: "Shutdown"
+
+        property string powerFailureDate: ""
+        property string powerFailureTime: ""
+
     }
 
     property var reportSettings: Settings {
@@ -46,6 +51,14 @@ QtObject {
     property string blockedUsersJson:   settings.blockedUsersJson
     property string failedAttemptsJson: settings.failedAttemptsJson
 
+    property string machinePowerState: settings.machinePowerState
+
+    property string powerFailureDate: settings.powerFailureDate
+
+    property string powerFailureTime: settings.powerFailureTime
+
+
+
     onBlockedUsersJsonChanged:   settings.blockedUsersJson   = blockedUsersJson
     onFailedAttemptsJsonChanged: settings.failedAttemptsJson = failedAttemptsJson
 
@@ -53,6 +66,15 @@ QtObject {
     onShowNetworkScreenChanged: settings.showNetworkScreen = showNetworkScreen
     onShowAuditTrailChanged: settings.showAuditTrail = showAuditTrail
     onShowProductLibChanged: settings.showProductLib = showProductLib
+
+    onMachinePowerStateChanged: settings.machinePowerState = machinePowerState
+
+
+    onPowerFailureDateChanged: settings.powerFailureDate = powerFailureDate
+
+
+    onPowerFailureTimeChanged: settings.powerFailureTime = powerFailureTime
+
 
     property string validationTimersJson:
             settings.validationTimersJson
@@ -322,5 +344,37 @@ QtObject {
     function triggerValidationAlarm()
     {
         validationAlarmTriggered()
+    }
+
+    function setMachineRunning()
+    {
+        machinePowerState = "Running"
+    }
+
+
+
+    function setMachineShutdown()
+    {
+        machinePowerState = "Shutdown"
+    }
+
+
+
+    function savePowerFailureTime()
+    {
+        var now = new Date()
+
+        powerFailureDate =
+                Qt.formatDate(
+                    now,
+                    "dd/MM/yyyy"
+                )
+
+
+        powerFailureTime =
+                Qt.formatTime(
+                    now,
+                    "HH:mm:ss"
+                )
     }
 }
