@@ -18,6 +18,50 @@ Item {
     // ONLY CHANGE: uniform scaling boost (keeps layout identical)
     property real scale: Math.min(width / baseWidth, height / baseHeight) * 1.10
 
+    function saveValidationAudit(action, oldValue, newValue)
+    {
+        // Skip only normal duplicate changes
+        // Allow "No Validation Timer"
+        if(oldValue === newValue && action !== "No Validation Timer")
+            return
+
+
+        var auditUser = "---"
+
+
+        if (GlobalState.developerLogin) {
+            auditUser = "D/Developer"
+        }
+        else if (GlobalState.engineerLogin) {
+            auditUser = "E/Engineer"
+        }
+        else {
+
+            var role = GlobalState.loggedInUserRole
+            var username = GlobalState.loggedInUserName
+
+            var initial = "U"
+
+            if(role === "Admin")
+                initial = "A"
+            else if(role === "Supervisor")
+                initial = "S"
+            else if(role === "Operator")
+                initial = "O"
+
+
+            auditUser = initial + "/" + username
+        }
+
+
+        databaseManager.addAuditTrailRecord(
+            auditUser,
+            oldValue,
+            newValue,
+            action
+        )
+    }
+
 
     
     // =========================================================
@@ -72,18 +116,47 @@ Item {
 
         var data=[]
 
+        var hasActiveTimer = false
+
 
         for(var i=0;i<timeModel.count;i++)
         {
 
+            var timerTime = timeModel.get(i).time
+            var timerStatus = timeModel.get(i).enabled
+
+
             data.push({
-
-                time:timeModel.get(i).time,
-
-                enabled:timeModel.get(i).enabled
-
+                time: timerTime,
+                enabled: timerStatus
             })
+
+
+            // If timer is ON
+            if(timerStatus === true)
+            {
+                hasActiveTimer = true
+
+                saveValidationAudit(
+                            "Validation Timer Set",
+                            "---",
+                            timerTime
+                            )
+            }
         }
+
+
+
+        // No timer enabled
+        if(hasActiveTimer === false)
+        {
+            saveValidationAudit(
+                        "No Validation Timer",
+                        "---",
+                        "---"
+                        )
+        }
+
 
 
         GlobalState.saveValidationTimers(data)

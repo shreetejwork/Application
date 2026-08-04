@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import AppState 1.0
+
 Popup {
 
     id: validationAlarmPopup
@@ -23,6 +25,45 @@ Popup {
                               )
 
     property bool minimized: false
+
+    function saveValidationAudit(action)
+    {
+        var role = GlobalState.loggedInUserRole
+        var username = GlobalState.loggedInUserName
+
+        var auditUser = "---"
+
+        if (GlobalState.developerLogin) {
+            auditUser = "D/Developer"
+        }
+        else if (GlobalState.engineerLogin) {
+            auditUser = "E/Engineer"
+        }
+        else if (role !== "" && username !== "") {
+
+            var initial = "U"
+
+            if (role === "Admin")
+                initial = "A"
+            else if (role === "Supervisor")
+                initial = "S"
+            else if (role === "Operator")
+                initial = "O"
+
+            auditUser = initial + "/" + username
+        }
+
+        databaseManager.addAuditTrailRecord(
+                    auditUser,
+                    "",
+                    "",
+                    action
+                    )
+    }
+
+    onOpened: {
+        saveValidationAudit("Remainder for validation")
+    }
 
     signal continueClicked()
 
@@ -238,7 +279,12 @@ Popup {
 
                     MouseArea {
                         anchors.fill: parent
-                        onClicked: validationAlarmPopup.close()
+                        onClicked: {
+
+                            saveValidationAudit("Validation Skipped")
+
+                            validationAlarmPopup.close()
+                        }
                     }
                 }
 
@@ -298,7 +344,10 @@ Popup {
 
                         onClicked: {
 
+                            saveValidationAudit("Validation Started")
+
                             validationAlarmPopup.close()
+
                             validationAlarmPopup.continueClicked()
                         }
                     }

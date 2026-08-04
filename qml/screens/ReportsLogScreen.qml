@@ -359,7 +359,7 @@ Item {
                                 spacing: root.colSpacing
 
                                 Text {
-                                    text: index + 1
+                                    text: model.sr
                                     width: root.colSr
                                     font.pixelSize: 18
                                     color: "#3A3A3A"

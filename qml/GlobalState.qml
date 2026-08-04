@@ -7,6 +7,7 @@ QtObject {
 
     signal validationAlarmTriggered()
 
+
     // =========================================================
     // SETTINGS (SAFE)
     // =========================================================
@@ -120,27 +121,91 @@ QtObject {
     // =========================================================
     //  LOAD LOGS
     // =========================================================
+
+
+    function getCurrentUser()
+    {
+        if (developerLogin)
+            return "D/Developer"
+
+        if (engineerLogin)
+            return "E/Engineer"
+
+
+        var role = loggedInUserRole
+        var username = loggedInUserName
+
+        var initial = "U"
+
+        if(role === "Admin")
+            initial = "A"
+        else if(role === "Supervisor")
+            initial = "S"
+        else if(role === "Operator")
+            initial = "O"
+
+
+        return initial + "/" + username
+    }
+
     Component.onCompleted: {
+
         try {
+
             var data = JSON.parse(reportSettings.logsJson)
 
-            if (data.created) {
-                for (var i = 0; i < data.created.length; i++)
-                    reportsLogModel.append(data.created[i])
+
+            if(data.created)
+            {
+                for(var i = 0; i < data.created.length; i++)
+                {
+                    reportsLogModel.append({
+                        sr: i + 1,
+                        fileName: data.created[i].fileName || "-",
+                        type: data.created[i].type || "-",
+                        action: data.created[i].action || "-",
+                        date: data.created[i].date || "-",
+                        from: data.created[i].from || "-",
+                        to: data.created[i].to || "-",
+                        by: data.created[i].by || "-"
+                    })
+                }
             }
 
-            if (data.deleted) {
-                for (var i = 0; i < data.deleted.length; i++)
-                    deletedFilesModel.append(data.deleted[i])
+
+            if(data.deleted)
+            {
+                for(var j = 0; j < data.deleted.length; j++)
+                {
+                    deletedFilesModel.append({
+                        sr:j+1,
+                        fileName:data.deleted[j].fileName || "-",
+                        action:data.deleted[j].action || "-",
+                        date:data.deleted[j].date || "-",
+                        by:data.deleted[j].by || "-"
+                    })
+                }
             }
 
-            if (data.copied) {
-                for (var i = 0; i < data.copied.length; i++)
-                    copiedFilesModel.append(data.copied[i])
+
+            if(data.copied)
+            {
+                for(var k = 0; k < data.copied.length; k++)
+                {
+                    copiedFilesModel.append({
+                        sr:k+1,
+                        fileName:data.copied[k].fileName || "-",
+                        action:data.copied[k].action || "-",
+                        date:data.copied[k].date || "-",
+                        by:data.copied[k].by || "-"
+                    })
+                }
             }
 
-        } catch (e) {
-            console.log("Failed to load logs:", e)
+        }
+        catch(e)
+        {
+            console.log("Failed loading logs",e)
         }
     }
 
@@ -171,53 +236,75 @@ QtObject {
     // =========================================================
     //  ADD LOG
     // =========================================================
-    function addReportLog(type, fileName, action, fromDate, toDate, user) {
-
+    function addReportLog(type, fileName, action, fromDate, toDate)
+    {
         var now = new Date()
 
-        reportsLogModel.insert(0, {
-            sr: reportsLogModel.count + 1,
+        var currentUser = getCurrentUser()
+
+        var newSr = reportsLogModel.count + 1
+
+
+        reportsLogModel.append({
+            sr: newSr,
             fileName: fileName,
             type: type,
             action: action,
             date: Qt.formatDate(now, "dd/MM/yyyy"),
             from: fromDate || "-",
             to: toDate || "-",
-            by: user || "System"
+            by: currentUser
         })
+
 
         saveLogs()
     }
 
-    function addDeletedFileLog(fileName, user) {
 
+
+    function addDeletedFileLog(fileName)
+    {
         var now = new Date()
 
-        deletedFilesModel.insert(0, {
-            sr: deletedFilesModel.count + 1,
+        var currentUser = getCurrentUser()
+
+        var newSr = deletedFilesModel.count + 1
+
+
+        deletedFilesModel.append({
+            sr: newSr,
             fileName: fileName,
             action: "Deleted",
             date: Qt.formatDate(now, "dd/MM/yyyy"),
-            by: user || "System"
+            by: currentUser
         })
 
         saveLogs()
     }
 
-    function addCopiedFileLog(fileName, user) {
 
+
+    function addCopiedFileLog(fileName)
+    {
         var now = new Date()
 
-        copiedFilesModel.insert(0, {
-            sr: copiedFilesModel.count + 1,
+        var currentUser = getCurrentUser()
+
+        var newSr = copiedFilesModel.count + 1
+
+
+        copiedFilesModel.append({
+            sr: newSr,
             fileName: fileName,
             action: "Copied",
             date: Qt.formatDate(now, "dd/MM/yyyy"),
-            by: user || "System"
+            by: currentUser
         })
 
         saveLogs()
     }
+
+    //////////////////////////////////////////////////////////////////
 
     function getValidationTimers()
     {

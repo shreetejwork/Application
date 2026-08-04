@@ -658,9 +658,10 @@ Item {
                                             date: Qt.formatDate(new Date(), "dd/MM/yyyy"),
                                             from: root.fromDate === "" ? "-" : root.fromDate,
                                             to: root.toDate === "" ? "-" : root.toDate,
-                                                                               by: root.selectedUser === "All Users"
-                                                                                       ? "System"
-                                                                                       : root.selectedUser,
+
+                                            // Current logged in user
+                                            by: GlobalState.getCurrentUser(),
+
                                             filePath: path
                                         })
 

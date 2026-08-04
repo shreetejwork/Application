@@ -31,6 +31,42 @@ Item {
     property var globalTopBar
     property var notify
 
+    function saveDateTimeAudit(action, oldValue, newValue)
+    {
+        var auditUser = "---"
+
+        if (GlobalState.developerLogin) {
+            auditUser = "D/Developer"
+        }
+        else if (GlobalState.engineerLogin) {
+            auditUser = "E/Engineer"
+        }
+        else {
+
+            var role = GlobalState.loggedInUserRole
+            var username = GlobalState.loggedInUserName
+
+            var initial = "U"
+
+            if (role === "Admin")
+                initial = "A"
+            else if (role === "Supervisor")
+                initial = "S"
+            else if (role === "Operator")
+                initial = "O"
+
+            auditUser = initial + "/" + username
+        }
+
+
+        databaseManager.addAuditTrailRecord(
+            auditUser,
+            oldValue,
+            newValue,
+            action
+        )
+    }
+
     Rectangle {
         anchors.fill: parent
         color: "#F5F7FC"
@@ -229,11 +265,38 @@ Item {
                     anchors.fill: parent
 
                     onClicked: {
+
+                        var oldTime = Qt.formatTime(
+                                    GlobalState.globalDateTime,
+                                    "HH:mm"
+                                    )
+
+
                         var d = new Date(root.selectedDate)
                         d.setSeconds(0)
                         d.setMilliseconds(0)
 
+
+                        var newTime = Qt.formatTime(
+                                    d,
+                                    "HH:mm"
+                                    )
+
+
+                        if(oldTime !== newTime)
+                        {
+
+                            saveDateTimeAudit(
+                                        "Time Changed",
+                                        oldTime,
+                                        newTime
+                                        )
+
+                        }
+
+
                         GlobalState.globalDateTime = d
+
 
                         if (notify)
                             notify("✓ Time Updated")
@@ -471,11 +534,41 @@ Item {
                         id: calSetMouse
                         anchors.fill: parent
                         onClicked: {
+
+
+                            var oldDate = Qt.formatDate(
+                                        GlobalState.globalDateTime,
+                                        "dd-MM-yyyy"
+                                        )
+
+
                             var d = new Date(root.selectedDate)
+
                             d.setSeconds(0)
                             d.setMilliseconds(0)
 
+
+                            var newDate = Qt.formatDate(
+                                        d,
+                                        "dd-MM-yyyy"
+                                        )
+
+
+                            if(oldDate !== newDate)
+                            {
+
+                                saveDateTimeAudit(
+                                            "Date Changed",
+                                            oldDate,
+                                            newDate
+                                            )
+
+                            }
+
+
                             GlobalState.globalDateTime = d
+
+
                             if (notify)
                                 notify("✓ Date Updated")
                         }

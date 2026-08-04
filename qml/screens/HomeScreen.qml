@@ -73,6 +73,41 @@ Item {
         }
     }
 
+    function saveValidationAudit(action)
+    {
+        var role = GlobalState.loggedInUserRole
+        var username = GlobalState.loggedInUserName
+
+        var auditUser = "---"
+
+        if (GlobalState.developerLogin) {
+            auditUser = "D/Developer"
+        }
+        else if (GlobalState.engineerLogin) {
+            auditUser = "E/Engineer"
+        }
+        else if (role !== "" && username !== "") {
+
+            var initial = "U"
+
+            if (role === "Admin")
+                initial = "A"
+            else if (role === "Supervisor")
+                initial = "S"
+            else if (role === "Operator")
+                initial = "O"
+
+            auditUser = initial + "/" + username
+        }
+
+        databaseManager.addAuditTrailRecord(
+                    auditUser,
+                    "",
+                    "",
+                    action
+                    )
+    }
+
     function saveMachineSettingAudit(action, oldValue, newValue)
     {
         var role = GlobalState.loggedInUserRole
@@ -902,6 +937,8 @@ Item {
                                             "✓ Manual Validation ON"
                                             )
 
+                                saveValidationAudit("Validation Started")
+
                                 validationPopup.open()
                             }
                         }
@@ -1056,6 +1093,16 @@ Item {
                         anchors.right: parent.right
                         anchors.rightMargin: 10
                         anchors.topMargin: 50
+
+                        MouseArea {
+                            anchors.fill: parent
+                            pressAndHoldInterval: 1500
+
+                            onPressAndHold: {
+                                GlobalState.rejectedCount = 0
+                                console.log("Rejected count reset")
+                            }
+                        }
                     }
                 }
             }

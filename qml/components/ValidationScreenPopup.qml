@@ -23,6 +23,41 @@ Popup {
                                 Overlay.overlay.height / baseHeight
                             )
 
+    function saveValidationAudit(action)
+    {
+        var role = GlobalState.loggedInUserRole
+        var username = GlobalState.loggedInUserName
+
+        var auditUser = "---"
+
+        if (GlobalState.developerLogin) {
+            auditUser = "D/Developer"
+        }
+        else if (GlobalState.engineerLogin) {
+            auditUser = "E/Engineer"
+        }
+        else if (role !== "" && username !== "") {
+
+            var initial = "U"
+
+            if (role === "Admin")
+                initial = "A"
+            else if (role === "Supervisor")
+                initial = "S"
+            else if (role === "Operator")
+                initial = "O"
+
+            auditUser = initial + "/" + username
+        }
+
+        databaseManager.addAuditTrailRecord(
+                    auditUser,
+                    "",
+                    "",
+                    action
+                    )
+    }
+
     modal: true
     focus: true
     dim: true
@@ -54,7 +89,7 @@ Popup {
     property int currentRound: 1
     property var roundStatus: [false, false, false]
 
-    property int roundDuration: 180
+    property int roundDuration: 60
     property int remainingSeconds: roundDuration
 
     property bool rejectCycleStarted: false
@@ -96,6 +131,8 @@ Popup {
             validationState = "passed"
             countdownTimer.stop()
 
+            saveValidationAudit("Validation Passed")
+
             Qt.callLater(function() {
                 GlobalState.countRejection = true
                 console.log("Count Rejection:", GlobalState.countRejection)
@@ -128,6 +165,7 @@ Popup {
             } else {
                 validationScreenPopup.validationState = "failed"
                 countdownTimer.stop()
+                saveValidationAudit("Validation Failed")
                 GlobalState.countRejection = true
                 console.log("Count Rejection:", GlobalState.countRejection)
             }
@@ -234,6 +272,66 @@ Popup {
             border.width: 1
         }
 
+        Rectangle {
+            id: exitButton
+
+            visible: validationScreenPopup.validationState === "running"
+            enabled: visible
+
+            width: 45 * uiScale
+            height: 45 * uiScale
+            radius: width / 2
+
+            anchors.top: parent.top
+            anchors.right: parent.right
+            anchors.topMargin: 25 * uiScale
+            anchors.rightMargin: 25 * uiScale
+
+            opacity: visible ? 1 : 0
+
+            Behavior on opacity {
+                NumberAnimation {
+                    duration: 200
+                }
+            }
+
+            color: exitMouse.pressed ? "#D32F2F"
+                  : exitMouse.containsMouse ? "#F8D7DA"
+                  : "#FFFFFF"
+
+            border.color: "#D0D8EC"
+            border.width: 1
+
+            antialiasing: true
+
+            Text {
+                anchors.centerIn: parent
+                text: "✕"
+                font.pixelSize: 25 * uiScale
+                font.bold: true
+                color: exitMouse.pressed ? "white" : "#1A4DB5"
+            }
+
+            MouseArea {
+                id: exitMouse
+                anchors.fill: parent
+                enabled: exitButton.visible
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+
+                onPressed: exitButton.scale = 0.92
+                onReleased: exitButton.scale = 1.0
+                onCanceled: exitButton.scale = 1.0
+
+                onClicked: {
+                    countdownTimer.stop()
+                    GlobalState.countRejection = true
+                    saveValidationAudit("Validation Skipped")
+                    validationScreenPopup.close()
+                }
+            }
+        }
+
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 34 * uiScale
@@ -320,45 +418,54 @@ Popup {
 
                 Canvas {
                     id: timerArcCanvas
+
                     anchors.fill: parent
-
-                    renderTarget: Canvas.Image
-                    renderStrategy: Canvas.Immediate
-
-                    property real fraction:
-                        validationScreenPopup.remainingSeconds /
-                        validationScreenPopup.roundDuration
-
-                    property real strokeW: 13 * uiScale
-
-                    onFractionChanged: requestPaint()
-                    onWidthChanged: requestPaint()
-                    onHeightChanged: requestPaint()
-                    Component.onCompleted: requestPaint()
+                    antialiasing: true
 
                     onPaint: {
+
                         var ctx = getContext("2d")
-                        ctx.clearRect(0, 0, width, height)
+                        ctx.reset()
 
                         var cx = width / 2
                         var cy = height / 2
-                        var radius = Math.min(width, height) / 2 - strokeW
 
-                        if (radius <= 0)
-                            return
+                        var radius = Math.min(width, height) * 0.40
+                        var arcWidth = Math.max(8, radius * 0.12)
 
-                        var startAngle = -Math.PI / 2
-                        var sweep = fraction * 2 * Math.PI
-                        var endAngle = startAngle + sweep
+                        function rad(deg) {
+                            return (deg - 90) * Math.PI / 180
+                        }
 
-                        ctx.lineWidth = strokeW
-                        ctx.lineCap = "round"
-                        ctx.strokeStyle = "#1A4DB5"
+                        //==========================================
+                        // Progress Ring
+                        //==========================================
+
+                        var progress =
+                                validationScreenPopup.remainingSeconds /
+                                validationScreenPopup.roundDuration
+
+                        var endDeg = progress * 360
 
                         ctx.beginPath()
-                        ctx.arc(cx, cy, radius, startAngle, endAngle, false)
+                        ctx.lineWidth = arcWidth
+                        ctx.strokeStyle =
+                                validationScreenPopup.remainingSeconds <= 10
+                                ? "#FF5252"
+                                : "#1A4DB5"
+
+                        ctx.lineCap = "round"
+
+                        ctx.arc(cx,
+                                cy,
+                                radius,
+                                rad(0),
+                                rad(endDeg))
+
                         ctx.stroke()
                     }
+
+                    Component.onCompleted: requestPaint()
                 }
 
                 Column {

@@ -23,6 +23,42 @@ Item {
     property real keyboardHeight: GlobalState.loginKeyboardRequest ? 340 * root.scale : 0
     property real visibleHeight: root.height - keyboardHeight
 
+    function saveMachineInfoAudit(action)
+    {
+        var auditUser = "---"
+
+        if (GlobalState.developerLogin) {
+            auditUser = "D/Developer"
+        }
+        else if (GlobalState.engineerLogin) {
+            auditUser = "E/Engineer"
+        }
+        else {
+
+            var role = GlobalState.loggedInUserRole
+            var username = GlobalState.loggedInUserName
+
+            var initial = "U"
+
+            if (role === "Admin")
+                initial = "A"
+            else if (role === "Supervisor")
+                initial = "S"
+            else if (role === "Operator")
+                initial = "O"
+
+            auditUser = initial + "/" + username
+        }
+
+
+        databaseManager.addAuditTrailRecord(
+            auditUser,
+            "",
+            "",
+            action
+        )
+    }
+
     Behavior on keyboardHeight {
         NumberAnimation { duration: 260; easing.type: Easing.OutQuart }
     }
@@ -249,45 +285,98 @@ Item {
                 root.activeCardId = ""
                 GlobalState.loginKeyboardRequest = false
             }
+
             onConfirmed: (id, val) => {
 
                 if (id === "supplierName") {
-                    GlobalState.supplierName = val
-                    if (root.notify) root.notify("✓ Supplier Name Saved")
+
+                    if (GlobalState.supplierName !== val) {
+
+                        GlobalState.supplierName = val
+
+                        root.saveMachineInfoAudit(
+                            "Supplier Name Changed"
+                        )
+                    }
+
+                    if (root.notify)
+                        root.notify("✓ Supplier Name Saved")
                 }
+
                 else if (id === "machineId") {
-                    GlobalState.machineId = val
-                    if (root.notify) root.notify("✓ Machine ID Saved")
+
+                    if (GlobalState.machineId !== val) {
+
+                        GlobalState.machineId = val
+
+                        root.saveMachineInfoAudit(
+                            "Machine ID Changed"
+                        )
+                    }
+
+                    if (root.notify)
+                        root.notify("✓ Machine ID Saved")
                 }
+
                 else if (id === "user") {
-                    GlobalState.userName = val
-                    if (root.notify) root.notify("✓ User Saved")
+
+                    if (GlobalState.userName !== val) {
+
+                        GlobalState.userName = val
+
+                        root.saveMachineInfoAudit(
+                            "Machine User Changed"
+                        )
+                    }
+
+                    if (root.notify)
+                        root.notify("✓ User Saved")
                 }
+
                 else if (id === "location") {
-                    GlobalState.location = val
-                    if (root.notify) root.notify("✓ Location Saved")
+
+                    if (GlobalState.location !== val) {
+
+                        GlobalState.location = val
+
+                        root.saveMachineInfoAudit(
+                            "Location Changed"
+                        )
+                    }
+
+                    if (root.notify)
+                        root.notify("✓ Location Saved")
                 }
+
                 else if (id === "serialNumber") {
-                    GlobalState.serialNumber = val
-                    if (root.notify) root.notify("✓ Serial Number Saved")
+
+                    if (GlobalState.serialNumber !== val) {
+
+                        GlobalState.serialNumber = val
+
+                        root.saveMachineInfoAudit(
+                            "Serial Number Changed"
+                        )
+                    }
+
+                    if (root.notify)
+                        root.notify("✓ Serial Number Saved")
                 }
 
 
-                // Save everything to database
-                             var machineType = GlobalState.showDDuster
-                                     ? "Combo (MD+DD)"
-                                     : "Only MD"
+                var machineType = GlobalState.showDDuster
+                        ? "Combo (MD+DD)"
+                        : "Only MD"
 
-                             databaseManager.saveMachineInfo(
 
-                                 GlobalState.supplierName,
-                                 GlobalState.serialNumber,
-                                 GlobalState.machineId,
-                                 GlobalState.userName,
-                                 GlobalState.location,
-                                 machineType
-
-                             )
+                databaseManager.saveMachineInfo(
+                    GlobalState.supplierName,
+                    GlobalState.serialNumber,
+                    GlobalState.machineId,
+                    GlobalState.userName,
+                    GlobalState.location,
+                    machineType
+                )
 
 
                 root.activeCardId = ""
