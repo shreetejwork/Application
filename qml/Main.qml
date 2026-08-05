@@ -219,7 +219,7 @@ ApplicationWindow {
     Timer {
         id: parameterSender
 
-        interval: 10
+        interval: 50
         repeat: true
 
         onTriggered: {
