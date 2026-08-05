@@ -217,6 +217,8 @@ bool SerialManager::openPort(const QString &port)
     serial.setStopBits(QSerialPort::OneStop);
     serial.setFlowControl(QSerialPort::NoFlowControl);
 
+    serial.setReadBufferSize(8192);
+
 
     bool ok = serial.open(QIODevice::ReadWrite);
 
@@ -282,7 +284,21 @@ void SerialManager::setAmplitudeThreshold(int value)
 
 void SerialManager::onReadyRead()
 {
-    rxBuffer += serial.readAll();
+    QByteArray data = serial.readAll();
+
+    if(!data.isEmpty())
+    {
+        rxBuffer.append(data);
+    }
+
+
+    // Safety protection
+    if(rxBuffer.size() > 4096)
+    {
+        qDebug() << "RX buffer overflow. Clearing.";
+        rxBuffer.clear();
+        return;
+    }
 
     // MCU requesting parameters
         if (rxBuffer.contains("{*****}"))
@@ -301,7 +317,9 @@ void SerialManager::onReadyRead()
 
         if (start < 0)
         {
-            rxBuffer.clear();
+            if(rxBuffer.size() > 10)
+                rxBuffer.remove(0, rxBuffer.size()-10);
+
             return;
         }
 
@@ -418,11 +436,6 @@ void SerialManager::onReadyRead()
         {
             qDebug() << "Coil Balancing ON - Display only, not storing coil value";
         }
-
-        qDebug() << "Phase     :" << m_productPhase;
-        qDebug() << "Signal    :" << m_signal;
-        qDebug() << "Amplitude :" << m_amplitude;
-        qDebug() << "Coil Out  :" << m_coilOutput;
     }
 }
 
