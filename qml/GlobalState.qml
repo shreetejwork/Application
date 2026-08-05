@@ -181,7 +181,7 @@ QtObject {
             {
                 for(var i = 0; i < data.created.length; i++)
                 {
-                    reportsLogModel.append({
+                    reportsLogModel.insert(0,{
                         sr: i + 1,
                         fileName: data.created[i].fileName || "-",
                         type: data.created[i].type || "-",
@@ -199,7 +199,7 @@ QtObject {
             {
                 for(var j = 0; j < data.deleted.length; j++)
                 {
-                    deletedFilesModel.append({
+                    deletedFilesModel.insert(0,{
                         sr:j+1,
                         fileName:data.deleted[j].fileName || "-",
                         action:data.deleted[j].action || "-",
@@ -214,7 +214,7 @@ QtObject {
             {
                 for(var k = 0; k < data.copied.length; k++)
                 {
-                    copiedFilesModel.append({
+                    copiedFilesModel.insert(0,{
                         sr:k+1,
                         fileName:data.copied[k].fileName || "-",
                         action:data.copied[k].action || "-",
@@ -267,8 +267,8 @@ QtObject {
         var newSr = reportsLogModel.count + 1
 
 
-        reportsLogModel.append({
-            sr: newSr,
+        reportsLogModel.insert(0, {
+            sr: 1,
             fileName: fileName,
             type: type,
             action: action,
@@ -278,6 +278,10 @@ QtObject {
             by: currentUser
         })
 
+        // Renumber all rows
+        for (var i = 0; i < reportsLogModel.count; i++) {
+            reportsLogModel.setProperty(i, "sr", i + 1)
+        }
 
         saveLogs()
     }
@@ -293,13 +297,17 @@ QtObject {
         var newSr = deletedFilesModel.count + 1
 
 
-        deletedFilesModel.append({
-            sr: newSr,
+        deletedFilesModel.insert(0, {
+            sr: 1,
             fileName: fileName,
             action: "Deleted",
             date: Qt.formatDate(now, "dd/MM/yyyy"),
             by: currentUser
         })
+
+        for (var i = 0; i < deletedFilesModel.count; i++) {
+            deletedFilesModel.setProperty(i, "sr", i + 1)
+        }
 
         saveLogs()
     }
@@ -315,13 +323,19 @@ QtObject {
         var newSr = copiedFilesModel.count + 1
 
 
-        copiedFilesModel.append({
-            sr: newSr,
+        copiedFilesModel.insert(0, {
+            sr: 1,
             fileName: fileName,
             action: "Copied",
             date: Qt.formatDate(now, "dd/MM/yyyy"),
             by: currentUser
         })
+
+        for (var i = 0; i < copiedFilesModel.count; i++) {
+            copiedFilesModel.setProperty(i, "sr", i + 1)
+        }
+
+        saveLogs()
 
         saveLogs()
     }

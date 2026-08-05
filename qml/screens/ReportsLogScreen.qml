@@ -158,48 +158,90 @@ Item {
             }
 
             // ===== FILTER BAR =====
-            Rectangle {
-                height: 56 * root.scale
-                width: filterRow.implicitWidth + 20 * root.scale
-                color: "#FFFFFF"
-                radius: 10 * root.scale
-                border.color: "#D0D8EC"
-                border.width: 1
+            RowLayout {
+                Layout.fillWidth: true
 
-                Row {
-                    id: filterRow
-                    anchors.centerIn: parent
-                    spacing: 8 * root.scale
+                Rectangle {
+                    Layout.preferredHeight: 56 * root.scale
+                    Layout.preferredWidth: filterRow.implicitWidth + 20 * root.scale
 
-                    Repeater {
-                        model: ["Created", "Deleted", "Copied"]
+                    color: "#FFFFFF"
+                    radius: 10 * root.scale
+                    border.color: "#D0D8EC"
+                    border.width: 1
 
-                        delegate: Rectangle {
-                            property bool active: root.activeFilter === modelData
+                    Row {
+                        id: filterRow
+                        anchors.centerIn: parent
+                        spacing: 8 * root.scale
 
-                            width: flbl.implicitWidth + 30 * root.scale
-                            height: 36 * root.scale
-                            radius: 6 * root.scale
+                        Repeater {
+                            model: ["Created", "Deleted", "Copied"]
 
-                            color: active ? "#1A4DB5" : "#F0F4FF"
-                            border.color: active ? "#1A4DB5" : "#B0BEE0"
-                            border.width: 1
+                            delegate: Rectangle {
+                                property bool active: root.activeFilter === modelData
 
-                            Text {
-                                id: flbl
-                                anchors.centerIn: parent
-                                text: modelData + " Files"
-                                font.pixelSize: 18
-                                font.weight: Font.Medium
-                                color: active ? "#FFFFFF" : "#1A1A1A"
-                            }
+                                width: flbl.implicitWidth + 30 * root.scale
+                                height: 36 * root.scale
+                                radius: 6 * root.scale
 
-                            MouseArea {
-                                anchors.fill: parent
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: root.activeFilter = modelData
+                                color: active ? "#1A4DB5" : "#F0F4FF"
+                                border.color: active ? "#1A4DB5" : "#B0BEE0"
+                                border.width: 1
+
+                                Text {
+                                    id: flbl
+                                    anchors.centerIn: parent
+                                    text: modelData + " Files"
+                                    font.pixelSize: 18
+                                    color: active ? "#FFFFFF" : "#1A1A1A"
+                                }
+
+                                MouseArea {
+                                    anchors.fill: parent
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: root.activeFilter = modelData
+                                }
                             }
                         }
+                    }
+                }
+
+                Item {
+                    Layout.fillWidth: true
+                }
+
+                Button {
+                    text: "Clear All"
+
+                    Layout.preferredWidth: 130 * root.scale
+                    Layout.preferredHeight: 42 * root.scale
+
+                    background: Rectangle {
+                        radius: 8
+                        color: "#D32F2F"
+                    }
+
+                    contentItem: Text {
+                        text: parent.parent.text
+                        anchors.centerIn: parent
+                        color: "white"
+                        font.pixelSize: 18
+                        font.bold: true
+                    }
+
+                    onClicked: {
+                        if (root.activeFilter === "Created") {
+                            GlobalState.reportsLogModel.clear()
+                        }
+                        else if (root.activeFilter === "Deleted") {
+                            GlobalState.deletedFilesModel.clear()
+                        }
+                        else {
+                            GlobalState.copiedFilesModel.clear()
+                        }
+
+                        GlobalState.saveLogs()
                     }
                 }
             }
