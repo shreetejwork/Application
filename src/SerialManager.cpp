@@ -6,6 +6,8 @@
 #include <QFile>
 #include <QSerialPortInfo>
 
+#include <QTime>
+
 SerialManager::SerialManager(QObject *parent)
     : QObject(parent)
 {
@@ -65,6 +67,42 @@ SerialManager::SerialManager(QObject *parent)
     }
 
 #endif
+}
+
+void SerialManager::appendRxLog(const QString &text)
+{
+    m_rawRxLog += "[" +
+                  QTime::currentTime().toString("HH:mm:ss.zzz") +
+                  "] " +
+                  text +
+                  "\n";
+
+    QStringList lines = m_rawRxLog.split('\n');
+
+    while (lines.size() > 500)
+        lines.removeFirst();
+
+    m_rawRxLog = lines.join('\n');
+
+    emit rawRxLogChanged();
+}
+
+void SerialManager::appendTxLog(const QString &text)
+{
+    m_rawTxLog += "[" +
+                  QTime::currentTime().toString("HH:mm:ss.zzz") +
+                  "] " +
+                  text +
+                  "\n";
+
+    QStringList lines = m_rawTxLog.split('\n');
+
+    while (lines.size() > 500)
+        lines.removeFirst();
+
+    m_rawTxLog = lines.join('\n');
+
+    emit rawTxLogChanged();
 }
 
 
@@ -251,6 +289,8 @@ void SerialManager::sendCommand(const QString &cmd)
 
     qDebug() << "TX :" << cmd.trimmed();
 
+    appendTxLog(cmd.trimmed());
+
 }
 
 void SerialManager::setMachinePhase(int value)
@@ -286,8 +326,12 @@ void SerialManager::onReadyRead()
 {
     QByteArray data = serial.readAll();
 
-    if(!data.isEmpty())
+    if (!data.isEmpty())
     {
+        // Show exactly what arrived from UART
+        appendRxLog(QString::fromUtf8(data));
+
+        // Existing buffer for parser
         rxBuffer.append(data);
     }
 

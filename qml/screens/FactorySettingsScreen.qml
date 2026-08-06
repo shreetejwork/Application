@@ -179,6 +179,18 @@ Item {
                             // TODO: navigateTo("YourScreen2")
                         }
                     }
+
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/bug.png"
+                        label:      ""
+                        iconSize:   100 * root.scale
+                        visible: true
+                        enabled: true
+                        onTileClicked: {
+                            navigateTo("DebugConsole")
+                            console.log("Bug tapped")
+                        }
+                    }
                 }
             }
         }

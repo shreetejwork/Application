@@ -29,6 +29,14 @@ class SerialManager : public QObject
                    READ coilOutput
                        NOTIFY coilOutputChanged)
 
+    Q_PROPERTY(QString rawRxLog
+                   READ rawRxLog
+                       NOTIFY rawRxLogChanged)
+
+    Q_PROPERTY(QString rawTxLog
+                   READ rawTxLog
+                       NOTIFY rawTxLogChanged)
+
 public:
     explicit SerialManager(QObject *parent = nullptr);
 
@@ -52,6 +60,16 @@ public:
     int coilOutput() const
     {
         return m_coilOutput;
+    }
+
+    QString rawRxLog() const
+    {
+        return m_rawRxLog;
+    }
+
+    QString rawTxLog() const
+    {
+        return m_rawTxLog;
     }
 
     Q_INVOKABLE bool isConnected() const
@@ -96,6 +114,10 @@ signals:
 
     void mcuParameterRequestReceived();
 
+    void rawRxLogChanged();
+
+    void rawTxLogChanged();
+
 private slots:
     void onReadyRead();
 
@@ -103,6 +125,10 @@ private:
     bool openPort(const QString &port);
 
     void sendCommand(const QString &cmd);
+
+    void appendRxLog(const QString &text);
+
+    void appendTxLog(const QString &text);
 
     bool m_coilBalancingOn = false;
 
@@ -128,6 +154,10 @@ private:
     int m_amplitude = 0;      // 0 - 14000
 
     int m_coilOutput = 0;     // 0 - 10000
+
+    QString m_rawRxLog;
+
+    QString m_rawTxLog;
 };
 
 
