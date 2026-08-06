@@ -142,6 +142,35 @@ Item {
 
             Rectangle {
 
+                width: 110
+                height: 38
+
+                anchors.right: parent.right
+                anchors.rightMargin: 25
+
+                anchors.verticalCenter: title.verticalCenter
+
+                radius: 6
+
+                color: "#E53935"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "Clear Console"
+                    color: "white"
+                    font.pixelSize: 18
+                }
+
+                MouseArea {
+
+                    anchors.fill: parent
+
+                    onClicked: SerialManager.clearAllLogs()
+                }
+            }
+
+            Rectangle {
+
                 id: rxPanel
 
                 anchors.left: parent.left
@@ -186,7 +215,9 @@ Item {
                     }
                 }
 
-                ScrollView{
+                Flickable {
+
+                    id: rxFlick
 
                     anchors.top: parent.top
                     anchors.topMargin: 45
@@ -195,22 +226,38 @@ Item {
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
 
-                    clip:true
+                    clip: true
 
-                    Text{
+                    contentWidth: width
+                    contentHeight: rxText.height + 20
 
-                        width: parent.width
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    Text {
+
+                        id: rxText
+
+                        width: rxFlick.width - 20
+
+                        x: 10
+                        y: 10
 
                         text: SerialManager.rawRxLog
 
-                        font.family:"Courier New"
-                        font.pixelSize:15
+                        font.family: "Courier New"
+                        font.pixelSize: 24
 
                         wrapMode: Text.WrapAnywhere
 
-                        padding:10
+                        color: "#222"
 
-                        color:"#222222"
+                        onTextChanged: {
+
+                            rxFlick.contentY =
+                                    Math.max(0,
+                                             rxFlick.contentHeight
+                                             - rxFlick.height)
+                        }
                     }
                 }
             }
@@ -260,31 +307,49 @@ Item {
                     }
                 }
 
-                ScrollView{
+                Flickable {
+
+                    id: txFlick
 
                     anchors.top: parent.top
-                    anchors.topMargin:45
+                    anchors.topMargin: 45
 
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.bottom: parent.bottom
 
-                    clip:true
+                    clip: true
 
-                    Text{
+                    contentWidth: width
+                    contentHeight: txText.height + 20
 
-                        width: parent.width
+                    boundsBehavior: Flickable.StopAtBounds
+
+                    Text {
+
+                        id: txText
+
+                        width: txFlick.width - 20
+
+                        x: 10
+                        y: 10
 
                         text: SerialManager.rawTxLog
 
-                        font.family:"Courier New"
-                        font.pixelSize:15
+                        font.family: "Courier New"
+                        font.pixelSize: 24
 
                         wrapMode: Text.WrapAnywhere
 
-                        padding:10
+                        color: "#222"
 
-                        color:"#222222"
+                        onTextChanged: {
+
+                            txFlick.contentY =
+                                    Math.max(0,
+                                             txFlick.contentHeight
+                                             - txFlick.height)
+                        }
                     }
                 }
             }

@@ -77,6 +77,10 @@ public:
         return serial.isOpen();
     }
 
+    Q_INVOKABLE void clearRxLog();
+    Q_INVOKABLE void clearTxLog();
+    Q_INVOKABLE void clearAllLogs();
+
 public slots:
     void setMachinePhase(int value);
     void setSignalThreshold(int value);

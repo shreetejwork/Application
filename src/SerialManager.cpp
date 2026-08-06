@@ -105,6 +105,27 @@ void SerialManager::appendTxLog(const QString &text)
     emit rawTxLogChanged();
 }
 
+void SerialManager::clearRxLog()
+{
+    m_rawRxLog.clear();
+    emit rawRxLogChanged();
+}
+
+void SerialManager::clearTxLog()
+{
+    m_rawTxLog.clear();
+    emit rawTxLogChanged();
+}
+
+void SerialManager::clearAllLogs()
+{
+    m_rawRxLog.clear();
+    m_rawTxLog.clear();
+
+    emit rawRxLogChanged();
+    emit rawTxLogChanged();
+}
+
 
 void SerialManager::setCoilBalancingStatus(bool status)
 {
