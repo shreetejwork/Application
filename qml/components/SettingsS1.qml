@@ -456,11 +456,15 @@ Item {
                     {
                         var v = Number(root.displayValue(tile.fieldId))
 
-                        if(tile.fieldId==="hpf1" ||
-                           tile.fieldId==="dg")
-                            return v.toFixed(1)
+                        if (tile.fieldId === "hpf1" || tile.fieldId === "dg")
+                        {
+                            if (Number.isInteger(v))
+                                return v.toString()
 
-                        return v
+                            return v.toFixed(1)
+                        }
+
+                        return v.toString()
                     }
                     color: "#1A4DB5"
                     font.pixelSize: s1Typography.heading
