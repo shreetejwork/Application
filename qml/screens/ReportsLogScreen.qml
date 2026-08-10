@@ -211,40 +211,58 @@ Item {
                     Layout.fillWidth: true
                 }
 
-                Button {
-                    text: "Clear All"
-
+                Rectangle {
                     Layout.preferredWidth: 130 * root.scale
-                    Layout.preferredHeight: 42 * root.scale
+                    Layout.preferredHeight: 38 * root.scale
 
-                    background: Rectangle {
-                        radius: 8
-                        color: "#D32F2F"
-                    }
+                    visible: GlobalState.developerLogin
 
-                    contentItem: Text {
-                        text: parent.parent.text
+                    radius: 6 * root.scale
+
+                    color: clearDataMouse.pressed
+                           ? "#D32F2F"
+                           : "#FFFFFF"
+
+                    border.color: "#D32F2F"
+                    border.width: 1
+
+                    Text {
                         anchors.centerIn: parent
-                        color: "white"
+
+                        text: "Clear Data"
+
                         font.pixelSize: 18
-                        font.bold: true
+                        font.weight: Font.Medium
+
+                        color: clearDataMouse.pressed
+                               ? "#FFFFFF"
+                               : "#D32F2F"
                     }
 
-                    onClicked: {
-                        if (root.activeFilter === "Created") {
-                            GlobalState.reportsLogModel.clear()
-                        }
-                        else if (root.activeFilter === "Deleted") {
-                            GlobalState.deletedFilesModel.clear()
-                        }
-                        else {
-                            GlobalState.copiedFilesModel.clear()
-                        }
+                    MouseArea {
+                        id: clearDataMouse
 
-                        GlobalState.saveLogs()
+                        anchors.fill: parent
+
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+                            if (root.activeFilter === "Created") {
+                                GlobalState.reportsLogModel.clear()
+                            }
+                            else if (root.activeFilter === "Deleted") {
+                                GlobalState.deletedFilesModel.clear()
+                            }
+                            else {
+                                GlobalState.copiedFilesModel.clear()
+                            }
+
+                            GlobalState.saveLogs()
+                        }
                     }
                 }
             }
+
 
             // ===== TABLE =====
             Rectangle {

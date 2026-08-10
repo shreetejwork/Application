@@ -205,6 +205,54 @@ void DatabaseManager::createTables()
     )");
 
 
+    // BATCH REPORT MAIN
+
+    query.exec(R"(
+        CREATE TABLE IF NOT EXISTS batchreportmain (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            batchId TEXT,
+            productName TEXT,
+            productCode TEXT,
+            productSno TEXT,
+
+            startedAt TEXT,
+            endedAt TEXT,
+
+            runDuration INTEGER DEFAULT 0,
+            pauseDuration INTEGER DEFAULT 0,
+            totalDuration INTEGER DEFAULT 0,
+
+            startedBy TEXT,
+            endedBy TEXT,
+
+            rejectionCount INTEGER DEFAULT 0,
+
+            status TEXT
+        );
+    )");
+
+
+    // ============================================================
+    // BATCH REPORT EVENTS
+    // ============================================================
+
+    query.exec(R"(
+        CREATE TABLE IF NOT EXISTS batchreportevents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+            batchReportId INTEGER,
+
+            eventType TEXT,
+            eventTime TEXT,
+            user TEXT,
+
+            FOREIGN KEY(batchReportId)
+            REFERENCES batchreportmain(id)
+        );
+    )");
+
+
 
     // Create default admin user if it doesn't exist
     QSqlQuery checkUser;
@@ -1122,3 +1170,360 @@ QVariantList DatabaseManager::getAuditTrailReport()
 
     return list;
 }
+
+bool DatabaseManager::clearAuditTrail()
+{
+    QSqlQuery query;
+
+    if (!query.exec("DELETE FROM audittrailreport"))
+    {
+        qDebug()
+        << "Failed to clear audit trail:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    qDebug()
+        << "Audit trail cleared successfully."
+        << "Rows deleted:"
+        << query.numRowsAffected();
+
+    return true;
+}
+
+//==================== Batch Report =======================
+
+int DatabaseManager::createBatchReport(
+    const QString &batchId,
+    const QString &productName,
+    const QString &productCode,
+    const QString &productSno,
+    const QString &startedAt,
+    const QString &startedBy)
+{
+    QSqlQuery query;
+
+    query.prepare(R"(
+        INSERT INTO batchreportmain
+        (
+            batchId,
+            productName,
+            productCode,
+            productSno,
+            startedAt,
+            endedAt,
+            runDuration,
+            pauseDuration,
+            totalDuration,
+            startedBy,
+            endedBy,
+            rejectionCount,
+            status
+        )
+        VALUES (?, ?, ?, ?, ?, '', 0, 0, 0, ?, '', 0, 'Running')
+    )");
+
+    query.addBindValue(batchId);
+    query.addBindValue(productName);
+    query.addBindValue(productCode);
+    query.addBindValue(productSno);
+    query.addBindValue(startedAt);
+    query.addBindValue(startedBy);
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed to create batch report:"
+        << query.lastError().text();
+
+        return -1;
+    }
+
+    int id = query.lastInsertId().toInt();
+
+    qDebug()
+        << "Batch report created:"
+        << id
+        << batchId;
+
+    return id;
+}
+
+bool DatabaseManager::addBatchReportEvent(
+    int batchReportId,
+    const QString &eventType,
+    const QString &eventTime,
+    const QString &user)
+{
+    QSqlQuery query;
+
+    query.prepare(R"(
+        INSERT INTO batchreportevents
+        (
+            batchReportId,
+            eventType,
+            eventTime,
+            user
+        )
+        VALUES (?, ?, ?, ?)
+    )");
+
+    query.addBindValue(batchReportId);
+    query.addBindValue(eventType);
+    query.addBindValue(eventTime);
+    query.addBindValue(user);
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed to save batch event:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    return true;
+}
+
+bool DatabaseManager::finishBatchReport(
+    int batchReportId,
+    const QString &endedAt,
+    int runDuration,
+    int pauseDuration,
+    int totalDuration,
+    const QString &endedBy,
+    int rejectionCount)
+{
+    QSqlQuery query;
+
+    query.prepare(R"(
+        UPDATE batchreportmain
+        SET
+            endedAt = ?,
+            runDuration = ?,
+            pauseDuration = ?,
+            totalDuration = ?,
+            endedBy = ?,
+            rejectionCount = ?,
+            status = 'Completed'
+        WHERE id = ?
+    )");
+
+    query.addBindValue(endedAt);
+    query.addBindValue(runDuration);
+    query.addBindValue(pauseDuration);
+    query.addBindValue(totalDuration);
+    query.addBindValue(endedBy);
+    query.addBindValue(rejectionCount);
+    query.addBindValue(batchReportId);
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed to finish batch report:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    return query.numRowsAffected() > 0;
+}
+
+QVariantList DatabaseManager::getBatchReports()
+{
+    QVariantList list;
+
+    QSqlQuery query;
+
+    query.prepare(R"(
+        SELECT
+            id,
+            batchId,
+            productName,
+            productCode,
+            productSno,
+            startedAt,
+            endedAt,
+            runDuration,
+            pauseDuration,
+            totalDuration,
+            startedBy,
+            endedBy,
+            rejectionCount,
+            status
+        FROM batchreportmain
+        ORDER BY id DESC
+    )");
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed to load batch reports:"
+        << query.lastError().text();
+
+        return list;
+    }
+
+    while (query.next())
+    {
+        QVariantMap row;
+
+        row["id"] =
+            query.value("id");
+
+        row["batch"] =
+            query.value("batchId");
+
+        row["product"] =
+            query.value("productName");
+
+        row["productCode"] =
+            query.value("productCode");
+
+        row["productSno"] =
+            query.value("productSno");
+
+        row["started"] =
+            query.value("startedAt");
+
+        row["ended"] =
+            query.value("endedAt");
+
+        row["runDuration"] =
+            query.value("runDuration");
+
+        row["pauseDuration"] =
+            query.value("pauseDuration");
+
+        row["totalDuration"] =
+            query.value("totalDuration");
+
+        row["startedBy"] =
+            query.value("startedBy");
+
+        row["endedBy"] =
+            query.value("endedBy");
+
+        row["rejectionCount"] =
+            query.value("rejectionCount");
+
+        row["status"] =
+            query.value("status");
+
+        list.append(row);
+    }
+
+    return list;
+}
+
+QVariantList DatabaseManager::getBatchReportEvents(
+    int batchReportId)
+{
+    QVariantList list;
+
+    QSqlQuery query;
+
+    query.prepare(R"(
+        SELECT
+            eventType,
+            eventTime,
+            user
+        FROM batchreportevents
+        WHERE batchReportId = ?
+        ORDER BY id ASC
+    )");
+
+    query.addBindValue(batchReportId);
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed to load batch events:"
+        << query.lastError().text();
+
+        return list;
+    }
+
+    while (query.next())
+    {
+        QVariantMap row;
+
+        row["eventType"] =
+            query.value("eventType");
+
+        row["eventTime"] =
+            query.value("eventTime");
+
+        row["user"] =
+            query.value("user");
+
+        list.append(row);
+    }
+
+    return list;
+}
+
+
+bool DatabaseManager::deleteAllBatchReports()
+{
+    QSqlQuery query;
+
+    // =====================================================
+    // DELETE BATCH EVENTS
+    // =====================================================
+
+    if (!query.exec("DELETE FROM batchreportevents"))
+    {
+        qWarning()
+        << "Failed to delete batch report events:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    qDebug()
+        << "Batch report events deleted:"
+        << query.numRowsAffected();
+
+
+    // =====================================================
+    // DELETE BATCH REPORT MAIN RECORDS
+    // =====================================================
+
+    if (!query.exec("DELETE FROM batchreportmain"))
+    {
+        qWarning()
+        << "Failed to delete batch reports:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    qDebug()
+        << "Batch report main records deleted:"
+        << query.numRowsAffected();
+
+
+    // =====================================================
+    // RESET AUTOINCREMENT ID
+    // =====================================================
+
+    if (!query.exec(
+            "DELETE FROM sqlite_sequence "
+            "WHERE name IN "
+            "('batchreportevents', 'batchreportmain')"))
+    {
+        qWarning()
+        << "Failed to reset batch report sequence:"
+        << query.lastError().text();
+
+        // Records are already deleted, so don't return false here.
+    }
+
+
+    qDebug() << "All batch reports permanently deleted.";
+
+    return true;
+}
+

@@ -250,7 +250,7 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
     };
 
     const int headerFullH    = 148;
-    const int headerCompactH = 65;
+    const int headerCompactH = 88;
     const int footerH        = 38;
 
     auto rowsPerPage = [&](int pg) -> int {
@@ -346,32 +346,227 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
     };
 
     // ── DRAW HEADER COMPACT (page 1+) ────────────────────────────────────────
-    auto drawHeaderCompact = [&](int pageNum) {
-        int y = marginT;
+
+    auto drawHeaderCompact = [&](int pageNum) -> int
+    {
+        Q_UNUSED(pageNum);
+
+        // ============================================================
+        // HEADER DIMENSIONS
+        // ============================================================
+
+        const int headerTop = marginT;
+
+        // Company name
+        const int companyY = headerTop;
+        const int companyH = 22;
+
+        // Logo
+        const int logoW   = 100;
+        const int logoH   = 42;
+        const int logoTop = headerTop + 2;
+
+        // Metadata
+        const int metaY = headerTop + 52;
+        const int metaH = 18;
+
+        // Separator
+        const int separatorGap = 8;
+        const int separatorY   = metaY + metaH + separatorGap;
+
+
+        // ============================================================
+        // LOGO
+        // ============================================================
+
+        if (!logo.isNull())
+        {
+            const int logoBoxX = pageW - marginR - logoW;
+
+            QRect logoBox(
+                logoBoxX,
+                logoTop,
+                logoW,
+                logoH
+                );
+
+            QPixmap scaledLogo =
+                logo.scaled(
+                    logoBox.size(),
+                    Qt::KeepAspectRatio,
+                    Qt::SmoothTransformation
+                    );
+
+            QRect logoTarget(
+                logoBox.center().x() - scaledLogo.width() / 2,
+                logoBox.center().y() - scaledLogo.height() / 2,
+                scaledLogo.width(),
+                scaledLogo.height()
+                );
+
+            painter.drawPixmap(
+                logoTarget,
+                scaledLogo
+                );
+        }
+
+
+        // ============================================================
+        // COMPANY NAME
+        // ============================================================
 
         painter.setFont(fontB(11));
         setPen(1);
-        painter.drawText(QRect(marginL, y, contentW, 22),
-                         Qt::AlignHCenter | Qt::AlignVCenter,
-                         companyName);                          // ← was hardcoded
-        y += 22;
 
-        drawLogo();
+        QRect companyRect(
+            marginL,
+            companyY,
+            contentW,
+            companyH
+            );
+
+        painter.drawText(
+            companyRect,
+            Qt::AlignCenter | Qt::AlignVCenter,
+            companyName
+            );
+
+
+        // ============================================================
+        // META INFORMATION
+        // ============================================================
+
+
+        const QString fileCreated =
+            QDateTime::currentDateTime()
+                .toString("dd/MM/yyyy @ HH:mm:ss");
+
+
+        // ------------------------------------------------------------
+        // TOTAL METADATA GROUP WIDTH
+        // ------------------------------------------------------------
+
+        const int fileLabelW = 82;
+        const int fileValueW = 190;
+
+        const int machineLabelW = 78;
+        const int machineValueW = 100;
+
+        const int gapBetween = 35;
+
+        const int fileBlockW =
+            fileLabelW + fileValueW;
+
+        const int machineBlockW =
+            machineLabelW + machineValueW;
+
+        const int totalMetaW =
+            fileBlockW
+            + gapBetween
+            + machineBlockW;
+
+
+        // ------------------------------------------------------------
+        // CENTER THE COMPLETE GROUP
+        // ------------------------------------------------------------
+
+        const int metaStartX =
+            marginL
+            + (contentW - totalMetaW) / 2;
+
+
+        // ============================================================
+        // FILE CREATED
+        // ============================================================
+
+        const int fileX = metaStartX;
+
+        painter.setFont(fontB(9));
+        setPen(1);
+
+        painter.drawText(
+            QRect(
+                fileX,
+                metaY,
+                fileLabelW,
+                metaH
+                ),
+            Qt::AlignRight | Qt::AlignVCenter,
+            "File Created"
+            );
+
 
         painter.setFont(fontR(9));
-        QString now = QDateTime::currentDateTime().toString("dd/MM/yyyy HH:mm:ss");
 
-        int col1x = marginL;
-        int col2x = marginL + contentW / 3;
-        int col3x = marginL + 2 * contentW / 3;
+        painter.drawText(
+            QRect(
+                fileX + fileLabelW + 6,
+                metaY,
+                fileValueW,
+                metaH
+                ),
+            Qt::AlignLeft | Qt::AlignVCenter,
+            ": " + fileCreated
+            );
 
-        y += 22;
+
+        // ============================================================
+        // MACHINE ID
+        // ============================================================
+
+        const int machineX =
+            fileX
+            + fileBlockW
+            + gapBetween;
+
+
+        painter.setFont(fontB(9));
+
+        painter.drawText(
+            QRect(
+                machineX,
+                metaY,
+                machineLabelW,
+                metaH
+                ),
+            Qt::AlignRight | Qt::AlignVCenter,
+            "Machine ID"
+            );
+
+
+        painter.setFont(fontR(9));
+
+        painter.drawText(
+            QRect(
+                machineX + machineLabelW + 6,
+                metaY,
+                machineValueW,
+                metaH
+                ),
+            Qt::AlignLeft | Qt::AlignVCenter,
+            ": " + machineId
+            );
+
+
+        // ============================================================
+        // SEPARATOR
+        // ============================================================
 
         setPen(lineThick);
-        painter.drawLine(marginL, y + 4, pageW - marginR, y + 4);
-        y += 20;
 
-        return y;
+        painter.drawLine(
+            marginL,
+            separatorY,
+            pageW - marginR,
+            separatorY
+            );
+
+
+        // ============================================================
+        // RETURN TABLE START POSITION
+        // ============================================================
+
+        return separatorY + 10;
     };
 
     // ── TABLE HEADER ROW ─────────────────────────────────────────────────────

@@ -86,6 +86,41 @@ public:
 
     Q_INVOKABLE QVariantList getAuditTrailReport();
 
+    Q_INVOKABLE bool clearAuditTrail();
+
+    Q_INVOKABLE int createBatchReport(
+        const QString &batchId,
+        const QString &productName,
+        const QString &productCode,
+        const QString &productSno,
+        const QString &startedAt,
+        const QString &startedBy
+        );
+
+    Q_INVOKABLE bool addBatchReportEvent(
+        int batchReportId,
+        const QString &eventType,
+        const QString &eventTime,
+        const QString &user
+        );
+
+    Q_INVOKABLE bool finishBatchReport(
+        int batchReportId,
+        const QString &endedAt,
+        int runDuration,
+        int pauseDuration,
+        int totalDuration,
+        const QString &endedBy,
+        int rejectionCount
+        );
+
+    Q_INVOKABLE QVariantList getBatchReports();
+
+    Q_INVOKABLE QVariantList getBatchReportEvents(
+        int batchReportId
+        );
+    Q_INVOKABLE bool deleteAllBatchReports();
+
 private:
     void createTables();
 

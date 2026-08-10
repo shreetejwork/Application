@@ -147,11 +147,11 @@ QtObject {
 
     function getCurrentUser()
     {
-        if (developerLogin)
-            return "D/Developer"
+        // if (developerLogin)
+        //     return "D/Developer"
 
-        if (engineerLogin)
-            return "E/Engineer"
+        // if (engineerLogin)
+        //     return "E/Engineer"
 
 
         var role = loggedInUserRole

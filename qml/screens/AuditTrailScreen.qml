@@ -284,22 +284,96 @@ Item {
             anchors.margins: 24 * root.scale
             spacing: 16 * root.scale
 
-            // ===== HEADER =====
-            Column {
-                spacing: 6 * root.scale
+            // ===== TITLE BAR =====
+            Rectangle {
+                Layout.fillWidth: true
+                height: 54 * root.scale
 
-                Text {
-                    text: "Audit Trail Report"
-                    font.pixelSize: 26
+                color: "transparent"
 
-                    color: "#1A4DB5"
-                }
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 10 * root.scale
 
-                Rectangle {
-                    width: 80 * root.scale
-                    height: 4 * root.scale
-                    radius: 2 * root.scale
-                    color: "#1A4DB5"
+                    // =================================================
+                    // TITLE
+                    // =================================================
+                    Column {
+                        Layout.fillWidth: true
+                        spacing: 5 * root.scale
+
+                        Text {
+                            text: "Audit Trail Report"
+                            font.pixelSize: 26
+                            font.weight: Font.Medium
+                            color: "#1A4DB5"
+                        }
+
+                        Rectangle {
+                            width: 80 * root.scale
+                            height: 4 * root.scale
+                            radius: 2 * root.scale
+                            color: "#1A4DB5"
+                        }
+                    }
+
+                    // =================================================
+                    // CLEAR DATA BUTTON
+                    // =================================================
+                    Rectangle {
+                        Layout.preferredWidth: 130 * root.scale
+                        Layout.preferredHeight: 38 * root.scale
+
+                        visible: GlobalState.developerLogin
+
+                        radius: 6 * root.scale
+
+                        color: clearDataMouse.pressed
+                               ? "#D32F2F"
+                               : "#FFFFFF"
+
+                        border.color: "#D32F2F"
+                        border.width: 1
+
+                        Text {
+                            anchors.centerIn: parent
+
+                            text: "Clear Data"
+
+                            font.pixelSize: 18
+                            font.weight: Font.Medium
+
+                            color: clearDataMouse.pressed
+                                   ? "#FFFFFF"
+                                   : "#D32F2F"
+                        }
+
+                        MouseArea {
+                            id: clearDataMouse
+
+                            anchors.fill: parent
+
+                            cursorShape: Qt.PointingHandCursor
+
+                            onClicked: {
+
+                                var success = databaseManager.clearAuditTrail()
+
+                                if (success) {
+
+                                    // Clear the currently displayed audit records
+                                    auditModel.clear()
+
+                                    // Reset filters
+                                    root.resetFilters()
+
+                                    // Reset filter popup selections
+                                    filterRepeater.resetAll()
+
+                                }
+                            }
+                        }
+                    }
                 }
             }
 

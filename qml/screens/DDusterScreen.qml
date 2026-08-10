@@ -27,10 +27,46 @@ Item {
     property bool batchRunning: false
     property bool batchPaused: false
 
+    property int activeBatchReportId: -1
+
+    property var batchStartDateTime: null
+    property var batchEndDateTime: null
+
+    property int batchRunSeconds: 0
+    property int batchPauseSeconds: 0
+
+    property var batchPauseStartTime: null
+
+    property string currentBatchId: "General Batch"
+    property string currentProductName: "Default Product"
+    property string currentProductCode: "default code"
+    property string currentProductSno: "01-001"
+
     function notify(msg) {
         if (globalTopBar && globalTopBar.showNotification)
             globalTopBar.showNotification(msg)
     }
+
+    function getAuditUser()
+    {
+        if (GlobalState.loggedInUserRole !== "" &&
+            GlobalState.loggedInUserName !== "")
+        {
+            var initial = "U"
+
+            if (GlobalState.loggedInUserRole === "Admin")
+                initial = "A"
+            else if (GlobalState.loggedInUserRole === "Supervisor")
+                initial = "S"
+            else if (GlobalState.loggedInUserRole === "Operator")
+                initial = "O"
+
+            return initial + "/" + GlobalState.loggedInUserName
+        }
+
+        return "---"
+    }
+
 
     function saveDDAudit(action, oldValue, newValue)
     {
@@ -58,6 +94,32 @@ Item {
             newValue !== undefined ? String(newValue) : "",
             action
         )
+    }
+
+    function currentDateTime()
+    {
+        return Qt.formatDateTime(
+            new Date(),
+            "dd/MM/yyyy HH:mm:ss"
+        )
+    }
+
+    Timer {
+        id: batchTimer
+
+        interval: 1000
+        repeat: true
+
+        onTriggered: {
+
+            if (!root.batchRunning)
+                return
+
+            if (root.batchPaused)
+                return
+
+            root.batchRunSeconds++
+        }
     }
 
     AccessDeniedPopup {
@@ -516,7 +578,80 @@ Item {
                                     root.batchRunning = true
                                     root.batchPaused = false
 
+                                    root.batchStartDateTime = new Date()
+
+                                    root.batchRunSeconds = 0
+                                    root.batchPauseSeconds = 0
+
+                                    root.batchPauseStartTime = null
+
+
+                                    // =====================================================
+                                    // DEFAULT VALUES
+                                    // =====================================================
+
+                                    var batchName = inputField.text.trim()
+
+                                    if (batchName === "")
+                                        batchName = "General Batch"
+
+                                    var productName = productField.text.trim()
+
+                                    if (productName === "")
+                                        productName = "Default Product"
+
+
+                                    root.currentBatchId = batchName
+                                    root.currentProductName = productName
+                                    root.currentProductCode = "default code"
+                                    root.currentProductSno = "01-001"
+
+
+                                    // =====================================================
+                                    // CREATE BATCH REPORT
+                                    // =====================================================
+
+                                    var auditUser = getAuditUser()
+
+                                    root.activeBatchReportId =
+                                            databaseManager.createBatchReport(
+                                                root.currentBatchId,
+                                                root.currentProductName,
+                                                root.currentProductCode,
+                                                root.currentProductSno,
+                                                Qt.formatDateTime(
+                                                    root.batchStartDateTime,
+                                                    "dd/MM/yyyy HH:mm:ss"
+                                                ),
+                                                auditUser
+                                            )
+
+
+                                    // =====================================================
+                                    // START EVENT
+                                    // =====================================================
+
+                                    if (root.activeBatchReportId > 0)
+                                    {
+                                        databaseManager.addBatchReportEvent(
+                                            root.activeBatchReportId,
+                                            "START",
+                                            Qt.formatDateTime(
+                                                root.batchStartDateTime,
+                                                "dd/MM/yyyy HH:mm:ss"
+                                            ),
+                                            auditUser
+                                        )
+                                    }
+
+
+                                    // =====================================================
+                                    // MCU
+                                    // =====================================================
+
                                     SerialManager.setBatch(1)
+
+                                    batchTimer.start()
 
                                     root.notify("✓ Batch Start")
                                 }
@@ -551,12 +686,65 @@ Item {
 
                                     root.batchPaused = !root.batchPaused
 
+                                    var auditUser = getAuditUser()
+                                    var eventTime = new Date()
+
+
                                     if (root.batchPaused)
+                                    {
+                                        // =================================================
+                                        // PAUSE
+                                        // =================================================
+
+                                        root.batchPauseStartTime = eventTime
+
+                                        databaseManager.addBatchReportEvent(
+                                            root.activeBatchReportId,
+                                            "PAUSE",
+                                            Qt.formatDateTime(
+                                                eventTime,
+                                                "dd/MM/yyyy HH:mm:ss"
+                                            ),
+                                            auditUser
+                                        )
+
                                         SerialManager.setBatch(2)
+
+                                        root.notify("⏸ Batch Paused")
+                                    }
                                     else
+                                    {
+                                        // =================================================
+                                        // RESUME
+                                        // =================================================
+
+                                        if (root.batchPauseStartTime !== null)
+                                        {
+                                            var pauseSeconds =
+                                                    Math.floor(
+                                                        (eventTime.getTime() -
+                                                         root.batchPauseStartTime.getTime()) / 1000
+                                                    )
+
+                                            root.batchPauseSeconds += pauseSeconds
+                                        }
+
+                                        root.batchPauseStartTime = null
+
+                                        databaseManager.addBatchReportEvent(
+                                            root.activeBatchReportId,
+                                            "RESUME",
+                                            Qt.formatDateTime(
+                                                eventTime,
+                                                "dd/MM/yyyy HH:mm:ss"
+                                            ),
+                                            auditUser
+                                        )
+
                                         SerialManager.setBatch(1)
 
-                                    root.notify(root.batchPaused ? "⏸ Paused" : "▶ Resumed")
+                                        root.notify("▶ Batch Resumed")
+                                    }
                                 }
                             }
 
@@ -587,8 +775,86 @@ Item {
                                         return
                                     }
 
+                                    var endTime = new Date()
+                                    var auditUser = getAuditUser()
+
+
+                                    // =====================================================
+                                    // IF CURRENTLY PAUSED
+                                    // =====================================================
+
+                                    if (root.batchPaused &&
+                                        root.batchPauseStartTime !== null)
+                                    {
+                                        var finalPauseSeconds =
+                                                Math.floor(
+                                                    (endTime.getTime() -
+                                                     root.batchPauseStartTime.getTime()) / 1000
+                                                )
+
+                                        root.batchPauseSeconds += finalPauseSeconds
+                                    }
+
+
+                                    // =====================================================
+                                    // TOTAL DURATION
+                                    // =====================================================
+
+                                    var totalDuration =
+                                            Math.floor(
+                                                (endTime.getTime() -
+                                                 root.batchStartDateTime.getTime()) / 1000
+                                            )
+
+
+                                    // =====================================================
+                                    // SAVE END EVENT
+                                    // =====================================================
+
+                                    databaseManager.addBatchReportEvent(
+                                        root.activeBatchReportId,
+                                        "END",
+                                        Qt.formatDateTime(
+                                            endTime,
+                                            "dd/MM/yyyy HH:mm:ss"
+                                        ),
+                                        auditUser
+                                    )
+
+
+                                    // =====================================================
+                                    // FINISH BATCH REPORT
+                                    // =====================================================
+
+                                    var rejectionCount = 0
+
+                                    // Replace this with your actual rejection counter
+                                    // when the batch rejection integration is available.
+
+                                    databaseManager.finishBatchReport(
+                                        root.activeBatchReportId,
+                                        Qt.formatDateTime(
+                                            endTime,
+                                            "dd/MM/yyyy HH:mm:ss"
+                                        ),
+                                        root.batchRunSeconds,
+                                        root.batchPauseSeconds,
+                                        totalDuration,
+                                        auditUser,
+                                        rejectionCount
+                                    )
+
+
+                                    // =====================================================
+                                    // RESET UI
+                                    // =====================================================
+
+                                    batchTimer.stop()
+
                                     root.batchRunning = false
                                     root.batchPaused = false
+
+                                    root.batchPauseStartTime = null
 
                                     SerialManager.setBatch(0)
 

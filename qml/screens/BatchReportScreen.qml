@@ -15,6 +15,60 @@ Item {
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
+    function loadBatchReports()
+    {
+        batchReportModel.clear()
+
+        var reports =
+                databaseManager.getBatchReports()
+
+        for (var i = 0; i < reports.length; i++)
+        {
+            var r = reports[i]
+
+            batchReportModel.append({
+                id: r.id,
+                sno: i + 1,
+
+                batch: r.batch,
+                product: r.product,
+
+                productCode: r.productCode,
+                productSno: r.productSno,
+
+                started: r.started,
+                ended: r.ended,
+
+                runDuration: formatDuration(r.runDuration),
+                pauseDuration: formatDuration(r.pauseDuration),
+                totalDuration: formatDuration(r.totalDuration),
+
+                startedBy: r.startedBy,
+                endedBy: r.endedBy,
+
+                rejectionCount: r.rejectionCount,
+
+                status: r.status
+            })
+        }
+    }
+
+    function formatDuration(seconds)
+    {
+        seconds = Number(seconds)
+
+        if (isNaN(seconds) || seconds < 0)
+            return "0 Hrs - 0 Mins"
+
+        seconds = Math.floor(seconds)
+
+        var hours = Math.floor(seconds / 3600)
+        var minutes = Math.floor((seconds % 3600) / 60)
+
+        return hours + " Hrs - "
+               + minutes + " Mins"
+    }
+
     // =====================================================
     // STATIC BACKDROP
     // =====================================================
@@ -30,7 +84,10 @@ Item {
     // =====================================================
 
     Component.onCompleted: {
+
         openAnimation.start()
+
+        loadBatchReports()
     }
 
     // =====================================================
@@ -158,21 +215,108 @@ Item {
             spacing: 16 * root.scale
 
             // ===== HEADER =====
-            Column {
-                spacing: 6 * root.scale
+            // ===== HEADER =====
+            Rectangle {
+                Layout.fillWidth: true
+                height: 54 * root.scale
+                color: "transparent"
 
-                Text {
-                    text: "Batch Report"
-                    font.pixelSize: 26
+                RowLayout {
+                    anchors.fill: parent
+                    spacing: 10 * root.scale
 
-                    color: "#1A4DB5"
-                }
+                    // =================================================
+                    // TITLE
+                    // =================================================
+                    Column {
+                        Layout.fillWidth: true
+                        spacing: 5 * root.scale
 
-                Rectangle {
-                    width: 80 * root.scale
-                    height: 4 * root.scale
-                    radius: 2 * root.scale
-                    color: "#1A4DB5"
+                        Text {
+                            text: "Batch Report"
+                            font.pixelSize: 26
+                            font.weight: Font.Medium
+                            color: "#1A4DB5"
+                        }
+
+                        Rectangle {
+                            width: 80 * root.scale
+                            height: 4 * root.scale
+                            radius: 2 * root.scale
+                            color: "#1A4DB5"
+                        }
+                    }
+
+                    // =================================================
+                    // CLEAR DATA BUTTON
+                    // =================================================
+                    Rectangle {
+                        Layout.preferredWidth: 130 * root.scale
+                        Layout.preferredHeight: 38 * root.scale
+
+                        visible: GlobalState.developerLogin
+
+                        radius: 6 * root.scale
+
+                        color: clearDataMouse.pressed
+                               ? "#D32F2F"
+                               : "#FFFFFF"
+
+                        border.color: "#D32F2F"
+                        border.width: 1
+
+                        Text {
+                            anchors.centerIn: parent
+
+                            text: "Clear Data"
+
+                            font.pixelSize: 18
+                            font.weight: Font.Medium
+
+                            color: clearDataMouse.pressed
+                                   ? "#FFFFFF"
+                                   : "#D32F2F"
+                        }
+
+                        MouseArea {
+                            id: clearDataMouse
+
+                            anchors.fill: parent
+
+                            cursorShape: Qt.PointingHandCursor
+
+                            onClicked: {
+
+                                // Clear actual database records
+                                var success = databaseManager.clearBatchReports()
+
+                                if (success) {
+
+                                    // Clear currently displayed rows
+                                    batchReportModel.clear()
+
+                                    // Optional notification
+                                    if (globalTopBar &&
+                                        globalTopBar.showNotification) {
+
+                                        globalTopBar.showNotification(
+                                            "✓ Batch report data cleared"
+                                        )
+                                    }
+
+                                } else {
+
+                                    if (globalTopBar &&
+                                        globalTopBar.showNotification) {
+
+                                        globalTopBar.showNotification(
+                                            "✗ Failed to clear batch report data"
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
@@ -441,11 +585,7 @@ Item {
                         clip: true
 
                         model: ListModel {
-                            ListElement { sno: "1"; batch: "default batch";    product: "Tablet A";  started: "10/08/2025 18:21:00"; ended: "---"; pdf: "" }
-                            ListElement { sno: "2"; batch: "production batch"; product: "Tablet A";  started: "10/08/2025 19:10:00"; ended: "---"; pdf: "" }
-                            ListElement { sno: "3"; batch: "testing batch";    product: "Capsule C"; started: "11/08/2025 09:00:00"; ended: "---"; pdf: "" }
-                            ListElement { sno: "4"; batch: "batch alpha";      product: "Tablet D";  started: "12/08/2025 10:00:00"; ended: "12/08/2025 14:00:00"; pdf: "" }
-                            ListElement { sno: "5"; batch: "batch beta";       product: "Capsule E"; started: "13/08/2025 08:30:00"; ended: "---"; pdf: "" }
+                            id: batchReportModel
                         }
 
                         delegate: Rectangle {
@@ -549,25 +689,52 @@ Item {
                                             onClicked: {
                                                 // Pass the batch row data
                                                 var batchInfo = {
-                                                    "sno":         sno,
-                                                    "batch":       batch,
-                                                    "product":     product,
-                                                    "started":     started,
-                                                    "ended":       ended,
-                                                    "productSno":  "01-001",
-                                                    "productCode": "default code"
+
+                                                    "id": id,
+
+                                                    "sno": sno,
+
+                                                    "batch": batch,
+
+                                                    "product": product,
+
+                                                    "productCode": productCode,
+
+                                                    "productSno": productSno,
+
+                                                    "started": started,
+
+                                                    "ended": ended,
+
+                                                    "runDuration": runDuration,
+
+                                                    "pauseDuration": pauseDuration,
+
+                                                    "totalDuration": totalDuration,
+
+                                                    "startedBy": startedBy,
+
+                                                    "endedBy": endedBy,
+
+                                                    "rejectionCount": rejectionCount
                                                 }
 
                                                 // Pass rejection rows
-                                                var rejections = []
+                                                var batchEvents =
+                                                        databaseManager.getBatchReportEvents(id)
 
                                                 var sessionInfo = {
                                                     "loggedInUserName": GlobalState.loggedInUserName,
                                                     "loggedInUserRole": GlobalState.loggedInUserRole
                                                 }
 
-
-                                                var savedPath = PdfExporter.exportBatchToPdf(batchInfo, rejections, sessionInfo)
+                                                var savedPath =
+                                                    PdfExporter.exportBatchToPdf(
+                                                        batchInfo,
+                                                        batchEvents,
+                                                        sessionInfo,
+                                                        ""
+                                                    )
 
 
                                                 if (globalTopBar && globalTopBar.showNotification)
@@ -582,7 +749,7 @@ Item {
                                                     date: Qt.formatDate(new Date(), "dd/MM/yyyy"),
                                                     from: started ? started : "-",
                                                     to: ended ? ended : "-",
-                                                    by: "System",   // replace with logged-in user later
+                                                    by: GlobalState.getCurrentUser(),
                                                     filePath: savedPath
                                                 })
 
