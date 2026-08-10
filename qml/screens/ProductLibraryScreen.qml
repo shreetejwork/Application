@@ -50,6 +50,9 @@ Item {
     // =====================================================
 
     Component.onCompleted: {
+
+        loadGroupProducts(1)
+
         openAnimation.start()
     }
 
@@ -216,19 +219,45 @@ Item {
                 - rowSelectExtra
     }
 
+    function loadGroupProducts(groupNo) {
+
+        var model = groupModels[groupNo - 1]
+
+        model.clear()
+
+        var products =
+                databaseManager.getProductLibraryProducts(groupNo)
+
+        for (var i = 0; i < products.length; i++) {
+
+            model.append({
+                selected: false,
+                active: products[i].active,
+                sr: products[i].sr,
+                name: products[i].name,
+                code: products[i].code,
+
+                machinePhase: products[i].machinePhase,
+                signalThr: products[i].signalThr,
+                ampThr: products[i].ampThr,
+                ddPower: products[i].ddPower,
+                ddFreq: products[i].ddFreq,
+                digitalGain: products[i].digitalGain,
+                analogGain: products[i].analogGain,
+
+                fixedItem: products[i].fixedItem
+            })
+        }
+
+        activeModel = model
+
+        refreshSelectionCount()
+    }
+
     // ================= MODELS =================
 
     ListModel {
         id: group01Model
-
-        ListElement {
-            selected: false
-            active: true
-            sr: 1
-            name: "Default Product"
-            code: "DEF-001"
-            fixedItem: true
-        }
     }
 
     ListModel { id: group02Model }
@@ -273,36 +302,62 @@ Item {
         return -1
     }
 
-    function addProduct() {
+    function addProduct(productName, productCode) {
 
-        var model = activeModel
+        var model = currentModel()
 
-        var srNo = getFreeSrNo(model)
+        // ---------------------------------------------------------
+        // Maximum 100 products
+        // ---------------------------------------------------------
 
-        if (srNo === -1)
-            return
+        if (model.count >= 100) {
 
-        var insertIndex = model.count
+            console.log(
+                "GROUP",
+                currentGroup,
+                "already contains 100 products"
+            )
 
-        for (var i = 0; i < model.count; i++) {
-
-            if (model.get(i).sr > srNo) {
-
-                insertIndex = i
-                break
-            }
+            return false
         }
 
-        model.insert(insertIndex, {
-                         selected: false,
-                         active: false,
-                         sr: srNo,
-                         name: "Product " + srNo,
-                         code: "PRD-" + currentGroup + "-" + srNo,
-                         fixedItem: false
-                     })
 
-        refreshSelectionCount()
+        // ---------------------------------------------------------
+        // Save product
+        //
+        // C++ will:
+        //   - create the table if required
+        //   - generate SR number
+        //   - insert default parameters
+        // ---------------------------------------------------------
+
+        var success =
+                databaseManager.addProductLibraryProduct(
+                    currentGroup,
+                    productName,
+                    productCode
+                )
+
+
+        if (!success) {
+
+            console.log(
+                "Failed to add product:",
+                productName,
+                productCode
+            )
+
+            return false
+        }
+
+
+        // ---------------------------------------------------------
+        // Reload from database
+        // ---------------------------------------------------------
+
+        loadGroupProducts(currentGroup)
+
+        return true
     }
 
     function deleteSelectedProducts() {
@@ -315,7 +370,17 @@ Item {
 
             if (item.selected && !item.fixedItem) {
 
-                model.remove(i)
+                var success =
+                        databaseManager.deleteProductLibraryProduct(
+                            currentGroup,
+                            item.sr
+                        )
+
+                if (success) {
+
+                    model.remove(i)
+
+                }
             }
         }
 
@@ -424,9 +489,8 @@ Item {
                             onCurrentIndexChanged: {
 
                                 currentGroup = currentIndex + 1
-                                activeModel = currentModel()
 
-                                refreshSelectionCount()
+                                loadGroupProducts(currentGroup)
                             }
 
                             font.pixelSize: 15
@@ -558,8 +622,26 @@ Item {
 
                                             if (srNo !== -1) {
 
-                                                setActiveProduct(srNo)
-                                                clearSelection()
+                                                var success =
+                                                        databaseManager
+                                                        .setActiveProductLibraryProduct(
+                                                            currentGroup,
+                                                            srNo
+                                                        )
+
+                                                if (success) {
+
+                                                    setActiveProduct(srNo)
+
+                                                    clearSelection()
+
+                                                } else {
+
+                                                    console.log(
+                                                        "Failed to activate product:",
+                                                        srNo
+                                                    )
+                                                }
                                             }
                                         }
 
@@ -922,5 +1004,22 @@ Item {
         currentModelRef: activeModel
 
         getFreeSrNoFunc: getFreeSrNo
+
+        onProductSaved: function(productName, productCode) {
+
+            var success = root.addProduct(
+                        productName,
+                        productCode
+                        )
+
+            if (!success) {
+
+                console.log(
+                    "Failed to save product:",
+                    productName,
+                    productCode
+                )
+            }
+        }
     }
 }

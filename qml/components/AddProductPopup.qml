@@ -6,15 +6,11 @@ import AppState 1.0
 
 Popup {
 
+    id: popup
+
     Typography {
         id: addProductTypography
         scale: 1.0
-    }
-
-    id: popup
-
-    Component.onCompleted: {
-        root.applyFontToAllChildren(this)
     }
 
     enter: Transition {
@@ -95,7 +91,7 @@ Popup {
     property var currentModelRef
     property var getFreeSrNoFunc
 
-    signal productSaved()
+    signal productSaved(string productName, string productCode)
 
     // =====================================================
     // OPENED
@@ -258,7 +254,7 @@ Popup {
 
                     acceptedButtons: Qt.LeftButton
 
-                    onPressed: {
+                    onPressed: function(mouse) {
 
                         productNameField.forceActiveFocus()
 
@@ -350,7 +346,7 @@ Popup {
 
                     acceptedButtons: Qt.LeftButton
 
-                    onPressed: {
+                    onPressed: function(mouse) {
 
                         productCodeField.forceActiveFocus()
 
@@ -440,40 +436,11 @@ Popup {
                         return
                     }
 
-                    var srNo = popup.getFreeSrNoFunc(
-                                popup.currentModelRef)
-
-                    if (srNo === -1) {
-
-                        validationMsg.text =
-                                "No free slot available (Max 100 products)."
-
-                        return
-                    }
-
-                    var insertIndex = popup.currentModelRef.count
-
-                    for (var i = 0; i < popup.currentModelRef.count; i++) {
-
-                        if (popup.currentModelRef.get(i).sr > srNo) {
-
-                            insertIndex = i
-                            break
-                        }
-                    }
-
-                    popup.currentModelRef.insert(insertIndex, {
-
-                                                     selected: false,
-                                                     active: false,
-
-                                                     sr: srNo,
-
-                                                     name: popup.productName.trim(),
-                                                     code: popup.productCode.trim(),
-
-                                                     fixedItem: false
-                                                 })
+                    // Send ONLY name and code to ProductLibrary
+                    popup.productSaved(
+                        popup.productName.trim(),
+                        popup.productCode.trim()
+                    )
 
                     GlobalState.loginKeyboardRequest = false
                     GlobalState.activeInputField = null
@@ -485,8 +452,6 @@ Popup {
                     productCodeField.text = ""
 
                     validationMsg.text = ""
-
-                    popup.productSaved()
 
                     popup.close()
                 }

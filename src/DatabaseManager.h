@@ -2,18 +2,25 @@
 #define DATABASEMANAGER_H
 
 #include <QObject>
+#include <QString>
 #include <QStringList>
 #include <QVariantMap>
+#include <QVariantList>
 
 class DatabaseManager : public QObject
 {
     Q_OBJECT
+
 public:
+
     explicit DatabaseManager(QObject *parent = nullptr);
 
     bool initialize();
 
-    // Example functions
+    // =====================================================
+    // USERS
+    // =====================================================
+
     Q_INVOKABLE bool insertUser(
         const QString &fpid,
         const QString &id,
@@ -25,8 +32,8 @@ public:
         const QString &role,
         const QString &username);
 
-
-    Q_INVOKABLE QStringList getUsersByRole(const QString &role);
+    Q_INVOKABLE QStringList getUsersByRole(
+        const QString &role);
 
     Q_INVOKABLE bool updatePassword(
         const QString &role,
@@ -44,13 +51,19 @@ public:
     Q_INVOKABLE int daysUntilPasswordExpiry(
         const QString &username);
 
-    // Q_INVOKABLE bool updatePassword(
-    //     const QString &username,
-    //     const QString &newPassword);
+    // =====================================================
+    // COIL
+    // =====================================================
 
     Q_INVOKABLE bool saveCoilOutputAverage(int average);
 
+    Q_INVOKABLE QVariantList getCoilOutputHistory();
+
     void printAllUsers();
+
+    // =====================================================
+    // MACHINE SETTINGS
+    // =====================================================
 
     Q_INVOKABLE bool saveMachinePhaseSettings(
         const QString &machinePhase,
@@ -65,6 +78,10 @@ public:
 
     Q_INVOKABLE QVariantMap getDDSettings();
 
+    // =====================================================
+    // FILTER SETTINGS
+    // =====================================================
+
     Q_INVOKABLE bool saveS1Settings(
         double lpf,
         double hpf,
@@ -72,21 +89,27 @@ public:
         int holdDelay,
         int relayDelay,
         double digitalGain,
-        double analogGain
-        );
+        double analogGain);
 
     Q_INVOKABLE QVariantMap getS1Settings();
+
+    // =====================================================
+    // AUDIT
+    // =====================================================
 
     Q_INVOKABLE bool addAuditTrailRecord(
         const QString &user,
         const QString &oldValue,
         const QString &newValue,
-        const QString &remark
-    );
+        const QString &remark);
 
     Q_INVOKABLE QVariantList getAuditTrailReport();
 
     Q_INVOKABLE bool clearAuditTrail();
+
+    // =====================================================
+    // BATCH
+    // =====================================================
 
     Q_INVOKABLE int createBatchReport(
         const QString &batchId,
@@ -94,15 +117,13 @@ public:
         const QString &productCode,
         const QString &productSno,
         const QString &startedAt,
-        const QString &startedBy
-        );
+        const QString &startedBy);
 
     Q_INVOKABLE bool addBatchReportEvent(
         int batchReportId,
         const QString &eventType,
         const QString &eventTime,
-        const QString &user
-        );
+        const QString &user);
 
     Q_INVOKABLE bool finishBatchReport(
         int batchReportId,
@@ -111,31 +132,64 @@ public:
         int pauseDuration,
         int totalDuration,
         const QString &endedBy,
-        int rejectionCount
-        );
+        int rejectionCount);
 
     Q_INVOKABLE QVariantList getBatchReports();
 
     Q_INVOKABLE QVariantList getBatchReportEvents(
-        int batchReportId
-        );
+        int batchReportId);
+
     Q_INVOKABLE bool deleteAllBatchReports();
 
-private:
-    void createTables();
+    // =====================================================
+    // MACHINE INFO
+    // =====================================================
 
-public:
-
-   Q_INVOKABLE bool saveMachineInfo(const QString &supplierName,
-                         const QString &serialNumber,
-                         const QString &machineId,
-                         const QString &userName,
-                         const QString &location,
-                         const QString &machineType);
+    Q_INVOKABLE bool saveMachineInfo(
+        const QString &supplierName,
+        const QString &serialNumber,
+        const QString &machineId,
+        const QString &userName,
+        const QString &location,
+        const QString &machineType);
 
     Q_INVOKABLE QVariantMap getMachineInfo();
 
-    Q_INVOKABLE QVariantList getCoilOutputHistory();
+    // =====================================================
+    // PRODUCT LIBRARY
+    // =====================================================
+
+    Q_INVOKABLE bool createProductLibraryTable(
+        int groupNo);
+
+    Q_INVOKABLE bool addProductLibraryProduct(
+        int groupNo,
+        const QString &productName,
+        const QString &productCode
+        );
+
+    Q_INVOKABLE QVariantList getProductLibraryProducts(
+        int groupNo);
+
+    Q_INVOKABLE bool deleteProductLibraryProduct(
+        int groupNo,
+        int srNo);
+
+    Q_INVOKABLE bool setActiveProductLibraryProduct(
+        int groupNo,
+        int srNo);
+
+    Q_INVOKABLE bool productLibraryTableExists(
+        int groupNo);
+
+    Q_INVOKABLE bool productLibraryProductExists(
+        int groupNo,
+        int srNo);
+
+private:
+
+    void createTables();
+
 };
 
 #endif // DATABASEMANAGER_H

@@ -10,6 +10,15 @@
 #include <QDir>
 #include <QVariantMap>
 
+static QString productLibraryTableName(int groupNo)
+{
+    if (groupNo < 1 || groupNo > 10)
+        return QString();
+
+    return QString("prodlib_grp%1")
+        .arg(groupNo, 2, 10, QChar('0'));
+}
+
 
 DatabaseManager::DatabaseManager(QObject *parent)
     : QObject(parent)
@@ -370,6 +379,20 @@ void DatabaseManager::createTables()
             1.0
         );
     )");
+
+    // ============================================================
+    // PRODUCT LIBRARY
+    // ============================================================
+
+    for (int groupNo = 1; groupNo <= 10; groupNo++)
+    {
+        if (!createProductLibraryTable(groupNo))
+        {
+            qDebug()
+            << "Failed to create product library table:"
+            << groupNo;
+        }
+    }
 
 
     qDebug() << "All tables created!";
@@ -1523,6 +1546,638 @@ bool DatabaseManager::deleteAllBatchReports()
 
 
     qDebug() << "All batch reports permanently deleted.";
+
+    return true;
+}
+
+
+//========================= Product Library ======================
+
+
+bool DatabaseManager::createProductLibraryTable(int groupNo)
+{
+    QString tableName =
+        productLibraryTableName(groupNo);
+
+    if (tableName.isEmpty())
+    {
+        qDebug()
+        << "Invalid Product Library group:"
+        << groupNo;
+
+        return false;
+    }
+
+    QSqlQuery query;
+
+    QString sql = QString(R"(
+    CREATE TABLE IF NOT EXISTS %1 (
+
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+
+        sr_no INTEGER UNIQUE,
+
+        product_name TEXT NOT NULL,
+
+        product_code TEXT UNIQUE NOT NULL,
+
+        machinePhase INTEGER DEFAULT 0,
+
+        signalThr INTEGER DEFAULT 0,
+
+        ampThr INTEGER DEFAULT 0,
+
+        ddPower INTEGER DEFAULT 0,
+
+        ddFreq REAL DEFAULT 25.0,
+
+        digitalGain REAL DEFAULT 1.0,
+
+        analogGain REAL DEFAULT 1.0,
+
+        active INTEGER DEFAULT 0
+    )
+)").arg(tableName);
+
+    if (!query.exec(sql))
+    {
+        qDebug()
+        << "========================================";
+
+        qDebug()
+            << "FAILED TO CREATE PRODUCT LIBRARY TABLE";
+
+        qDebug()
+            << "Group:"
+            << groupNo;
+
+        qDebug()
+            << "Table:"
+            << tableName;
+
+        qDebug()
+            << "SQL Error:"
+            << query.lastError().text();
+
+        qDebug()
+            << "========================================";
+
+        return false;
+    }
+
+    qDebug()
+        << "Product Library table created/exists:"
+        << tableName;
+
+    return true;
+}
+
+bool DatabaseManager::productLibraryTableExists(int groupNo)
+{
+    QString tableName =
+        productLibraryTableName(groupNo);
+
+    if (tableName.isEmpty())
+        return false;
+
+    QSqlQuery query;
+
+    query.prepare(
+        "SELECT COUNT(*) "
+        "FROM sqlite_master "
+        "WHERE type = 'table' "
+        "AND name = ?"
+        );
+
+    query.addBindValue(tableName);
+
+    if (!query.exec() || !query.next())
+    {
+        qDebug()
+        << "Failed to check product library table:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    return query.value(0).toInt() > 0;
+}
+
+bool DatabaseManager::productLibraryProductExists(
+    int groupNo,
+    int srNo)
+{
+    QString tableName =
+        productLibraryTableName(groupNo);
+
+    if (tableName.isEmpty())
+        return false;
+
+    if (!productLibraryTableExists(groupNo))
+        return false;
+
+    QSqlQuery query;
+
+    QString sql = QString(
+                      "SELECT COUNT(*) "
+                      "FROM %1 "
+                      "WHERE sr_no = ?"
+                      ).arg(tableName);
+
+    query.prepare(sql);
+
+    query.addBindValue(srNo);
+
+    if (!query.exec() || !query.next())
+    {
+        qDebug()
+        << "Failed checking product:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    return query.value(0).toInt() > 0;
+}
+
+bool DatabaseManager::addProductLibraryProduct(
+    int groupNo,
+    const QString &productName,
+    const QString &productCode)
+{
+    QString tableName =
+        productLibraryTableName(groupNo);
+
+    // ---------------------------------------------------------
+    // Validate group
+    // ---------------------------------------------------------
+
+    if (tableName.isEmpty())
+    {
+        qDebug()
+        << "Invalid product library group:"
+        << groupNo;
+
+        return false;
+    }
+
+
+    // ---------------------------------------------------------
+    // Create table if it does not exist
+    // ---------------------------------------------------------
+
+    if (!createProductLibraryTable(groupNo))
+    {
+        qDebug()
+        << "Failed to create product library table:"
+        << tableName;
+
+        return false;
+    }
+
+
+    // ---------------------------------------------------------
+    // Find next free SR number
+    // ---------------------------------------------------------
+
+    int srNo = 1;
+
+    QSqlQuery srQuery;
+
+    QString srSql = QString(
+                        "SELECT sr_no "
+                        "FROM %1 "
+                        "ORDER BY sr_no ASC"
+                        ).arg(tableName);
+
+    if (!srQuery.exec(srSql))
+    {
+        qDebug()
+        << "Failed to find free SR number:"
+        << srQuery.lastError().text();
+
+        return false;
+    }
+
+
+    while (srQuery.next())
+    {
+        int existingSr =
+            srQuery.value(0).toInt();
+
+        if (existingSr == srNo)
+        {
+            srNo++;
+        }
+        else if (existingSr > srNo)
+        {
+            break;
+        }
+    }
+
+
+    // ---------------------------------------------------------
+    // Maximum 100 products
+    // ---------------------------------------------------------
+
+    if (srNo > 100)
+    {
+        qDebug()
+        << "Product library group is full:"
+        << groupNo;
+
+        return false;
+    }
+
+
+    // ---------------------------------------------------------
+    // Check duplicate product code
+    // ---------------------------------------------------------
+
+    QSqlQuery codeQuery;
+
+    QString codeSql = QString(
+                          "SELECT COUNT(*) "
+                          "FROM %1 "
+                          "WHERE product_code = ?"
+                          ).arg(tableName);
+
+    codeQuery.prepare(codeSql);
+
+    codeQuery.addBindValue(productCode);
+
+    if (!codeQuery.exec())
+    {
+        qDebug()
+        << "Failed to check product code:"
+        << codeQuery.lastError().text();
+
+        return false;
+    }
+
+    if (codeQuery.next())
+    {
+        if (codeQuery.value(0).toInt() > 0)
+        {
+            qDebug()
+            << "Product code already exists:"
+            << productCode;
+
+            return false;
+        }
+    }
+
+
+    // ---------------------------------------------------------
+    // INSERT PRODUCT
+    //
+    // Only productName and productCode come from QML.
+    //
+    // Everything else is generated here using fixed values.
+    // ---------------------------------------------------------
+
+    QString sql = QString(R"(
+        INSERT INTO %1
+        (
+            sr_no,
+            product_name,
+            product_code,
+            machinePhase,
+            signalThr,
+            ampThr,
+            ddPower,
+            ddFreq,
+            digitalGain,
+            analogGain,
+            active
+        )
+        VALUES
+        (
+            ?,
+            ?,
+            ?,
+            0,
+            0,
+            0,
+            0,
+            25.0,
+            1.0,
+            1.0,
+            0
+        )
+    )").arg(tableName);
+
+
+    QSqlQuery query;
+
+    query.prepare(sql);
+
+    query.addBindValue(srNo);
+    query.addBindValue(productName);
+    query.addBindValue(productCode);
+
+
+    // ---------------------------------------------------------
+    // Execute
+    // ---------------------------------------------------------
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed to add product:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+
+    qDebug()
+        << "======================================";
+
+    qDebug()
+        << "Product added successfully";
+
+    qDebug()
+        << "Group:"
+        << groupNo;
+
+    qDebug()
+        << "Table:"
+        << tableName;
+
+    qDebug()
+        << "SR:"
+        << srNo;
+
+    qDebug()
+        << "Name:"
+        << productName;
+
+    qDebug()
+        << "Code:"
+        << productCode;
+
+    qDebug()
+        << "======================================";
+
+
+    return true;
+}
+
+QVariantList DatabaseManager::getProductLibraryProducts(
+    int groupNo)
+{
+    QVariantList list;
+
+    QString tableName =
+        productLibraryTableName(groupNo);
+
+    if (tableName.isEmpty())
+        return list;
+
+    // Group 02-10 may not exist yet.
+    if (!productLibraryTableExists(groupNo))
+    {
+        qDebug()
+        << "Product library table does not exist:"
+        << tableName;
+
+        return list;
+    }
+
+    QString sql = QString(R"(
+        SELECT
+            id,
+            sr_no,
+            product_name,
+            product_code,
+            machinePhase,
+            signalThr,
+            ampThr,
+            ddPower,
+            ddFreq,
+            digitalGain,
+            analogGain,
+            active
+        FROM %1
+        ORDER BY sr_no ASC
+    )").arg(tableName);
+
+    QSqlQuery query;
+
+    if (!query.exec(sql))
+    {
+        qDebug()
+        << "Failed loading:"
+        << tableName
+        << query.lastError().text();
+
+        return list;
+    }
+
+    while (query.next())
+    {
+        QVariantMap product;
+
+        product["id"] =
+            query.value("id");
+
+        product["sr"] =
+            query.value("sr_no");
+
+        product["name"] =
+            query.value("product_name");
+
+        product["code"] =
+            query.value("product_code");
+
+        product["machinePhase"] =
+            query.value("machinePhase");
+
+        product["signalThr"] =
+            query.value("signalThr");
+
+        product["ampThr"] =
+            query.value("ampThr");
+
+        product["ddPower"] =
+            query.value("ddPower");
+
+        product["ddFreq"] =
+            query.value("ddFreq");
+
+        product["digitalGain"] =
+            query.value("digitalGain");
+
+        product["analogGain"] =
+            query.value("analogGain");
+
+        product["active"] =
+            query.value("active").toInt() == 1;
+
+        product["selected"] = false;
+
+        product["fixedItem"] =
+            (groupNo == 1 &&
+             query.value("sr_no").toInt() == 1);
+
+        list.append(product);
+    }
+
+    return list;
+}
+
+bool DatabaseManager::deleteProductLibraryProduct(
+    int groupNo,
+    int srNo)
+{
+    QString tableName =
+        productLibraryTableName(groupNo);
+
+    if (tableName.isEmpty())
+        return false;
+
+    if (!productLibraryTableExists(groupNo))
+        return false;
+
+
+    // ---------------------------------------------------------
+    // Default Product cannot be deleted
+    // ---------------------------------------------------------
+
+    if (groupNo == 1 && srNo == 1)
+    {
+        qDebug()
+        << "Default Product cannot be deleted.";
+
+        return false;
+    }
+
+
+    QString sql = QString(
+                      "DELETE FROM %1 "
+                      "WHERE sr_no = ?"
+                      ).arg(tableName);
+
+    QSqlQuery query;
+
+    query.prepare(sql);
+
+    query.addBindValue(srNo);
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed deleting product:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    qDebug()
+        << "Product deleted:"
+        << tableName
+        << "SR:"
+        << srNo;
+
+    return query.numRowsAffected() > 0;
+}
+
+bool DatabaseManager::setActiveProductLibraryProduct(
+    int groupNo,
+    int srNo)
+{
+    QString tableName =
+        productLibraryTableName(groupNo);
+
+    if (tableName.isEmpty())
+        return false;
+
+    if (!productLibraryTableExists(groupNo))
+        return false;
+
+
+    QSqlDatabase db =
+        QSqlDatabase::database();
+
+    if (!db.transaction())
+    {
+        qDebug()
+        << "Failed to start transaction.";
+
+        return false;
+    }
+
+
+    QString resetSql = QString(
+                           "UPDATE %1 "
+                           "SET active = 0"
+                           ).arg(tableName);
+
+    QSqlQuery resetQuery;
+
+    if (!resetQuery.exec(resetSql))
+    {
+        db.rollback();
+
+        qDebug()
+            << "Failed to reset active products:"
+            << resetQuery.lastError().text();
+
+        return false;
+    }
+
+
+    QString activateSql = QString(
+                              "UPDATE %1 "
+                              "SET active = 1 "
+                              "WHERE sr_no = ?"
+                              ).arg(tableName);
+
+    QSqlQuery activateQuery;
+
+    activateQuery.prepare(activateSql);
+
+    activateQuery.addBindValue(srNo);
+
+    if (!activateQuery.exec())
+    {
+        db.rollback();
+
+        qDebug()
+            << "Failed to activate product:"
+            << activateQuery.lastError().text();
+
+        return false;
+    }
+
+
+    if (activateQuery.numRowsAffected() == 0)
+    {
+        db.rollback();
+
+        qDebug()
+            << "Product not found:"
+            << srNo;
+
+        return false;
+    }
+
+
+    if (!db.commit())
+    {
+        qDebug()
+        << "Failed to commit active product.";
+
+        return false;
+    }
+
+
+    qDebug()
+        << "Active product:"
+        << tableName
+        << "SR:"
+        << srNo;
 
     return true;
 }

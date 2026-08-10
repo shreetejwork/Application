@@ -856,6 +856,12 @@ Item {
 
                                     root.batchPauseStartTime = null
 
+                                    root.lastValidBatch = "General Batch"
+                                    root.currentBatchId = "General Batch"
+
+                                    // Update the visible TextField
+                                    inputField.text = "General Batch"
+
                                     SerialManager.setBatch(0)
 
                                     root.notify("■ Batch End")
