@@ -51,7 +51,7 @@ Item {
 
     Component.onCompleted: {
 
-        loadGroupProducts(1)
+        loadAllGroupProducts()
 
         openAnimation.start()
     }
@@ -127,7 +127,7 @@ Item {
     }
 
     property int currentGroup: 1
-    property int activeSr: 1
+
 
     property var activeModel: group01Model
 
@@ -254,6 +254,57 @@ Item {
         refreshSelectionCount()
     }
 
+    function loadAllGroupProducts() {
+
+        for (var groupNo = 1; groupNo <= 10; groupNo++) {
+
+            var model = groupModels[groupNo - 1]
+
+            model.clear()
+
+            var products =
+                    databaseManager.getProductLibraryProducts(groupNo)
+
+            for (var i = 0; i < products.length; i++) {
+
+                model.append({
+                    selected: false,
+
+                    active: products[i].active,
+
+                    sr: products[i].sr,
+
+                    name: products[i].name,
+
+                    code: products[i].code,
+
+                    machinePhase: products[i].machinePhase,
+
+                    signalThr: products[i].signalThr,
+
+                    ampThr: products[i].ampThr,
+
+                    ddPower: products[i].ddPower,
+
+                    ddFreq: products[i].ddFreq,
+
+                    digitalGain: products[i].digitalGain,
+
+                    analogGain: products[i].analogGain,
+
+                    fixedItem: products[i].fixedItem
+                })
+            }
+        }
+
+
+        // Keep the currently displayed group
+        activeModel = currentModel()
+
+
+        refreshSelectionCount()
+    }
+
     // ================= MODELS =================
 
     ListModel {
@@ -324,11 +375,6 @@ Item {
 
         // ---------------------------------------------------------
         // Save product
-        //
-        // C++ will:
-        //   - create the table if required
-        //   - generate SR number
-        //   - insert default parameters
         // ---------------------------------------------------------
 
         var success =
@@ -357,6 +403,81 @@ Item {
 
         loadGroupProducts(currentGroup)
 
+
+        // =========================================================
+        // FIND NEWLY ADDED PRODUCT
+        // =========================================================
+
+        var addedProductSr = -1
+
+        var current = currentModel()
+
+        for (var i = 0; i < current.count; i++) {
+
+            if (current.get(i).code === productCode) {
+
+                addedProductSr = current.get(i).sr
+                break
+            }
+        }
+
+
+        // =========================================================
+        // PRODUCT ADDED AUDIT
+        // =========================================================
+
+        var loggedUser =
+                GlobalState.loggedInUserName
+
+        var loggedRole =
+                GlobalState.loggedInUserRole
+
+
+        var loggedInitial = "U"
+
+        if (loggedRole === "Admin")
+            loggedInitial = "A"
+
+        else if (loggedRole === "Supervisor")
+            loggedInitial = "S"
+
+        else if (loggedRole === "Operator")
+            loggedInitial = "O"
+
+
+        // Example:
+        // A/admin
+        var auditUser =
+                loggedInitial + "/" + loggedUser
+
+
+        // ---------------------------------------------------------
+        // Product ID
+        // ---------------------------------------------------------
+
+        var groupText =
+                currentGroup < 10
+                ? "0" + currentGroup
+                : currentGroup
+
+
+        var productId =
+                "G" + groupText
+                + "/" + addedProductSr
+                + "/" + productCode
+
+
+        // ---------------------------------------------------------
+        // Save audit trail
+        // ---------------------------------------------------------
+
+        var auditSaved =
+                databaseManager.addAuditTrailRecord(
+                    auditUser,
+                    "",
+                    productId,
+                    "New Product Added"
+                )
         return true
     }
 
@@ -364,39 +485,103 @@ Item {
 
         var model = currentModel()
 
+
+        // =========================================================
+        // CURRENT LOGGED-IN USER
+        // =========================================================
+
+        var loggedUser =
+                GlobalState.loggedInUserName
+
+        var loggedRole =
+                GlobalState.loggedInUserRole
+
+
+        var loggedInitial = "U"
+
+        if (loggedRole === "Admin")
+            loggedInitial = "A"
+
+        else if (loggedRole === "Supervisor")
+            loggedInitial = "S"
+
+        else if (loggedRole === "Operator")
+            loggedInitial = "O"
+
+
+        var auditUser =
+                loggedInitial + "/" + loggedUser
+
+
+        // =========================================================
+        // DELETE PRODUCTS
+        // =========================================================
+
         for (var i = model.count - 1; i >= 0; i--) {
 
             var item = model.get(i)
 
+
             if (item.selected && !item.fixedItem) {
+
+                // -------------------------------------------------
+                // Save product information BEFORE deleting it
+                // -------------------------------------------------
+
+                var deletedSr = item.sr
+                var deletedCode = item.code
+                var deletedName = item.name
+
 
                 var success =
                         databaseManager.deleteProductLibraryProduct(
                             currentGroup,
-                            item.sr
+                            deletedSr
                         )
+
 
                 if (success) {
 
+                    // -------------------------------------------------
+                    // Remove from UI
+                    // -------------------------------------------------
+
                     model.remove(i)
 
+
+                    // =================================================
+                    // PRODUCT ID
+                    // =================================================
+
+                    var groupText =
+                            currentGroup < 10
+                            ? "0" + currentGroup
+                            : currentGroup
+
+
+                    var productId =
+                            "G" + groupText
+                             + "/" + deletedSr
+                            + "/" + deletedCode
+
+
+                    // =================================================
+                    // PRODUCT DELETED AUDIT
+                    // =================================================
+
+                    var auditSaved =
+                            databaseManager.addAuditTrailRecord(
+                                auditUser,
+                                productId,
+                                "",
+                                "Product Deleted"
+                            )
                 }
             }
         }
 
+
         refreshSelectionCount()
-    }
-
-    function setActiveProduct(srNo) {
-
-        activeSr = srNo
-
-        var model = currentModel()
-
-        for (var i = 0; i < model.count; i++) {
-
-            model.setProperty(i, "active", model.get(i).sr === srNo)
-        }
     }
 
     Item {
@@ -622,24 +807,194 @@ Item {
 
                                             if (srNo !== -1) {
 
+                                                var model = currentModel()
+
+                                                // ============================================
+                                                // GET NEW PRODUCT DETAILS
+                                                // ============================================
+
+                                                var selectedProduct = null
+
+                                                for (var i = 0; i < model.count; i++) {
+
+                                                    if (model.get(i).sr === srNo) {
+                                                        selectedProduct = model.get(i)
+                                                        break
+                                                    }
+                                                }
+
+                                                if (!selectedProduct)
+                                                    return
+
+
+                                                // ============================================
+                                                // FIND CURRENTLY ACTIVE PRODUCT
+                                                // ============================================
+
+                                                var previousProduct = null
+
+                                                for (var j = 0; j < model.count; j++) {
+
+                                                    if (model.get(j).active) {
+
+                                                        previousProduct = model.get(j)
+                                                        break
+                                                    }
+                                                }
+
+
+                                                // ============================================
+                                                // LOAD PRODUCT
+                                                // ============================================
+
                                                 var success =
-                                                        databaseManager
-                                                        .setActiveProductLibraryProduct(
+                                                        databaseManager.setActiveProductLibraryProduct(
                                                             currentGroup,
                                                             srNo
                                                         )
 
+
                                                 if (success) {
 
-                                                    setActiveProduct(srNo)
+                                                    // ============================================
+                                                    // CURRENT LOGGED-IN USER
+                                                    // ============================================
+
+                                                    var loggedUser =
+                                                            GlobalState.loggedInUserName
+
+                                                    var loggedRole =
+                                                            GlobalState.loggedInUserRole
+
+
+                                                    var loggedInitial = "U"
+
+                                                    if (loggedRole === "Admin")
+                                                        loggedInitial = "A"
+
+                                                    else if (loggedRole === "Supervisor")
+                                                        loggedInitial = "S"
+
+                                                    else if (loggedRole === "Operator")
+                                                        loggedInitial = "O"
+
+
+                                                    var auditUser =
+                                                            loggedInitial + "/" + loggedUser
+
+
+                                                    // ============================================
+                                                    // PREVIOUS PRODUCT
+                                                    // ============================================
+
+                                                    var previousProductText = ""
+
+                                                    if (previousProduct) {
+
+                                                        previousProductText =
+                                                                "G" +
+                                                                (currentGroup < 10
+                                                                 ? "0" + currentGroup
+                                                                 : currentGroup)
+                                                                + "/"
+                                                                + previousProduct.sr
+                                                                + "/"
+                                                                + previousProduct.code
+                                                    }
+
+
+                                                    // ============================================
+                                                    // NEW PRODUCT
+                                                    // ============================================
+
+                                                    var newProductText =
+                                                            "G" +
+                                                            (currentGroup < 10
+                                                             ? "0" + currentGroup
+                                                             : currentGroup)
+                                                            + "/"
+                                                            + selectedProduct.sr
+                                                            + "/"
+                                                            + selectedProduct.code
+
+
+                                                    // ============================================
+                                                    // PRODUCT LOAD AUDIT
+                                                    // ============================================
+
+                                                    var auditSaved =
+                                                            databaseManager.addAuditTrailRecord(
+                                                                auditUser,
+                                                                previousProductText,
+                                                                newProductText,
+                                                                "Product Loaded"
+                                                            )
+
+
+                                                    console.log(
+                                                        "PRODUCT LOAD AUDIT:",
+                                                        "User =", auditUser,
+                                                        "Previous =", previousProductText,
+                                                        "New =", newProductText,
+                                                        "Saved =", auditSaved
+                                                    )
+
+
+                                                    // ============================================
+                                                    // RELOAD ALL GROUPS
+                                                    // ============================================
+
+                                                    loadAllGroupProducts()
 
                                                     clearSelection()
+
+
+                                                    // ============================================
+                                                    // OPTIONAL NOTIFICATION
+                                                    // ============================================
+
+                                                    if (root.globalTopBar &&
+                                                            root.globalTopBar.showNotification) {
+
+                                                        root.globalTopBar.showNotification(
+                                                            "✓ Product loaded successfully"
+                                                        )
+                                                    }
+
+
+                                                    console.log(
+                                                        "========================================"
+                                                    )
+
+                                                    console.log(
+                                                        "ACTIVE PRODUCT LOADED"
+                                                    )
+
+                                                    console.log(
+                                                        "Group:",
+                                                        currentGroup
+                                                    )
+
+                                                    console.log(
+                                                        "SR:",
+                                                        srNo
+                                                    )
+
+                                                    console.log(
+                                                        "Product:",
+                                                        selectedProduct.name
+                                                    )
+
+                                                    console.log(
+                                                        "========================================"
+                                                    )
 
                                                 } else {
 
                                                     console.log(
                                                         "Failed to activate product:",
-                                                        srNo
+                                                        "Group =", currentGroup,
+                                                        "SR =", srNo
                                                     )
                                                 }
                                             }

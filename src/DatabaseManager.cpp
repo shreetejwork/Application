@@ -1581,49 +1581,36 @@ bool DatabaseManager::createProductLibraryTable(int groupNo)
 
         product_code TEXT UNIQUE NOT NULL,
 
-        machinePhase INTEGER DEFAULT 0,
+        machinePhase INTEGER DEFAULT 45,
 
-        signalThr INTEGER DEFAULT 0,
+        signalThr INTEGER DEFAULT 350,
 
-        ampThr INTEGER DEFAULT 0,
+        ampThr INTEGER DEFAULT 14000,
 
-        ddPower INTEGER DEFAULT 0,
+        ddPower INTEGER DEFAULT 40,
 
-        ddFreq REAL DEFAULT 25.0,
+        ddFreq REAL DEFAULT 32.1,
 
-        digitalGain REAL DEFAULT 1.0,
+        digitalGain REAL DEFAULT 1,
 
-        analogGain REAL DEFAULT 1.0,
+        analogGain REAL DEFAULT 1,
 
         active INTEGER DEFAULT 0
     )
+
 )").arg(tableName);
+
 
     if (!query.exec(sql))
     {
         qDebug()
-        << "========================================";
-
-        qDebug()
-            << "FAILED TO CREATE PRODUCT LIBRARY TABLE";
-
-        qDebug()
-            << "Group:"
-            << groupNo;
-
-        qDebug()
-            << "Table:"
-            << tableName;
-
-        qDebug()
-            << "SQL Error:"
-            << query.lastError().text();
-
-        qDebug()
-            << "========================================";
+        << "Failed to create product library table:"
+        << tableName
+        << query.lastError().text();
 
         return false;
     }
+
 
     qDebug()
         << "Product Library table created/exists:"
@@ -1828,14 +1815,6 @@ bool DatabaseManager::addProductLibraryProduct(
     }
 
 
-    // ---------------------------------------------------------
-    // INSERT PRODUCT
-    //
-    // Only productName and productCode come from QML.
-    //
-    // Everything else is generated here using fixed values.
-    // ---------------------------------------------------------
-
     QString sql = QString(R"(
         INSERT INTO %1
         (
@@ -1856,13 +1835,13 @@ bool DatabaseManager::addProductLibraryProduct(
             ?,
             ?,
             ?,
-            0,
-            0,
-            0,
-            0,
-            25.0,
-            1.0,
-            1.0,
+            45,
+            350,
+            14000,
+            40,
+            32.1,
+            1,
+            1,
             0
         )
     )").arg(tableName);
@@ -1889,37 +1868,6 @@ bool DatabaseManager::addProductLibraryProduct(
 
         return false;
     }
-
-
-    qDebug()
-        << "======================================";
-
-    qDebug()
-        << "Product added successfully";
-
-    qDebug()
-        << "Group:"
-        << groupNo;
-
-    qDebug()
-        << "Table:"
-        << tableName;
-
-    qDebug()
-        << "SR:"
-        << srNo;
-
-    qDebug()
-        << "Name:"
-        << productName;
-
-    qDebug()
-        << "Code:"
-        << productCode;
-
-    qDebug()
-        << "======================================";
-
 
     return true;
 }
@@ -1967,10 +1915,6 @@ QVariantList DatabaseManager::getProductLibraryProducts(
 
     if (!query.exec(sql))
     {
-        qDebug()
-        << "Failed loading:"
-        << tableName
-        << query.lastError().text();
 
         return list;
     }
@@ -2047,8 +1991,6 @@ bool DatabaseManager::deleteProductLibraryProduct(
 
     if (groupNo == 1 && srNo == 1)
     {
-        qDebug()
-        << "Default Product cannot be deleted.";
 
         return false;
     }
@@ -2067,18 +2009,11 @@ bool DatabaseManager::deleteProductLibraryProduct(
 
     if (!query.exec())
     {
-        qDebug()
-        << "Failed deleting product:"
-        << query.lastError().text();
+
 
         return false;
     }
 
-    qDebug()
-        << "Product deleted:"
-        << tableName
-        << "SR:"
-        << srNo;
 
     return query.numRowsAffected() > 0;
 }
@@ -2087,98 +2022,203 @@ bool DatabaseManager::setActiveProductLibraryProduct(
     int groupNo,
     int srNo)
 {
-    QString tableName =
+    // =========================================================
+    // VALIDATE GROUP
+    // =========================================================
+
+    QString selectedTable =
         productLibraryTableName(groupNo);
 
-    if (tableName.isEmpty())
+    if (selectedTable.isEmpty())
+    {
+        qDebug()
+        << "Invalid product library group:"
+        << groupNo;
+
         return false;
+    }
+
+
+    // =========================================================
+    // CHECK SELECTED GROUP TABLE
+    // =========================================================
 
     if (!productLibraryTableExists(groupNo))
+    {
+        qDebug()
+        << "Product library table does not exist:"
+        << selectedTable;
+
         return false;
+    }
 
 
-    QSqlDatabase db =
-        QSqlDatabase::database();
+    // =========================================================
+    // GET DATABASE CONNECTION
+    // =========================================================
+
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if (!db.isValid())
+    {
+        qDebug()
+        << "Invalid database connection.";
+
+        return false;
+    }
+
+    if (!db.isOpen())
+    {
+        qDebug()
+        << "Database is not open.";
+
+        return false;
+    }
+
+
+    // =========================================================
+    // START TRANSACTION
+    // =========================================================
 
     if (!db.transaction())
     {
         qDebug()
-        << "Failed to start transaction.";
+        << "Failed to start transaction:"
+        << db.lastError().text();
 
         return false;
     }
 
 
-    QString resetSql = QString(
-                           "UPDATE %1 "
-                           "SET active = 0"
-                           ).arg(tableName);
+    // =========================================================
+    // STEP 1
+    // DEACTIVATE EVERY PRODUCT FROM EVERY GROUP
+    // =========================================================
 
-    QSqlQuery resetQuery;
-
-    if (!resetQuery.exec(resetSql))
+    for (int group = 1; group <= 10; ++group)
     {
-        db.rollback();
+        QString tableName =
+            productLibraryTableName(group);
 
-        qDebug()
-            << "Failed to reset active products:"
-            << resetQuery.lastError().text();
+        if (tableName.isEmpty())
+            continue;
 
-        return false;
+
+        // Group table may not exist yet
+        if (!productLibraryTableExists(group))
+            continue;
+
+
+        QString deactivateSql =
+            QString(
+                "UPDATE %1 "
+                "SET active = 0"
+                ).arg(tableName);
+
+
+        QSqlQuery deactivateQuery(db);
+
+
+        if (!deactivateQuery.exec(deactivateSql))
+        {
+            qDebug()
+            << "Failed to deactivate products in:"
+            << tableName
+            << deactivateQuery.lastError().text();
+
+            db.rollback();
+
+            return false;
+        }
     }
 
 
-    QString activateSql = QString(
-                              "UPDATE %1 "
-                              "SET active = 1 "
-                              "WHERE sr_no = ?"
-                              ).arg(tableName);
+    // =========================================================
+    // STEP 2
+    // ACTIVATE SELECTED PRODUCT
+    // =========================================================
 
-    QSqlQuery activateQuery;
+    QString activateSql =
+        QString(
+            "UPDATE %1 "
+            "SET active = 1 "
+            "WHERE sr_no = ?"
+            ).arg(selectedTable);
+
+
+    QSqlQuery activateQuery(db);
 
     activateQuery.prepare(activateSql);
 
     activateQuery.addBindValue(srNo);
 
+
     if (!activateQuery.exec())
     {
-        db.rollback();
-
         qDebug()
-            << "Failed to activate product:"
-            << activateQuery.lastError().text();
+        << "Failed to activate product:"
+        << activateQuery.lastError().text();
+
+        db.rollback();
 
         return false;
     }
 
 
-    if (activateQuery.numRowsAffected() == 0)
+    // =========================================================
+    // MAKE SURE EXACTLY ONE PRODUCT WAS ACTIVATED
+    // =========================================================
+
+    if (activateQuery.numRowsAffected() != 1)
     {
-        db.rollback();
-
         qDebug()
-            << "Product not found:"
-            << srNo;
+        << "Selected product not found:"
+        << "Group =" << groupNo
+        << "SR =" << srNo;
+
+        db.rollback();
 
         return false;
     }
 
+
+    // =========================================================
+    // STEP 3
+    // COMMIT
+    // =========================================================
 
     if (!db.commit())
     {
         qDebug()
-        << "Failed to commit active product.";
+        << "Failed to commit active product:"
+        << db.lastError().text();
+
+        db.rollback();
 
         return false;
     }
 
 
     qDebug()
-        << "Active product:"
-        << tableName
+        << "========================================";
+
+    qDebug()
+        << "ACTIVE PRODUCT CHANGED";
+
+    qDebug()
+        << "Group:"
+        << groupNo;
+
+    qDebug()
         << "SR:"
         << srNo;
 
+    qDebug()
+        << "Only this product is now active.";
+
+    qDebug()
+        << "========================================";
+
+
     return true;
 }
-

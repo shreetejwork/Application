@@ -233,6 +233,8 @@ Popup {
 
                     property bool isPasswordField: false
 
+                    maximumLength: 15
+
                     focus: true
 
                     activeFocusOnTab: true
@@ -326,6 +328,8 @@ Popup {
                     selectByMouse: true
 
                     property bool isPasswordField: false
+
+                    maximumLength: 7
 
                     activeFocusOnTab: true
 
