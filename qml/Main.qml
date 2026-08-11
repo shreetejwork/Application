@@ -34,7 +34,6 @@ ApplicationWindow {
 
         function onMachineParametersChanged()
         {
-            console.log("New machine parameters received")
 
             var settings =
                     databaseManager.getMachinePhaseSettings()
@@ -75,7 +74,16 @@ ApplicationWindow {
                 GlobalState.analogGain =
                         Number(s1.analogGain)
 
-            startupTimer.restart()
+            if (GlobalState.sendDataAfterLoad === true) {
+                        console.log("sendDataAfterLoad = TRUE")
+                        console.log("Restarting startupTimer...")
+
+                        startupTimer.restart()
+                    }
+                    else {
+                        console.log("sendDataAfterLoad = FALSE")
+                        console.log("Parameters loaded, not sending to MCU")
+                    }
         }
     }
 
@@ -453,6 +461,8 @@ ApplicationWindow {
             else if(mainTopBar)
                 mainTopBar.showNotification(
                             "✓ Parameters sent successfully")
+
+            GlobalState.sendDataAfterLoad = false
         }
     }
 

@@ -947,12 +947,6 @@ bool DatabaseManager::saveMachinePhaseSettings(
         return false;
     }
 
-    qDebug()
-        << "machineparameters updated:"
-        << "Phase =" << machinePhase
-        << "Signal =" << signalThr
-        << "Amplitude =" << ampThr;
-
 
     // =========================================================
     // STEP 2
@@ -1103,23 +1097,6 @@ bool DatabaseManager::saveMachinePhaseSettings(
 
         return false;
     }
-
-
-    qDebug()
-        << "Active product updated successfully.";
-
-    qDebug()
-        << "Table:"
-        << activeTable;
-
-    qDebug()
-        << "Group:"
-        << activeGroup;
-
-    qDebug()
-        << "SR:"
-        << activeSrNo;
-
 
     // =========================================================
     // STEP 6

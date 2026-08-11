@@ -828,6 +828,8 @@ Item {
 
                                         if (modelData === "LOAD") {
 
+                                            GlobalState.sendDataAfterLoad = true
+
                                             var srNo = getSingleSelectedSr()
 
                                             if (srNo !== -1) {

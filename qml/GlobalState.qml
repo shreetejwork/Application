@@ -100,6 +100,8 @@ QtObject {
 
     property bool countRejection: true
 
+    property bool sendDataAfterLoad: false
+
     property int rejectedCount: 0
 
     property int signalThreshold: 500

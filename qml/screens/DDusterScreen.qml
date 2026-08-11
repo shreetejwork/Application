@@ -138,12 +138,6 @@ Item {
 
         if (settings.ddFreq !== undefined)
             ddFrequency = settings.ddFreq
-
-        console.log(
-            "DD settings reloaded:",
-            "Power =", ddPower,
-            "Frequency =", ddFrequency
-        )
     }
 
     Component.onCompleted: {
@@ -158,10 +152,6 @@ Item {
 
         function onMachineParametersChanged()
         {
-            console.log(
-                "machineparameters changed -> DD screen reload"
-            )
-
             root.loadDDSettings()
         }
     }

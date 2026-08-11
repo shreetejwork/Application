@@ -34,13 +34,6 @@ Item {
 
         if (settings.ampThr !== undefined)
             GlobalState.amplitudeThreshold = settings.ampThr
-
-        console.log(
-            "Machine parameters reloaded:",
-            "Phase =", GlobalState.machinePhase,
-            "Thr-S =", GlobalState.signalThreshold,
-            "Thr-A =", GlobalState.amplitudeThreshold
-        )
     }
 
 
@@ -60,7 +53,6 @@ Item {
 
         function onMachineParametersChanged()
         {
-            console.log("machineparameters changed -> HomeScreen reload")
 
             homeScreen.loadMachineParameterSettings()
         }
