@@ -885,77 +885,683 @@ QVariantList DatabaseManager::getCoilOutputHistory()
 // ==================== Machine Parameters ===============================
 
 bool DatabaseManager::saveMachinePhaseSettings(
-    const QString &machinePhase,
-    int signalThr,
-    int ampThr)
+        const QString &machinePhase,
+        int signalThr,
+        int ampThr)
 {
-    QSqlQuery query;
+    QSqlDatabase db = QSqlDatabase::database();
 
-    query.prepare(
-        "UPDATE machineparameters "
-        "SET machinePhase = ?, "
-        "signalThr = ?, "
-        "ampThr = ? "
-        "WHERE id = 1");
+    // =========================================================
+    // CHECK DATABASE
+    // =========================================================
 
-    query.addBindValue(machinePhase);
-    query.addBindValue(signalThr);
-    query.addBindValue(ampThr);
-
-    if (!query.exec())
+    if (!db.isValid() || !db.isOpen())
     {
-        qDebug() << query.lastError().text();
+        qDebug()
+        << "Database connection is invalid or closed.";
+
         return false;
     }
 
+    // =========================================================
+    // START TRANSACTION
+    // =========================================================
+
+    if (!db.transaction())
+    {
+        qDebug()
+        << "Failed to start transaction:"
+        << db.lastError().text();
+
+        return false;
+    }
+
+    // =========================================================
+    // STEP 1
+    // UPDATE MACHINE PARAMETERS
+    // =========================================================
+
+    QSqlQuery machineQuery(db);
+
+    machineQuery.prepare(R"(
+        UPDATE machineparameters
+        SET
+            machinePhase = ?,
+            signalThr = ?,
+            ampThr = ?
+        WHERE id = 1
+    )");
+
+    machineQuery.addBindValue(machinePhase);
+    machineQuery.addBindValue(signalThr);
+    machineQuery.addBindValue(ampThr);
+
+    if (!machineQuery.exec())
+    {
+        qDebug()
+        << "Failed to update machineparameters:"
+        << machineQuery.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+    qDebug()
+        << "machineparameters updated:"
+        << "Phase =" << machinePhase
+        << "Signal =" << signalThr
+        << "Amplitude =" << ampThr;
+
+
+    // =========================================================
+    // STEP 2
+    // FIND ACTIVE PRODUCT
+    // =========================================================
+
+    int activeGroup = -1;
+    int activeSrNo = -1;
+
+    for (int groupNo = 1; groupNo <= 10; ++groupNo)
+    {
+        QString tableName =
+            productLibraryTableName(groupNo);
+
+        if (tableName.isEmpty())
+            continue;
+
+        if (!productLibraryTableExists(groupNo))
+            continue;
+
+        QString sql = QString(R"(
+            SELECT sr_no
+            FROM %1
+            WHERE active = 1
+            LIMIT 1
+        )").arg(tableName);
+
+        QSqlQuery activeQuery(db);
+
+        if (!activeQuery.exec(sql))
+        {
+            qDebug()
+            << "Failed to find active product:"
+            << tableName
+            << activeQuery.lastError().text();
+
+            db.rollback();
+
+            return false;
+        }
+
+        if (activeQuery.next())
+        {
+            activeGroup = groupNo;
+            activeSrNo =
+                activeQuery.value("sr_no").toInt();
+
+            break;
+        }
+    }
+
+
+    // =========================================================
+    // STEP 3
+    // NO ACTIVE PRODUCT
+    // =========================================================
+
+    if (activeGroup == -1 || activeSrNo == -1)
+    {
+        qDebug()
+        << "No active product found.";
+
+        // We can still save machineparameters.
+        // Commit the machine settings.
+
+        if (!db.commit())
+        {
+            qDebug()
+            << "Failed to commit machineparameters:"
+            << db.lastError().text();
+
+            return false;
+        }
+
+        emit machineParametersChanged();
+
+        return true;
+    }
+
+
+    // =========================================================
+    // STEP 4
+    // UPDATE ACTIVE PRODUCT
+    // =========================================================
+
+    QString activeTable =
+        productLibraryTableName(activeGroup);
+
+    QString updateProductSql =
+        QString(R"(
+            UPDATE %1
+            SET
+                machinePhase = ?,
+                signalThr = ?,
+                ampThr = ?
+            WHERE sr_no = ?
+              AND active = 1
+        )").arg(activeTable);
+
+    QSqlQuery productQuery(db);
+
+    productQuery.prepare(updateProductSql);
+
+    productQuery.addBindValue(machinePhase);
+    productQuery.addBindValue(signalThr);
+    productQuery.addBindValue(ampThr);
+    productQuery.addBindValue(activeSrNo);
+
+    if (!productQuery.exec())
+    {
+        qDebug()
+        << "Failed to update active product:"
+        << productQuery.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    // =========================================================
+    // STEP 5
+    // VERIFY ACTIVE PRODUCT UPDATE
+    // =========================================================
+
+    if (productQuery.numRowsAffected() != 1)
+    {
+        qDebug()
+        << "Active product was NOT updated.";
+
+        qDebug()
+            << "Table:"
+            << activeTable;
+
+        qDebug()
+            << "Group:"
+            << activeGroup;
+
+        qDebug()
+            << "SR:"
+            << activeSrNo;
+
+        qDebug()
+            << "Rows affected:"
+            << productQuery.numRowsAffected();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    qDebug()
+        << "Active product updated successfully.";
+
+    qDebug()
+        << "Table:"
+        << activeTable;
+
+    qDebug()
+        << "Group:"
+        << activeGroup;
+
+    qDebug()
+        << "SR:"
+        << activeSrNo;
+
+
+    // =========================================================
+    // STEP 6
+    // COMMIT EVERYTHING
+    // =========================================================
+
+    if (!db.commit())
+    {
+        qDebug()
+        << "Failed to commit machine/product parameters:"
+        << db.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    emit machineParametersChanged();
+
     return true;
 }
+
+
 
 bool DatabaseManager::saveDDPower(int ddPower)
 {
-    QSqlQuery query;
+    QSqlDatabase db = QSqlDatabase::database();
 
-    query.prepare(
-        "UPDATE machineparameters "
-        "SET ddPower = ? "
-        "WHERE id = 1"
-        );
 
-    query.addBindValue(ddPower);
+    // =========================================================
+    // START TRANSACTION
+    // =========================================================
 
-    if(!query.exec())
+    if (!db.transaction())
     {
-        qDebug() << "DD Power save failed:"
-                 << query.lastError().text();
+        qDebug()
+        << "Failed to start DD Power transaction:"
+        << db.lastError().text();
 
         return false;
     }
 
+
+    // =========================================================
+    // STEP 1
+    // UPDATE MACHINE PARAMETERS
+    // =========================================================
+
+    QSqlQuery machineQuery(db);
+
+    machineQuery.prepare(R"(
+        UPDATE machineparameters
+        SET ddPower = ?
+        WHERE id = 1
+    )");
+
+    machineQuery.addBindValue(ddPower);
+
+    if (!machineQuery.exec())
+    {
+        qDebug()
+        << "DD Power machineparameters update failed:"
+        << machineQuery.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    // =========================================================
+    // STEP 2
+    // FIND ACTIVE PRODUCT
+    // =========================================================
+
+    int activeGroup = -1;
+    int activeSrNo = -1;
+
+    for (int groupNo = 1; groupNo <= 10; ++groupNo)
+    {
+        QString tableName =
+            productLibraryTableName(groupNo);
+
+        if (tableName.isEmpty())
+            continue;
+
+        if (!productLibraryTableExists(groupNo))
+            continue;
+
+        QString sql = QString(R"(
+            SELECT sr_no
+            FROM %1
+            WHERE active = 1
+            LIMIT 1
+        )").arg(tableName);
+
+        QSqlQuery activeQuery(db);
+
+        if (!activeQuery.exec(sql))
+        {
+            qDebug()
+            << "Failed to find active product:"
+            << tableName
+            << activeQuery.lastError().text();
+
+            db.rollback();
+
+            return false;
+        }
+
+        if (activeQuery.next())
+        {
+            activeGroup = groupNo;
+            activeSrNo =
+                activeQuery.value("sr_no").toInt();
+
+            break;
+        }
+    }
+
+
+    // =========================================================
+    // NO ACTIVE PRODUCT
+    // =========================================================
+
+    if (activeGroup == -1 || activeSrNo == -1)
+    {
+        qDebug()
+        << "No active product found."
+        << "Saving DD Power only to machineparameters.";
+
+        if (!db.commit())
+        {
+            qDebug()
+            << "Failed to commit DD Power:"
+            << db.lastError().text();
+
+            return false;
+        }
+
+        emit machineParametersChanged();
+
+        return true;
+    }
+
+
+    // =========================================================
+    // STEP 3
+    // UPDATE ACTIVE PRODUCT
+    // =========================================================
+
+    QString activeTable =
+        productLibraryTableName(activeGroup);
+
+    QString updateProductSql =
+        QString(R"(
+            UPDATE %1
+            SET ddPower = ?
+            WHERE sr_no = ?
+              AND active = 1
+        )").arg(activeTable);
+
+    QSqlQuery productQuery(db);
+
+    productQuery.prepare(updateProductSql);
+
+    productQuery.addBindValue(ddPower);
+    productQuery.addBindValue(activeSrNo);
+
+    if (!productQuery.exec())
+    {
+        qDebug()
+        << "Failed to update active product DD Power:"
+        << productQuery.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    // =========================================================
+    // COMMIT
+    // =========================================================
+
+    if (!db.commit())
+    {
+        qDebug()
+        << "Failed to commit DD Power:"
+        << db.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    qDebug()
+        << "DD Power saved successfully."
+        << "Value =" << ddPower
+        << "Active Group =" << activeGroup
+        << "Active SR =" << activeSrNo;
+
+
+    emit machineParametersChanged();
+
     return true;
 }
+
+
+
 
 bool DatabaseManager::saveDDFrequency(double ddFreq)
 {
-    QSqlQuery query;
+    QSqlDatabase db = QSqlDatabase::database();
 
-    query.prepare(
-        "UPDATE machineparameters "
-        "SET ddFreq = ? "
-        "WHERE id = 1"
-        );
+    // =========================================================
+    // CHECK DATABASE
+    // =========================================================
 
-    query.addBindValue(ddFreq);
-
-    if(!query.exec())
+    if (!db.isValid() || !db.isOpen())
     {
-        qDebug() << "DD Frequency save failed:"
-                 << query.lastError().text();
+        qDebug()
+        << "Database connection is invalid or closed.";
 
         return false;
     }
 
+
+    // =========================================================
+    // START TRANSACTION
+    // =========================================================
+
+    if (!db.transaction())
+    {
+        qDebug()
+        << "Failed to start DD Frequency transaction:"
+        << db.lastError().text();
+
+        return false;
+    }
+
+
+    // =========================================================
+    // STEP 1
+    // UPDATE MACHINE PARAMETERS
+    // =========================================================
+
+    QSqlQuery machineQuery(db);
+
+    machineQuery.prepare(R"(
+        UPDATE machineparameters
+        SET ddFreq = ?
+        WHERE id = 1
+    )");
+
+    machineQuery.addBindValue(ddFreq);
+
+    if (!machineQuery.exec())
+    {
+        qDebug()
+        << "DD Frequency machineparameters update failed:"
+        << machineQuery.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    // =========================================================
+    // STEP 2
+    // FIND ACTIVE PRODUCT
+    // =========================================================
+
+    int activeGroup = -1;
+    int activeSrNo = -1;
+
+    for (int groupNo = 1; groupNo <= 10; ++groupNo)
+    {
+        QString tableName =
+            productLibraryTableName(groupNo);
+
+        if (tableName.isEmpty())
+            continue;
+
+        if (!productLibraryTableExists(groupNo))
+            continue;
+
+        QString sql = QString(R"(
+            SELECT sr_no
+            FROM %1
+            WHERE active = 1
+            LIMIT 1
+        )").arg(tableName);
+
+        QSqlQuery activeQuery(db);
+
+        if (!activeQuery.exec(sql))
+        {
+            qDebug()
+            << "Failed to find active product:"
+            << tableName
+            << activeQuery.lastError().text();
+
+            db.rollback();
+
+            return false;
+        }
+
+        if (activeQuery.next())
+        {
+            activeGroup = groupNo;
+            activeSrNo =
+                activeQuery.value("sr_no").toInt();
+
+            break;
+        }
+    }
+
+
+    // =========================================================
+    // NO ACTIVE PRODUCT
+    // =========================================================
+
+    if (activeGroup == -1 || activeSrNo == -1)
+    {
+        qDebug()
+        << "No active product found."
+        << "Saving DD Frequency only to machineparameters.";
+
+        if (!db.commit())
+        {
+            qDebug()
+            << "Failed to commit DD Frequency:"
+            << db.lastError().text();
+
+            return false;
+        }
+
+        emit machineParametersChanged();
+
+        return true;
+    }
+
+
+    // =========================================================
+    // STEP 3
+    // UPDATE ACTIVE PRODUCT
+    // =========================================================
+
+    QString activeTable =
+        productLibraryTableName(activeGroup);
+
+    QString updateProductSql =
+        QString(R"(
+            UPDATE %1
+            SET ddFreq = ?
+            WHERE sr_no = ?
+              AND active = 1
+        )").arg(activeTable);
+
+    QSqlQuery productQuery(db);
+
+    productQuery.prepare(updateProductSql);
+
+    productQuery.addBindValue(ddFreq);
+    productQuery.addBindValue(activeSrNo);
+
+    if (!productQuery.exec())
+    {
+        qDebug()
+        << "Failed to update active product DD Frequency:"
+        << productQuery.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    // =========================================================
+    // VERIFY
+    // =========================================================
+
+    if (productQuery.numRowsAffected() != 1)
+    {
+        qDebug()
+        << "Active product DD Frequency was NOT updated.";
+
+        qDebug()
+            << "Table:"
+            << activeTable;
+
+        qDebug()
+            << "Group:"
+            << activeGroup;
+
+        qDebug()
+            << "SR:"
+            << activeSrNo;
+
+        qDebug()
+            << "Rows affected:"
+            << productQuery.numRowsAffected();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    // =========================================================
+    // COMMIT
+    // =========================================================
+
+    if (!db.commit())
+    {
+        qDebug()
+        << "Failed to commit DD Frequency:"
+        << db.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    qDebug()
+        << "DD Frequency saved successfully."
+        << "Value =" << ddFreq
+        << "Active Group =" << activeGroup
+        << "Active SR =" << activeSrNo;
+
+
+    emit machineParametersChanged();
+
     return true;
 }
+
+
 
 QVariantMap DatabaseManager::getMachinePhaseSettings()
 {
@@ -2057,7 +2663,8 @@ bool DatabaseManager::setActiveProductLibraryProduct(
     // GET DATABASE CONNECTION
     // =========================================================
 
-    QSqlDatabase db = QSqlDatabase::database();
+    QSqlDatabase db =
+        QSqlDatabase::database();
 
     if (!db.isValid())
     {
@@ -2077,6 +2684,114 @@ bool DatabaseManager::setActiveProductLibraryProduct(
 
 
     // =========================================================
+    // STEP 1
+    // READ SELECTED PRODUCT PARAMETERS
+    // =========================================================
+
+    QString selectSql =
+        QString(R"(
+            SELECT
+                machinePhase,
+                signalThr,
+                ampThr,
+                ddPower,
+                ddFreq,
+                digitalGain,
+                analogGain
+            FROM %1
+            WHERE sr_no = ?
+        )").arg(selectedTable);
+
+
+    QSqlQuery productQuery(db);
+
+    productQuery.prepare(selectSql);
+
+    productQuery.addBindValue(srNo);
+
+
+    if (!productQuery.exec())
+    {
+        qDebug()
+        << "Failed to read selected product:"
+        << productQuery.lastError().text();
+
+        return false;
+    }
+
+
+    if (!productQuery.next())
+    {
+        qDebug()
+        << "Selected product not found:"
+        << "Group =" << groupNo
+        << "SR =" << srNo;
+
+        return false;
+    }
+
+
+    // =========================================================
+    // GET PRODUCT PARAMETERS
+    // =========================================================
+
+    QVariant machinePhase =
+        productQuery.value("machinePhase");
+
+    QVariant signalThr =
+        productQuery.value("signalThr");
+
+    QVariant ampThr =
+        productQuery.value("ampThr");
+
+    QVariant ddPower =
+        productQuery.value("ddPower");
+
+    QVariant ddFreq =
+        productQuery.value("ddFreq");
+
+    QVariant digitalGain =
+        productQuery.value("digitalGain");
+
+    QVariant analogGain =
+        productQuery.value("analogGain");
+
+
+    qDebug()
+        << "========================================";
+
+    qDebug()
+        << "Selecting Product"
+        << "Group =" << groupNo
+        << "SR =" << srNo;
+
+    qDebug()
+        << "machinePhase =" << machinePhase;
+
+    qDebug()
+        << "signalThr =" << signalThr;
+
+    qDebug()
+        << "ampThr =" << ampThr;
+
+    qDebug()
+        << "ddPower =" << ddPower;
+
+    qDebug()
+        << "ddFreq =" << ddFreq;
+
+    qDebug()
+        << "digitalGain =" << digitalGain;
+
+    qDebug()
+        << "analogGain =" << analogGain;
+
+    qDebug()
+        << "========================================";
+
+
+    // =========================================================
+    // STEP 2
     // START TRANSACTION
     // =========================================================
 
@@ -2091,8 +2806,8 @@ bool DatabaseManager::setActiveProductLibraryProduct(
 
 
     // =========================================================
-    // STEP 1
-    // DEACTIVATE EVERY PRODUCT FROM EVERY GROUP
+    // STEP 3
+    // DEACTIVATE ALL PRODUCTS
     // =========================================================
 
     for (int group = 1; group <= 10; ++group)
@@ -2104,7 +2819,6 @@ bool DatabaseManager::setActiveProductLibraryProduct(
             continue;
 
 
-        // Group table may not exist yet
         if (!productLibraryTableExists(group))
             continue;
 
@@ -2134,7 +2848,7 @@ bool DatabaseManager::setActiveProductLibraryProduct(
 
 
     // =========================================================
-    // STEP 2
+    // STEP 4
     // ACTIVATE SELECTED PRODUCT
     // =========================================================
 
@@ -2165,14 +2879,10 @@ bool DatabaseManager::setActiveProductLibraryProduct(
     }
 
 
-    // =========================================================
-    // MAKE SURE EXACTLY ONE PRODUCT WAS ACTIVATED
-    // =========================================================
-
     if (activateQuery.numRowsAffected() != 1)
     {
         qDebug()
-        << "Selected product not found:"
+        << "Selected product was not activated:"
         << "Group =" << groupNo
         << "SR =" << srNo;
 
@@ -2183,7 +2893,99 @@ bool DatabaseManager::setActiveProductLibraryProduct(
 
 
     // =========================================================
-    // STEP 3
+    // STEP 5
+    // UPDATE MACHINE PARAMETERS
+    // =========================================================
+
+    QSqlQuery machineQuery(db);
+
+    machineQuery.prepare(R"(
+        UPDATE machineparameters
+        SET
+            machinePhase = ?,
+            signalThr = ?,
+            ampThr = ?,
+            ddPower = ?,
+            ddFreq = ?
+        WHERE id = 1
+    )");
+
+
+    machineQuery.addBindValue(machinePhase);
+    machineQuery.addBindValue(signalThr);
+    machineQuery.addBindValue(ampThr);
+    machineQuery.addBindValue(ddPower);
+    machineQuery.addBindValue(ddFreq);
+
+
+    if (!machineQuery.exec())
+    {
+        qDebug()
+        << "Failed to update machineparameters:"
+        << machineQuery.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    if (machineQuery.numRowsAffected() != 1)
+    {
+        qDebug()
+        << "machineparameters row was not updated.";
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    // =========================================================
+    // STEP 6
+    // UPDATE FILTER SETTINGS
+    // =========================================================
+
+    QSqlQuery filterQuery(db);
+
+    filterQuery.prepare(R"(
+        UPDATE filtersettings
+        SET
+            digitalGain = ?,
+            analogGain = ?
+        WHERE id = 1
+    )");
+
+
+    filterQuery.addBindValue(digitalGain);
+    filterQuery.addBindValue(analogGain);
+
+
+    if (!filterQuery.exec())
+    {
+        qDebug()
+        << "Failed to update filtersettings:"
+        << filterQuery.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    if (filterQuery.numRowsAffected() != 1)
+    {
+        qDebug()
+        << "filtersettings row was not updated.";
+
+        db.rollback();
+
+        return false;
+    }
+
+
+    // =========================================================
+    // STEP 7
     // COMMIT
     // =========================================================
 
@@ -2199,25 +3001,251 @@ bool DatabaseManager::setActiveProductLibraryProduct(
     }
 
 
-    qDebug()
-        << "========================================";
+    // =========================================================
+    // STEP 8
+    // DATABASE UPDATE SUCCESSFUL
+    //
+    // IMPORTANT:
+    // Emit AFTER successful commit.
+    // =========================================================
 
     qDebug()
-        << "ACTIVE PRODUCT CHANGED";
+        << "Active product successfully selected.";
 
     qDebug()
-        << "Group:"
+        << "Machine parameters updated.";
+
+    qDebug()
+        << "Filter settings updated.";
+
+    qDebug()
+        << "Emitting machineParametersChanged().";
+
+
+    emit machineParametersChanged();
+
+
+    // =========================================================
+    // DONE
+    // =========================================================
+
+    return true;
+}
+
+bool DatabaseManager::applyActiveProductParameters(
+    int groupNo,
+    int srNo)
+{
+    QString tableName =
+        productLibraryTableName(groupNo);
+
+    if (tableName.isEmpty())
+    {
+        qDebug()
+        << "Invalid product library group:"
         << groupNo;
 
-    qDebug()
-        << "SR:"
-        << srNo;
+        return false;
+    }
+
+    if (!productLibraryTableExists(groupNo))
+    {
+        qDebug()
+        << "Product library table does not exist:"
+        << tableName;
+
+        return false;
+    }
+
+    // =========================================================
+    // GET ACTIVE PRODUCT PARAMETERS
+    // =========================================================
+
+    QString selectSql = QString(R"(
+        SELECT
+            machinePhase,
+            signalThr,
+            ampThr,
+            ddPower,
+            ddFreq,
+            digitalGain,
+            analogGain
+        FROM %1
+        WHERE sr_no = ?
+    )").arg(tableName);
+
+    QSqlQuery selectQuery;
+
+    selectQuery.prepare(selectSql);
+    selectQuery.addBindValue(srNo);
+
+    if (!selectQuery.exec())
+    {
+        qDebug()
+        << "Failed to read active product parameters:"
+        << selectQuery.lastError().text();
+
+        return false;
+    }
+
+    if (!selectQuery.next())
+    {
+        qDebug()
+        << "Product not found:"
+        << "Group =" << groupNo
+        << "SR =" << srNo;
+
+        return false;
+    }
+
+    // =========================================================
+    // READ PRODUCT VALUES
+    // =========================================================
+
+    QVariant machinePhase =
+        selectQuery.value("machinePhase");
+
+    QVariant signalThr =
+        selectQuery.value("signalThr");
+
+    QVariant ampThr =
+        selectQuery.value("ampThr");
+
+    QVariant ddPower =
+        selectQuery.value("ddPower");
+
+    QVariant ddFreq =
+        selectQuery.value("ddFreq");
+
+    QVariant digitalGain =
+        selectQuery.value("digitalGain");
+
+    QVariant analogGain =
+        selectQuery.value("analogGain");
 
     qDebug()
-        << "Only this product is now active.";
+        << "Applying active product parameters:"
+        << "Group =" << groupNo
+        << "SR =" << srNo
+        << "machinePhase =" << machinePhase
+        << "signalThr =" << signalThr
+        << "ampThr =" << ampThr
+        << "ddPower =" << ddPower
+        << "ddFreq =" << ddFreq
+        << "digitalGain =" << digitalGain
+        << "analogGain =" << analogGain;
+
+    // =========================================================
+    // GET DATABASE CONNECTION
+    // =========================================================
+
+    QSqlDatabase db =
+        QSqlDatabase::database();
+
+    if (!db.isValid() || !db.isOpen())
+    {
+        qDebug()
+        << "Database connection is invalid or closed.";
+
+        return false;
+    }
+
+    // =========================================================
+    // START TRANSACTION
+    // =========================================================
+
+    if (!db.transaction())
+    {
+        qDebug()
+        << "Failed to start parameter transaction:"
+        << db.lastError().text();
+
+        return false;
+    }
+
+    // =========================================================
+    // UPDATE MACHINE PARAMETERS
+    // =========================================================
+
+    QSqlQuery machineQuery(db);
+
+    machineQuery.prepare(R"(
+        UPDATE machineparameters
+        SET
+            machinePhase = ?,
+            signalThr = ?,
+            ampThr = ?,
+            ddPower = ?,
+            ddFreq = ?
+        WHERE id = 1
+    )");
+
+    machineQuery.addBindValue(machinePhase);
+    machineQuery.addBindValue(signalThr);
+    machineQuery.addBindValue(ampThr);
+    machineQuery.addBindValue(ddPower);
+    machineQuery.addBindValue(ddFreq);
+
+    if (!machineQuery.exec())
+    {
+        qDebug()
+        << "Failed to update machineparameters:"
+        << machineQuery.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+    // =========================================================
+    // UPDATE FILTER SETTINGS
+    // =========================================================
+
+    QSqlQuery filterQuery(db);
+
+    filterQuery.prepare(R"(
+        UPDATE filtersettings
+        SET
+            digitalGain = ?,
+            analogGain = ?
+        WHERE id = 1
+    )");
+
+    filterQuery.addBindValue(digitalGain);
+    filterQuery.addBindValue(analogGain);
+
+    if (!filterQuery.exec())
+    {
+        qDebug()
+        << "Failed to update filtersettings:"
+        << filterQuery.lastError().text();
+
+        db.rollback();
+
+        return false;
+    }
+
+    // =========================================================
+    // COMMIT
+    // =========================================================
+
+    if (!db.commit())
+    {
+        qDebug()
+        << "Failed to commit active product parameters:"
+        << db.lastError().text();
+
+        db.rollback();
+
+        emit machineParametersChanged();
+
+        return false;
+    }
 
     qDebug()
-        << "========================================";
+        << "Active product parameters applied successfully.";
+
+    emit machineParametersChanged();
 
 
     return true;

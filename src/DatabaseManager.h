@@ -78,6 +78,7 @@ public:
 
     Q_INVOKABLE QVariantMap getDDSettings();
 
+
     // =====================================================
     // FILTER SETTINGS
     // =====================================================
@@ -179,6 +180,10 @@ public:
         int groupNo,
         int srNo);
 
+    Q_INVOKABLE bool applyActiveProductParameters(
+        int groupNo,
+        int srNo);
+
     Q_INVOKABLE bool productLibraryTableExists(
         int groupNo);
 
@@ -190,6 +195,10 @@ private:
 
     void createTables();
 
+signals:
+    void machineParametersChanged();
+
 };
+
 
 #endif // DATABASEMANAGER_H

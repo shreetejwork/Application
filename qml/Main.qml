@@ -30,6 +30,56 @@ ApplicationWindow {
     }
 
     Connections {
+        target: databaseManager
+
+        function onMachineParametersChanged()
+        {
+            console.log("New machine parameters received")
+
+            var settings =
+                    databaseManager.getMachinePhaseSettings()
+
+            if (settings.machinePhase !== undefined)
+                GlobalState.machinePhase =
+                        Number(settings.machinePhase)
+
+            if (settings.signalThr !== undefined)
+                GlobalState.signalThreshold =
+                        Number(settings.signalThr)
+
+            if (settings.ampThr !== undefined)
+                GlobalState.amplitudeThreshold =
+                        Number(settings.ampThr)
+
+
+            var dd =
+                    databaseManager.getDDSettings()
+
+            if (dd.ddPower !== undefined)
+                GlobalState.ddPower =
+                        Number(dd.ddPower)
+
+            if (dd.ddFreq !== undefined)
+                GlobalState.ddFrequency =
+                        Number(dd.ddFreq)
+
+
+            var s1 =
+                    databaseManager.getS1Settings()
+
+            if (s1.digitalGain !== undefined)
+                GlobalState.digitalGain =
+                        Number(s1.digitalGain)
+
+            if (s1.analogGain !== undefined)
+                GlobalState.analogGain =
+                        Number(s1.analogGain)
+
+            startupTimer.restart()
+        }
+    }
+
+    Connections {
         target: GlobalState
 
         function onLoggedInUserRoleChanged() {

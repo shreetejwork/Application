@@ -129,10 +129,8 @@ Item {
     opacity: 0
     Behavior on opacity { NumberAnimation { duration: 400 } }
 
-    Component.onCompleted: {
-
-        opacity = 1
-
+    function loadDDSettings()
+    {
         var settings = databaseManager.getDDSettings()
 
         if (settings.ddPower !== undefined)
@@ -140,6 +138,32 @@ Item {
 
         if (settings.ddFreq !== undefined)
             ddFrequency = settings.ddFreq
+
+        console.log(
+            "DD settings reloaded:",
+            "Power =", ddPower,
+            "Frequency =", ddFrequency
+        )
+    }
+
+    Component.onCompleted: {
+
+        opacity = 1
+
+        loadDDSettings()
+    }
+
+    Connections {
+        target: databaseManager
+
+        function onMachineParametersChanged()
+        {
+            console.log(
+                "machineparameters changed -> DD screen reload"
+            )
+
+            root.loadDDSettings()
+        }
     }
 
     Rectangle {

@@ -22,10 +22,8 @@ Item {
 
     property var validationPopup
 
-
-
-    Component.onCompleted: {
-
+    function loadMachineParameterSettings()
+    {
         var settings = databaseManager.getMachinePhaseSettings()
 
         if (settings.machinePhase !== undefined)
@@ -37,11 +35,35 @@ Item {
         if (settings.ampThr !== undefined)
             GlobalState.amplitudeThreshold = settings.ampThr
 
-        // Load S1 settings
+        console.log(
+            "Machine parameters reloaded:",
+            "Phase =", GlobalState.machinePhase,
+            "Thr-S =", GlobalState.signalThreshold,
+            "Thr-A =", GlobalState.amplitudeThreshold
+        )
+    }
+
+
+
+    Component.onCompleted: {
+
+        loadMachineParameterSettings()
+
         var s1 = databaseManager.getS1Settings()
 
         if (s1.digitalGain !== undefined)
             GlobalState.digitalGain = s1.digitalGain
+    }
+
+    Connections {
+        target: databaseManager
+
+        function onMachineParametersChanged()
+        {
+            console.log("machineparameters changed -> HomeScreen reload")
+
+            homeScreen.loadMachineParameterSettings()
+        }
     }
 
     Connections {
@@ -72,6 +94,8 @@ Item {
             }
         }
     }
+
+
 
     function saveValidationAudit(action)
     {
