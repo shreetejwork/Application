@@ -696,7 +696,7 @@ Item {
                                 anchors.horizontalCenter: parent.horizontalCenter
 
                                 // Replace with actual active product
-                                text: "Paracetamol 650"
+                                text: GlobalState.productName
 
                                 font.pixelSize: 18
 

@@ -33,6 +33,8 @@ QtObject {
         property string powerFailureDate: ""
         property string powerFailureTime: ""
 
+        property string productName: ""
+
     }
 
     property var reportSettings: Settings {
@@ -57,6 +59,8 @@ QtObject {
 
     property string powerFailureTime: settings.powerFailureTime
 
+    property string productName: settings.productName
+
 
 
     onBlockedUsersJsonChanged:   settings.blockedUsersJson   = blockedUsersJson
@@ -74,6 +78,8 @@ QtObject {
 
 
     onPowerFailureTimeChanged: settings.powerFailureTime = powerFailureTime
+
+    onProductNameChanged: settings.productName = productName
 
 
     property string validationTimersJson:
@@ -117,6 +123,8 @@ QtObject {
     property string machineId: ""
     property string userName: ""
     property string location: ""
+
+
 
     property real digitalGain: 1.0
 

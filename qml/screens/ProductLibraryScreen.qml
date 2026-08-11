@@ -128,6 +128,7 @@ Item {
 
     property int currentGroup: 1
 
+    property var loadedProduct: null
 
     property var activeModel: group01Model
 
@@ -251,6 +252,8 @@ Item {
 
         activeModel = model
 
+        updateLoadedProduct()
+
         refreshSelectionCount()
     }
 
@@ -301,6 +304,7 @@ Item {
         // Keep the currently displayed group
         activeModel = currentModel()
 
+        updateLoadedProduct()
 
         refreshSelectionCount()
     }
@@ -329,6 +333,27 @@ Item {
     function currentModel() {
 
         return groupModels[currentGroup - 1]
+    }
+
+    function updateLoadedProduct() {
+
+        var model = currentModel()
+
+        loadedProduct = null
+        GlobalState.productName = ""
+
+        for (var i = 0; i < model.count; i++) {
+
+            var item = model.get(i)
+
+            if (item.active) {
+
+                loadedProduct = item
+                GlobalState.productName = item.name
+
+                break
+            }
+        }
     }
 
     function getFreeSrNo(model) {
@@ -856,6 +881,9 @@ Item {
 
                                                 if (success) {
 
+                                                    root.loadedProduct = selectedProduct
+                                                    GlobalState.productName = selectedProduct.name
+
                                                     // ============================================
                                                     // CURRENT LOGGED-IN USER
                                                     // ============================================
@@ -931,15 +959,6 @@ Item {
                                                             )
 
 
-                                                    console.log(
-                                                        "PRODUCT LOAD AUDIT:",
-                                                        "User =", auditUser,
-                                                        "Previous =", previousProductText,
-                                                        "New =", newProductText,
-                                                        "Saved =", auditSaved
-                                                    )
-
-
                                                     // ============================================
                                                     // RELOAD ALL GROUPS
                                                     // ============================================
@@ -961,41 +980,6 @@ Item {
                                                         )
                                                     }
 
-
-                                                    console.log(
-                                                        "========================================"
-                                                    )
-
-                                                    console.log(
-                                                        "ACTIVE PRODUCT LOADED"
-                                                    )
-
-                                                    console.log(
-                                                        "Group:",
-                                                        currentGroup
-                                                    )
-
-                                                    console.log(
-                                                        "SR:",
-                                                        srNo
-                                                    )
-
-                                                    console.log(
-                                                        "Product:",
-                                                        selectedProduct.name
-                                                    )
-
-                                                    console.log(
-                                                        "========================================"
-                                                    )
-
-                                                } else {
-
-                                                    console.log(
-                                                        "Failed to activate product:",
-                                                        "Group =", currentGroup,
-                                                        "SR =", srNo
-                                                    )
                                                 }
                                             }
                                         }
@@ -1310,13 +1294,19 @@ Item {
                                 color: "#E4EAF5"
                             }
 
-                            Text { text: "Phase : 110";       font.pixelSize: 20; color: "#202020" }
-                            Text { text: "Signal : 500";      font.pixelSize: 20; color: "#202020" }
-                            Text { text: "Amplitude : 14000"; font.pixelSize: 20; color: "#202020" }
-                            Text { text: "Digital Gain : 1";  font.pixelSize: 20; color: "#202020" }
-                            Text { text: "Analog Gain : 1";   font.pixelSize: 20; color: "#202020" }
-                            Text { text: "DD Frequency : 18"; font.pixelSize: 20; color: "#202020" }
-                            Text { text: "DD Power : 50";     font.pixelSize: 20; color: "#202020" }
+                            Text { text: "Phase : " + (root.loadedProduct ? root.loadedProduct.machinePhase : "--"); font.pixelSize: 20; color: "#202020" }
+
+                            Text { text: "Signal : " + (root.loadedProduct ? root.loadedProduct.signalThr : "--"); font.pixelSize: 20; color: "#202020" }
+
+                            Text { text: "Amplitude : " + (root.loadedProduct ? root.loadedProduct.ampThr : "--"); font.pixelSize: 20; color: "#202020" }
+
+                            Text { text: "Digital Gain : " + (root.loadedProduct ? root.loadedProduct.digitalGain : "--"); font.pixelSize: 20; color: "#202020" }
+
+                            Text { text: "Analog Gain : " + (root.loadedProduct ? root.loadedProduct.analogGain : "--"); font.pixelSize: 20; color: "#202020" }
+
+                            Text { text: "DD Frequency : " + (root.loadedProduct ? root.loadedProduct.ddFreq : "--"); font.pixelSize: 20; color: "#202020" }
+
+                            Text { text: "DD Power : " + (root.loadedProduct ? root.loadedProduct.ddPower : "--"); font.pixelSize: 20; color: "#202020" }
 
                             Rectangle {
                                 width: parent.width
