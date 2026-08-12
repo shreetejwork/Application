@@ -31,6 +31,8 @@ Item {
     property string lastValidBatch: "General Batch"
     property string lastValidProduct: "Default Product"
 
+
+
     function notify(msg) {
         if (root.globalTopBar && root.globalTopBar.showNotification) {
             root.globalTopBar.showNotification(msg)

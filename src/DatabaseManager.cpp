@@ -3227,3 +3227,87 @@ bool DatabaseManager::applyActiveProductParameters(
 
     return true;
 }
+
+
+QVariantMap DatabaseManager::getActiveProduct()
+{
+    QVariantMap product;
+
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if (!db.isValid() || !db.isOpen())
+    {
+        qDebug()
+        << "getActiveProduct: Database is not open.";
+
+        return product;
+    }
+
+    // ---------------------------------------------------------
+    // Search all Product Library groups
+    // ---------------------------------------------------------
+
+    for (int groupNo = 1; groupNo <= 10; ++groupNo)
+    {
+        QString tableName =
+            productLibraryTableName(groupNo);
+
+        if (tableName.isEmpty())
+            continue;
+
+        if (!productLibraryTableExists(groupNo))
+            continue;
+
+        QString sql = QString(R"(
+            SELECT
+                id,
+                sr_no,
+                product_name,
+                product_code
+            FROM %1
+            WHERE active = 1
+            LIMIT 1
+        )").arg(tableName);
+
+        QSqlQuery query(db);
+
+        if (!query.exec(sql))
+        {
+            qDebug()
+            << "Failed to find active product:"
+            << tableName
+            << query.lastError().text();
+
+            continue;
+        }
+
+        if (query.next())
+        {
+            product["id"] =
+                query.value("id");
+
+            product["groupNo"] =
+                groupNo;
+
+            // Actual table name
+            product["groupName"] =
+                tableName;
+
+            product["sr"] =
+                query.value("sr_no");
+
+            product["name"] =
+                query.value("product_name");
+
+            product["code"] =
+                query.value("product_code");
+
+            return product;
+        }
+    }
+
+    qDebug()
+        << "No active Product Library product found.";
+
+    return product;
+}

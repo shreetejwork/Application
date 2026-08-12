@@ -191,6 +191,8 @@ public:
         int groupNo,
         int srNo);
 
+    Q_INVOKABLE QVariantMap getActiveProduct();
+
 private:
 
     void createTables();

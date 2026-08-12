@@ -37,10 +37,50 @@ Item {
 
     property var batchPauseStartTime: null
 
+    property string currentProductName: ""
+    property string currentProductCode: ""
+    property string currentProductSno: ""
+    property int currentProductGroupNo: 0
+
+
     property string currentBatchId: "General Batch"
-    property string currentProductName: "Default Product"
-    property string currentProductCode: "default code"
-    property string currentProductSno: "01-001"
+
+    function loadActiveProduct()
+    {
+        var product =
+                databaseManager.getActiveProduct()
+
+        if (!product || product.name === undefined)
+        {
+            console.log("No active product loaded")
+            return false
+        }
+
+        root.currentProductName =
+                String(product.name)
+
+        root.currentProductCode =
+                String(product.code)
+
+        root.currentProductGroupNo =
+                Number(product.groupNo)
+
+        // Product S/No format: G01/3
+        root.currentProductSno =
+                "G" +
+                String(root.currentProductGroupNo).padStart(2, "0") +
+                "/" +
+                String(product.sr)
+
+        console.log("========== LOADED PRODUCT ==========")
+        console.log("Product Group :", root.currentProductGroupNo)
+        console.log("Product Name  :", root.currentProductName)
+        console.log("Product Code  :", root.currentProductCode)
+        console.log("Product S/No  :", root.currentProductSno)
+        console.log("===================================")
+
+        return true
+    }
 
     function notify(msg) {
         if (globalTopBar && globalTopBar.showNotification)
@@ -133,21 +173,17 @@ Item {
     {
         var settings = databaseManager.getDDSettings()
 
-        console.log("========== LOAD DD SETTINGS ==========")
-        console.log("DB ddPower:", settings.ddPower)
-        console.log("DB ddFreq:", settings.ddFreq)
-
         if (settings.ddPower !== undefined) {
             root.ddPower = Number(settings.ddPower)
-            console.log("root.ddPower =", root.ddPower)
+
         }
 
         if (settings.ddFreq !== undefined) {
             root.ddFrequency = Number(settings.ddFreq)
-            console.log("root.ddFrequency =", root.ddFrequency)
+
         }
 
-        console.log("======================================")
+
     }
 
     Component.onCompleted: {
@@ -155,6 +191,8 @@ Item {
         opacity = 1
 
         loadDDSettings()
+
+        loadActiveProduct()
     }
 
     Connections {
@@ -611,26 +649,46 @@ Item {
 
                                     root.batchPauseStartTime = null
 
-
                                     // =====================================================
-                                    // DEFAULT VALUES
+                                    // GET CURRENTLY LOADED PRODUCT
                                     // =====================================================
 
-                                    var batchName = inputField.text.trim()
+                                    var loadedProduct =
+                                            databaseManager.getActiveProduct()
 
-                                    if (batchName === "")
-                                        batchName = "General Batch"
+                                    if (!loadedProduct ||
+                                        loadedProduct.name === undefined)
+                                    {
+                                        root.batchRunning = false
+                                        root.notify("⚠ No product loaded")
+                                        return
+                                    }
 
-                                    var productName = productField.text.trim()
+                                    root.currentBatchId =
+                                            root.lastValidBatch
 
-                                    if (productName === "")
-                                        productName = "Default Product"
+                                    root.currentProductName =
+                                            String(loadedProduct.name)
 
+                                    root.currentProductCode =
+                                            String(loadedProduct.code)
 
-                                    root.currentBatchId = batchName
-                                    root.currentProductName = productName
-                                    root.currentProductCode = "default code"
-                                    root.currentProductSno = "01-001"
+                                    root.currentProductGroupNo =
+                                            Number(loadedProduct.groupNo)
+
+                                    root.currentProductSno =
+                                            "G" +
+                                            String(root.currentProductGroupNo).padStart(2, "0") +
+                                            "/" +
+                                            String(loadedProduct.sr)
+
+                                    console.log("========== BATCH PRODUCT ==========")
+                                    console.log("Batch        :", root.currentBatchId)
+                                    console.log("Group No     :", root.currentProductGroupNo)
+                                    console.log("Product Name :", root.currentProductName)
+                                    console.log("Product Code :", root.currentProductCode)
+                                    console.log("Product S/No :", root.currentProductSno)
+                                    console.log("===================================")
 
 
                                     // =====================================================
@@ -685,15 +743,25 @@ Item {
 
                             // PAUSE / RESUME
                             ActionButton {
-                                text: root.batchPaused ? "Batch Resume" : "Batch Pause"
+                                text: root.batchPaused
+                                      ? "Batch Resume"
+                                      : "Batch Pause"
+
                                 width: 110
                                 height: 60
-                                bgColor: "#1A4DB5"
-                                hoverColor: "#123A8A"
+
+                                // Green when paused, original blue when resumed
+                                bgColor: root.batchPaused
+                                         ? "#22A447"
+                                         : "#1A4DB5"
+
+                                hoverColor: root.batchPaused
+                                            ? "#188638"
+                                            : "#123A8A"
 
                                 enabled: root.batchRunning
 
-                                font.pixelSize : 18
+                                font.pixelSize: 18
 
                                 onClicked: {
 
@@ -714,7 +782,6 @@ Item {
 
                                     var auditUser = getAuditUser()
                                     var eventTime = new Date()
-
 
                                     if (root.batchPaused)
                                     {

@@ -699,581 +699,1624 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 }
 
 // ================= EXPORT BATCH / PRODUCT PDF =================
-QString PdfExporter::exportBatchToPdf(const QVariantMap  &batchData,
+QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
                                       const QVariantList &rejectionData,
                                       const QVariantMap &sessionData,
-                                      const QString      &filePath)
-{   
+                                      const QString &filePath)
+{
     // ── PATH SETUP ───────────────────────────────────────────────────────────
     QString path = filePath;
+
     if (path.isEmpty()) {
-        QString ts     = QDateTime::currentDateTime().toString("dd-MM-yyyy_HH-mm-ss");
+        QString ts = QDateTime::currentDateTime().toString("dd-MM-yyyy_HH-mm-ss");
         QString folder = getReportsFolderPath();
+
         path = folder + "/Batch_Report_" + ts + ".pdf";
     }
+
     QDir().mkpath(QFileInfo(path).absolutePath());
+
 
     // ── WRITER ───────────────────────────────────────────────────────────────
     QPdfWriter writer(path);
+
     writer.setPageSize(QPageSize(QPageSize::A4));
     writer.setResolution(96);
     writer.setPageMargins(QMarginsF(0, 0, 0, 0));
 
     QPainter painter(&writer);
 
+
     // ── FONT ─────────────────────────────────────────────────────────────────
-    int fontId = QFontDatabase::addApplicationFont(":/fonts/RobotoCondensed-Regular.ttf");
-    QFontDatabase::addApplicationFont(":/fonts/RobotoCondensed-Bold.ttf");
+    int fontId =
+        QFontDatabase::addApplicationFont(
+            ":/fonts/RobotoCondensed-Regular.ttf"
+            );
+
+    QFontDatabase::addApplicationFont(
+        ":/fonts/RobotoCondensed-Bold.ttf"
+        );
+
     QString fontFamily = "Arial";
+
     if (fontId != -1) {
-        QStringList fams = QFontDatabase::applicationFontFamilies(fontId);
-        if (!fams.isEmpty()) fontFamily = fams.first();
+        QStringList fams =
+            QFontDatabase::applicationFontFamilies(fontId);
+
+        if (!fams.isEmpty())
+            fontFamily = fams.first();
     }
-    auto fontR = [&](int pt) { return QFont(fontFamily, pt, QFont::Normal); };
-    auto fontB = [&](int pt) { return QFont(fontFamily, pt, QFont::Bold);   };
+
+    auto fontR = [&](int pt) {
+        return QFont(fontFamily, pt, QFont::Normal);
+    };
+
+    auto fontB = [&](int pt) {
+        return QFont(fontFamily, pt, QFont::Bold);
+    };
+
 
     // ── LOGO ─────────────────────────────────────────────────────────────────
-    QString logoPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-                       + "/Logo.png";
+    QString logoPath =
+        QStandardPaths::writableLocation(
+            QStandardPaths::DocumentsLocation
+            ) + "/Logo.png";
+
     QPixmap logo(logoPath);
 
+
     // ── PAGE GEOMETRY ────────────────────────────────────────────────────────
-    const int pageW    = writer.width();
-    const int pageH    = writer.height();
-    const int marginL  = 40;
-    const int marginR  = 40;
-    const int marginT  = 20;
-    const int marginB  = 30;
-    const int contentW = pageW - marginL - marginR;
+    const int pageW = writer.width();
+    const int pageH = writer.height();
+
+    const int marginL = 40;
+    const int marginR = 40;
+    const int marginT = 20;
+    const int marginB = 30;
+
+    const int contentW =
+        pageW - marginL - marginR;
+
 
     // ── DUAL TABLE GEOMETRY ──────────────────────────────────────────────────
     const int tableSectionGap = 14;
-    const int sectionW        = (contentW - tableSectionGap) / 2;
+
+    const int sectionW =
+        (contentW - tableSectionGap) / 2;
 
     const int nCols = 4;
+
     int colW[nCols];
+
     colW[0] = 36;
     colW[1] = 68;
     colW[2] = 62;
-    colW[3] = sectionW - colW[0] - colW[1] - colW[2];
+    colW[3] =
+        sectionW -
+        colW[0] -
+        colW[1] -
+        colW[2];
 
-    const int rowH      = 22;
-    const int thH       = 26;
+    const int rowH = 22;
+    const int thH = 26;
     const int lineThick = 2;
+
 
     // ── PEN HELPER ───────────────────────────────────────────────────────────
     auto setPen = [&](int w, QColor c = Qt::black) {
-        QPen p(c); p.setWidth(w); painter.setPen(p);
+
+        QPen p(c);
+
+        p.setWidth(w);
+
+        painter.setPen(p);
     };
+
 
     // ── LOGO HELPER ──────────────────────────────────────────────────────────
     auto drawLogo = [&]() {
-        if (logo.isNull()) return;
-        const int lw = 130, lh = 52, pad = 4;
-        QRect lr(pageW - marginR - lw, marginT, lw, lh);
-        QSize sc = logo.size().scaled(lr.size() - QSize(2*pad, 2*pad), Qt::KeepAspectRatio);
-        QRect tg(lr.center().x() - sc.width()/2,
-                 lr.center().y() - sc.height()/2,
-                 sc.width(), sc.height());
+
+        if (logo.isNull())
+            return;
+
+        const int lw = 130;
+        const int lh = 52;
+        const int pad = 4;
+
+        QRect lr(
+            pageW - marginR - lw,
+            marginT,
+            lw,
+            lh
+            );
+
+        QSize sc =
+            logo.size().scaled(
+                lr.size() -
+                    QSize(2 * pad, 2 * pad),
+                Qt::KeepAspectRatio
+                );
+
+        QRect tg(
+            lr.center().x() - sc.width() / 2,
+            lr.center().y() - sc.height() / 2,
+            sc.width(),
+            sc.height()
+            );
+
         painter.drawPixmap(tg, logo);
     };
 
+
     // ── BATCH DATA ───────────────────────────────────────────────────────────
-    QString now         = QDateTime::currentDateTime().toString("dd/MM/yyyy @ HH:mm:ss");
-    QString batchName   = batchData["batch"].toString();
-    QString productName = batchData["product"].toString();
-    QString started     = batchData["started"].toString();
-    QString ended       = batchData["ended"].toString();
-    QString productCode = batchData.value("productCode",    "default code").toString();
-    QString productSno  = batchData.value("productSno",     "01-001").toString();
-    QString totalDur    = batchData.value("totalDuration",  "---").toString();
-    QString runDur      = batchData.value("runDuration",    "---").toString();
-    QString pauseDur    = batchData.value("pauseDuration",  "---").toString();
+    QString now =
+        QDateTime::currentDateTime().toString(
+            "dd/MM/yyyy @ HH:mm:ss"
+            );
+
+    QString batchName =
+        batchData["batch"].toString();
+
+    QString productName =
+        batchData["product"].toString();
+
+    QString started =
+        batchData["started"].toString();
+
+    QString ended =
+        batchData["ended"].toString();
+
+    QString productCode =
+        batchData.value(
+                     "productCode",
+                     "default code"
+                     ).toString();
+
+    QString productSno =
+        batchData.value(
+                     "productSno",
+                     "01-001"
+                     ).toString();
+
+    QString totalDur =
+        batchData.value(
+                     "totalDuration",
+                     "---"
+                     ).toString();
+
+    QString runDur =
+        batchData.value(
+                     "runDuration",
+                     "---"
+                     ).toString();
+
+    QString pauseDur =
+        batchData.value(
+                     "pauseDuration",
+                     "---"
+                     ).toString();
 
 
-    // ── IDENTITY / SESSION DATA (all previously hardcoded) ───────────────────
+    // ── IDENTITY / SESSION DATA ──────────────────────────────────────────────
+    QVariantMap machineInfo =
+        getMachineDetails();
 
-    QVariantMap machineInfo = getMachineDetails();
+    QString companyName =
+        machineInfo.value(
+                       "supplierName",
+                       "---"
+                       ).toString();
 
-    QString companyName = machineInfo.value("supplierName", "---").toString();
-    QString machineId   = machineInfo.value("machineId", "---").toString();
-    QString serialNo    = machineInfo.value("serialNumber", "---").toString();
-    QString machineType = machineInfo.value("machineType", "---").toString();
-    QString location    = machineInfo.value("location", "---").toString();
-    QString userName    = machineInfo.value("userName", "---").toString();
+    QString machineId =
+        machineInfo.value(
+                       "machineId",
+                       "---"
+                       ).toString();
+
+    QString serialNo =
+        machineInfo.value(
+                       "serialNumber",
+                       "---"
+                       ).toString();
+
+    QString machineType =
+        machineInfo.value(
+                       "machineType",
+                       "---"
+                       ).toString();
+
+    QString location =
+        machineInfo.value(
+                       "location",
+                       "---"
+                       ).toString();
+
+    QString userName =
+        machineInfo.value(
+                       "userName",
+                       "---"
+                       ).toString();
 
 
     QString loggedUser =
-        sessionData.value("loggedInUserName","---")
-            .toString();
+        sessionData.value(
+                       "loggedInUserName",
+                       "---"
+                       ).toString();
 
     QString loggedRole =
-        sessionData.value("loggedInUserRole","---")
-            .toString();
+        sessionData.value(
+                       "loggedInUserRole",
+                       "---"
+                       ).toString();
 
     QString initial =
         roleInitial(loggedRole);
 
-    // Footer left string built once, reused on every page
+
     QString footerLeftStr =
-        QString("Generated By: %1 - %2      Approved By: %3 - %4")
+        QString(
+            "Generated By: %1 - %2      Approved By: %3 - %4"
+            )
             .arg(initial)
             .arg(loggedUser)
             .arg(initial)
             .arg(loggedUser);
 
+
+    // ── TOTAL REJECTION COUNT ────────────────────────────────────────────────
     int totalRej = 0;
+
     for (const QVariant &v : rejectionData) {
-        QVariantMap m     = v.toMap();
-        QString eventType = m.value("eventType", "").toString().toLower();
-        if (eventType.isEmpty() || eventType == "reject")
-            totalRej += m["rejectCount"].toInt();
+
+        QVariantMap m = v.toMap();
+
+        QString eventType =
+            m.value(
+                 "eventType",
+                 ""
+                 ).toString().toLower();
+
+        if (
+            eventType.isEmpty() ||
+            eventType == "reject"
+            ) {
+            totalRej +=
+                m["rejectCount"].toInt();
+        }
     }
 
-    QString endText = (ended == "---" || ended.isEmpty())
-                          ? "Batch is still running...."
-                          : ended;
+
+    QString endText =
+        (
+            ended == "---" ||
+            ended.isEmpty()
+            )
+            ? "Batch is still running...."
+            : ended;
+
 
     // ── FOOTER ZONE ──────────────────────────────────────────────────────────
-    const int footerDivY  = pageH - marginB - 28;
-    const int footerTextY = pageH - marginB - 10;
+    const int footerDivY =
+        pageH - marginB - 28;
+
+    const int footerTextY =
+        pageH - marginB - 10;
+
 
     // ── DRAW FOOTER ──────────────────────────────────────────────────────────
-    auto drawFooter = [&](int pageNum, int totalPages) {
-        setPen(lineThick);
-        painter.drawLine(marginL, footerDivY, pageW - marginR, footerDivY);
+    auto drawFooter =
+        [&](int pageNum, int totalPages) {
 
-        painter.setFont(fontB(9));
-        setPen(1);
-        painter.drawText(marginL, footerTextY, footerLeftStr); // ← was hardcoded
+            setPen(lineThick);
 
-        QString repLabel = "Batch Report";
-        QString pageStr  = QString("Page No: %1 / %2").arg(pageNum + 1).arg(totalPages);
+            painter.drawLine(
+                marginL,
+                footerDivY,
+                pageW - marginR,
+                footerDivY
+                );
 
-        QFontMetrics fm   = painter.fontMetrics();
-        int repLabelW     = fm.horizontalAdvance(repLabel);
-        int pageStrW      = fm.horizontalAdvance(pageStr);
-        int sepW          = 10;
-        int sepLineW      = 2;
-        int blockW        = repLabelW + sepW + sepLineW + sepW + pageStrW;
-        int blockX        = pageW - marginR - blockW;
+            painter.setFont(fontB(9));
 
-        painter.drawText(blockX, footerTextY, repLabel);
+            setPen(1);
 
-        int sepX = blockX + repLabelW + sepW;
-        setPen(lineThick);
-        painter.drawLine(sepX, footerDivY + 8, sepX, footerTextY - 1);
+            painter.drawText(
+                marginL,
+                footerTextY,
+                footerLeftStr
+                );
 
-        setPen(1);
-        painter.setFont(fontB(9));
-        painter.drawText(sepX + sepW, footerTextY, pageStr);
-    };
 
-    // ── DRAW FULL HEADER (page 0) ─────────────────────────────────────────
+            QString repLabel =
+                "Batch Report";
+
+            QString pageStr =
+                QString(
+                    "Page No: %1 / %2"
+                    )
+                    .arg(pageNum + 1)
+                    .arg(totalPages);
+
+
+            QFontMetrics fm =
+                painter.fontMetrics();
+
+            int repLabelW =
+                fm.horizontalAdvance(
+                    repLabel
+                    );
+
+            int pageStrW =
+                fm.horizontalAdvance(
+                    pageStr
+                    );
+
+            int sepW = 10;
+            int sepLineW = 2;
+
+            int blockW =
+                repLabelW +
+                sepW +
+                sepLineW +
+                sepW +
+                pageStrW;
+
+            int blockX =
+                pageW -
+                marginR -
+                blockW;
+
+
+            painter.drawText(
+                blockX,
+                footerTextY,
+                repLabel
+                );
+
+
+            int sepX =
+                blockX +
+                repLabelW +
+                sepW;
+
+            setPen(lineThick);
+
+            painter.drawLine(
+                sepX,
+                footerDivY + 8,
+                sepX,
+                footerTextY - 1
+                );
+
+            setPen(1);
+
+            painter.setFont(fontB(9));
+
+            painter.drawText(
+                sepX + sepW,
+                footerTextY,
+                pageStr
+                );
+        };
+
+
+    // ── DRAW FULL HEADER ─────────────────────────────────────────────────────
     auto drawHeaderFull = [&]() -> int {
+
         int y = marginT;
+
         drawLogo();
 
         setPen(1);
+
         painter.setFont(fontB(12));
-        painter.drawText(QRect(marginL, y, contentW, 22),
-                         Qt::AlignHCenter | Qt::AlignVCenter,
-                         companyName);                          // ← was hardcoded
+
+        painter.drawText(
+            QRect(
+                marginL,
+                y,
+                contentW,
+                22
+                ),
+            Qt::AlignHCenter |
+                Qt::AlignVCenter,
+            companyName
+            );
+
         y += 22;
 
+
         painter.setFont(fontB(10));
-        painter.drawText(QRect(marginL, y, contentW, 20),
-                         Qt::AlignHCenter | Qt::AlignVCenter,
-                         "PRODUCT / BATCH REPORT");
+
+        painter.drawText(
+            QRect(
+                marginL,
+                y,
+                contentW,
+                20
+                ),
+            Qt::AlignHCenter |
+                Qt::AlignVCenter,
+            "PRODUCT / BATCH REPORT"
+            );
+
         y += 20;
 
+
         painter.setFont(fontR(9));
-        painter.drawText(QRect(marginL, y, contentW, 16),
-                         Qt::AlignHCenter | Qt::AlignVCenter,
-                         "(Metal Detector)");
+
+        painter.drawText(
+            QRect(
+                marginL,
+                y,
+                contentW,
+                16
+                ),
+            Qt::AlignHCenter |
+                Qt::AlignVCenter,
+            "(Metal Detector)"
+            );
+
         y += 16;
 
-        int logoBottom = marginT + 52 + 6;
+
+        int logoBottom =
+            marginT + 52 + 6;
+
         if (y + 3 < logoBottom)
             y = logoBottom;
 
+
         setPen(lineThick);
-        painter.drawLine(marginL, y + 3, pageW - marginR, y + 3);
+
+        painter.drawLine(
+            marginL,
+            y + 3,
+            pageW - marginR,
+            y + 3
+            );
+
         y += 10;
 
+
         setPen(1);
+
         painter.setFont(fontR(9));
-        painter.drawText(marginL, y + 12, "File created on: " + now);
+
+        painter.drawText(
+            marginL,
+            y + 12,
+            "File created on: " + now
+            );
+
         y += 25;
 
         return y;
     };
 
-    // ── DRAW COMPACT HEADER (page 1+) ────────────────────────────────────
-    auto drawHeaderCompact = [&](int pageNum, int totalPages) -> int {
-        Q_UNUSED(totalPages)
+
+    // ── DRAW COMPACT HEADER ──────────────────────────────────────────────────
+    auto drawHeaderCompact =
+        [&](int pageNum, int totalPages) -> int {
+
+        Q_UNUSED(totalPages);
+
         int y = marginT;
+
         drawLogo();
 
         setPen(1);
+
         painter.setFont(fontB(11));
-        painter.drawText(QRect(marginL, y, contentW, 22),
-                         Qt::AlignHCenter | Qt::AlignVCenter,
-                         companyName);                          // ← was hardcoded
+
+        painter.drawText(
+            QRect(
+                marginL,
+                y,
+                contentW,
+                22
+                ),
+            Qt::AlignHCenter |
+                Qt::AlignVCenter,
+            companyName
+            );
+
         y += 22;
 
-        int logoBottom = marginT + 52 + 6;
+
+        int logoBottom =
+            marginT + 52 + 6;
+
         if (y + 2 < logoBottom)
             y = logoBottom;
 
+
         setPen(lineThick);
-        painter.drawLine(marginL, y + 2, pageW - marginR, y + 2);
+
+        painter.drawLine(
+            marginL,
+            y + 2,
+            pageW - marginR,
+            y + 2
+            );
+
         y += 12;
 
-        int c1 = marginL;
-        int c2 = marginL + contentW / 3;
 
-        painter.setFont(fontB(9)); setPen(1);
-        painter.drawText(c1, y + 12, "Machine ID:");
-        painter.setFont(fontR(9));
-        painter.drawText(c1 + 72, y + 12, machineId);          // ← was "PHMX"
+        int c1 = marginL;
+
+        int c2 =
+            marginL +
+            contentW / 3;
+
 
         painter.setFont(fontB(9));
-        painter.drawText(c2, y + 12, "Generated:");
+
+        setPen(1);
+
+        painter.drawText(
+            c1,
+            y + 12,
+            "Machine ID:"
+            );
+
         painter.setFont(fontR(9));
-        painter.drawText(c2 + 68, y + 12, now);
+
+        painter.drawText(
+            c1 + 72,
+            y + 12,
+            machineId
+            );
+
+
+        painter.setFont(fontB(9));
+
+        painter.drawText(
+            c2,
+            y + 12,
+            "Generated:"
+            );
+
+        painter.setFont(fontR(9));
+
+        painter.drawText(
+            c2 + 68,
+            y + 12,
+            now
+            );
 
         y += 20;
 
+
         setPen(lineThick);
-        painter.drawLine(marginL, y + 2, pageW - marginR, y + 2);
+
+        painter.drawLine(
+            marginL,
+            y + 2,
+            pageW - marginR,
+            y + 2
+            );
+
         y += 10;
 
         return y;
     };
 
-    // ── DRAW TABLE HEADER ROW (for one half-section) ─────────────────────
-    QStringList tHeaders = {"S/No.", "Date", "Time", "Reject Count / Batch Status"};
-    auto drawTableHeader = [&](int xOffset, int y) -> int {
-        const int    radius    = 6;
-        const QColor headerBg  (52, 58, 64);
-        const QColor headerText(Qt::white);
+
+    // ── DRAW TABLE HEADER ────────────────────────────────────────────────────
+    QStringList tHeaders = {
+        "S/No.",
+        "Date",
+        "Time",
+        "Reject Count / Batch Status"
+    };
+
+
+    auto drawTableHeader =
+        [&](int xOffset, int y) -> int {
+
+        const int radius = 6;
+
+        const QColor headerBg(
+            52,
+            58,
+            64
+            );
+
+        const QColor headerText(
+            Qt::white
+            );
+
 
         painter.save();
+
         painter.setPen(Qt::NoPen);
+
         painter.setBrush(headerBg);
-        painter.drawRoundedRect(xOffset, y, sectionW, thH, radius, radius);
+
+        painter.drawRoundedRect(
+            xOffset,
+            y,
+            sectionW,
+            thH,
+            radius,
+            radius
+            );
+
+
         painter.setPen(headerText);
+
         painter.setFont(fontB(9));
 
+
         int x = xOffset;
+
         for (int i = 0; i < nCols; ++i) {
-            painter.drawText(QRect(x + 4, y, colW[i] - 8, thH),
-                             Qt::AlignCenter, tHeaders[i]);
+
+            painter.drawText(
+                QRect(
+                    x + 4,
+                    y,
+                    colW[i] - 8,
+                    thH
+                    ),
+                Qt::AlignCenter,
+                tHeaders[i]
+                );
+
             x += colW[i];
         }
+
         painter.restore();
+
         return y + thH + 4;
     };
 
-    // ── STATUS DISPLAY HELPER ─────────────────────────────────────────────
+
+    // ── STATUS DISPLAY HELPER ────────────────────────────────────────────────
     struct RowDisplay {
         QString text;
-        QColor  color;
-        bool    bold;
-    };
-    auto resolveRowDisplay = [&](const QVariantMap &m) -> RowDisplay {
-        QString eventType = m.value("eventType", "").toString().toLower();
-        if (eventType == "start")  return { "Batch Start",   QColor(20, 130, 20),  true  };
-        if (eventType == "pause")  return { "Batch Paused",  QColor(200, 80, 0),   true  };
-        if (eventType == "resume") return { "Batch Resumed", QColor(0, 80, 180),   true  };
-        if (eventType == "end")    return { "Batch End",     QColor(60, 60, 60),   true  };
-        return { m["rejectCount"].toString(), Qt::black, false };
+        QColor color;
+        bool bold;
     };
 
-    // ── DRAW ONE DATA ROW (for one half-section) ─────────────────────────
-    auto drawDataRow = [&](int xOffset, int y, int idx, const QVariantMap &m) {
-        if (idx % 2 == 1)
-            painter.fillRect(xOffset, y, sectionW, rowH, QColor(230, 230, 230));
 
-        RowDisplay rd = resolveRowDisplay(m);
+    auto resolveRowDisplay =
+        [&](const QVariantMap &m) -> RowDisplay {
 
-        QStringList row = {
-            QString::number(idx + 1),
-            m["date"].toString(),
-            m["time"].toString(),
-            rd.text
+        QString eventType =
+            m.value(
+                 "eventType",
+                 ""
+                 ).toString().toLower();
+
+        if (eventType == "start")
+            return {
+                "Batch Start",
+                QColor(20, 130, 20),
+                true
+            };
+
+        if (eventType == "pause")
+            return {
+                "Batch Paused",
+                QColor(200, 80, 0),
+                true
+            };
+
+        if (eventType == "resume")
+            return {
+                "Batch Resumed",
+                QColor(0, 80, 180),
+                true
+            };
+
+        if (eventType == "end")
+            return {
+                "Batch End",
+                QColor(60, 60, 60),
+                true
+            };
+
+        return {
+            m["rejectCount"].toString(),
+            Qt::black,
+            false
         };
+    };
 
-        int x = xOffset;
-        for (int c = 0; c < nCols; ++c) {
-            setPen(1, QColor(210, 210, 210));
-            painter.drawLine(xOffset + 8, y + rowH - 1,
-                             xOffset + sectionW - 8, y + rowH - 1);
 
-            Qt::Alignment al = (c == 0)
-                                   ? (Qt::AlignVCenter | Qt::AlignHCenter)
-                                   : (Qt::AlignVCenter | Qt::AlignLeft);
+    // ── DRAW ONE DATA ROW ────────────────────────────────────────────────────
+    auto drawDataRow =
+        [&](int xOffset,
+            int y,
+            int idx,
+            const QVariantMap &m) {
 
-            if (c == nCols - 1) {
-                painter.setFont(rd.bold ? fontB(8) : fontR(9));
-                setPen(1, rd.color);
-            } else {
-                painter.setFont(fontR(9));
-                setPen(1, QColor(45, 45, 45));
+            if (idx % 2 == 1) {
+
+                painter.fillRect(
+                    xOffset,
+                    y,
+                    sectionW,
+                    rowH,
+                    QColor(230, 230, 230)
+                    );
             }
 
-            painter.drawText(QRect(x + 4, y, colW[c] - 8, rowH), al, row[c]);
-            x += colW[c];
-        }
-    };
 
-    // ── SECTION BOX HELPER ───────────────────────────────────────────────
-    auto drawSectionTitle = [&](int y, const QString &title) -> int {
+            RowDisplay rd =
+                resolveRowDisplay(m);
+
+
+            QStringList row = {
+                QString::number(idx + 1),
+                m["date"].toString(),
+                m["time"].toString(),
+                rd.text
+            };
+
+
+            int x = xOffset;
+
+            for (int c = 0; c < nCols; ++c) {
+
+                setPen(
+                    1,
+                    QColor(210, 210, 210)
+                    );
+
+                painter.drawLine(
+                    xOffset + 8,
+                    y + rowH - 1,
+                    xOffset + sectionW - 8,
+                    y + rowH - 1
+                    );
+
+
+                Qt::Alignment al =
+                    (c == 0)
+                        ? (
+                              Qt::AlignVCenter |
+                              Qt::AlignHCenter
+                              )
+                        : (
+                              Qt::AlignVCenter |
+                              Qt::AlignLeft
+                              );
+
+
+                if (c == nCols - 1) {
+
+                    painter.setFont(
+                        rd.bold
+                            ? fontB(8)
+                            : fontR(9)
+                        );
+
+                    setPen(
+                        1,
+                        rd.color
+                        );
+
+                } else {
+
+                    painter.setFont(
+                        fontR(9)
+                        );
+
+                    setPen(
+                        1,
+                        QColor(45, 45, 45)
+                        );
+                }
+
+
+                painter.drawText(
+                    QRect(
+                        x + 4,
+                        y,
+                        colW[c] - 8,
+                        rowH
+                        ),
+                    al,
+                    row[c]
+                    );
+
+                x += colW[c];
+            }
+        };
+
+
+    // ── SECTION BOX HELPER ───────────────────────────────────────────────────
+    auto drawSectionTitle =
+        [&](int y,
+            const QString &title) -> int {
+
         painter.setFont(fontB(10));
+
         setPen(1);
-        painter.drawText(marginL, y + 12, title);
+
+        painter.drawText(
+            marginL,
+            y + 12,
+            title
+            );
+
         return y + 16;
     };
 
-    auto drawKVLine = [&](int x, int y, const QString &lbl, const QString &val,
-                          int valueOffsetX = 145) {
-        painter.setFont(fontB(9)); setPen(1);
-        painter.drawText(x + 8, y, lbl);
-        painter.setFont(fontR(9));
-        painter.drawText(x + 8 + valueOffsetX, y, val);
-    };
 
-    // ── DRAW DUAL TABLE HEADERS ───────────────────────────────────────────
-    auto drawBothTableHeaders = [&](int y) -> int {
-        int leftX  = marginL;
-        int rightX = marginL + sectionW + tableSectionGap;
-        drawTableHeader(leftX,  y);
-        drawTableHeader(rightX, y);
+    auto drawKVLine =
+        [&](int x,
+            int y,
+            const QString &lbl,
+            const QString &val,
+            int valueOffsetX = 145) {
+
+            painter.setFont(fontB(9));
+
+            setPen(1);
+
+            painter.drawText(
+                x + 8,
+                y,
+                lbl
+                );
+
+
+            painter.setFont(fontR(9));
+
+            painter.drawText(
+                x + 8 + valueOffsetX,
+                y,
+                val
+                );
+        };
+
+
+    // ── DRAW DUAL TABLE HEADERS ──────────────────────────────────────────────
+    auto drawBothTableHeaders =
+        [&](int y) -> int {
+
+        int leftX = marginL;
+
+        int rightX =
+            marginL +
+            sectionW +
+            tableSectionGap;
+
+
+        drawTableHeader(
+            leftX,
+            y
+            );
+
+        drawTableHeader(
+            rightX,
+            y
+            );
+
         return y + thH + 4;
     };
 
-    // ── DRAW VERTICAL SECTION DIVIDER ─────────────────────────────────────
-    auto drawSectionDivider = [&](int yTop, int yBottom) {
-        int divX = marginL + sectionW + tableSectionGap / 2;
-        QPen dp(QColor(180, 180, 180));
-        dp.setWidth(1);
-        dp.setStyle(Qt::DashLine);
-        painter.setPen(dp);
-        painter.drawLine(divX, yTop, divX, yBottom);
-        setPen(1);
-    };
 
-    // ── DRAW TOTAL ROW ────────────────────────────────────────────────────
-    auto drawTotalRow = [&](int xOffset, int y) {
-        painter.setFont(fontB(9));
-        setPen(1, Qt::black);
-        QString totalStr = "Total Rejection Count: " + QString::number(totalRej);
-        painter.drawText(QRect(xOffset, y + 2, sectionW - 4, rowH - 4),
-                         Qt::AlignVCenter | Qt::AlignRight, totalStr);
-    };
+    // ── DRAW VERTICAL SECTION DIVIDER ─────────────────────────────────────────
+    auto drawSectionDivider =
+        [&](int yTop,
+            int yBottom) {
 
-    // ── PRE-CALCULATE TOTAL PAGES ────────────────────────────────────────
-    const int footerH      = pageH - footerDivY + 10;
-    const int summaryH     = 74 + 16 + 62 + 16 + 172 + 16 + 34 + 16 + 24;
-    const int availPage0   = pageH - summaryH - footerH - 10;
-    const int rowPairsPage0 = qMax(0, availPage0 / rowH);
-    const int rowsPage0    = rowPairsPage0 * 2;
+            int divX =
+                marginL +
+                sectionW +
+                tableSectionGap / 2;
 
-    const int compactHdrH   = 76;
-    const int availPageN    = pageH - compactHdrH - thH - footerH - marginB - 20;
-    const int rowPairsPageN = qMax(1, availPageN / rowH);
-    const int rowsPageN     = rowPairsPageN * 2;
+
+            QPen dp(
+                QColor(180, 180, 180)
+                );
+
+            dp.setWidth(1);
+
+            dp.setStyle(
+                Qt::DashLine
+                );
+
+            painter.setPen(dp);
+
+            painter.drawLine(
+                divX,
+                yTop,
+                divX,
+                yBottom
+                );
+
+            setPen(1);
+        };
+
+
+    // ── DRAW TOTAL ROW ───────────────────────────────────────────────────────
+    auto drawTotalRow =
+        [&](int xOffset, int y) {
+
+            painter.setFont(fontB(9));
+
+            setPen(
+                1,
+                Qt::black
+                );
+
+            QString totalStr =
+                "Total Rejection Count: " +
+                QString::number(totalRej);
+
+            painter.drawText(
+                QRect(
+                    xOffset,
+                    y + 2,
+                    sectionW - 4,
+                    rowH - 4
+                    ),
+                Qt::AlignVCenter |
+                    Qt::AlignRight,
+                totalStr
+                );
+        };
+
+
+    // ── PRE-CALCULATE TOTAL PAGES ────────────────────────────────────────────
+    const int footerH =
+        pageH - footerDivY + 10;
+
+    const int summaryH =
+        74 +
+        16 +
+        62 +
+        16 +
+        172 +
+        16 +
+        34 +
+        16 +
+        24;
+
+    const int availPage0 =
+        pageH -
+        summaryH -
+        footerH -
+        10;
+
+    const int rowPairsPage0 =
+        qMax(
+            0,
+            availPage0 / rowH
+            );
+
+    const int rowsPage0 =
+        rowPairsPage0 * 2;
+
+
+    const int compactHdrH = 76;
+
+    const int availPageN =
+        pageH -
+        compactHdrH -
+        thH -
+        footerH -
+        marginB -
+        20;
+
+    const int rowPairsPageN =
+        qMax(
+            1,
+            availPageN / rowH
+            );
+
+    const int rowsPageN =
+        rowPairsPageN * 2;
+
 
     int totalPages = 1;
-    if (!rejectionData.isEmpty() && rejectionData.size() > rowsPage0) {
-        int remaining = rejectionData.size() - rowsPage0;
-        totalPages += (remaining + rowsPageN - 1) / rowsPageN;
+
+    if (
+        !rejectionData.isEmpty() &&
+        rejectionData.size() > rowsPage0
+        ) {
+
+        int remaining =
+            rejectionData.size() -
+            rowsPage0;
+
+        totalPages +=
+            (
+                remaining +
+                rowsPageN -
+                1
+                ) /
+            rowsPageN;
     }
+
 
     // ════════════════════════════════════════════════════════════════════
     // PAGE 0
     // ════════════════════════════════════════════════════════════════════
     int y = drawHeaderFull();
 
-    // ── Machine Summary ──────────────────────────────────────────────────
-    y = drawSectionTitle(y, "Machine Summary :");
+
+    // ── Machine Summary ──────────────────────────────────────────────────────
+    y = drawSectionTitle(
+        y,
+        "Machine Summary :"
+        );
+
     y += 10;
+
     int boxTop = y;
-    int lColX  = marginL;
-    int rColX  = marginL + contentW / 2;
-    int r1y    = boxTop + 26;
-    int r2y    = boxTop + 43;
+
+    int lColX = marginL;
+
+    int rColX =
+        marginL +
+        contentW / 2;
+
+    int r1y =
+        boxTop + 26;
+
+    int r2y =
+        boxTop + 43;
+
     y += 10;
-    drawKVLine(lColX, r1y, "User",        ": " + userName);         // ← was "---"
-    drawKVLine(rColX, r1y, "Machine ID.",  ": " + machineId,  90);   // ← was "PHMX"
-    drawKVLine(rColX, r2y, "M/c Sr. No.", ": " + serialNo,   90);
-    drawKVLine(lColX, r2y + 17, "M/c Type", ": " + machineType);
-    drawKVLine(lColX, r2y, "Location",    ": " + location);    // ← was "---
+
+
+    drawKVLine(
+        lColX,
+        r1y,
+        "User",
+        ": " + userName
+        );
+
+    drawKVLine(
+        rColX,
+        r1y,
+        "Machine ID.",
+        ": " + machineId,
+        90
+        );
+
+    drawKVLine(
+        rColX,
+        r2y,
+        "M/c Sr. No.",
+        ": " + serialNo,
+        90
+        );
+
+    drawKVLine(
+        lColX,
+        r2y + 17,
+        "M/c Type",
+        ": " + machineType
+        );
+
+    drawKVLine(
+        lColX,
+        r2y,
+        "Location",
+        ": " + location
+        );
+
+
     int machineBoxH = 72;
-    setPen(lineThick);
-    painter.drawRect(marginL, boxTop, contentW, machineBoxH);
-    y = boxTop + machineBoxH + 10;
 
-    // ── Product / Batch Summary ──────────────────────────────────────────
-    y = drawSectionTitle(y, "Product / Batch Summary :");
+    setPen(lineThick);
+
+    painter.drawRect(
+        marginL,
+        boxTop,
+        contentW,
+        machineBoxH
+        );
+
+    y =
+        boxTop +
+        machineBoxH +
+        10;
+
+
+    // ── Product / Batch Summary ──────────────────────────────────────────────
+    y = drawSectionTitle(
+        y,
+        "Product / Batch Summary :"
+        );
+
     y += 10;
+
     boxTop = y;
 
-    struct KVPair { QString lbl; QString val; };
-    QList<KVPair> leftRows = {
-        {"Product Loaded on", ": " + started},
-        {"Product Loaded by", ": Machine"},
-        {"Product Code",      ": " + productCode},
-        {"Product S/No.",      ": " + productSno},
-        {"Product Name",      ": " + productName},
-        {"", ""}
+
+    struct KVPair {
+        QString lbl;
+        QString val;
     };
-    QList<KVPair> rightRows = {
-                               {"Batch ID",           ": " + batchName},
-                               {"Batch Start Time",     ": " + started},
-                               {"Batch End Time",       ": " + endText},
-                               {"Batch Run Duration",   ": " + runDur},
-                               {"Batch Pause Duration", ": " + pauseDur},
-                               {"Total Batch Duration", ": " + totalDur},
-                               };
 
-    int nKVRows   = leftRows.size();
-    int lineH     = 17;
-    int boxPadTop = 24;
 
-    for (int i = 0; i < nKVRows; ++i) {
-        int rowY = boxTop + boxPadTop + i * lineH;
-        drawKVLine(lColX, rowY, leftRows[i].lbl, leftRows[i].val);
-        if (!rightRows[i].lbl.isEmpty())
-            drawKVLine(rColX, rowY, rightRows[i].lbl, rightRows[i].val, 155);
-    }
+    QList<KVPair> leftRows = {
 
-    int productBoxH = boxPadTop + nKVRows * lineH + 8;
-    setPen(lineThick);
-    painter.drawRect(marginL, boxTop, contentW, productBoxH);
-    y = boxTop + productBoxH + 10;
+    {
+        "Product Code",
+        ": " + productCode
+    },
 
-    // ── Rejection Summary ────────────────────────────────────────────────
-    y = drawSectionTitle(y, "Rejection Summary :");
-    y += 10;
-    boxTop = y;
-    drawKVLine(lColX, boxTop + 16, "Total Rejection Count  :", QString::number(totalRej));
-    int rejBoxH = 28;
-    setPen(lineThick);
-    painter.drawRect(marginL, boxTop, contentW, rejBoxH);
-    y = boxTop + rejBoxH + 10;
-
-    y += 10;
-
-    // ── Rejection Details — dual-column table (page 0) ───────────────────
-    int dataIndex = 0;
-
-    if (!rejectionData.isEmpty()) {
-        painter.setFont(fontB(10)); setPen(1);
-        painter.drawText(marginL, y + 12, "Rejection Details");
-        y += 16;
-
-        int leftX  = marginL;
-        int rightX = marginL + sectionW + tableSectionGap;
-
-        y = drawBothTableHeaders(y);
-
-        int tableTopY   = y;
-        int leftIdx     = dataIndex;
-        int rightIdx    = dataIndex + rowPairsPage0;
-        int rowY        = y;
-        bool drewAnyRow = false;
-
-        while (leftIdx < rejectionData.size()) {
-            if (rowY + rowH > footerDivY - 6) break;
-
-            drawDataRow(leftX, rowY, leftIdx, rejectionData[leftIdx].toMap());
-
-            if (rightIdx < rejectionData.size())
-                drawDataRow(rightX, rowY, rightIdx, rejectionData[rightIdx].toMap());
-
-            drewAnyRow = true;
-            rowY++;
-            rowY += rowH - 1;
-            leftIdx++;
-            rightIdx++;
-        }
-
-        if (drewAnyRow)
-            drawSectionDivider(tableTopY - 4, rowY);
-
-        dataIndex = rightIdx;
-        if (dataIndex > rejectionData.size())
-            dataIndex = rejectionData.size();
-
-        if (dataIndex >= rejectionData.size() && rowY + rowH <= footerDivY - 6)
-            drawTotalRow(rightX, rowY);
-    }
-
-    drawFooter(0, totalPages);
-
-    // ════════════════════════════════════════════════════════════════════
-    // PAGES 1+ — rejection table continuation (dual-column)
-    // ════════════════════════════════════════════════════════════════════
-    int page = 1;
-    while (dataIndex < rejectionData.size()) {
-        writer.newPage();
-        y = drawHeaderCompact(page, totalPages);
-
-        painter.setFont(fontB(10)); setPen(1);
-        painter.drawText(marginL, y + 12, "Rejection Details (continued)");
-        y += 18;
-
-        int leftX  = marginL;
-        int rightX = marginL + sectionW + tableSectionGap;
-
-        y = drawBothTableHeaders(y);
-
-        int tableTopY = y;
-
-        int rowsAvail = 0;
         {
-            int testY = y;
-            while (testY + rowH <= footerDivY - 6) { testY += rowH; rowsAvail++; }
+            "Product S/No.",
+            ": " + productSno
+        },
+
+        {
+            "Product Name",
+            ": " + productName
+        },
+
+        {
+            "",
+            ""
+        },
+        {
+            "",
+            ""
+        },
+
+        {
+            "",
+            ""
+        },
+};
+
+
+QList<KVPair> rightRows = {
+
+{
+    "Batch ID",
+    ": " + batchName
+},
+
+    {
+        "Batch Start Time",
+        ": " + started
+    },
+
+    {
+        "Batch End Time",
+        ": " + endText
+    },
+
+    {
+        "Batch Run Duration",
+        ": " + runDur
+    },
+
+    {
+        "Batch Pause Duration",
+        ": " + pauseDur
+    },
+
+{
+    "Total Batch Duration",
+        ": " + totalDur
+}
+};
+
+
+int nKVRows =
+    leftRows.size();
+
+int lineH = 17;
+
+int boxPadTop = 24;
+
+
+for (int i = 0;
+     i < nKVRows;
+     ++i) {
+
+    int rowY =
+        boxTop +
+        boxPadTop +
+        i * lineH;
+
+
+    drawKVLine(
+        lColX,
+        rowY,
+        leftRows[i].lbl,
+        leftRows[i].val
+        );
+
+
+    if (!rightRows[i].lbl.isEmpty()) {
+
+        drawKVLine(
+            rColX,
+            rowY,
+            rightRows[i].lbl,
+            rightRows[i].val,
+            155
+            );
+    }
+}
+
+
+int productBoxH =
+    boxPadTop +
+    nKVRows * lineH +
+    8;
+
+
+setPen(lineThick);
+
+painter.drawRect(
+    marginL,
+    boxTop,
+    contentW,
+    productBoxH
+    );
+
+
+y =
+    boxTop +
+    productBoxH +
+    10;
+
+
+// ── Rejection Summary ────────────────────────────────────────────────────
+y = drawSectionTitle(
+    y,
+    "Rejection Summary :"
+    );
+
+y += 10;
+
+boxTop = y;
+
+
+drawKVLine(
+    lColX,
+    boxTop + 16,
+    "Total Rejection Count  :",
+    QString::number(totalRej)
+    );
+
+
+int rejBoxH = 28;
+
+setPen(lineThick);
+
+painter.drawRect(
+    marginL,
+    boxTop,
+    contentW,
+    rejBoxH
+    );
+
+
+y =
+    boxTop +
+    rejBoxH +
+    10;
+
+y += 10;
+
+
+// ── Rejection Details ────────────────────────────────────────────────────
+int dataIndex = 0;
+
+
+if (!rejectionData.isEmpty()) {
+
+    painter.setFont(
+        fontB(10)
+        );
+
+    setPen(1);
+
+    painter.drawText(
+        marginL,
+        y + 12,
+        "Rejection Details"
+        );
+
+    y += 16;
+
+
+    int leftX = marginL;
+
+    int rightX =
+        marginL +
+        sectionW +
+        tableSectionGap;
+
+
+    y =
+        drawBothTableHeaders(y);
+
+
+    int tableTopY = y;
+
+    int leftIdx = dataIndex;
+
+    int rightIdx =
+        dataIndex +
+        rowPairsPage0;
+
+    int rowY = y;
+
+    bool drewAnyRow = false;
+
+
+    while (
+        leftIdx <
+        rejectionData.size()
+        ) {
+
+        if (
+            rowY + rowH >
+            footerDivY - 6
+            )
+            break;
+
+
+        drawDataRow(
+            leftX,
+            rowY,
+            leftIdx,
+            rejectionData[leftIdx].toMap()
+            );
+
+
+        if (
+            rightIdx <
+            rejectionData.size()
+            ) {
+
+            drawDataRow(
+                rightX,
+                rowY,
+                rightIdx,
+                rejectionData[rightIdx].toMap()
+                );
         }
 
-        int leftIdx  = dataIndex;
-        int rightIdx = dataIndex + rowsAvail;
-        int rowY     = y;
-        bool drewAny = false;
 
-        while (leftIdx < rejectionData.size()) {
-            if (rowY + rowH > footerDivY - 6) break;
+        drewAnyRow = true;
 
-            drawDataRow(leftX, rowY, leftIdx, rejectionData[leftIdx].toMap());
+        rowY++;
 
-            if (rightIdx < rejectionData.size())
-                drawDataRow(rightX, rowY, rightIdx, rejectionData[rightIdx].toMap());
+        rowY += rowH - 1;
 
-            drewAny = true;
-            rowY   += rowH;
-            leftIdx++;
-            rightIdx++;
-        }
+        leftIdx++;
 
-        if (drewAny)
-            drawSectionDivider(tableTopY - 4, rowY);
-
-        dataIndex = rightIdx;
-        if (dataIndex > rejectionData.size())
-            dataIndex = rejectionData.size();
-
-        if (dataIndex >= rejectionData.size() && rowY + rowH <= footerDivY - 6)
-            drawTotalRow(rightX, rowY);
-
-        drawFooter(page, totalPages);
-        page++;
+        rightIdx++;
     }
 
-    painter.end();
-    qDebug() << "Batch PDF saved at:" << path;
-    return path;
+
+    if (drewAnyRow) {
+
+        drawSectionDivider(
+            tableTopY - 4,
+            rowY
+            );
+    }
+
+
+    dataIndex = rightIdx;
+
+
+    if (
+        dataIndex >
+        rejectionData.size()
+        )
+        dataIndex =
+            rejectionData.size();
+
+
+    if (
+        dataIndex >=
+            rejectionData.size() &&
+        rowY + rowH <=
+            footerDivY - 6
+        ) {
+
+        drawTotalRow(
+            rightX,
+            rowY
+            );
+    }
+}
+
+
+drawFooter(
+    0,
+    totalPages
+    );
+
+
+// ════════════════════════════════════════════════════════════════════
+// PAGES 1+ — rejection table continuation
+// ════════════════════════════════════════════════════════════════════
+int page = 1;
+
+
+while (
+    dataIndex <
+    rejectionData.size()
+    ) {
+
+    writer.newPage();
+
+
+    y =
+        drawHeaderCompact(
+            page,
+            totalPages
+            );
+
+
+    painter.setFont(
+        fontB(10)
+        );
+
+    setPen(1);
+
+
+    painter.drawText(
+        marginL,
+        y + 12,
+        "Rejection Details (continued)"
+        );
+
+
+    y += 18;
+
+
+    int leftX = marginL;
+
+    int rightX =
+        marginL +
+        sectionW +
+        tableSectionGap;
+
+
+    y =
+        drawBothTableHeaders(y);
+
+
+    int tableTopY = y;
+
+
+    int rowsAvail = 0;
+
+    {
+        int testY = y;
+
+        while (
+            testY + rowH <=
+            footerDivY - 6
+            ) {
+
+            testY += rowH;
+
+            rowsAvail++;
+        }
+    }
+
+
+    int leftIdx = dataIndex;
+
+    int rightIdx =
+        dataIndex +
+        rowsAvail;
+
+    int rowY = y;
+
+    bool drewAny = false;
+
+
+    while (
+        leftIdx <
+        rejectionData.size()
+        ) {
+
+        if (
+            rowY + rowH >
+            footerDivY - 6
+            )
+            break;
+
+
+        drawDataRow(
+            leftX,
+            rowY,
+            leftIdx,
+            rejectionData[leftIdx].toMap()
+            );
+
+
+        if (
+            rightIdx <
+            rejectionData.size()
+            ) {
+
+            drawDataRow(
+                rightX,
+                rowY,
+                rightIdx,
+                rejectionData[rightIdx].toMap()
+                );
+        }
+
+
+        drewAny = true;
+
+        rowY += rowH;
+
+        leftIdx++;
+
+        rightIdx++;
+    }
+
+
+    if (drewAny) {
+
+        drawSectionDivider(
+            tableTopY - 4,
+            rowY
+            );
+    }
+
+
+    dataIndex = rightIdx;
+
+
+    if (
+        dataIndex >
+        rejectionData.size()
+        )
+        dataIndex =
+            rejectionData.size();
+
+
+    if (
+        dataIndex >=
+            rejectionData.size() &&
+        rowY + rowH <=
+            footerDivY - 6
+        ) {
+
+        drawTotalRow(
+            rightX,
+            rowY
+            );
+    }
+
+
+    drawFooter(
+        page,
+        totalPages
+        );
+
+    page++;
+}
+
+
+painter.end();
+
+
+qDebug()
+    << "Batch PDF saved at:"
+    << path;
+
+
+return path;
 }
 
 // =========== Check USB =========
