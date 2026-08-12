@@ -133,11 +133,21 @@ Item {
     {
         var settings = databaseManager.getDDSettings()
 
-        if (settings.ddPower !== undefined)
-            ddPower = settings.ddPower
+        console.log("========== LOAD DD SETTINGS ==========")
+        console.log("DB ddPower:", settings.ddPower)
+        console.log("DB ddFreq:", settings.ddFreq)
 
-        if (settings.ddFreq !== undefined)
-            ddFrequency = settings.ddFreq
+        if (settings.ddPower !== undefined) {
+            root.ddPower = Number(settings.ddPower)
+            console.log("root.ddPower =", root.ddPower)
+        }
+
+        if (settings.ddFreq !== undefined) {
+            root.ddFrequency = Number(settings.ddFreq)
+            console.log("root.ddFrequency =", root.ddFrequency)
+        }
+
+        console.log("======================================")
     }
 
     Component.onCompleted: {
@@ -152,6 +162,8 @@ Item {
 
         function onMachineParametersChanged()
         {
+            console.log("machineParametersChanged received")
+
             root.loadDDSettings()
         }
     }
@@ -994,6 +1006,7 @@ Item {
                             anchors.fill: parent
 
                             ValueControl {
+                                id: ddPowerControl
 
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -parent.height * 0.1
@@ -1002,30 +1015,30 @@ Item {
                                 minValue: 0
                                 maxValue: 100
 
-                                value: ddPower
+                                value: root.ddPower
 
                                 stepSize: 1
                                 decimals: 0
 
                                 onValueChangedDelayed: function(val)
                                 {
-                                    if (ddPower !== val)
-                                        previousDDPower = ddPower
+                                    if (root.ddPower !== val)
+                                        root.previousDDPower = root.ddPower
 
-                                    ddPower = val
+                                    root.ddPower = val
 
                                     SerialManager.setDDPower(val)
                                 }
 
                                 onSaveClicked: function(val)
                                 {
-                                    var settings = databaseManager.getDDSettings()
+                                    var settings =
+                                            databaseManager.getDDSettings()
 
-                                    var oldValue = settings.ddPower
-
+                                    var oldValue =
+                                            settings.ddPower
 
                                     databaseManager.saveDDPower(val)
-
 
                                     saveDDAudit(
                                         "DD Power Changed",
@@ -1033,8 +1046,10 @@ Item {
                                         val
                                     )
 
+                                    root.notify(
+                                        "✓ DD Power Saved : " + val
+                                    )
 
-                                    root.notify("✓ DD Power Saved : " + val)
                                     root.globalTopBar.resetSessionTimer()
                                 }
                             }
@@ -1067,6 +1082,7 @@ Item {
                             anchors.fill: parent
 
                             ValueControl {
+                                id: ddFrequencyControl
 
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -parent.height * 0.1
@@ -1075,41 +1091,45 @@ Item {
                                 minValue: 25.0
                                 maxValue: 50.0
 
-                                value: ddFrequency
+                                value: root.ddFrequency
 
                                 stepSize: 0.1
                                 decimals: 1
 
                                 onValueChangedDelayed: function(val)
                                 {
-                                    if (ddFrequency !== val)
-                                        previousDDFrequency = ddFrequency
+                                    if (root.ddFrequency !== val)
+                                        root.previousDDFrequency =
+                                                root.ddFrequency
 
-                                    ddFrequency = val
+                                    root.ddFrequency = val
 
-                                    var freq = Math.round(val * 10)
-
-                                    SerialManager.setDDFrequency(freq)
+                                    SerialManager.setDDFrequency(
+                                        Math.round(val * 10)
+                                    )
                                 }
 
                                 onSaveClicked: function(val)
                                 {
-                                    var settings = databaseManager.getDDSettings()
+                                    var settings =
+                                            databaseManager.getDDSettings()
 
-                                    var oldValue = settings.ddFreq
-
+                                    var oldValue =
+                                            settings.ddFreq
 
                                     databaseManager.saveDDFrequency(val)
 
-
                                     saveDDAudit(
                                         "DD Frequency Changed",
-                                        oldValue.toFixed(1),
-                                        val.toFixed(1)
+                                        Number(oldValue).toFixed(1),
+                                        Number(val).toFixed(1)
                                     )
 
+                                    root.notify(
+                                        "✓ DD Frequency Saved : "
+                                        + Number(val).toFixed(1)
+                                    )
 
-                                    root.notify("✓ DD Frequency Saved : " + val.toFixed(1))
                                     root.globalTopBar.resetSessionTimer()
                                 }
                             }
