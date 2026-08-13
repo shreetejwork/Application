@@ -1389,51 +1389,181 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
             m.value(
                  "eventType",
                  ""
-                 ).toString().toLower();
+                 ).toString()
+                .trimmed()
+                .toLower();
 
-        if (eventType == "start")
+
+        if (eventType == "start") {
+
             return {
                 "Batch Start",
                 QColor(20, 130, 20),
                 true
             };
+        }
 
-        if (eventType == "pause")
+
+        if (eventType == "pause") {
+
             return {
                 "Batch Paused",
                 QColor(200, 80, 0),
                 true
             };
+        }
 
-        if (eventType == "resume")
+
+        if (eventType == "resume") {
+
             return {
                 "Batch Resumed",
                 QColor(0, 80, 180),
                 true
             };
+        }
 
-        if (eventType == "end")
+
+        if (eventType == "end") {
+
             return {
                 "Batch End",
                 QColor(60, 60, 60),
                 true
             };
+        }
+
+
+        int rejectCount =
+            m.value(
+                 "rejectCount",
+                 0
+                 ).toInt();
+
 
         return {
-            m["rejectCount"].toString(),
-            Qt::black,
-            false
+            QString("Rejected: %1")
+            .arg(rejectCount),
+
+                QColor(180, 0, 0),
+
+                false
         };
     };
 
+    // ── TIMESTAMP PARSER ─────────────────────────────────────────────────────
+    auto parseEventDateTime =
+        [&](const QVariantMap &m) -> QDateTime {
 
-    // ── DRAW ONE DATA ROW ────────────────────────────────────────────────────
+        QString eventType =
+            m.value("eventType", "").toString().trimmed().toLower();
+
+        // First preference: direct timestamp fields
+        QStringList timestampKeys;
+
+        if (eventType == "start") {
+            timestampKeys << "startTime";
+        } else if (eventType == "pause") {
+            timestampKeys << "pauseTime";
+        } else if (eventType == "resume") {
+            timestampKeys << "resumeTime";
+        } else if (eventType == "end") {
+            timestampKeys << "endTime";
+        }
+
+        // Fallback keys
+        timestampKeys
+            << "timestamp"
+            << "dateTime"
+            << "datetime"
+            << "createdAt"
+            << "eventTime";
+
+        for (const QString &key : timestampKeys) {
+
+            QString value =
+                m.value(key).toString().trimmed();
+
+            if (value.isEmpty())
+                continue;
+
+            QStringList formats = {
+                "dd/MM/yyyy @ HH:mm:ss",
+                "dd/MM/yyyy HH:mm:ss",
+                "dd-MM-yyyy HH:mm:ss",
+                "dd-MM-yyyy @ HH:mm:ss",
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-ddTHH:mm:ss",
+                "yyyy-MM-ddTHH:mm:ss.zzz",
+                "dd/MM/yyyy",
+                "dd-MM-yyyy"
+            };
+
+            for (const QString &format : formats) {
+
+                QDateTime dt =
+                    QDateTime::fromString(
+                        value,
+                        format
+                        );
+
+                if (dt.isValid())
+                    return dt;
+            }
+
+            // Try ISO format as final fallback
+            QDateTime isoDt =
+                QDateTime::fromString(
+                    value,
+                    Qt::ISODate
+                    );
+
+            if (isoDt.isValid())
+                return isoDt;
+        }
+
+        // If date and time are stored separately
+        QString date =
+            m.value("date").toString().trimmed();
+
+        QString time =
+            m.value("time").toString().trimmed();
+
+        if (!date.isEmpty() && !time.isEmpty()) {
+
+            QStringList formats = {
+                "dd/MM/yyyy HH:mm:ss",
+                "dd/MM/yyyy HH:mm",
+                "dd-MM-yyyy HH:mm:ss",
+                "dd-MM-yyyy HH:mm",
+                "yyyy-MM-dd HH:mm:ss",
+                "yyyy-MM-dd HH:mm"
+            };
+
+            for (const QString &format : formats) {
+
+                QDateTime dt =
+                    QDateTime::fromString(
+                        date + " " + time,
+                        format
+                        );
+
+                if (dt.isValid())
+                    return dt;
+            }
+        }
+
+        return QDateTime();
+    };
+
+    // ── DRAW ONE DATA ROW ─────────────────────────────────────────────────────
     auto drawDataRow =
         [&](int xOffset,
             int y,
             int idx,
             const QVariantMap &m) {
 
+            // Alternate row background
             if (idx % 2 == 1) {
 
                 painter.fillRect(
@@ -1446,430 +1576,476 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
             }
 
 
+            // ── RESOLVE STATUS ────────────────────────────────────────────────────
             RowDisplay rd =
                 resolveRowDisplay(m);
 
 
-            QStringList row = {
-                QString::number(idx + 1),
-                m["date"].toString(),
-                m["time"].toString(),
-                rd.text
-            };
+            // ── RESOLVE DATE / TIME ───────────────────────────────────────────────
+            QDateTime eventDateTime =
+                parseEventDateTime(m);
 
+            QString eventDate;
+            QString eventTime;
 
-            int x = xOffset;
+            if (eventDateTime.isValid()) {
 
-            for (int c = 0; c < nCols; ++c) {
-
-                setPen(
-                    1,
-                    QColor(210, 210, 210)
-                    );
-
-                painter.drawLine(
-                    xOffset + 8,
-                    y + rowH - 1,
-                    xOffset + sectionW - 8,
-                    y + rowH - 1
-                    );
-
-
-                Qt::Alignment al =
-                    (c == 0)
-                        ? (
-                              Qt::AlignVCenter |
-                              Qt::AlignHCenter
-                              )
-                        : (
-                              Qt::AlignVCenter |
-                              Qt::AlignLeft
-                              );
-
-
-                if (c == nCols - 1) {
-
-                    painter.setFont(
-                        rd.bold
-                            ? fontB(8)
-                            : fontR(9)
+                eventDate =
+                    eventDateTime.date().toString(
+                        "dd/MM/yyyy"
                         );
 
-                    setPen(
-                        1,
-                        rd.color
+                eventTime =
+                    eventDateTime.time().toString(
+                        "HH:mm:ss"
                         );
 
-                } else {
+            } else {
 
-                    painter.setFont(
-                        fontR(9)
-                        );
+                // Final fallback
+                eventDate =
+                    m.value("date", "---").toString();
 
-                    setPen(
-                        1,
-                        QColor(45, 45, 45)
-                        );
-                }
-
-
-                painter.drawText(
-                    QRect(
-                        x + 4,
-                        y,
-                        colW[c] - 8,
-                        rowH
-                        ),
-                    al,
-                    row[c]
-                    );
-
-                x += colW[c];
+                eventTime =
+                    m.value("time", "---").toString();
             }
+
+
+            // ── ROW DATA ──────────────────────────────────────────────────────────
+            QStringList row = {
+
+            QString::number(idx + 1),
+
+                eventDate,
+
+                eventTime,
+
+                rd.text
         };
 
 
-    // ── SECTION BOX HELPER ───────────────────────────────────────────────────
-    auto drawSectionTitle =
-        [&](int y,
-            const QString &title) -> int {
+    // ── DRAW COLUMNS ─────────────────────────────────────────────────────
+    int x = xOffset;
 
-        painter.setFont(fontB(10));
+    for (int c = 0; c < nCols; ++c) {
+
+        // Bottom separator
+        setPen(
+            1,
+            QColor(210, 210, 210)
+            );
+
+        painter.drawLine(
+            xOffset + 8,
+            y + rowH - 1,
+            xOffset + sectionW - 8,
+            y + rowH - 1
+            );
+
+
+        // Alignment
+        Qt::Alignment al;
+
+        if (c == 0) {
+
+            al =
+                Qt::AlignVCenter |
+                Qt::AlignHCenter;
+
+        } else {
+
+            al =
+                Qt::AlignVCenter |
+                Qt::AlignLeft;
+        }
+
+
+        // Font + color
+        if (c == nCols - 1) {
+
+            painter.setFont(
+                rd.bold
+                    ? fontB(8)
+                    : fontR(9)
+                );
+
+            setPen(
+                1,
+                rd.color
+                );
+
+        } else {
+
+            painter.setFont(
+                fontR(9)
+                );
+
+            setPen(
+                1,
+                QColor(45, 45, 45)
+                );
+        }
+
+
+        // Draw cell
+        painter.drawText(
+            QRect(
+                x + 4,
+                y,
+                colW[c] - 8,
+                rowH
+                ),
+            al,
+            row[c]
+            );
+
+
+        x += colW[c];
+    }
+};
+
+
+// ── SECTION BOX HELPER ───────────────────────────────────────────────────
+auto drawSectionTitle =
+    [&](int y,
+        const QString &title) -> int {
+
+    painter.setFont(fontB(10));
+
+    setPen(1);
+
+    painter.drawText(
+        marginL,
+        y + 12,
+        title
+        );
+
+    return y + 16;
+};
+
+
+auto drawKVLine =
+    [&](int x,
+        int y,
+        const QString &lbl,
+        const QString &val,
+        int valueOffsetX = 145) {
+
+        painter.setFont(fontB(9));
 
         setPen(1);
 
         painter.drawText(
-            marginL,
-            y + 12,
-            title
+            x + 8,
+            y,
+            lbl
             );
 
-        return y + 16;
+
+        painter.setFont(fontR(9));
+
+        painter.drawText(
+            x + 8 + valueOffsetX,
+            y,
+            val
+            );
     };
 
 
-    auto drawKVLine =
-        [&](int x,
-            int y,
-            const QString &lbl,
-            const QString &val,
-            int valueOffsetX = 145) {
+// ── DRAW DUAL TABLE HEADERS ──────────────────────────────────────────────
+auto drawBothTableHeaders =
+    [&](int y) -> int {
 
-            painter.setFont(fontB(9));
+    int leftX = marginL;
 
-            setPen(1);
-
-            painter.drawText(
-                x + 8,
-                y,
-                lbl
-                );
+    int rightX =
+        marginL +
+        sectionW +
+        tableSectionGap;
 
 
-            painter.setFont(fontR(9));
+    drawTableHeader(
+        leftX,
+        y
+        );
 
-            painter.drawText(
-                x + 8 + valueOffsetX,
-                y,
-                val
-                );
-        };
+    drawTableHeader(
+        rightX,
+        y
+        );
+
+    return y + thH + 4;
+};
 
 
-    // ── DRAW DUAL TABLE HEADERS ──────────────────────────────────────────────
-    auto drawBothTableHeaders =
-        [&](int y) -> int {
+// ── DRAW VERTICAL SECTION DIVIDER ─────────────────────────────────────────
+auto drawSectionDivider =
+    [&](int yTop,
+        int yBottom) {
 
-        int leftX = marginL;
-
-        int rightX =
+        int divX =
             marginL +
             sectionW +
-            tableSectionGap;
+            tableSectionGap / 2;
 
 
-        drawTableHeader(
-            leftX,
-            y
+        QPen dp(
+            QColor(180, 180, 180)
             );
 
-        drawTableHeader(
-            rightX,
-            y
+        dp.setWidth(1);
+
+        dp.setStyle(
+            Qt::DashLine
             );
 
-        return y + thH + 4;
+        painter.setPen(dp);
+
+        painter.drawLine(
+            divX,
+            yTop,
+            divX,
+            yBottom
+            );
+
+        setPen(1);
     };
 
 
-    // ── DRAW VERTICAL SECTION DIVIDER ─────────────────────────────────────────
-    auto drawSectionDivider =
-        [&](int yTop,
-            int yBottom) {
+// ── DRAW TOTAL ROW ───────────────────────────────────────────────────────
+auto drawTotalRow =
+    [&](int xOffset, int y) {
 
-            int divX =
-                marginL +
-                sectionW +
-                tableSectionGap / 2;
+        painter.setFont(fontB(9));
 
-
-            QPen dp(
-                QColor(180, 180, 180)
-                );
-
-            dp.setWidth(1);
-
-            dp.setStyle(
-                Qt::DashLine
-                );
-
-            painter.setPen(dp);
-
-            painter.drawLine(
-                divX,
-                yTop,
-                divX,
-                yBottom
-                );
-
-            setPen(1);
-        };
-
-
-    // ── DRAW TOTAL ROW ───────────────────────────────────────────────────────
-    auto drawTotalRow =
-        [&](int xOffset, int y) {
-
-            painter.setFont(fontB(9));
-
-            setPen(
-                1,
-                Qt::black
-                );
-
-            QString totalStr =
-                "Total Rejection Count: " +
-                QString::number(totalRej);
-
-            painter.drawText(
-                QRect(
-                    xOffset,
-                    y + 2,
-                    sectionW - 4,
-                    rowH - 4
-                    ),
-                Qt::AlignVCenter |
-                    Qt::AlignRight,
-                totalStr
-                );
-        };
-
-
-    // ── PRE-CALCULATE TOTAL PAGES ────────────────────────────────────────────
-    const int footerH =
-        pageH - footerDivY + 10;
-
-    const int summaryH =
-        74 +
-        16 +
-        62 +
-        16 +
-        172 +
-        16 +
-        34 +
-        16 +
-        24;
-
-    const int availPage0 =
-        pageH -
-        summaryH -
-        footerH -
-        10;
-
-    const int rowPairsPage0 =
-        qMax(
-            0,
-            availPage0 / rowH
-            );
-
-    const int rowsPage0 =
-        rowPairsPage0 * 2;
-
-
-    const int compactHdrH = 76;
-
-    const int availPageN =
-        pageH -
-        compactHdrH -
-        thH -
-        footerH -
-        marginB -
-        20;
-
-    const int rowPairsPageN =
-        qMax(
+        setPen(
             1,
-            availPageN / rowH
+            Qt::black
             );
 
-    const int rowsPageN =
-        rowPairsPageN * 2;
+        QString totalStr =
+            "Total Rejection Count: " +
+            QString::number(totalRej);
 
-
-    int totalPages = 1;
-
-    if (
-        !rejectionData.isEmpty() &&
-        rejectionData.size() > rowsPage0
-        ) {
-
-        int remaining =
-            rejectionData.size() -
-            rowsPage0;
-
-        totalPages +=
-            (
-                remaining +
-                rowsPageN -
-                1
-                ) /
-            rowsPageN;
-    }
-
-
-    // ════════════════════════════════════════════════════════════════════
-    // PAGE 0
-    // ════════════════════════════════════════════════════════════════════
-    int y = drawHeaderFull();
-
-
-    // ── Machine Summary ──────────────────────────────────────────────────────
-    y = drawSectionTitle(
-        y,
-        "Machine Summary :"
-        );
-
-    y += 10;
-
-    int boxTop = y;
-
-    int lColX = marginL;
-
-    int rColX =
-        marginL +
-        contentW / 2;
-
-    int r1y =
-        boxTop + 26;
-
-    int r2y =
-        boxTop + 43;
-
-    y += 10;
-
-
-    drawKVLine(
-        lColX,
-        r1y,
-        "User",
-        ": " + userName
-        );
-
-    drawKVLine(
-        rColX,
-        r1y,
-        "Machine ID.",
-        ": " + machineId,
-        90
-        );
-
-    drawKVLine(
-        rColX,
-        r2y,
-        "M/c Sr. No.",
-        ": " + serialNo,
-        90
-        );
-
-    drawKVLine(
-        lColX,
-        r2y + 17,
-        "M/c Type",
-        ": " + machineType
-        );
-
-    drawKVLine(
-        lColX,
-        r2y,
-        "Location",
-        ": " + location
-        );
-
-
-    int machineBoxH = 72;
-
-    setPen(lineThick);
-
-    painter.drawRect(
-        marginL,
-        boxTop,
-        contentW,
-        machineBoxH
-        );
-
-    y =
-        boxTop +
-        machineBoxH +
-        10;
-
-
-    // ── Product / Batch Summary ──────────────────────────────────────────────
-    y = drawSectionTitle(
-        y,
-        "Product / Batch Summary :"
-        );
-
-    y += 10;
-
-    boxTop = y;
-
-
-    struct KVPair {
-        QString lbl;
-        QString val;
+        painter.drawText(
+            QRect(
+                xOffset,
+                y + 2,
+                sectionW - 4,
+                rowH - 4
+                ),
+            Qt::AlignVCenter |
+                Qt::AlignRight,
+            totalStr
+            );
     };
 
 
-    QList<KVPair> leftRows = {
+// ── PRE-CALCULATE TOTAL PAGES ────────────────────────────────────────────
+const int footerH =
+    pageH - footerDivY + 10;
+
+const int summaryH =
+    74 +
+    16 +
+    62 +
+    16 +
+    172 +
+    16 +
+    34 +
+    16 +
+    24;
+
+const int availPage0 =
+    pageH -
+    summaryH -
+    footerH -
+    10;
+
+const int rowPairsPage0 =
+    qMax(
+        0,
+        availPage0 / rowH
+        );
+
+const int rowsPage0 =
+    rowPairsPage0 * 2;
+
+
+const int compactHdrH = 76;
+
+const int availPageN =
+    pageH -
+    compactHdrH -
+    thH -
+    footerH -
+    marginB -
+    20;
+
+const int rowPairsPageN =
+    qMax(
+        1,
+        availPageN / rowH
+        );
+
+const int rowsPageN =
+    rowPairsPageN * 2;
+
+
+int totalPages = 1;
+
+if (
+    !rejectionData.isEmpty() &&
+    rejectionData.size() > rowsPage0
+    ) {
+
+    int remaining =
+        rejectionData.size() -
+        rowsPage0;
+
+    totalPages +=
+        (
+            remaining +
+            rowsPageN -
+            1
+            ) /
+        rowsPageN;
+}
+
+
+// ════════════════════════════════════════════════════════════════════
+// PAGE 0
+// ════════════════════════════════════════════════════════════════════
+int y = drawHeaderFull();
+
+
+// ── Machine Summary ──────────────────────────────────────────────────────
+y = drawSectionTitle(
+    y,
+    "Machine Summary :"
+    );
+
+y += 10;
+
+int boxTop = y;
+
+int lColX = marginL;
+
+int rColX =
+    marginL +
+    contentW / 2;
+
+int r1y =
+    boxTop + 26;
+
+int r2y =
+    boxTop + 43;
+
+y += 10;
+
+
+drawKVLine(
+    lColX,
+    r1y,
+    "User",
+    ": " + userName
+    );
+
+drawKVLine(
+    rColX,
+    r1y,
+    "Machine ID.",
+    ": " + machineId,
+    90
+    );
+
+drawKVLine(
+    rColX,
+    r2y,
+    "M/c Sr. No.",
+    ": " + serialNo,
+    90
+    );
+
+drawKVLine(
+    lColX,
+    r2y + 17,
+    "M/c Type",
+    ": " + machineType
+    );
+
+drawKVLine(
+    lColX,
+    r2y,
+    "Location",
+    ": " + location
+    );
+
+
+int machineBoxH = 72;
+
+setPen(lineThick);
+
+painter.drawRect(
+    marginL,
+    boxTop,
+    contentW,
+    machineBoxH
+    );
+
+y =
+    boxTop +
+    machineBoxH +
+    10;
+
+
+// ── Product / Batch Summary ──────────────────────────────────────────────
+y = drawSectionTitle(
+    y,
+    "Product / Batch Summary :"
+    );
+
+y += 10;
+
+boxTop = y;
+
+
+struct KVPair {
+    QString lbl;
+    QString val;
+};
+
+
+QList<KVPair> leftRows = {
+
+{
+    "Product Code",
+    ": " + productCode
+},
 
     {
-        "Product Code",
-        ": " + productCode
+        "Product S/No.",
+        ": " + productSno
     },
 
-        {
-            "Product S/No.",
-            ": " + productSno
-        },
+    {
+        "Product Name",
+        ": " + productName
+    },
 
-        {
-            "Product Name",
-            ": " + productName
-        },
+    {
+        "",
+        ""
+    },
+    {
+        "",
+        ""
+    },
 
-        {
-            "",
-            ""
-        },
-        {
-            "",
-            ""
-        },
-
-        {
-            "",
-            ""
-        },
+    {
+        "",
+        ""
+    },
 };
 
 

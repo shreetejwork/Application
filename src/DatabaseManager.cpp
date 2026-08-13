@@ -1862,7 +1862,14 @@ bool DatabaseManager::addBatchReportEvent(
     const QString &eventTime,
     const QString &user)
 {
-    QSqlQuery query;
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if (!db.isOpen()) {
+        qWarning() << "Database is not open";
+        return false;
+    }
+
+    QSqlQuery query(db);
 
     query.prepare(R"(
         INSERT INTO batchreportevents
@@ -1872,19 +1879,23 @@ bool DatabaseManager::addBatchReportEvent(
             eventTime,
             user
         )
-        VALUES (?, ?, ?, ?)
+        VALUES
+        (
+            :batchReportId,
+            :eventType,
+            :eventTime,
+            :user
+        )
     )");
 
-    query.addBindValue(batchReportId);
-    query.addBindValue(eventType);
-    query.addBindValue(eventTime);
-    query.addBindValue(user);
+    query.bindValue(":batchReportId", batchReportId);
+    query.bindValue(":eventType", eventType);
+    query.bindValue(":eventTime", eventTime);
+    query.bindValue(":user", user);
 
-    if (!query.exec())
-    {
-        qDebug()
-        << "Failed to save batch event:"
-        << query.lastError().text();
+    if (!query.exec()) {
+        qWarning() << "Failed to insert batch event:"
+                   << query.lastError().text();
 
         return false;
     }
@@ -1990,11 +2001,17 @@ QVariantList DatabaseManager::getBatchReports()
         row["productSno"] =
             query.value("productSno");
 
+        // ===============================
+        // BATCH START DATE + TIME
+        // ===============================
         row["started"] =
-            query.value("startedAt");
+            query.value("startedAt").toString();
 
+        // ===============================
+        // BATCH END DATE + TIME
+        // ===============================
         row["ended"] =
-            query.value("endedAt");
+            query.value("endedAt").toString();
 
         row["runDuration"] =
             query.value("runDuration");
@@ -2023,8 +2040,7 @@ QVariantList DatabaseManager::getBatchReports()
     return list;
 }
 
-QVariantList DatabaseManager::getBatchReportEvents(
-    int batchReportId)
+QVariantList DatabaseManager::getBatchReportEvents(int batchReportId)
 {
     QVariantList list;
 
@@ -2032,6 +2048,7 @@ QVariantList DatabaseManager::getBatchReportEvents(
 
     query.prepare(R"(
         SELECT
+            id,
             eventType,
             eventTime,
             user
@@ -2055,14 +2072,17 @@ QVariantList DatabaseManager::getBatchReportEvents(
     {
         QVariantMap row;
 
+        row["id"] =
+            query.value("id");
+
         row["eventType"] =
-            query.value("eventType");
+            query.value("eventType").toString();
 
         row["eventTime"] =
-            query.value("eventTime");
+            query.value("eventTime").toString();
 
         row["user"] =
-            query.value("user");
+            query.value("user").toString();
 
         list.append(row);
     }
