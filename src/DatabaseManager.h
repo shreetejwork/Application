@@ -124,7 +124,8 @@ public:
         int batchReportId,
         const QString &eventType,
         const QString &eventTime,
-        const QString &user);
+        const QString &user,
+        int rejectCount = 0);
 
     Q_INVOKABLE bool finishBatchReport(
         int batchReportId,

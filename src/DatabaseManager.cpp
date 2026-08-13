@@ -255,11 +255,51 @@ void DatabaseManager::createTables()
             eventType TEXT,
             eventTime TEXT,
             user TEXT,
+            rejectCount INTEGER DEFAULT 0
 
             FOREIGN KEY(batchReportId)
             REFERENCES batchreportmain(id)
         );
     )");
+
+    // ============================================================
+    // ENSURE rejectCount COLUMN EXISTS
+    // ============================================================
+
+    QSqlQuery columnCheck;
+
+    columnCheck.prepare(R"(
+    SELECT COUNT(*)
+    FROM pragma_table_info('batchreportevents')
+    WHERE name = 'rejectCount'
+)");
+
+    if (columnCheck.exec() &&
+        columnCheck.next())
+    {
+        int exists =
+            columnCheck.value(0).toInt();
+
+        if (exists == 0)
+        {
+            QSqlQuery alterQuery;
+
+            if (!alterQuery.exec(R"(
+            ALTER TABLE batchreportevents
+            ADD COLUMN rejectCount INTEGER DEFAULT 0
+        )"))
+            {
+                qWarning()
+                << "Failed to add rejectCount column:"
+                << alterQuery.lastError().text();
+            }
+            else
+            {
+                qDebug()
+                << "Added rejectCount column to batchreportevents";
+            }
+        }
+    }
 
 
 
@@ -1860,12 +1900,17 @@ bool DatabaseManager::addBatchReportEvent(
     int batchReportId,
     const QString &eventType,
     const QString &eventTime,
-    const QString &user)
+    const QString &user,
+    int rejectCount)
 {
-    QSqlDatabase db = QSqlDatabase::database();
+    QSqlDatabase db =
+        QSqlDatabase::database();
 
-    if (!db.isOpen()) {
-        qWarning() << "Database is not open";
+    if (!db.isOpen())
+    {
+        qWarning()
+        << "Database is not open";
+
         return false;
     }
 
@@ -1877,28 +1922,54 @@ bool DatabaseManager::addBatchReportEvent(
             batchReportId,
             eventType,
             eventTime,
-            user
+            user,
+            rejectCount
         )
         VALUES
         (
             :batchReportId,
             :eventType,
             :eventTime,
-            :user
+            :user,
+            :rejectCount
         )
     )");
 
-    query.bindValue(":batchReportId", batchReportId);
-    query.bindValue(":eventType", eventType);
-    query.bindValue(":eventTime", eventTime);
-    query.bindValue(":user", user);
+    query.bindValue(
+        ":batchReportId",
+        batchReportId);
 
-    if (!query.exec()) {
-        qWarning() << "Failed to insert batch event:"
-                   << query.lastError().text();
+    query.bindValue(
+        ":eventType",
+        eventType);
+
+    query.bindValue(
+        ":eventTime",
+        eventTime);
+
+    query.bindValue(
+        ":user",
+        user);
+
+    query.bindValue(
+        ":rejectCount",
+        rejectCount);
+
+    if (!query.exec())
+    {
+        qWarning()
+        << "Failed to insert batch event:"
+        << query.lastError().text();
 
         return false;
     }
+
+    qDebug()
+        << "Batch event saved:"
+        << "batchReportId =" << batchReportId
+        << "eventType =" << eventType
+        << "eventTime =" << eventTime
+        << "rejectCount =" << rejectCount;
 
     return true;
 }
@@ -2040,7 +2111,8 @@ QVariantList DatabaseManager::getBatchReports()
     return list;
 }
 
-QVariantList DatabaseManager::getBatchReportEvents(int batchReportId)
+QVariantList DatabaseManager::getBatchReportEvents(
+    int batchReportId)
 {
     QVariantList list;
 
@@ -2051,7 +2123,8 @@ QVariantList DatabaseManager::getBatchReportEvents(int batchReportId)
             id,
             eventType,
             eventTime,
-            user
+            user,
+            rejectCount
         FROM batchreportevents
         WHERE batchReportId = ?
         ORDER BY id ASC
@@ -2084,8 +2157,15 @@ QVariantList DatabaseManager::getBatchReportEvents(int batchReportId)
         row["user"] =
             query.value("user").toString();
 
+        row["rejectCount"] =
+            query.value("rejectCount").toInt();
+
         list.append(row);
     }
+
+    qDebug()
+        << "Batch events loaded:"
+        << list.count();
 
     return list;
 }
