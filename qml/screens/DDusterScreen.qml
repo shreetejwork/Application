@@ -29,6 +29,9 @@ Item {
 
     property int activeBatchReportId: -1
 
+    property int batchRejectionCount: 0
+    property int rejectionCountAtLastBuffer: 0
+
     property var batchStartDateTime: null
     property var batchEndDateTime: null
 
@@ -71,13 +74,6 @@ Item {
                 String(root.currentProductGroupNo).padStart(2, "0") +
                 "/" +
                 String(product.sr)
-
-        console.log("========== LOADED PRODUCT ==========")
-        console.log("Product Group :", root.currentProductGroupNo)
-        console.log("Product Name  :", root.currentProductName)
-        console.log("Product Code  :", root.currentProductCode)
-        console.log("Product S/No  :", root.currentProductSno)
-        console.log("===================================")
 
         return true
     }
@@ -159,6 +155,54 @@ Item {
                 return
 
             root.batchRunSeconds++
+        }
+    }
+
+    Timer {
+        id: rejectionBufferTimer
+
+        interval: 5 * 60 * 1000
+        repeat: true
+
+        onTriggered: {
+
+            if (!root.batchRunning)
+                return
+
+            // Do nothing while batch is paused
+            if (root.batchPaused)
+                return
+
+            var currentCount =
+                    Number(GlobalState.rejectedCount)
+
+            var newRejections =
+                    currentCount -
+                    root.rejectionCountAtLastBuffer
+
+            if (newRejections > 0)
+            {
+                root.batchRejectionCount += newRejections
+
+                root.rejectionCountAtLastBuffer =
+                        currentCount
+
+                console.log(
+                    "5 min rejection buffer:",
+                    newRejections
+                )
+
+                console.log(
+                    "Batch rejected count:",
+                    root.batchRejectionCount
+                )
+            }
+            else
+            {
+                console.log(
+                    "5 min rejection buffer empty"
+                )
+            }
         }
     }
 
@@ -649,6 +693,15 @@ Item {
 
                                     root.batchPauseStartTime = null
 
+                                    // Start batch rejection tracking
+                                    root.batchRejectionCount = 0
+
+                                    root.rejectionCountAtLastBuffer =
+                                            Number(GlobalState.rejectedCount)
+
+                                    rejectionBufferTimer.start()
+
+
                                     // =====================================================
                                     // GET CURRENTLY LOADED PRODUCT
                                     // =====================================================
@@ -681,14 +734,6 @@ Item {
                                             String(root.currentProductGroupNo).padStart(2, "0") +
                                             "/" +
                                             String(loadedProduct.sr)
-
-                                    console.log("========== BATCH PRODUCT ==========")
-                                    console.log("Batch        :", root.currentBatchId)
-                                    console.log("Group No     :", root.currentProductGroupNo)
-                                    console.log("Product Name :", root.currentProductName)
-                                    console.log("Product Code :", root.currentProductCode)
-                                    console.log("Product S/No :", root.currentProductSno)
-                                    console.log("===================================")
 
 
                                     // =====================================================
@@ -791,6 +836,9 @@ Item {
 
                                         root.batchPauseStartTime = eventTime
 
+                                        root.rejectionCountAtLastBuffer =
+                                                Number(GlobalState.rejectedCount)
+
                                         databaseManager.addBatchReportEvent(
                                             root.activeBatchReportId,
                                             "PAUSE",
@@ -823,6 +871,10 @@ Item {
                                         }
 
                                         root.batchPauseStartTime = null
+
+                                        root.rejectionCountAtLastBuffer =
+                                                    Number(GlobalState.rejectedCount)
+
 
                                         databaseManager.addBatchReportEvent(
                                             root.activeBatchReportId,
@@ -915,11 +967,37 @@ Item {
                                     )
 
 
-                                    // =====================================================
-                                    // FINISH BATCH REPORT
-                                    // =====================================================
+                                    // ================================================
+                                    // FINAL BATCH REJECTION BUFFER
+                                    // ================================================
 
-                                    var rejectionCount = 0
+                                    if (!root.batchPaused)
+                                    {
+                                        var currentCount =
+                                                Number(GlobalState.rejectedCount)
+
+                                        var finalRejections =
+                                                currentCount -
+                                                root.rejectionCountAtLastBuffer
+
+                                        if (finalRejections > 0)
+                                        {
+                                            root.batchRejectionCount += finalRejections
+
+                                            console.log(
+                                                "Final rejection buffer:",
+                                                finalRejections
+                                            )
+                                        }
+                                    }
+
+                                    var rejectionCount =
+                                            root.batchRejectionCount
+
+                                    console.log(
+                                        "FINAL BATCH REJECTION COUNT:",
+                                        rejectionCount
+                                    )
 
                                     // Replace this with your actual rejection counter
                                     // when the batch rejection integration is available.
@@ -944,10 +1022,15 @@ Item {
 
                                     batchTimer.stop()
 
+                                    rejectionBufferTimer.stop()
+
                                     root.batchRunning = false
                                     root.batchPaused = false
 
                                     root.batchPauseStartTime = null
+
+                                    root.batchRejectionCount = 0
+                                    root.rejectionCountAtLastBuffer = 0
 
                                     root.lastValidBatch = "General Batch"
                                     root.currentBatchId = "General Batch"

@@ -20,6 +20,9 @@ Item {
 
     property bool rejectCycleStarted: false
 
+    property int batchRejectionBuffer: 0
+    property bool batchBufferActive: false
+
     property var validationPopup
 
     function loadMachineParameterSettings()
@@ -58,10 +61,44 @@ Item {
         }
     }
 
+    // =====================================================
+    // 5 MINUTE BATCH REJECTION BUFFER
+    // =====================================================
+    Timer {
+        id: batchRejectionTimer
+
+        interval: 5 * 60 * 1000
+        repeat: true
+        running: homeScreen.batchBufferActive
+
+        onTriggered: {
+
+            if (homeScreen.batchRejectionBuffer > 0) {
+
+                console.log(
+                    "5 minute batch rejection count:",
+                    homeScreen.batchRejectionBuffer
+                )
+
+                homeScreen.saveBatchRejectionCount(
+                    homeScreen.batchRejectionBuffer
+                )
+
+                // Start a fresh 5 minute buffer
+                homeScreen.batchRejectionBuffer = 0
+            }
+        }
+    }
+
     Connections {
         target: SerialManager
 
         function onSignalChanged() {
+
+            // =====================================================
+            // EXISTING REJECTION DETECTION
+            // DO NOT CHANGE THIS LOGIC
+            // =====================================================
 
             // Signal crossed threshold -> Reject cycle started
             if (SerialManager.signal > GlobalState.signalThreshold) {
@@ -71,20 +108,54 @@ Item {
                 }
 
             }
+
             // Signal came back below threshold -> Reject cycle completed
             else {
 
                 if (homeScreen.rejectCycleStarted) {
 
                     if (GlobalState.countRejection) {
+
+
                         GlobalState.rejectedCount++
-                        console.log("Rejected Count :", GlobalState.rejectedCount)
+
+                        console.log(
+                            "Rejected Count :",
+                            GlobalState.rejectedCount
+                        )
+
+                        if (homeScreen.batchBufferActive) {
+
+                            homeScreen.batchRejectionBuffer++
+
+                            console.log(
+                                "Batch Buffer Rejection :",
+                                homeScreen.batchRejectionBuffer
+                            )
+                        }
                     }
 
                     homeScreen.rejectCycleStarted = false
                 }
             }
         }
+    }
+
+    // =====================================================
+    // SAVE 5 MINUTE BATCH REJECTION COUNT
+    // =====================================================
+    function saveBatchRejectionCount(count)
+    {
+        if (count <= 0)
+            return
+
+        console.log(
+            "Saving batch rejection count:",
+            count
+        )
+
+        GlobalState.batchRejectionCount =
+                (GlobalState.batchRejectionCount || 0) + count
     }
 
 
