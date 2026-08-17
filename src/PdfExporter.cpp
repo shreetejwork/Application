@@ -866,6 +866,26 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
     QString ended =
         batchData["ended"].toString();
 
+    if (ended.isEmpty() || ended == "---") {
+        for (const QVariant &v : rejectionData) {
+            QVariantMap m = v.toMap();
+            QString eventType =
+                m.value("eventType", "").toString()
+                .trimmed()
+                .toLower();
+
+            if (eventType == "end") {
+                QString eventTime =
+                    m.value("eventTime", "").toString().trimmed();
+
+                if (!eventTime.isEmpty()) {
+                    ended = eventTime;
+                    break;
+                }
+            }
+        }
+    }
+
     QString productCode =
         batchData.value(
                      "productCode",

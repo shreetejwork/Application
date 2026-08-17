@@ -247,20 +247,20 @@ void DatabaseManager::createTables()
     // ============================================================
 
     query.exec(R"(
-        CREATE TABLE IF NOT EXISTS batchreportevents (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+    CREATE TABLE IF NOT EXISTS batchreportevents (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
 
-            batchReportId INTEGER,
+        batchReportId INTEGER,
 
-            eventType TEXT,
-            eventTime TEXT,
-            user TEXT,
-            rejectCount INTEGER DEFAULT 0
+        eventType TEXT,
+        eventTime TEXT,
+        user TEXT,
+        rejectCount INTEGER DEFAULT 0,
 
-            FOREIGN KEY(batchReportId)
-            REFERENCES batchreportmain(id)
-        );
-    )");
+        FOREIGN KEY(batchReportId)
+        REFERENCES batchreportmain(id)
+    );
+)");
 
     // ============================================================
     // ENSURE rejectCount COLUMN EXISTS

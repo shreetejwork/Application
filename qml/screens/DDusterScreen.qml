@@ -1061,28 +1061,26 @@ Item {
                                     var rejectionCount =
                                             root.batchRejectionCount
 
-
-                                    console.log(
-                                        "FINAL BATCH REJECTION COUNT:",
-                                        rejectionCount
-                                    )
-
-
-                                    // =====================================================
-                                    // NOW SAVE BATCH END
-                                    // =====================================================
-
-                                    databaseManager.addBatchReportEvent(
+                                    databaseManager.finishBatchReport(
                                         root.activeBatchReportId,
-                                        "END",
                                         Qt.formatDateTime(
                                             endTime,
                                             "dd/MM/yyyy HH:mm:ss"
+                                        ),
+                                        root.batchRunSeconds,
+                                        root.batchPauseSeconds,
+                                        Math.floor(
+                                            (endTime.getTime() -
+                                             root.batchStartDateTime.getTime()) / 1000
                                         ),
                                         auditUser,
                                         rejectionCount
                                     )
 
+                                    console.log(
+                                        "FINAL BATCH REJECTION COUNT:",
+                                        rejectionCount
+                                    )
 
                                     // =====================================================
                                     // RESET UI
