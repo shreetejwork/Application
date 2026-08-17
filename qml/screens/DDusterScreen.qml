@@ -140,15 +140,59 @@ Item {
         )
     }
 
-    function currentBatchRejectionDelta()
+    function flushPendingBatchRejections(eventTime, auditUser)
     {
-        if (!root.batchRunning || root.batchPaused)
-            return 0
-
         var currentCount = Number(GlobalState.activeBatchRejectCount)
         var delta = currentCount - root.rejectionCountAtLastBuffer
 
-        return delta > 0 ? delta : 0
+        if (delta <= 0)
+            return 0
+
+        root.batchRejectionCount += delta
+        root.rejectionCountAtLastBuffer = currentCount
+
+        databaseManager.addBatchReportEvent(
+            root.activeBatchReportId,
+            "REJECT",
+            Qt.formatDateTime(
+                eventTime,
+                "dd/MM/yyyy HH:mm:ss"
+            ),
+            auditUser,
+            delta
+        )
+
+        console.log(
+            "===================================="
+        )
+
+        console.log(
+            "REJECTION EVENT SAVED"
+        )
+
+        console.log(
+            "New rejections:",
+            delta
+        )
+
+        console.log(
+            "Batch total rejections:",
+            root.batchRejectionCount
+        )
+
+        console.log(
+            "Event time:",
+            Qt.formatDateTime(
+                eventTime,
+                "dd/MM/yyyy HH:mm:ss"
+            )
+        )
+
+        console.log(
+            "===================================="
+        )
+
+        return delta
     }
 
     Timer {
@@ -188,68 +232,17 @@ Item {
                     Number(GlobalState.activeBatchRejectCount)
 
             var newRejections =
-                    root.currentBatchRejectionDelta()
+                    currentCount -
+                    root.rejectionCountAtLastBuffer
 
             if (newRejections > 0)
             {
-                // =====================================================
-                // ADD REJECTIONS TO CURRENT BATCH TOTAL
-                // =====================================================
-
-                root.batchRejectionCount += newRejections
-
-                root.rejectionCountAtLastBuffer =
-                        currentCount
-
-
-                // =====================================================
-                // SAVE REJECTION EVENT TO DATABASE
-                // =====================================================
-
                 var eventTime = new Date()
-
                 var auditUser = getAuditUser()
 
-                databaseManager.addBatchReportEvent(
-                    root.activeBatchReportId,
-                    "REJECT",
-                    Qt.formatDateTime(
-                        eventTime,
-                        "dd/MM/yyyy HH:mm:ss"
-                    ),
-                    auditUser,
-                    newRejections
-                )
-
-
-                console.log(
-                    "===================================="
-                )
-
-                console.log(
-                    "REJECTION EVENT SAVED"
-                )
-
-                console.log(
-                    "New rejections:",
-                    newRejections
-                )
-
-                console.log(
-                    "Batch total rejections:",
-                    root.batchRejectionCount
-                )
-
-                console.log(
-                    "Event time:",
-                    Qt.formatDateTime(
-                        eventTime,
-                        "dd/MM/yyyy HH:mm:ss"
-                    )
-                )
-
-                console.log(
-                    "===================================="
+                root.flushPendingBatchRejections(
+                    eventTime,
+                    auditUser
                 )
             }
             else
@@ -897,8 +890,10 @@ Item {
                                         root.batchPauseStartTime = eventTime
                                         GlobalState.batchPaused = true
 
-                                        root.rejectionCountAtLastBuffer =
-                                                Number(GlobalState.activeBatchRejectCount)
+                                        root.flushPendingBatchRejections(
+                                            eventTime,
+                                            auditUser
+                                        )
 
                                         databaseManager.addBatchReportEvent(
                                             root.activeBatchReportId,
@@ -936,7 +931,6 @@ Item {
 
                                         root.rejectionCountAtLastBuffer =
                                                     Number(GlobalState.activeBatchRejectCount)
-
 
                                         databaseManager.addBatchReportEvent(
                                             root.activeBatchReportId,
@@ -1033,45 +1027,10 @@ Item {
                                     // FINAL BATCH REJECTION BUFFER
                                     // ================================================
 
-                                    if (!root.batchPaused)
-                                    {
-                                        var currentCount =
-                                                Number(GlobalState.activeBatchRejectCount)
-
-                                        var finalRejections =
-                                                root.currentBatchRejectionDelta()
-
-                                        if (finalRejections > 0)
-                                        {
-                                            root.batchRejectionCount += finalRejections
-
-                                            root.rejectionCountAtLastBuffer =
-                                                    currentCount
-
-
-                                            // =================================================
-                                            // SAVE FINAL REJECTION EVENT
-                                            // =================================================
-
-                                            databaseManager.addBatchReportEvent(
-                                                root.activeBatchReportId,
-                                                "REJECT",
-                                                Qt.formatDateTime(
-                                                    endTime,
-                                                    "dd/MM/yyyy HH:mm:ss"
-                                                ),
-                                                auditUser,
-                                                finalRejections
-                                            )
-
-
-                                            console.log(
-                                                "Final rejection event saved:",
-                                                finalRejections
-                                            )
-                                        }
-                                    }
-
+                                    root.flushPendingBatchRejections(
+                                        endTime,
+                                        auditUser
+                                    )
 
                                     var rejectionCount =
                                             root.batchRejectionCount
