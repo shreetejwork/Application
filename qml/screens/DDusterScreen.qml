@@ -140,6 +140,17 @@ Item {
         )
     }
 
+    function currentBatchRejectionDelta()
+    {
+        if (!root.batchRunning || root.batchPaused)
+            return 0
+
+        var currentCount = Number(GlobalState.activeBatchRejectCount)
+        var delta = currentCount - root.rejectionCountAtLastBuffer
+
+        return delta > 0 ? delta : 0
+    }
+
     Timer {
         id: batchTimer
 
@@ -174,11 +185,10 @@ Item {
                 return
 
             var currentCount =
-                    Number(GlobalState.rejectedCount)
+                    Number(GlobalState.activeBatchRejectCount)
 
             var newRejections =
-                    currentCount -
-                    root.rejectionCountAtLastBuffer
+                    root.currentBatchRejectionDelta()
 
             if (newRejections > 0)
             {
@@ -731,6 +741,10 @@ Item {
                                     root.batchRunning = true
                                     root.batchPaused = false
 
+                                    GlobalState.batchRunning = true
+                                    GlobalState.batchPaused = false
+                                    GlobalState.activeBatchRejectCount = 0
+
                                     root.batchStartDateTime = new Date()
 
                                     root.batchRunSeconds = 0
@@ -881,9 +895,10 @@ Item {
                                         // =================================================
 
                                         root.batchPauseStartTime = eventTime
+                                        GlobalState.batchPaused = true
 
                                         root.rejectionCountAtLastBuffer =
-                                                Number(GlobalState.rejectedCount)
+                                                Number(GlobalState.activeBatchRejectCount)
 
                                         databaseManager.addBatchReportEvent(
                                             root.activeBatchReportId,
@@ -917,9 +932,10 @@ Item {
                                         }
 
                                         root.batchPauseStartTime = null
+                                        GlobalState.batchPaused = false
 
                                         root.rejectionCountAtLastBuffer =
-                                                    Number(GlobalState.rejectedCount)
+                                                    Number(GlobalState.activeBatchRejectCount)
 
 
                                         databaseManager.addBatchReportEvent(
@@ -1020,11 +1036,10 @@ Item {
                                     if (!root.batchPaused)
                                     {
                                         var currentCount =
-                                                Number(GlobalState.rejectedCount)
+                                                Number(GlobalState.activeBatchRejectCount)
 
                                         var finalRejections =
-                                                currentCount -
-                                                root.rejectionCountAtLastBuffer
+                                                root.currentBatchRejectionDelta()
 
                                         if (finalRejections > 0)
                                         {
@@ -1092,6 +1107,9 @@ Item {
 
                                     root.batchRunning = false
                                     root.batchPaused = false
+                                    GlobalState.batchRunning = false
+                                    GlobalState.batchPaused = false
+                                    GlobalState.activeBatchRejectCount = 0
 
                                     root.batchPauseStartTime = null
 

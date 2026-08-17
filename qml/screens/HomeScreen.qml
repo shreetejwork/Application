@@ -116,8 +116,11 @@ Item {
 
                     if (GlobalState.countRejection) {
 
-
                         GlobalState.rejectedCount++
+
+                        if (GlobalState.batchRunning && !GlobalState.batchPaused) {
+                            GlobalState.activeBatchRejectCount++
+                        }
 
                         console.log(
                             "Rejected Count :",

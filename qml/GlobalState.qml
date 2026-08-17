@@ -100,6 +100,10 @@ QtObject {
 
     property bool countRejection: true
 
+    property bool batchRunning: false
+    property bool batchPaused: false
+    property int activeBatchRejectCount: 0
+
     property bool sendDataAfterLoad: false
 
     property int rejectedCount: 0
