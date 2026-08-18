@@ -434,6 +434,128 @@ void DatabaseManager::createTables()
         }
     }
 
+    // ============================================================
+    // DEFAULT PRODUCT LIBRARY ENTRY
+    // ============================================================
+    // Always keep one default product in group 1. It uses the same
+    // default parameter values as a newly added product and becomes
+    // the fallback active product when no active product exists.
+    QString defaultTableName = productLibraryTableName(1);
+
+    if (!defaultTableName.isEmpty() && productLibraryTableExists(1))
+    {
+        QSqlQuery defaultCheck;
+        defaultCheck.prepare(QString(
+            "SELECT COUNT(*) FROM %1 WHERE sr_no = 1"
+        ).arg(defaultTableName));
+
+        if (defaultCheck.exec() && defaultCheck.next())
+        {
+            if (defaultCheck.value(0).toInt() == 0)
+            {
+                QSqlQuery insertDefaultProduct;
+                insertDefaultProduct.prepare(QString(R"(
+                    INSERT INTO %1
+                    (
+                        sr_no,
+                        product_name,
+                        product_code,
+                        machinePhase,
+                        signalThr,
+                        ampThr,
+                        ddPower,
+                        ddFreq,
+                        digitalGain,
+                        analogGain,
+                        active
+                    )
+                    VALUES
+                    (
+                        1,
+                        ?,
+                        ?,
+                        45,
+                        350,
+                        14000,
+                        40,
+                        32.1,
+                        1,
+                        1,
+                        1
+                    )
+                )").arg(defaultTableName));
+
+                insertDefaultProduct.addBindValue("Default Product");
+                insertDefaultProduct.addBindValue("Def-001");
+
+                if (!insertDefaultProduct.exec())
+                {
+                    qDebug() << "Failed to create default product:"
+                             << insertDefaultProduct.lastError().text();
+                }
+                else
+                {
+                    qDebug() << "Default Product created.";
+                }
+            }
+            else
+            {
+                QSqlQuery updateDefaultProduct;
+                updateDefaultProduct.prepare(QString(R"(
+                    UPDATE %1
+                    SET
+                        product_name = ?,
+                        product_code = ?,
+                        machinePhase = COALESCE(machinePhase, 45),
+                        signalThr = COALESCE(signalThr, 350),
+                        ampThr = COALESCE(ampThr, 14000),
+                        ddPower = COALESCE(ddPower, 40),
+                        ddFreq = COALESCE(ddFreq, 32.1),
+                        digitalGain = COALESCE(digitalGain, 1),
+                        analogGain = COALESCE(analogGain, 1)
+                    WHERE sr_no = 1
+                )").arg(defaultTableName));
+
+                updateDefaultProduct.addBindValue("Default Product");
+                updateDefaultProduct.addBindValue("Def-001");
+
+                if (!updateDefaultProduct.exec())
+                {
+                    qDebug() << "Failed to normalize default product:"
+                             << updateDefaultProduct.lastError().text();
+                }
+            }
+        }
+    }
+
+    bool hasActiveProduct = false;
+
+    for (int groupNo = 1; groupNo <= 10; ++groupNo)
+    {
+        QString tableName = productLibraryTableName(groupNo);
+
+        if (tableName.isEmpty() || !productLibraryTableExists(groupNo))
+            continue;
+
+        QSqlQuery activeCheck;
+        activeCheck.prepare(QString(
+            "SELECT COUNT(*) FROM %1 WHERE active = 1"
+        ).arg(tableName));
+
+        if (activeCheck.exec() && activeCheck.next() && activeCheck.value(0).toInt() > 0)
+        {
+            hasActiveProduct = true;
+            break;
+        }
+    }
+
+    if (!hasActiveProduct && productLibraryTableExists(1))
+    {
+        if (!setActiveProductLibraryProduct(1, 1))
+        {
+            qDebug() << "Failed to auto-activate default product.";
+        }
+    }
 
     qDebug() << "All tables created!";
 }
@@ -3408,6 +3530,51 @@ QVariantMap DatabaseManager::getActiveProduct()
 
     qDebug()
         << "No active Product Library product found.";
+
+    if (productLibraryTableExists(1) && productLibraryProductExists(1, 1))
+    {
+        qDebug()
+            << "Auto-activating Default Product fallback.";
+
+        if (setActiveProductLibraryProduct(1, 1))
+        {
+            // Re-read the active product after activation.
+            for (int groupNo = 1; groupNo <= 10; ++groupNo)
+            {
+                QString tableName = productLibraryTableName(groupNo);
+
+                if (tableName.isEmpty() || !productLibraryTableExists(groupNo))
+                    continue;
+
+                QString sql = QString(R"(
+                    SELECT
+                        id,
+                        sr_no,
+                        product_name,
+                        product_code
+                    FROM %1
+                    WHERE active = 1
+                    LIMIT 1
+                )").arg(tableName);
+
+                QSqlQuery query(db);
+
+                if (!query.exec(sql))
+                    continue;
+
+                if (query.next())
+                {
+                    product["id"] = query.value("id");
+                    product["groupNo"] = groupNo;
+                    product["groupName"] = tableName;
+                    product["sr"] = query.value("sr_no");
+                    product["name"] = query.value("product_name");
+                    product["code"] = query.value("product_code");
+                    return product;
+                }
+            }
+        }
+    }
 
     return product;
 }
