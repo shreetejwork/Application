@@ -1672,6 +1672,12 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
                 Qt::AlignVCenter |
                 Qt::AlignHCenter;
 
+        } else if (c == nCols - 1) {
+
+            al =
+                Qt::AlignVCenter |
+                Qt::AlignRight;
+
         } else {
 
             al =
@@ -2224,12 +2230,12 @@ if (!rejectionData.isEmpty()) {
     y += 16;
 
 
-    int leftX = marginL;
+    int leftX = marginL + 16;
 
     int rightX =
         marginL +
-        sectionW +
-        tableSectionGap;
+        contentW / 2 +
+        22;
 
 
     y =
@@ -2374,12 +2380,12 @@ while (
     y += 18;
 
 
-    int leftX = marginL;
+    int leftX = marginL + 16;
 
     int rightX =
         marginL +
-        sectionW +
-        tableSectionGap;
+        contentW / 2 +
+        22;
 
 
     y =
