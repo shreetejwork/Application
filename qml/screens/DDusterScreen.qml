@@ -1008,6 +1008,16 @@ Item {
                                             )
 
 
+                                    // ================================================
+                                    // FINAL BATCH REJECTION BUFFER
+                                    // ================================================
+
+                                    root.flushPendingBatchRejections(
+                                        endTime,
+                                        auditUser
+                                    )
+
+
                                     // =====================================================
                                     // SAVE END EVENT
                                     // =====================================================
@@ -1019,16 +1029,6 @@ Item {
                                             endTime,
                                             "dd/MM/yyyy HH:mm:ss"
                                         ),
-                                        auditUser
-                                    )
-
-
-                                    // ================================================
-                                    // FINAL BATCH REJECTION BUFFER
-                                    // ================================================
-
-                                    root.flushPendingBatchRejections(
-                                        endTime,
                                         auditUser
                                     )
 
