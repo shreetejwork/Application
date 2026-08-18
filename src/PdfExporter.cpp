@@ -790,12 +790,13 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
 
     colW[0] = 36;
     colW[1] = 68;
-    colW[2] = 62;
+    colW[2] = 54;
     colW[3] =
         sectionW -
         colW[0] -
         colW[1] -
-        colW[2];
+        colW[2] +
+        32;
 
     const int rowH = 22;
     const int thH = 26;
@@ -1617,7 +1618,7 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
 
                 eventTime =
                     eventDateTime.time().toString(
-                        "HH:mm:ss"
+                        "  HH:mm:ss"
                         );
 
             } else {
@@ -1676,7 +1677,7 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
 
             al =
                 Qt::AlignVCenter |
-                Qt::AlignRight;
+                Qt::AlignLeft;
 
         } else {
 
@@ -1714,11 +1715,13 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
 
 
         // Draw cell
+        const int statusLeftPadding = 50;
+
         painter.drawText(
             QRect(
-                x + 4,
+                x + (c == nCols - 1 ? statusLeftPadding : 4),
                 y,
-                colW[c] - 8,
+                colW[c] - (c == nCols - 1 ? statusLeftPadding + 4 : 8),
                 rowH
                 ),
             al,
@@ -2230,12 +2233,12 @@ if (!rejectionData.isEmpty()) {
     y += 16;
 
 
-    int leftX = marginL + 16;
+    int leftX = marginL;
 
     int rightX =
         marginL +
-        contentW / 2 +
-        22;
+        sectionW +
+        tableSectionGap;
 
 
     y =
@@ -2380,12 +2383,12 @@ while (
     y += 18;
 
 
-    int leftX = marginL + 16;
+    int leftX = marginL;
 
     int rightX =
         marginL +
-        contentW / 2 +
-        22;
+        sectionW +
+        tableSectionGap;
 
 
     y =
