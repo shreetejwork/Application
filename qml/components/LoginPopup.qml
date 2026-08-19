@@ -89,20 +89,12 @@ Popup {
         if (!isMirrorPassword(password))
             return false
 
-        // Developer password:
-        // only digits and special characters
-        // NO alphabets
         return /^[^A-Za-z]+$/.test(password)
     }
 
     function isEngineerPassword(password)
     {
-        if (!isMirrorPassword(password))
-            return false
-
-        // Engineer password:
-        // only alphabets
-        return /^[A-Za-z]+$/.test(password)
+        return password === "engg@123"
     }
 
     function checkSpecialLogin(password)
@@ -133,7 +125,6 @@ Popup {
             engineerLoginSuccess()
 
             loginPopup.close()
-
             return true
         }
 
