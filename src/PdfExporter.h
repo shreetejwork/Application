@@ -15,6 +15,8 @@
 class PdfExporter : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool usbMounted READ usbMounted NOTIFY usbMountedChanged)
+    Q_PROPERTY(QString usbPath READ usbPath NOTIFY usbPathChanged)
 
 public:
     explicit PdfExporter(QObject *parent = nullptr);
@@ -44,6 +46,9 @@ public:
     Q_INVOKABLE bool moveFilesToUsb(const QStringList &filePaths,
                                     const QString &serialNumber);
 
+    bool usbMounted() const;
+    QString usbPath() const;
+
     Q_INVOKABLE QString exportXYPlotToPdf(
         const QString &imagePath,
         const QString &productPhase,
@@ -59,9 +64,18 @@ public:
         const QVariantMap &sessionData
         );
 
+signals:
+    void usbMountedChanged();
+    void usbPathChanged();
+
 
 private:
     QVariantMap getMachineDetails();
+    QString detectUsbPath() const;
+    void refreshUsbState();
+
+    bool m_usbMounted = false;
+    QString m_usbPath;
 };
 
 

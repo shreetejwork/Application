@@ -25,11 +25,101 @@
 #include <QImage>
 #include <QFile>
 #include <QPageLayout>
+#include <QStorageInfo>
+#include <QTimer>
 
 
 PdfExporter::PdfExporter(QObject *parent)
     : QObject(parent)
 {
+    refreshUsbState();
+
+    auto *usbTimer = new QTimer(this);
+    usbTimer->setInterval(2000);
+    connect(usbTimer, &QTimer::timeout, this, &PdfExporter::refreshUsbState);
+    usbTimer->start();
+}
+
+bool PdfExporter::usbMounted() const
+{
+    return m_usbMounted;
+}
+
+QString PdfExporter::usbPath() const
+{
+    return m_usbPath;
+}
+
+QString PdfExporter::detectUsbPath() const
+{
+#ifdef Q_OS_LINUX
+    QStringList candidates;
+
+    for (const QStorageInfo &storage : QStorageInfo::mountedVolumes()) {
+        const QString rootPath = storage.rootPath();
+        const QString devicePath = QString::fromLocal8Bit(storage.device());
+
+        if (!storage.isValid()
+            || !storage.isReady()
+            || storage.isReadOnly()
+            || rootPath.isEmpty()
+            || rootPath == "/"
+            || devicePath.isEmpty()
+            || !devicePath.startsWith("/dev/")) {
+            continue;
+        }
+
+        QFileInfo rootInfo(rootPath);
+        if (!rootInfo.isDir() || !rootInfo.isReadable() || !rootInfo.isWritable())
+            continue;
+
+        const QString deviceName = QFileInfo(devicePath).fileName();
+        const QString sysDevicePath = QFileInfo(
+            QString("/sys/class/block/%1").arg(deviceName)).canonicalFilePath();
+        const int blockIndex = sysDevicePath.indexOf("/block/");
+
+        if (blockIndex < 0 || !sysDevicePath.contains("/usb", Qt::CaseInsensitive))
+            continue;
+
+        const QString blockPath = sysDevicePath.mid(blockIndex + 7);
+        const QString diskName = blockPath.section('/', 0, 0);
+        QFile removableFile(QString("/sys/class/block/%1/removable").arg(diskName));
+
+        if (!removableFile.open(QIODevice::ReadOnly | QIODevice::Text)
+            || removableFile.readAll().trimmed() != "1") {
+            continue;
+        }
+
+        candidates.append(rootPath);
+    }
+
+    candidates.sort();
+    return candidates.value(0);
+#else
+    return QString();
+#endif
+}
+
+void PdfExporter::refreshUsbState()
+{
+    const QString detectedPath = detectUsbPath();
+    const bool detectedMounted = !detectedPath.isEmpty();
+    const bool stateChanged = detectedMounted != m_usbMounted;
+    const bool pathChanged = detectedPath != m_usbPath;
+
+    if (!stateChanged && !pathChanged)
+        return;
+
+    m_usbMounted = detectedMounted;
+    m_usbPath = detectedPath;
+
+    qDebug() << "USB state changed: connected=" << m_usbMounted
+             << "path=" << m_usbPath;
+
+    if (stateChanged)
+        emit usbMountedChanged();
+    if (pathChanged)
+        emit usbPathChanged();
 }
 
 // ================= GET / CREATE REPORTS FOLDER =================
@@ -2527,43 +2617,29 @@ return path;
 // =========== Check USB =========
 bool PdfExporter::isUsbMounted()
 {
-    QDir mediaDir("/media");
-    if (!mediaDir.exists())
-        return false;
-
-    QStringList users = mediaDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (const QString &user : users) {
-        QDir userDir("/media/" + user);
-        QStringList devices = userDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-        if (!devices.isEmpty())
-            return true;
-    }
-    return false;
+    refreshUsbState();
+    return m_usbMounted;
 }
 
 // ============= Get USB path ==========
 QString PdfExporter::getUsbPath()
 {
-    QDir mediaDir("/media");
-    QStringList users = mediaDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-    for (const QString &user : users) {
-        QDir userDir("/media/" + user);
-        QStringList devices = userDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
-        if (!devices.isEmpty())
-            return "/media/" + user + "/" + devices.first();
-    }
-    return "";
+    refreshUsbState();
+    return m_usbPath;
 }
 
 // ============ Move selected files to USB ===========
 bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
                                  const QString &serialNumber)
 {
-    QString usbPath = getUsbPath().trimmed();
-    qDebug() << "USB Path :" << usbPath;
+    refreshUsbState();
+    const QString usbPath = m_usbPath.trimmed();
+    qDebug() << "USB destination path:" << usbPath;
 
-    if (usbPath.isEmpty()) {
-        qDebug() << "USB path is empty";
+    QFileInfo usbInfo(usbPath);
+    if (!m_usbMounted || usbPath.isEmpty() || !usbInfo.isDir()
+        || !usbInfo.isReadable() || !usbInfo.isWritable()) {
+        qWarning() << "USB destination is not a writable mounted storage device";
         return false;
     }
 
@@ -2573,32 +2649,40 @@ bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
 
     QDir    usbDir(usbPath);
     QString destDir = usbDir.filePath(folderName);
-    qDebug() << "Destination directory :" << destDir;
+    qDebug() << "Destination directory:" << destDir;
 
     if (!QDir().mkpath(destDir)) {
-        qDebug() << "Failed to create directory";
+        qWarning() << "Failed to create USB destination directory:" << destDir;
         return false;
     }
 
     bool allOk = true;
     for (const QString &srcFile : filePaths) {
         QFileInfo fi(srcFile);
-        if (!fi.exists()) {
-            qDebug() << "Source file does not exist:" << srcFile;
+        qDebug() << "PDF source:" << srcFile
+                 << "exists=" << fi.exists()
+                 << "readable=" << fi.isReadable();
+        if (!fi.isFile() || !fi.isReadable() || fi.size() <= 0) {
+            qWarning() << "PDF source is not a readable completed file:" << srcFile;
             allOk = false;
             continue;
         }
 
         QString dstFile = QDir(destDir).filePath(fi.fileName());
-        qDebug() << "Copying";
-        qDebug() << "From :" << srcFile;
-        qDebug() << "To   :" << dstFile;
+        qDebug() << "PDF destination:" << dstFile;
 
-        QFile::remove(dstFile);
-        if (!QFile::copy(srcFile, dstFile)) {
-            qDebug() << "Copy failed:" << srcFile;
-            qDebug() << "Reason:" << QFile(srcFile).errorString();
+        if (QFile::exists(dstFile) && !QFile::remove(dstFile)) {
+            qWarning() << "Unable to replace existing PDF:" << dstFile;
             allOk = false;
+            continue;
+        }
+
+        QFile sourceFile(srcFile);
+        if (!sourceFile.copy(dstFile)) {
+            qWarning() << "PDF copy failed:" << sourceFile.errorString();
+            allOk = false;
+        } else {
+            qDebug() << "PDF copy success:" << dstFile;
         }
     }
     return allOk;

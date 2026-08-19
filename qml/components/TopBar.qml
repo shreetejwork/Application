@@ -15,7 +15,7 @@ Rectangle {
     property string notificationText: ""
     property bool notificationVisible: false
 
-    property bool usbConnected: false
+    property bool usbConnected: PdfExporter.usbMounted
 
     property bool isLoggedIn:
         GlobalState.loggedInUserName !== ""
@@ -24,15 +24,6 @@ Rectangle {
     Typography {
         id: topBarTypography
         scale: root.scale
-    }
-
-    Timer {
-        interval: 2000
-        running: true
-        repeat: true
-        onTriggered: {
-            root.usbConnected = PdfExporter.isUsbMounted()
-        }
     }
 
     PowerOffPopup {
