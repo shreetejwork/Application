@@ -19,8 +19,14 @@ ApplicationWindow {
     // flags: Qt.FramelessWindowHint
     // visibility: Window.FullScreen
 
+
+    // =========================================================
+    // NAVIGATE HOME TIMER
+    // =========================================================
+
     Timer {
         id: navigateHomeTimer
+
         interval: 1000
         repeat: false
 
@@ -29,12 +35,16 @@ ApplicationWindow {
         }
     }
 
+
+    // =========================================================
+    // DATABASE CONNECTION
+    // =========================================================
+
     Connections {
         target: databaseManager
 
         function onMachineParametersChanged()
         {
-
             var settings =
                     databaseManager.getMachinePhaseSettings()
 
@@ -74,27 +84,37 @@ ApplicationWindow {
                 GlobalState.analogGain =
                         Number(s1.analogGain)
 
-            if (GlobalState.sendDataAfterLoad === true) {
-                        console.log("sendDataAfterLoad = TRUE")
-                        console.log("Restarting startupTimer...")
 
-                        startupTimer.restart()
-                    }
-                    else {
-                        console.log("sendDataAfterLoad = FALSE")
-                        console.log("Parameters loaded, not sending to MCU")
-                    }
+            if (GlobalState.sendDataAfterLoad === true) {
+
+                console.log("sendDataAfterLoad = TRUE")
+                console.log("Restarting startupTimer...")
+
+                startupTimer.restart()
+
+            } else {
+
+                console.log("sendDataAfterLoad = FALSE")
+                console.log("Parameters loaded, not sending to MCU")
+            }
         }
     }
+
+
+    // =========================================================
+    // GLOBAL STATE CONNECTION
+    // =========================================================
 
     Connections {
         target: GlobalState
 
         function onLoggedInUserRoleChanged() {
+
             if (GlobalState.loggedInUserRole === "") {
                 navigateHomeTimer.restart()
             }
         }
+
 
         function onValidationAlarmTriggered()
         {
@@ -104,15 +124,26 @@ ApplicationWindow {
         }
     }
 
+
+    // =========================================================
+    // SERIAL MANAGER CONNECTION
+    // =========================================================
+
     Connections {
         target: SerialManager
 
         function onMcuParameterRequestReceived() {
+
             console.log("MCU requested parameters")
 
             startupTimer.restart()
         }
     }
+
+
+    // =========================================================
+    // NAVIGATE TO HOME
+    // =========================================================
 
     function navigateToHome() {
 
@@ -124,7 +155,7 @@ ApplicationWindow {
         menuStack = []
 
         // Show home page
-        swipeView.currentIndex = 0
+        swipeViewLoader.item.currentIndex = 0
 
         // Reset top bar
         mainTopBar.showBackButton = false
@@ -137,11 +168,11 @@ ApplicationWindow {
 
     Typography {
         id: typography
-        scale: 1.0  // Base scale for main window
+        scale: 1.0
     }
 
-    // Expose typography globally for child components
     property alias appTypography: typography
+
 
     // =========================================================
     // FONT LOADING
@@ -149,13 +180,18 @@ ApplicationWindow {
 
     FontLoader {
         id: appRegularFont
-        source: "qrc:/qt/qml/Application/assets/images/RobotoCondensed-Regular.ttf"
+
+        source:
+            "qrc:/qt/qml/Application/assets/images/RobotoCondensed-Regular.ttf"
     }
 
     FontLoader {
         id: appBoldFont
-        source: "qrc:/qt/qml/Application/assets/images/RobotoCondensed-Bold.ttf"
+
+        source:
+            "qrc:/qt/qml/Application/assets/images/RobotoCondensed-Bold.ttf"
     }
+
 
     // =========================================================
     // GLOBAL FONT
@@ -174,42 +210,57 @@ ApplicationWindow {
         : "Sans Serif"
 
     font.family: regularFontFamily
-    font.pixelSize: 20  // Set default base size for entire app
+    font.pixelSize: 20
 
 
     // =========================================================
-    // RECURSIVE FONT APPLICATION TO ALL CHILDREN
+    // RECURSIVE FONT APPLICATION
     // =========================================================
 
     function applyFontToAllChildren(item) {
-        if (item === null) return
+
+        if (item === null)
+            return
 
         if (item.font !== undefined) {
             item.font.family = root.regularFontFamily
         }
 
         if (item.children !== undefined) {
+
             for (var i = 0; i < item.children.length; i++) {
                 applyFontToAllChildren(item.children[i])
             }
         }
     }
 
+
     // Apply fonts whenever regularFontFamily changes
     onRegularFontFamilyChanged: {
+
         applyFontToAllChildren(contentItem)
 
         if (Overlay.overlay)
-                applyFontToAllChildren(Overlay.overlay)
+            applyFontToAllChildren(Overlay.overlay)
     }
 
+
     // =========================================================
-    // SWIPEVIEW SMOOTHNESS TUNING
+    // SWIPEVIEW SMOOTHNESS
     // =========================================================
 
     function tuneSwipeViewSmoothness() {
-        var flick = swipeView.contentItem
-        if (!flick) return
+
+        var swipe = swipeViewLoader.item
+
+        if (!swipe)
+            return
+
+        var flick = swipe.contentItem
+
+        if (!flick)
+            return
+
 
         if ("highlightMoveDuration" in flick)
             flick.highlightMoveDuration = 220
@@ -227,6 +278,11 @@ ApplicationWindow {
             flick.boundsBehavior = Flickable.StopAtBounds
     }
 
+
+    // =========================================================
+    // APPLICATION START
+    // =========================================================
+
     Component.onCompleted: {
 
         applyFontToAllChildren(root.contentItem)
@@ -236,12 +292,15 @@ ApplicationWindow {
 
         tuneSwipeViewSmoothness()
 
-        console.log("Count Rejection:", GlobalState.countRejection)
+        console.log(
+            "Count Rejection:",
+            GlobalState.countRejection
+        )
 
 
         // ================= APPLICATION START AUDIT =================
 
-        if(GlobalState.machinePowerState === "Running")
+        if (GlobalState.machinePowerState === "Running")
         {
             // power failure happened
 
@@ -253,8 +312,8 @@ ApplicationWindow {
                 GlobalState.powerFailureTime,
                 "M/C OFF (Power Failure)"
             )
-
         }
+
 
         var auditSaved =
                 databaseManager.addAuditTrailRecord(
@@ -266,15 +325,29 @@ ApplicationWindow {
 
 
         startupTimer.start()
+
         GlobalState.setMachineRunning()
+
         console.log(
-            "Machine State:" + GlobalState.machinePowerState
+            "Machine State:" +
+            GlobalState.machinePowerState
         )
     }
 
+
+    // =========================================================
+    // PARAMETER QUEUE
+    // =========================================================
+
     property var parameterQueue: []
 
+
+    // =========================================================
+    // PARAMETER SENDER
+    // =========================================================
+
     Timer {
+
         id: parameterSender
 
         interval: 50
@@ -283,6 +356,7 @@ ApplicationWindow {
         onTriggered: {
 
             if (parameterQueue.length === 0) {
+
                 stop()
 
                 if (mainTopBar)
@@ -293,12 +367,19 @@ ApplicationWindow {
                 return
             }
 
-            var sendFunction = parameterQueue.shift()
+
+            var sendFunction =
+                    parameterQueue.shift()
 
             if (sendFunction)
                 sendFunction()
         }
     }
+
+
+    // =========================================================
+    // STARTUP TIMER
+    // =========================================================
 
     Timer {
 
@@ -310,161 +391,214 @@ ApplicationWindow {
         onTriggered: {
 
             if (mainTopBar)
-                mainTopBar.showNotification("Sending parameters...")
+                mainTopBar.showNotification(
+                    "Sending parameters..."
+                )
+
 
             parameterQueue = []
 
-            // ================= MACHINE SETTINGS =================
+
+            // =====================================================
+            // MACHINE SETTINGS
+            // =====================================================
 
             var machineSettings =
                     databaseManager.getMachinePhaseSettings()
 
-            if(machineSettings.machinePhase !== undefined)
+
+            if (machineSettings.machinePhase !== undefined)
             {
                 GlobalState.machinePhase =
                         machineSettings.machinePhase
 
+
                 parameterQueue.push(function() {
 
                     SerialManager.setMachinePhase(
-                                Math.round(
-                                    GlobalState.machinePhase * 10
-                                ))
+                        Math.round(
+                            GlobalState.machinePhase * 10
+                        )
+                    )
                 })
             }
 
-            if(machineSettings.signalThr !== undefined)
+
+            if (machineSettings.signalThr !== undefined)
             {
                 GlobalState.signalThreshold =
                         machineSettings.signalThr
 
+
                 parameterQueue.push(function() {
 
                     SerialManager.setSignalThreshold(
-                                GlobalState.signalThreshold)
+                        GlobalState.signalThreshold
+                    )
                 })
             }
 
-            if(machineSettings.ampThr !== undefined)
+
+            if (machineSettings.ampThr !== undefined)
             {
                 GlobalState.amplitudeThreshold =
                         machineSettings.ampThr
 
+
                 parameterQueue.push(function() {
 
                     SerialManager.setAmplitudeThreshold(
-                                GlobalState.amplitudeThreshold)
+                        GlobalState.amplitudeThreshold
+                    )
                 })
             }
 
 
-            // ================= S1 SETTINGS =================
+            // =====================================================
+            // S1 SETTINGS
+            // =====================================================
 
             var s1Settings =
                     databaseManager.getS1Settings()
 
-            if(s1Settings.lpf !== undefined)
+
+            if (s1Settings.lpf !== undefined)
             {
                 parameterQueue.push(function() {
 
                     SerialManager.setLPF(
-                                s1Settings.lpf)
+                        s1Settings.lpf
+                    )
                 })
             }
 
-            if(s1Settings.hpf !== undefined)
+
+            if (s1Settings.hpf !== undefined)
             {
                 parameterQueue.push(function() {
 
                     SerialManager.setHPF(
-                                Math.round(
-                                    s1Settings.hpf * 10))
+                        Math.round(
+                            s1Settings.hpf * 10
+                        )
+                    )
                 })
             }
 
-            if(s1Settings.holdDelay !== undefined)
+
+            if (s1Settings.holdDelay !== undefined)
             {
                 parameterQueue.push(function() {
 
                     SerialManager.setHoldDelay(
-                                s1Settings.holdDelay)
+                        s1Settings.holdDelay
+                    )
                 })
             }
 
-            if(s1Settings.operateDelay !== undefined)
+
+            if (s1Settings.operateDelay !== undefined)
             {
                 parameterQueue.push(function() {
 
                     SerialManager.setOperateDelay(
-                                s1Settings.operateDelay)
+                        s1Settings.operateDelay
+                    )
                 })
             }
 
-            if(s1Settings.relayDelay !== undefined)
+
+            if (s1Settings.relayDelay !== undefined)
             {
                 parameterQueue.push(function() {
 
                     SerialManager.setRelayDelay(
-                                s1Settings.relayDelay)
+                        s1Settings.relayDelay
+                    )
                 })
             }
 
-            if(s1Settings.digitalGain !== undefined)
+
+            if (s1Settings.digitalGain !== undefined)
             {
                 parameterQueue.push(function() {
 
                     SerialManager.setDigitalGain(
-                                Math.round(
-                                    s1Settings.digitalGain * 10))
+                        Math.round(
+                            s1Settings.digitalGain * 10
+                        )
+                    )
                 })
             }
 
-            if(s1Settings.analogGain !== undefined)
+
+            if (s1Settings.analogGain !== undefined)
             {
                 parameterQueue.push(function() {
 
                     SerialManager.setAnalogGain(
-                                s1Settings.analogGain)
+                        s1Settings.analogGain
+                    )
                 })
             }
 
 
-            // ================= DD SETTINGS =================
+            // =====================================================
+            // DD SETTINGS
+            // =====================================================
 
             var ddSettings =
                     databaseManager.getDDSettings()
 
-            if(ddSettings.ddFreq !== undefined)
+
+            if (ddSettings.ddFreq !== undefined)
             {
                 parameterQueue.push(function() {
 
                     SerialManager.setDDFrequency(
-                                Math.round(
-                                    ddSettings.ddFreq * 10))
+                        Math.round(
+                            ddSettings.ddFreq * 10
+                        )
+                    )
                 })
             }
 
-            if(ddSettings.ddPower !== undefined)
+
+            if (ddSettings.ddPower !== undefined)
             {
                 parameterQueue.push(function() {
 
                     SerialManager.setDDPower(
-                                ddSettings.ddPower)
+                        ddSettings.ddPower
+                    )
                 })
             }
 
 
-            // ================= START SENDING =================
+            // =====================================================
+            // START SENDING
+            // =====================================================
 
-            if(parameterQueue.length > 0)
+            if (parameterQueue.length > 0) {
+
                 parameterSender.start()
-            else if(mainTopBar)
+
+            } else if (mainTopBar) {
+
                 mainTopBar.showNotification(
-                            "✓ Parameters sent successfully")
+                    "✓ Parameters sent successfully"
+                )
+            }
+
 
             GlobalState.sendDataAfterLoad = false
         }
     }
+
+
+    // =========================================================
+    // VALIDATION ALARM
+    // =========================================================
 
     property string lastTriggeredAlarmTime: ""
 
@@ -480,39 +614,41 @@ ApplicationWindow {
         repeat: true
 
 
-        onTriggered:
-        {
+        onTriggered: {
 
             var now = new Date()
 
 
             var currentTime =
-                    Qt.formatTime(now,"HH:mm")
+                    Qt.formatTime(
+                        now,
+                        "HH:mm"
+                    )
 
 
             var alarms =
                     GlobalState.getValidationTimers()
 
 
-            for(var i = 0; i < alarms.length; i++)
+            for (var i = 0; i < alarms.length; i++)
             {
-
                 var alarm = alarms[i]
 
 
-                if(alarm.enabled &&
-                   alarm.time === currentTime)
+                if (alarm.enabled &&
+                    alarm.time === currentTime)
                 {
 
-
-                    if(root.lastTriggeredAlarmTime !== currentTime)
+                    if (
+                        root.lastTriggeredAlarmTime
+                        !== currentTime
+                    )
                     {
 
-                        root.lastTriggeredAlarmTime = currentTime
-
+                        root.lastTriggeredAlarmTime =
+                                currentTime
 
                         GlobalState.triggerValidationAlarm()
-
                     }
 
 
@@ -523,294 +659,787 @@ ApplicationWindow {
     }
 
 
-
-
+    // =========================================================
+    // DDUSTER COMPONENT
+    // =========================================================
 
     Component {
         id: ddusterComp
+
         DDusterScreen {
             showTopBar: false
             globalTopBar: mainTopBar
         }
     }
 
+
+    // =========================================================
+    // BATCH COMPONENT
+    // =========================================================
+
     Component {
         id: batchComp
+
         BatchMenuScreen {
             showTopBar: false
             globalTopBar: mainTopBar
         }
     }
 
-    // Track current menu screen
+
+    // =========================================================
+    // CURRENT MENU
+    // =========================================================
+
     property string currentMenuScreen: ""
 
     property var menuStack: []
 
+
+    // =========================================================
+    // MAIN COLUMN
+    // =========================================================
+
     ColumnLayout {
+
         anchors.fill: parent
+
         spacing: 0
 
-        // ===== TOP BAR =====
-        TopBar {
-            id: mainTopBar
-            Layout.fillWidth: true
-            height: Math.max(63, root.height * 0.08)
 
-            userName: "Rahul1234567789"
-            userRole: "Supervisor"
+        // =====================================================
+        // TOP BAR
+        // =====================================================
+
+        TopBar {
+
+            id: mainTopBar
+
+            Layout.fillWidth: true
+
+            height:
+                Math.max(
+                    63,
+                    root.height * 0.08
+                )
+
 
             onMenuClicked: {
+
                 currentMenuScreen = "Menu"
-                menuLoader.source = "screens/MenuScreen.qml"
+
+                menuLoader.source =
+                        "screens/MenuScreen.qml"
+
                 menuLoader.active = true
+
                 mainTopBar.showBackButton = true
             }
 
+
             onBackClicked: {
+
                 if (menuStack.length > 0) {
-                    var previous = menuStack.pop()
-                    currentMenuScreen = previous
-                    menuLoader.source = "screens/" + previous + "Screen.qml"
+
+                    var previous =
+                            menuStack.pop()
+
+                    currentMenuScreen =
+                            previous
+
+                    menuLoader.source =
+                            "screens/"
+                            + previous
+                            + "Screen.qml"
+
                 } else {
+
                     currentMenuScreen = ""
+
                     menuLoader.active = false
+
                     menuLoader.source = ""
-                    swipeView.currentIndex = 0
+
+                    swipeViewLoader.item.currentIndex = 0
+
                     mainTopBar.showBackButton = false
                 }
             }
         }
 
-        // ===== SWIPEVIEW + MENU OVERLAY =====
+
+        // =====================================================
+        // SWIPEVIEW + MENU OVERLAY
+        // =====================================================
+
         Item {
+
             id: contentArea
+
             Layout.fillWidth: true
+
             Layout.fillHeight: true
 
-            // ===== MAIN SCREENS =====
-            SwipeView {
-                id: swipeView
-                anchors.fill: parent
-                z: 0
-                clip: true
-                currentIndex: 0
 
-                enabled: !menuLoader.active
-
-                // ===== SMOOTHNESS TWEAKS =====
-                interactive: true
-
-
-                LayoutMirroring.enabled: false
-
-                onContentItemChanged: root.tuneSwipeViewSmoothness()
-
-                HomeScreen {
-                    id: homePage
-                    showTopBar: false
-                    globalTopBar: mainTopBar
-
-                    validationPopup: validationScreenPopup
-
-                    layer.enabled: true
-                    layer.smooth: true
-
-                    navigateTo: function(screen) {
-                        if (root.currentMenuScreen !== "")
-                            root.menuStack.push(root.currentMenuScreen)
-                        root.currentMenuScreen = screen
-                        menuLoader.source = "screens/" + screen + "Screen.qml"
-                        menuLoader.active = true
-                        mainTopBar.showBackButton = true
-                    }
-                }
-
-                Loader {
-                    id: batchOrDDusterPage
-                    property bool showDDuster: GlobalState.showDDuster
-                    sourceComponent: showDDuster ? ddusterComp : batchComp
-                    asynchronous: true
-                    layer.enabled: true
-                    layer.smooth: true
-                }
-
-                AutoLearnScreen  {
-                    showTopBar: false
-                    globalTopBar: mainTopBar
-                    layer.enabled: true
-                    layer.smooth: true
-                }
-
-                SysDetailsScreen {
-                    showTopBar: false
-                    globalTopBar: mainTopBar
-                    layer.enabled: true
-                    layer.smooth: true
-                }
-
-                onCurrentIndexChanged: navigator.currentPage = currentIndex
-            }
-
-            // ===== MENU SCREEN LOADER =====
             Loader {
-                id: menuLoader
+
+                id: swipeViewLoader
+
                 anchors.fill: parent
-                z: 1
-                active: false
-                visible: active
+
+                z: 0
+
+                asynchronous: false
+
+
+                sourceComponent:
+                    GlobalState.showTrackingScreen
+                    ? swipeViewWithTracking
+                    : swipeViewWithoutTracking
+
 
                 onLoaded: {
+
+                    console.log(
+                        "SwipeView loaded."
+                    )
+
+                    console.log(
+                        "showTrackingScreen =",
+                        GlobalState.showTrackingScreen
+                    )
+
+                    root.tuneSwipeViewSmoothness()
+
+                    if (item)
+                        item.currentIndex = 0
+                }
+            }
+
+
+            // =================================================
+            // MENU SCREEN LOADER
+            // =================================================
+
+            Loader {
+
+                id: menuLoader
+
+                anchors.fill: parent
+
+                z: 1
+
+                active: false
+
+                visible: active
+
+
+                onLoaded: {
+
                     if (item) {
+
                         // Apply fonts to newly loaded screen
                         root.applyFontToAllChildren(item)
 
+
                         if ("globalTopBar" in item)
-                            item.globalTopBar = mainTopBar
+                            item.globalTopBar =
+                                    mainTopBar
+
 
                         if ("navigateTo" in item)
-                            item.navigateTo = function(screen) {
-                                if (root.currentMenuScreen !== "")
-                                    root.menuStack.push(root.currentMenuScreen)
-                                root.currentMenuScreen = screen
-                                menuLoader.source = "screens/" + screen + "Screen.qml"
+                        {
+                            item.navigateTo =
+                                    function(screen) {
+
+                                if (
+                                    root.currentMenuScreen
+                                    !== ""
+                                )
+                                {
+                                    root.menuStack.push(
+                                        root.currentMenuScreen
+                                    )
+                                }
+
+
+                                root.currentMenuScreen =
+                                        screen
+
+
+                                menuLoader.source =
+                                        "screens/"
+                                        + screen
+                                        + "Screen.qml"
                             }
+                        }
                     }
                 }
             }
         }
 
-        // ===== NAV INDICATOR =====
+
+        // =====================================================
+        // NAVIGATION INDICATOR
+        // =====================================================
+
         NavPageIndicator {
+
             id: navigator
 
             visible: !menuLoader.active
 
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.max(32, root.height * 0.015)
 
-            pageNames: [
-                "Dashboard",
-                GlobalState.showDDuster ? "Batch & DD" : "Batch Menu",
-                "Tracking Phase",
-                "About Machine"
-            ]
+            Layout.preferredHeight:
+                Math.max(
+                    32,
+                    root.height * 0.015
+                )
 
-            currentPage: swipeView.currentIndex
+
+            // =================================================
+            // PAGE NAMES
+            // =================================================
+
+            pageNames:
+                GlobalState.showTrackingScreen
+                ? [
+                    "Dashboard",
+
+                    GlobalState.showDDuster
+                        ? "Batch & DD"
+                        : "Batch Menu",
+
+                    "Tracking Phase",
+
+                    "About Machine"
+                ]
+                : [
+                    "Dashboard",
+
+                    GlobalState.showDDuster
+                        ? "Batch & DD"
+                        : "Batch Menu",
+
+                    "About Machine"
+                ]
+
+
+            // =================================================
+            // CURRENT PAGE
+            // =================================================
+
+            currentPage:
+                swipeViewLoader.item
+                ? swipeViewLoader.item.currentIndex
+                : 0
+
+
+            // =================================================
+            // PREVIOUS
+            // =================================================
 
             onPreviousClicked: {
-                if (swipeView.currentIndex > 0)
-                    swipeView.currentIndex--
+
+                if (
+                    swipeViewLoader.item
+                    && swipeViewLoader.item.currentIndex > 0
+                )
+                {
+                    swipeViewLoader.item.currentIndex--
+                }
             }
+
+
+            // =================================================
+            // NEXT
+            // =================================================
 
             onNextClicked: {
-                if (swipeView.currentIndex < pageCount - 1)
-                    swipeView.currentIndex++
+
+                if (
+                    swipeViewLoader.item
+                    &&
+                    swipeViewLoader.item.currentIndex
+                    <
+                    swipeViewLoader.item.count - 1
+                )
+                {
+                    swipeViewLoader.item.currentIndex++
+                }
             }
+
+
+            // =================================================
+            // PAGE SELECTED
+            // =================================================
 
             onPageSelected: function(index) {
-                swipeView.currentIndex = index
-            }
-        }
-    }
 
-    Timer {
-        interval: 1000
-        running: true
-        repeat: true
-        onTriggered: {
-            GlobalState.globalDateTime = new Date()
-        }
-    }
+                if (!swipeViewLoader.item)
+                    return
 
-    // ===== CUSTOM VIRTUAL KEYBOARD =====
-    CommonKeyboard {
-        id: customKeyboard
 
-        parent: Overlay.overlay
-        anchors.left: parent.left
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
-
-        z: 10000
-
-        visible: GlobalState.loginKeyboardRequest
-
-        y: visible ? parent.height - height : parent.height
-
-        Behavior on y {
-            NumberAnimation {
-                duration: 220
-                easing.type: Easing.OutCubic
-            }
-        }
-
-        onVisibleChanged: {
-            if (!visible) {
-                if (GlobalState.activeInputField) {
-                    GlobalState.activeInputField.focus = false
-                    GlobalState.activeInputField = null
+                if (
+                    index >= 0
+                    &&
+                    index < swipeViewLoader.item.count
+                )
+                {
+                    swipeViewLoader.item.currentIndex =
+                            index
                 }
             }
         }
     }
 
-    // ===== GLOBAL VALIDATION ALARM POPUP =====
-    ValidationAlarmPopup {
-        id: validationAlarmPopup
-        onContinueClicked: validationScreenPopup.open()
+    Component {
+
+        id: swipeViewWithTracking
+
+        SwipeView {
+
+            id: trackingSwipeView
+
+            anchors.fill: parent
+
+            clip: true
+
+            currentIndex: 0
+
+            enabled: !menuLoader.active
+
+            interactive: true
+
+            LayoutMirroring.enabled: false
+
+
+            onContentItemChanged: {
+                root.tuneSwipeViewSmoothness()
+            }
+
+
+            // =================================================
+            // PAGE 0 - HOME
+            // =================================================
+
+            HomeScreen {
+
+                id: homePageWithTracking
+
+                showTopBar: false
+
+                globalTopBar: mainTopBar
+
+                validationPopup:
+                        validationScreenPopup
+
+
+                layer.enabled: true
+
+                layer.smooth: true
+
+
+                navigateTo:
+                    function(screen) {
+
+                    if (
+                        root.currentMenuScreen
+                        !== ""
+                    )
+                    {
+                        root.menuStack.push(
+                            root.currentMenuScreen
+                        )
+                    }
+
+
+                    root.currentMenuScreen =
+                            screen
+
+
+                    menuLoader.source =
+                            "screens/"
+                            + screen
+                            + "Screen.qml"
+
+
+                    menuLoader.active = true
+
+
+                    mainTopBar.showBackButton =
+                            true
+                }
+            }
+
+
+            // =================================================
+            // PAGE 1 - BATCH / DDUSTER
+            // =================================================
+
+            Loader {
+
+                id: batchOrDDusterPageWithTracking
+
+                property bool showDDuster:
+                        GlobalState.showDDuster
+
+
+                sourceComponent:
+                        showDDuster
+                        ? ddusterComp
+                        : batchComp
+
+
+                asynchronous: true
+
+                layer.enabled: true
+
+                layer.smooth: true
+            }
+
+
+            // =================================================
+            // PAGE 2 - TRACKING PHASE
+            // =================================================
+
+            AutoLearnScreen {
+
+                id: autoLearnScreen
+
+                showTopBar: false
+
+                globalTopBar: mainTopBar
+
+                layer.enabled: true
+
+                layer.smooth: true
+            }
+
+
+            // =================================================
+            // PAGE 3 - ABOUT MACHINE
+            // =================================================
+
+            SysDetailsScreen {
+
+                id: sysDetailsScreenWithTracking
+
+                showTopBar: false
+
+                globalTopBar: mainTopBar
+
+                layer.enabled: true
+
+                layer.smooth: true
+            }
+        }
     }
 
+    Component {
+
+        id: swipeViewWithoutTracking
+
+        SwipeView {
+
+            id: normalSwipeView
+
+            anchors.fill: parent
+
+            clip: true
+
+            currentIndex: 0
+
+            enabled: !menuLoader.active
+
+            interactive: true
+
+            LayoutMirroring.enabled: false
+
+
+            onContentItemChanged: {
+                root.tuneSwipeViewSmoothness()
+            }
+
+
+            // =================================================
+            // PAGE 0 - HOME
+            // =================================================
+
+            HomeScreen {
+
+                id: homePageWithoutTracking
+
+                showTopBar: false
+
+                globalTopBar: mainTopBar
+
+                validationPopup:
+                        validationScreenPopup
+
+
+                layer.enabled: true
+
+                layer.smooth: true
+
+
+                navigateTo:
+                    function(screen) {
+
+                    if (
+                        root.currentMenuScreen
+                        !== ""
+                    )
+                    {
+                        root.menuStack.push(
+                            root.currentMenuScreen
+                        )
+                    }
+
+
+                    root.currentMenuScreen =
+                            screen
+
+
+                    menuLoader.source =
+                            "screens/"
+                            + screen
+                            + "Screen.qml"
+
+
+                    menuLoader.active = true
+
+
+                    mainTopBar.showBackButton =
+                            true
+                }
+            }
+
+
+            // =================================================
+            // PAGE 1 - BATCH / DDUSTER
+            // =================================================
+
+            Loader {
+
+                id: batchOrDDusterPageWithoutTracking
+
+                property bool showDDuster:
+                        GlobalState.showDDuster
+
+
+                sourceComponent:
+                        showDDuster
+                        ? ddusterComp
+                        : batchComp
+
+
+                asynchronous: true
+
+                layer.enabled: true
+
+                layer.smooth: true
+            }
+
+
+            // =================================================
+            // PAGE 2 - ABOUT MACHINE
+            // =================================================
+
+            SysDetailsScreen {
+
+                id: sysDetailsScreenWithoutTracking
+
+                showTopBar: false
+
+                globalTopBar: mainTopBar
+
+                layer.enabled: true
+
+                layer.smooth: true
+            }
+        }
+    }
+
+
+    // =========================================================
+    // GLOBAL DATE/TIME
+    // =========================================================
+
+    Timer {
+
+        interval: 1000
+
+        running: true
+
+        repeat: true
+
+
+        onTriggered: {
+
+            GlobalState.globalDateTime =
+                    new Date()
+        }
+    }
+
+
+    // =========================================================
+    // CUSTOM VIRTUAL KEYBOARD
+    // =========================================================
+
+    CommonKeyboard {
+
+        id: customKeyboard
+
+        parent: Overlay.overlay
+
+        anchors.left: parent.left
+
+        anchors.right: parent.right
+
+        anchors.bottom: parent.bottom
+
+
+        z: 10000
+
+
+        visible:
+            GlobalState.loginKeyboardRequest
+
+
+        y:
+            visible
+            ? parent.height - height
+            : parent.height
+
+
+        Behavior on y {
+
+            NumberAnimation {
+
+                duration: 220
+
+                easing.type:
+                    Easing.OutCubic
+            }
+        }
+
+
+        onVisibleChanged: {
+
+            if (!visible) {
+
+                if (
+                    GlobalState.activeInputField
+                )
+                {
+                    GlobalState.activeInputField.focus =
+                            false
+
+                    GlobalState.activeInputField =
+                            null
+                }
+            }
+        }
+    }
+
+
+    // =========================================================
+    // GLOBAL VALIDATION ALARM POPUP
+    // =========================================================
+
+    ValidationAlarmPopup {
+
+        id: validationAlarmPopup
+
+        onContinueClicked:
+            validationScreenPopup.open()
+    }
+
+
+    // =========================================================
+    // VALIDATION SCREEN POPUP
+    // =========================================================
+
     ValidationScreenPopup {
+
         id: validationScreenPopup
     }
 
-    // =========== Floating window =========
+
+    // =========================================================
+    // FLOATING VALIDATION WINDOW
+    // =========================================================
 
     Timer {
+
         id: bubbleAutoCloseTimer
 
         interval: 15 * 60 * 1000
+
         repeat: false
 
+
         onTriggered: {
-            validationAlarmPopup.minimized = false
+
+            validationAlarmPopup.minimized =
+                    false
+
             validationAlarmPopup.close()
         }
     }
+
 
     Rectangle {
 
         id: validationBubble
 
-        visible: validationAlarmPopup.minimized
+        visible:
+            validationAlarmPopup.minimized
+
 
         onVisibleChanged: {
-                if (visible)
-                    bubbleAutoCloseTimer.restart()
-                else
-                    bubbleAutoCloseTimer.stop()
-            }
+
+            if (visible)
+                bubbleAutoCloseTimer.restart()
+            else
+                bubbleAutoCloseTimer.stop()
+        }
+
 
         width: 68
+
         height: 68
 
         radius: width / 2
 
+
         color: "#1A4DB5"
 
+
         border.width: 3
+
         border.color: "white"
 
-        anchors.right: parent.right
-        anchors.bottom: parent.bottom
+
+        anchors.right:
+                parent.right
+
+        anchors.bottom:
+                parent.bottom
+
 
         anchors.rightMargin: 22
+
         anchors.bottomMargin: 26
+
 
         z: 9999
 
+
         layer.enabled: true
+
 
         Rectangle {
 
@@ -827,53 +1456,95 @@ ApplicationWindow {
             opacity: 0.4
         }
 
+
         Image {
 
             anchors.centerIn: parent
 
-            source: "qrc:/qt/qml/Application/assets/images/Bell.png"
 
-            width: parent.width * 0.45
-            height: parent.height * 0.45
+            source:
+                "qrc:/qt/qml/Application/assets/images/Bell.png"
 
-            fillMode: Image.PreserveAspectFit
+
+            width:
+                parent.width * 0.45
+
+
+            height:
+                parent.height * 0.45
+
+
+            fillMode:
+                Image.PreserveAspectFit
+
 
             smooth: true
+
             mipmap: true
         }
 
+
         MouseArea {
+
             anchors.fill: parent
 
-            drag.target: validationBubble
+
+            drag.target:
+                    validationBubble
+
 
             onClicked: {
+
                 bubbleAutoCloseTimer.stop()
 
-                validationAlarmPopup.minimized = false
+
+                validationAlarmPopup.minimized =
+                        false
+
+
                 validationAlarmPopup.open()
             }
         }
 
+
         SequentialAnimation {
 
-            running: validationBubble.visible
+            running:
+                validationBubble.visible
 
-            loops: Animation.Infinite
+
+            loops:
+                Animation.Infinite
+
 
             NumberAnimation {
-                target: validationBubble
-                property: "scale"
+
+                target:
+                    validationBubble
+
+                property:
+                    "scale"
+
                 from: 1
+
                 to: 1.1
+
                 duration: 600
             }
 
+
             NumberAnimation {
-                target: validationBubble
-                property: "scale"
+
+                target:
+                    validationBubble
+
+                property:
+                    "scale"
+
                 from: 1.1
+
                 to: 1
+
                 duration: 600
             }
         }

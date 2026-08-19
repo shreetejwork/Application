@@ -240,6 +240,50 @@ Item {
                         }
                     }
                 }
+
+                // ===== Card 4 =====
+                Rectangle {
+                    width: flow.cardWidth
+                    height: 120 * root.scale
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.color: "#E5E7EB"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+
+                            Text {
+                                text: "Tracking"
+                                font.pixelSize: 20
+
+                                color: "#111827"
+                            }
+
+                            Text {
+                                text: GlobalState.showTrackingScreen
+                                      ? "Tracking On"
+                                      : "Tracking Off"
+                                font.pixelSize: 16
+                                color: "#6B7280"
+                            }
+                        }
+
+                        DDButton {
+                            width: 90 * root.scale
+                            height: 36 * root.scale
+
+                            toggled: GlobalState.showTrackingScreen
+
+                            onToggledChanged: {
+                                GlobalState.showTrackingScreen = toggled
+                            }
+                        }
+                    }
+                }
             }
         }
     }

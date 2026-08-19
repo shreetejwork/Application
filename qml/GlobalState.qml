@@ -18,6 +18,7 @@ QtObject {
         property bool showNetworkScreen: true
         property bool showAuditTrail: true
         property bool showProductLib: true
+        property bool showTrackingScreen: true
 
         property string blockedUsersJson:   "{}"
         property string failedAttemptsJson: "{}"
@@ -49,6 +50,7 @@ QtObject {
     property bool showNetworkScreen: settings.showNetworkScreen
     property bool showAuditTrail: settings.showAuditTrail
     property bool showProductLib: settings.showProductLib
+    property bool showTrackingScreen: settings.showTrackingScreen
 
     property string blockedUsersJson:   settings.blockedUsersJson
     property string failedAttemptsJson: settings.failedAttemptsJson
@@ -70,6 +72,7 @@ QtObject {
     onShowNetworkScreenChanged: settings.showNetworkScreen = showNetworkScreen
     onShowAuditTrailChanged: settings.showAuditTrail = showAuditTrail
     onShowProductLibChanged: settings.showProductLib = showProductLib
+    onShowTrackingScreenChanged: settings.showTrackingScreen = showTrackingScreen
 
     onMachinePowerStateChanged: settings.machinePowerState = machinePowerState
 
