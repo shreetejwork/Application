@@ -13,7 +13,8 @@ public:
     Q_INVOKABLE QVariantList scanNetworks();
     Q_INVOKABLE void scanNetworksAsync();
     Q_INVOKABLE void connectToWifiAsync(QString ssid, QString password);
-    Q_INVOKABLE void enableWifi(bool enable);
+    Q_INVOKABLE bool enableWifi(bool enable);
+    Q_INVOKABLE bool isWifiEnabled();
     Q_INVOKABLE QString currentConnection();
     Q_INVOKABLE void currentConnectionAsync();
     Q_INVOKABLE bool isNmcliAvailable();

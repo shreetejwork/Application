@@ -43,8 +43,11 @@ Item {
     Component.onCompleted: {
         nmcliAvailable = WiFiScanner.isNmcliAvailable()
         if (nmcliAvailable) {
-            WiFiScanner.currentConnectionAsync()
-            WiFiScanner.scanNetworksAsync()
+            wifiEnabled = WiFiScanner.isWifiEnabled()
+            if (wifiEnabled) {
+                WiFiScanner.currentConnectionAsync()
+                WiFiScanner.scanNetworksAsync()
+            }
         }
     }
 
@@ -52,6 +55,7 @@ Item {
         target: WiFiScanner
         onCurrentConnectionReady: function(ssid) {
             connectedSSID = ssid
+            refreshAvailableNetworks()
             updateConnectedSignal()
         }
         onNetworksScanned: function(networks) {
@@ -63,11 +67,19 @@ Item {
                     continue
 
                 networkModel.append(networks[i])
-                if (!networks[i].connected)
-                    availableNetworkModel.append(networks[i])
             }
 
+            refreshAvailableNetworks()
             updateConnectedSignal()
+        }
+    }
+
+    function refreshAvailableNetworks() {
+        availableNetworkModel.clear()
+        for (var i = 0; i < networkModel.count; i++) {
+            var network = networkModel.get(i)
+            if (network.name !== connectedSSID && !network.connected)
+                availableNetworkModel.append(network)
         }
     }
 
@@ -116,16 +128,7 @@ Item {
             return
         }
 
-        if (secured) {
-            passwordField.text = ""
-            passwordPopup.ssid = ssid
-            passwordPopup.errorMessage = ""
-            passwordPopup.successMessage = ""
-            passwordPopup.isConnecting = false
-            passwordPopup.open()
-        } else {
-            startWifiConnect(ssid, "")
-        }
+        startWifiConnect(ssid, "")
     }
 
     Connections {
@@ -146,6 +149,13 @@ Item {
                 if (passwordPopup.visible && passwordPopup.ssid === resultSsid) {
                     closeTimer.start()
                 }
+            } else if (result === "NEEDS_PASSWORD") {
+                passwordField.text = ""
+                passwordPopup.ssid = resultSsid
+                passwordPopup.errorMessage = ""
+                passwordPopup.successMessage = ""
+                passwordPopup.isConnecting = false
+                passwordPopup.open()
             } else {
                 var errorMsg = getErrorMessage(result)
                 if (passwordPopup.visible && passwordPopup.ssid === resultSsid) {
@@ -164,6 +174,8 @@ Item {
         switch (errorCode) {
             case "WRONG_PASSWORD":
                 return "Incorrect password"
+            case "NEEDS_PASSWORD":
+                return "Password required"
             case "NETWORK_NOT_FOUND":
                 return "Network not found"
             case "CONNECTION_TIMEOUT":
@@ -249,11 +261,17 @@ Item {
                                 useSymbols: true
 
                                 onToggledChanged: {
-                                    root.wifiEnabled = toggled
-
                                     if (toggled && root.nmcliAvailable) {
-                                        scanWifi()
+                                        root.wifiEnabled = WiFiScanner.enableWifi(true)
+                                        if (root.wifiEnabled) {
+                                            WiFiScanner.currentConnectionAsync()
+                                            scanWifi()
+                                        }
                                     } else {
+                                        root.wifiEnabled = false
+                                        WiFiScanner.enableWifi(false)
+                                        connectedSSID = ""
+                                        connectedSignal = 0
                                         networkModel.clear()
                                         availableNetworkModel.clear()
                                     }

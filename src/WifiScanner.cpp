@@ -67,14 +67,11 @@ QVariantList WiFiScanner::scanNetworks()
 void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
 {
     QProcess *process = new QProcess(this);
-    process->setProcessChannelMode(QProcess::MergedChannels);
-    QStringList args;
-
-    // Use direct WiFi connect with password to avoid NetworkManager prompting for secrets
-    args << "-w" << "30" << "dev" << "wifi" << "connect" << ssid;
-    if (!password.isEmpty()) {
-        args << "password" << password;
-    }
+    const bool useSavedProfile = password.isEmpty();
+    QStringList args = useSavedProfile
+        ? (QStringList() << "-w" << "30" << "connection" << "up" << "id" << ssid)
+        : (QStringList() << "-w" << "30" << "dev" << "wifi" << "connect" << ssid
+                         << "password" << password);
 
     QTimer *timeoutTimer = new QTimer(process);
     timeoutTimer->setSingleShot(true);
@@ -82,6 +79,7 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
 
     connect(timeoutTimer, &QTimer::timeout, this, [process]() {
         qDebug() << "nmcli async connect timed out";
+        process->setProperty("wifiConnectTimedOut", true);
         if (process->state() == QProcess::Running) {
             process->kill();
             process->waitForFinished(1000);
@@ -89,50 +87,49 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
     });
 
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
-            [this, process, ssid, timeoutTimer, password](int exitCode, QProcess::ExitStatus) {
+            [this, process, ssid, timeoutTimer, useSavedProfile](int exitCode, QProcess::ExitStatus) mutable {
                 timeoutTimer->stop();
-                timeoutTimer->deleteLater();
                 QString output = process->readAllStandardOutput();
                 QString error = process->readAllStandardError();
-                qDebug() << "nmcli async connect output:" << output;
-                qDebug() << "nmcli async connect error:" << error;
-                qDebug() << "nmcli async connect exit code:" << exitCode;
+                const bool timedOut = process->property("wifiConnectTimedOut").toBool();
+
+                if (exitCode != 0 && useSavedProfile && !timedOut) {
+                    // No saved profile: let NetworkManager discover the network, then report
+                    // that credentials are needed if it cannot activate it without a secret.
+                    process->start("nmcli", QStringList() << "-w" << "30" << "dev" << "wifi"
+                                                            << "connect" << ssid);
+                    timeoutTimer->start();
+                    return;
+                }
+
+                const QString diagnostics = output + "\n" + error;
                 process->deleteLater();
+                timeoutTimer->deleteLater();
 
                 QString result;
-                if (exitCode == 0) {
-                    // If we created a connection, activate it
-                    if (!password.isEmpty()) {
-                        QProcess activateProcess;
-                        activateProcess.start("nmcli", QStringList() << "connection" << "up" << ssid);
-                        activateProcess.waitForFinished(10000);
-                        if (activateProcess.exitCode() == 0) {
-                            result = "Connected to " + ssid;
-                        } else {
-                            result = "CONNECTION_FAILED";
-                        }
-                    } else {
-                        result = "Connected to " + ssid;
-                    }
+                if (timedOut) {
+                    result = "CONNECTION_TIMEOUT";
+                } else if (exitCode == 0) {
+                    result = "Connected to " + ssid;
                 } else {
-                    if (error.contains("Secrets were required") ||
-                        error.contains("802-11-wireless-security") ||
-                        error.contains("key-mgmt") ||
-                        error.contains("psk") ||
-                        error.contains("wrong key") ||
-                        error.contains("invalid key") ||
-                        error.contains("authentication failed") ||
-                        error.contains("WPA handshake failed")) {
+                    if (diagnostics.contains("Secrets were required", Qt::CaseInsensitive) ||
+                        diagnostics.contains("802-11-wireless-security", Qt::CaseInsensitive) ||
+                        diagnostics.contains("No suitable secrets", Qt::CaseInsensitive)) {
+                        result = "NEEDS_PASSWORD";
+                    } else if (diagnostics.contains("wrong key", Qt::CaseInsensitive) ||
+                               diagnostics.contains("invalid key", Qt::CaseInsensitive) ||
+                               diagnostics.contains("authentication failed", Qt::CaseInsensitive) ||
+                               diagnostics.contains("WPA handshake failed", Qt::CaseInsensitive)) {
                         result = "WRONG_PASSWORD";
-                    } else if (error.contains("No such file or directory") ||
-                               error.contains("not found") ||
-                               error.contains("SSID not found")) {
+                    } else if (diagnostics.contains("No such file or directory", Qt::CaseInsensitive) ||
+                               diagnostics.contains("not found", Qt::CaseInsensitive) ||
+                               diagnostics.contains("SSID not found", Qt::CaseInsensitive)) {
                         result = "NETWORK_NOT_FOUND";
-                    } else if (error.contains("timeout") ||
-                               error.contains("Timeout") ||
-                               error.contains("Connection activation failed")) {
+                    } else if (diagnostics.contains("timeout", Qt::CaseInsensitive) ||
+                               diagnostics.contains("Connection activation failed", Qt::CaseInsensitive)) {
                         result = "CONNECTION_TIMEOUT";
-                    } else if (error.contains("Device") && error.contains("not found")) {
+                    } else if (diagnostics.contains("Device", Qt::CaseInsensitive) &&
+                               diagnostics.contains("not found", Qt::CaseInsensitive)) {
                         result = "NO_WIFI_DEVICE";
                     } else {
                         result = "CONNECTION_FAILED";
@@ -245,7 +242,20 @@ void WiFiScanner::currentConnectionAsync()
     thread->start();
 }
 
-void WiFiScanner::enableWifi(bool enable)
+bool WiFiScanner::isWifiEnabled()
+{
+    QProcess process;
+    process.start("nmcli", QStringList() << "radio" << "wifi");
+    if (!process.waitForStarted(2000) || !process.waitForFinished(5000)) {
+        process.kill();
+        process.waitForFinished(1000);
+        return false;
+    }
+
+    return process.exitCode() == 0 && process.readAllStandardOutput().trimmed() == "enabled";
+}
+
+bool WiFiScanner::enableWifi(bool enable)
 {
     QProcess process;
     QStringList args;
@@ -255,12 +265,15 @@ void WiFiScanner::enableWifi(bool enable)
 
     if (!process.waitForStarted(5000)) {
         qDebug() << "Failed to start nmcli radio process";
-        return;
+        return false;
     }
 
     if (!process.waitForFinished(10000)) {
         qDebug() << "nmcli radio process timed out";
         process.kill();
         process.waitForFinished(1000);
+        return false;
     }
+
+    return process.exitCode() == 0;
 }
