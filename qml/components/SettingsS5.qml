@@ -229,7 +229,7 @@ Item {
                 radius: 24 * root.scale
                 color: "#FFFFFF"
                 border.color: "#DADADA"
-                border.width: 1
+                border.width: 2
 
                 ColumnLayout {
                     anchors.fill: parent
