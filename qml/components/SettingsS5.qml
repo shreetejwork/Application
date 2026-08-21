@@ -361,6 +361,7 @@ Item {
                 color: "#1A4DB5"
             }
 
+
             Rectangle {
                 width: 90 * root.scale
                 height: 3 * root.scale
@@ -424,7 +425,7 @@ Item {
                         text: "WiFi"
 
                         font.pixelSize:
-                            20 * root.scale
+                            22 * root.scale
 
                         color:
                             parent.selected
@@ -473,7 +474,7 @@ Item {
                         text: "LAN"
 
                         font.pixelSize:
-                            20 * root.scale
+                            22 * root.scale
 
                         color:
                             parent.selected
@@ -562,7 +563,7 @@ Item {
                                 text: "WiFi"
 
                                 font.pixelSize:
-                                    17 * root.scale
+                                    20 * root.scale
 
                                 color:
                                     "#1A4DB5"
@@ -580,26 +581,10 @@ Item {
                                     "WiFi Connection"
 
                                 font.pixelSize:
-                                    22 * root.scale
+                                    25 * root.scale
 
                                 color:
                                     "#1F3F77"
-                            }
-
-                            Text {
-
-                                text:
-                                    !root.nmcliAvailable
-                                    ? "WiFi management is not available"
-                                    : root.wifiEnabled
-                                      ? "Scan and connect to wireless networks"
-                                      : "Wireless connection is disabled"
-
-                                font.pixelSize:
-                                    15 * root.scale
-
-                                color:
-                                    "#71809A"
                             }
                         }
 
@@ -767,7 +752,7 @@ Item {
                                 text:
                                     root.nmcliAvailable
                                     ? "Enable WiFi using the switch above"
-                                    : "NetworkManager (nmcli) is required"
+                                    : "NetworkManager is required"
 
                                 font.pixelSize:
                                     16 * root.scale
@@ -855,7 +840,7 @@ Item {
                                             "✓"
 
                                         font.pixelSize:
-                                            24 * root.scale
+                                            27 * root.scale
 
                                         color:
                                             "#259653"
@@ -876,7 +861,7 @@ Item {
                                             "Connected Network"
 
                                         font.pixelSize:
-                                            15 * root.scale
+                                            18 * root.scale
 
                                         color:
                                             "#6B7B93"
@@ -891,7 +876,7 @@ Item {
                                             parent.width
 
                                         font.pixelSize:
-                                            21 * root.scale
+                                            24 * root.scale
 
                                         color:
                                             "#1A4DB5"
@@ -961,7 +946,7 @@ Item {
                                             "Connected"
 
                                         font.pixelSize:
-                                            15 * root.scale
+                                            18 * root.scale
 
                                         color:
                                             "#259653"
@@ -985,7 +970,7 @@ Item {
                                     "Available Networks"
 
                                 font.pixelSize:
-                                    19 * root.scale
+                                    22 * root.scale
 
                                 color:
                                     "#253A5E"
@@ -999,7 +984,7 @@ Item {
                                     + ")"
 
                                 font.pixelSize:
-                                    17 * root.scale
+                                    20 * root.scale
 
                                 color:
                                     "#8A98AE"
@@ -1041,7 +1026,7 @@ Item {
                                         "Refresh"
 
                                     font.pixelSize:
-                                        16 * root.scale
+                                        19 * root.scale
 
                                     color:
                                         "#1A4DB5"
@@ -1179,7 +1164,7 @@ Item {
                                                     : "Open"
 
                                                 font.pixelSize:
-                                                    12 * root.scale
+                                                    15 * root.scale
 
                                                 color:
                                                     model.secured
@@ -1205,7 +1190,7 @@ Item {
                                                     model.name
 
                                                 font.pixelSize:
-                                                    19 * root.scale
+                                                    22 * root.scale
 
                                                 color:
                                                     "#26364E"
@@ -1222,7 +1207,7 @@ Item {
                                                     : "Open network"
 
                                                 font.pixelSize:
-                                                    14 * root.scale
+                                                    17 * root.scale
 
                                                 color:
                                                     model.secured
@@ -1294,7 +1279,7 @@ Item {
                                                     "Connect"
 
                                                 font.pixelSize:
-                                                    16 * root.scale
+                                                    19 * root.scale
 
                                                 color:
                                                     "#FFFFFF"
@@ -1351,7 +1336,7 @@ Item {
                                             "No networks found"
 
                                         font.pixelSize:
-                                            20 * root.scale
+                                            23 * root.scale
 
                                         color:
                                             "#71809A"
@@ -1366,7 +1351,7 @@ Item {
                                             "Tap Refresh to scan again"
 
                                         font.pixelSize:
-                                            15 * root.scale
+                                            18 * root.scale
 
                                         color:
                                             "#A0ACBD"
@@ -1436,7 +1421,7 @@ Item {
                                     "LAN"
 
                                 font.pixelSize:
-                                    17 * root.scale
+                                    20 * root.scale
 
                                 color:
                                     "#1A4DB5"
@@ -1457,7 +1442,7 @@ Item {
                                     "LAN Configuration"
 
                                 font.pixelSize:
-                                    22 * root.scale
+                                    25 * root.scale
 
                                 color:
                                     "#1F3F77"
@@ -1469,7 +1454,7 @@ Item {
                                     "Configure static IP network settings"
 
                                 font.pixelSize:
-                                    15 * root.scale
+                                    18 * root.scale
 
                                 color:
                                     "#71809A"
@@ -1525,7 +1510,7 @@ Item {
                                     "IP Address"
 
                                 font.pixelSize:
-                                    16 * root.scale
+                                    22 * root.scale
 
                                 color:
                                     "#52627A"
@@ -1570,7 +1555,7 @@ Item {
                                         14 * root.scale
 
                                     font.pixelSize:
-                                        20 * root.scale
+                                        23 * root.scale
 
                                     color:
                                         "#1A4DB5"
@@ -1611,7 +1596,7 @@ Item {
                                     "Subnet"
 
                                 font.pixelSize:
-                                    16 * root.scale
+                                    22 * root.scale
 
                                 color:
                                     "#52627A"
@@ -1656,7 +1641,7 @@ Item {
                                         14 * root.scale
 
                                     font.pixelSize:
-                                        20 * root.scale
+                                        23 * root.scale
 
                                     color:
                                         "#1A4DB5"
@@ -1697,7 +1682,7 @@ Item {
                                     "Gateway"
 
                                 font.pixelSize:
-                                    16 * root.scale
+                                    22 * root.scale
 
                                 color:
                                     "#52627A"
@@ -1742,7 +1727,7 @@ Item {
                                         14 * root.scale
 
                                     font.pixelSize:
-                                        20 * root.scale
+                                        23 * root.scale
 
                                     color:
                                         "#1A4DB5"
@@ -1783,7 +1768,7 @@ Item {
                                     "DNS"
 
                                 font.pixelSize:
-                                    16 * root.scale
+                                    22 * root.scale
 
                                 color:
                                     "#52627A"
@@ -1831,7 +1816,7 @@ Item {
                                         "8.8.8.8"
 
                                     font.pixelSize:
-                                        20 * root.scale
+                                        23 * root.scale
 
                                     color:
                                         "#1A4DB5"
@@ -1913,7 +1898,7 @@ Item {
                                 ""
 
                             font.pixelSize:
-                                16 * root.scale
+                                19 * root.scale
 
                             color:
                                 "#1A4DB5"
@@ -1955,7 +1940,7 @@ Item {
                                 "Apply Static IP"
 
                             font.pixelSize:
-                                20 * root.scale
+                                25 * root.scale
 
                             color:
                                 "#FFFFFF"
