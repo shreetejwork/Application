@@ -453,7 +453,7 @@ Item {
                 text: "Network Settings"
 
                 font.pixelSize:
-                    27 * root.scale
+                    32 * root.scale
 
                 color: "#1A4DB5"
             }
