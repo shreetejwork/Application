@@ -20,6 +20,8 @@ QtObject {
         property bool showProductLib: true
         property bool showTrackingScreen: true
 
+        property string networkSelectedTab: "WiFi"
+
         property string blockedUsersJson:   "{}"
         property string failedAttemptsJson: "{}"
 
@@ -63,7 +65,10 @@ QtObject {
 
     property string productName: settings.productName
 
+    property string networkSelectedTab: settings.networkSelectedTab
 
+
+    onNetworkSelectedTabChanged: settings.networkSelectedTab = networkSelectedTab
 
     onBlockedUsersJsonChanged:   settings.blockedUsersJson   = blockedUsersJson
     onFailedAttemptsJsonChanged: settings.failedAttemptsJson = failedAttemptsJson
