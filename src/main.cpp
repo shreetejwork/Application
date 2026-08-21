@@ -12,6 +12,7 @@
 #include "SystemDiagnosis.h"
 #include "PlotItem.h"
 #include "SerialManager.h"
+#include "LanManager.h"
 
 
 int main(int argc, char *argv[])
@@ -105,6 +106,7 @@ int main(int argc, char *argv[])
     WiFiScanner wifi;
     PdfExporter pdfExporter;
     SystemDiagnosis diag;
+    NetworkManager networkManager;
 
     engine.rootContext()->setContextProperty(
         "SystemController",
@@ -121,6 +123,10 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(
         "SystemDiag",
         &diag);
+
+    engine.rootContext()->setContextProperty(
+        "NetworkManager",
+        &networkManager);
 
     // =========================================================
     // ERROR HANDLING

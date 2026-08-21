@@ -130,6 +130,8 @@ qt_add_qml_module(appApplication
         QML_FILES qml/components/ValidationAlarmPopup.qml
         QML_FILES qml/components/ValidationScreenPopup.qml
         QML_FILES qml/screens/DebugConsoleScreen.qml
+        SOURCES src/LanManager.h
+        SOURCES src/LanManager.cpp
 )
 
 set_target_properties(appApplication PROPERTIES

@@ -17,9 +17,30 @@ Item {
     property int connectedSignal: 0
     property bool isConnecting: false
     property bool nmcliAvailable: false
+    property bool lanAvailable: false
+    property bool lanConnected: false
 
     property var globalTopBar
     property var notify
+
+    // =========================================================
+    // LAN EDIT POPUP STATE
+    // =========================================================
+
+    property string activeLanFieldId: ""
+
+    property real lanKeyboardHeight:
+        GlobalState.loginKeyboardRequest
+        ? 340 * root.scale
+        : 0
+
+    property real lanVisibleHeight:
+        root.height - lanKeyboardHeight
+
+    property string lanIpAddress: ""
+    property string lanSubnet: ""
+    property string lanGateway: ""
+    property string lanDns: "8.8.8.8"
 
     property string activeTab:
         GlobalState.networkSelectedTab === "LAN"
@@ -52,17 +73,73 @@ Item {
     // INITIALIZATION
     // =========================================================
 
+    // =========================================================
+    // LOAD LAN SETTINGS
+    // =========================================================
+
+    function loadLanSettings() {
+
+        lanAvailable =
+            NetworkManager.isEthernetAvailable("eth0")
+
+        lanConnected =
+            NetworkManager.isEthernetConnected("eth0")
+
+        if (!lanAvailable) {
+
+            lanIpAddress = ""
+            lanSubnet = ""
+            lanGateway = ""
+            lanDns = "8.8.8.8"
+
+            return
+        }
+
+        lanIpAddress =
+            NetworkManager.getIPAddress("eth0")
+
+        lanSubnet =
+            NetworkManager.getSubnet("eth0")
+
+        lanGateway =
+            NetworkManager.getGateway("eth0")
+
+        var dns =
+            NetworkManager.getDns("eth0")
+
+        if (dns !== "")
+            lanDns = dns
+        else
+            lanDns = "8.8.8.8"
+    }
+
     Component.onCompleted: {
-        nmcliAvailable = WiFiScanner.isNmcliAvailable()
+
+        // =========================================
+        // WIFI INITIALIZATION
+        // =========================================
+
+        nmcliAvailable =
+            WiFiScanner.isNmcliAvailable()
 
         if (nmcliAvailable) {
-            wifiEnabled = WiFiScanner.isWifiEnabled()
+
+            wifiEnabled =
+                WiFiScanner.isWifiEnabled()
 
             if (wifiEnabled) {
+
                 WiFiScanner.currentConnectionAsync()
+
                 WiFiScanner.scanNetworksAsync()
             }
         }
+
+        // =========================================
+        // LAN INITIALIZATION
+        // =========================================
+
+        loadLanSettings()
     }
 
     // =========================================================
@@ -91,6 +168,26 @@ Item {
 
             refreshAvailableNetworks()
             updateConnectedSignal()
+        }
+    }
+
+    // =========================================================
+    // LAN NETWORK CONFIGURATION CHANGED
+    // =========================================================
+
+    Connections {
+
+        target: NetworkManager
+
+        function onNetworkConfigurationChanged() {
+
+            root.loadLanSettings()
+
+            root.lanAvailable =
+                NetworkManager.isEthernetAvailable("eth0")
+
+            root.lanConnected =
+                NetworkManager.isEthernetConnected("eth0")
         }
     }
 
@@ -861,7 +958,7 @@ Item {
                                             "Connected Network"
 
                                         font.pixelSize:
-                                            18 * root.scale
+                                            20 * root.scale
 
                                         color:
                                             "#6B7B93"
@@ -946,7 +1043,7 @@ Item {
                                             "Connected"
 
                                         font.pixelSize:
-                                            18 * root.scale
+                                            20 * root.scale
 
                                         color:
                                             "#259653"
@@ -984,7 +1081,7 @@ Item {
                                     + ")"
 
                                 font.pixelSize:
-                                    20 * root.scale
+                                    22 * root.scale
 
                                 color:
                                     "#8A98AE"
@@ -1026,7 +1123,7 @@ Item {
                                         "Refresh"
 
                                     font.pixelSize:
-                                        19 * root.scale
+                                        21 * root.scale
 
                                     color:
                                         "#1A4DB5"
@@ -1164,7 +1261,7 @@ Item {
                                                     : "Open"
 
                                                 font.pixelSize:
-                                                    15 * root.scale
+                                                    18 * root.scale
 
                                                 color:
                                                     model.secured
@@ -1207,7 +1304,7 @@ Item {
                                                     : "Open network"
 
                                                 font.pixelSize:
-                                                    17 * root.scale
+                                                    19 * root.scale
 
                                                 color:
                                                     model.secured
@@ -1233,10 +1330,10 @@ Item {
                                                         [20, 40, 60, 80]
 
                                                     width:
-                                                        4 * root.scale
+                                                        6 * root.scale
 
                                                     height:
-                                                        (7 + index * 4)
+                                                        (9 + index * 6)
                                                         * root.scale
 
                                                     radius:
@@ -1279,7 +1376,7 @@ Item {
                                                     "Connect"
 
                                                 font.pixelSize:
-                                                    19 * root.scale
+                                                    21 * root.scale
 
                                                 color:
                                                     "#FFFFFF"
@@ -1368,17 +1465,15 @@ Item {
             // =================================================
 
             Item {
+                id: lanPage
 
-                anchors.fill:
-                    parent
+                anchors.fill: parent
 
                 visible:
                     root.activeTab === "LAN"
 
                 ColumnLayout {
-
-                    anchors.fill:
-                        parent
+                    anchors.fill: parent
 
                     anchors.margins:
                         26 * root.scale
@@ -1392,8 +1487,7 @@ Item {
 
                     RowLayout {
 
-                        Layout.fillWidth:
-                            true
+                        Layout.fillWidth: true
 
                         spacing:
                             14 * root.scale
@@ -1414,8 +1508,7 @@ Item {
 
                             Text {
 
-                                anchors.centerIn:
-                                    parent
+                                anchors.centerIn: parent
 
                                 text:
                                     "LAN"
@@ -1430,8 +1523,7 @@ Item {
 
                         Column {
 
-                            Layout.fillWidth:
-                                true
+                            Layout.fillWidth: true
 
                             spacing:
                                 3 * root.scale
@@ -1447,25 +1539,12 @@ Item {
                                 color:
                                     "#1F3F77"
                             }
-
-                            Text {
-
-                                text:
-                                    "Configure static IP network settings"
-
-                                font.pixelSize:
-                                    18 * root.scale
-
-                                color:
-                                    "#71809A"
-                            }
                         }
                     }
 
                     Rectangle {
 
-                        Layout.fillWidth:
-                            true
+                        Layout.fillWidth: true
 
                         height:
                             1 * root.scale
@@ -1475,13 +1554,12 @@ Item {
                     }
 
                     // =========================================
-                    // LAN FORM
+                    // LAN CONFIGURATION CARDS
                     // =========================================
 
                     GridLayout {
 
-                        Layout.fillWidth:
-                            true
+                        Layout.fillWidth: true
 
                         columns:
                             2
@@ -1490,360 +1568,95 @@ Item {
                             20 * root.scale
 
                         rowSpacing:
-                            14 * root.scale
+                            18 * root.scale
+
 
                         // =====================================
                         // IP ADDRESS
                         // =====================================
 
-                        ColumnLayout {
+                        LanSettingsCard {
 
-                            Layout.fillWidth:
-                                true
+                            fieldId:
+                                "ip"
 
-                            spacing:
-                                6 * root.scale
+                            fieldLabel:
+                                "IP Address"
 
-                            Text {
+                            placeholderText:
+                                "192.168.1.50"
 
-                                text:
-                                    "IP Address"
-
-                                font.pixelSize:
-                                    22 * root.scale
-
-                                color:
-                                    "#52627A"
-                            }
-
-                            Rectangle {
-
-                                Layout.fillWidth:
-                                    true
-
-                                Layout.preferredHeight:
-                                    56 * root.scale
-
-                                radius:
-                                    9 * root.scale
-
-                                color:
-                                    "#F8FAFD"
-
-                                border.color:
-                                    ipField.activeFocus
-                                    ? "#1A4DB5"
-                                    : "#D5DDEA"
-
-                                border.width:
-                                    ipField.activeFocus
-                                    ? 2
-                                    : 1
-
-                                TextField {
-
-                                    id:
-                                        ipField
-
-                                    anchors.fill:
-                                        parent
-
-                                    anchors.leftMargin:
-                                        14 * root.scale
-
-                                    anchors.rightMargin:
-                                        14 * root.scale
-
-                                    font.pixelSize:
-                                        23 * root.scale
-
-                                    color:
-                                        "#1A4DB5"
-
-                                    background:
-                                        null
-
-                                    padding:
-                                        0
-
-                                    verticalAlignment:
-                                        TextInput.AlignVCenter
-
-                                    placeholderText:
-                                        "192.168.1.50"
-
-                                    placeholderTextColor:
-                                        "#A7B2C3"
-                                }
-                            }
+                            displayValue:
+                                root.lanIpAddress
                         }
+
 
                         // =====================================
                         // SUBNET
                         // =====================================
 
-                        ColumnLayout {
+                        LanSettingsCard {
 
-                            Layout.fillWidth:
-                                true
+                            fieldId:
+                                "subnet"
 
-                            spacing:
-                                6 * root.scale
+                            fieldLabel:
+                                "Subnet"
 
-                            Text {
+                            placeholderText:
+                                "24"
 
-                                text:
-                                    "Subnet"
-
-                                font.pixelSize:
-                                    22 * root.scale
-
-                                color:
-                                    "#52627A"
-                            }
-
-                            Rectangle {
-
-                                Layout.fillWidth:
-                                    true
-
-                                Layout.preferredHeight:
-                                    56 * root.scale
-
-                                radius:
-                                    9 * root.scale
-
-                                color:
-                                    "#F8FAFD"
-
-                                border.color:
-                                    subnetField.activeFocus
-                                    ? "#1A4DB5"
-                                    : "#D5DDEA"
-
-                                border.width:
-                                    subnetField.activeFocus
-                                    ? 2
-                                    : 1
-
-                                TextField {
-
-                                    id:
-                                        subnetField
-
-                                    anchors.fill:
-                                        parent
-
-                                    anchors.leftMargin:
-                                        14 * root.scale
-
-                                    anchors.rightMargin:
-                                        14 * root.scale
-
-                                    font.pixelSize:
-                                        23 * root.scale
-
-                                    color:
-                                        "#1A4DB5"
-
-                                    background:
-                                        null
-
-                                    padding:
-                                        0
-
-                                    verticalAlignment:
-                                        TextInput.AlignVCenter
-
-                                    placeholderText:
-                                        "24"
-
-                                    placeholderTextColor:
-                                        "#A7B2C3"
-                                }
-                            }
+                            displayValue:
+                                root.lanSubnet
                         }
+
 
                         // =====================================
                         // GATEWAY
                         // =====================================
 
-                        ColumnLayout {
+                        LanSettingsCard {
 
-                            Layout.fillWidth:
-                                true
+                            fieldId:
+                                "gateway"
 
-                            spacing:
-                                6 * root.scale
+                            fieldLabel:
+                                "Gateway"
 
-                            Text {
+                            placeholderText:
+                                "192.168.1.1"
 
-                                text:
-                                    "Gateway"
-
-                                font.pixelSize:
-                                    22 * root.scale
-
-                                color:
-                                    "#52627A"
-                            }
-
-                            Rectangle {
-
-                                Layout.fillWidth:
-                                    true
-
-                                Layout.preferredHeight:
-                                    56 * root.scale
-
-                                radius:
-                                    9 * root.scale
-
-                                color:
-                                    "#F8FAFD"
-
-                                border.color:
-                                    gatewayField.activeFocus
-                                    ? "#1A4DB5"
-                                    : "#D5DDEA"
-
-                                border.width:
-                                    gatewayField.activeFocus
-                                    ? 2
-                                    : 1
-
-                                TextField {
-
-                                    id:
-                                        gatewayField
-
-                                    anchors.fill:
-                                        parent
-
-                                    anchors.leftMargin:
-                                        14 * root.scale
-
-                                    anchors.rightMargin:
-                                        14 * root.scale
-
-                                    font.pixelSize:
-                                        23 * root.scale
-
-                                    color:
-                                        "#1A4DB5"
-
-                                    background:
-                                        null
-
-                                    padding:
-                                        0
-
-                                    verticalAlignment:
-                                        TextInput.AlignVCenter
-
-                                    placeholderText:
-                                        "192.168.1.1"
-
-                                    placeholderTextColor:
-                                        "#A7B2C3"
-                                }
-                            }
+                            displayValue:
+                                root.lanGateway
                         }
+
 
                         // =====================================
                         // DNS
                         // =====================================
 
-                        ColumnLayout {
+                        LanSettingsCard {
 
-                            Layout.fillWidth:
-                                true
+                            fieldId:
+                                "dns"
 
-                            spacing:
-                                6 * root.scale
+                            fieldLabel:
+                                "DNS"
 
-                            Text {
+                            placeholderText:
+                                "8.8.8.8"
 
-                                text:
-                                    "DNS"
-
-                                font.pixelSize:
-                                    22 * root.scale
-
-                                color:
-                                    "#52627A"
-                            }
-
-                            Rectangle {
-
-                                Layout.fillWidth:
-                                    true
-
-                                Layout.preferredHeight:
-                                    56 * root.scale
-
-                                radius:
-                                    9 * root.scale
-
-                                color:
-                                    "#F8FAFD"
-
-                                border.color:
-                                    dnsField.activeFocus
-                                    ? "#1A4DB5"
-                                    : "#D5DDEA"
-
-                                border.width:
-                                    dnsField.activeFocus
-                                    ? 2
-                                    : 1
-
-                                TextField {
-
-                                    id:
-                                        dnsField
-
-                                    anchors.fill:
-                                        parent
-
-                                    anchors.leftMargin:
-                                        14 * root.scale
-
-                                    anchors.rightMargin:
-                                        14 * root.scale
-
-                                    text:
-                                        "8.8.8.8"
-
-                                    font.pixelSize:
-                                        23 * root.scale
-
-                                    color:
-                                        "#1A4DB5"
-
-                                    background:
-                                        null
-
-                                    padding:
-                                        0
-
-                                    verticalAlignment:
-                                        TextInput.AlignVCenter
-
-                                    placeholderText:
-                                        "8.8.8.8"
-
-                                    placeholderTextColor:
-                                        "#A7B2C3"
-                                }
-                            }
+                            displayValue:
+                                root.lanDns
                         }
                     }
+
 
                     Item {
                         Layout.fillHeight:
                             true
                     }
+
 
                     // =========================================
                     // RESULT MESSAGE
@@ -1908,8 +1721,9 @@ Item {
                         }
                     }
 
+
                     // =========================================
-                    // APPLY BUTTON
+                    // APPLY STATIC IP
                     // =========================================
 
                     Rectangle {
@@ -1956,22 +1770,1063 @@ Item {
 
                             onClicked: {
 
+                                if (root.lanIpAddress.trim() === "") {
+
+                                    resultText.text =
+                                            "Please enter IP Address"
+
+                                    return
+                                }
+
+                                if (root.lanSubnet.trim() === "") {
+
+                                    resultText.text =
+                                            "Please enter Subnet"
+
+                                    return
+                                }
+
+                                if (root.lanGateway.trim() === "") {
+
+                                    resultText.text =
+                                            "Please enter Gateway"
+
+                                    return
+                                }
+
+
                                 var result =
-                                        NetworkManager.setStaticIP(
-                                            "eth0",
-                                            ipField.text,
-                                            subnetField.text,
-                                            gatewayField.text,
-                                            dnsField.text
-                                            )
+                                    NetworkManager.setStaticIP(
+                                        "eth0",
+                                        root.lanIpAddress,
+                                        root.lanSubnet,
+                                        root.lanGateway,
+                                        root.lanDns
+                                    )
 
                                 resultText.text =
-                                        result
+                                    result
 
-                                if (notify)
-                                    notify(result)
+                                if (result === "Static IP configured successfully") {
+
+                                    root.loadLanSettings()
+
+                                    if (root.notify)
+                                        root.notify(
+                                            "Static IP configured successfully"
+                                        )
+                                }
+                                else {
+
+                                    if (root.notify)
+                                        root.notify(result)
+                                }
                             }
                         }
+                    }
+                }
+            }
+        }
+    }
+
+    // =========================================================
+    // LAN EDIT BACKGROUND DIM
+    // =========================================================
+
+    Rectangle {
+
+        anchors.fill:
+            parent
+
+        z:
+            50
+
+        color:
+            "#000000"
+
+        opacity:
+            root.activeLanFieldId !== ""
+            ? 0.45
+            : 0.0
+
+        visible:
+            opacity > 0
+
+        Behavior on opacity {
+            NumberAnimation {
+                duration: 220
+            }
+        }
+
+        MouseArea {
+
+            anchors.fill:
+                parent
+
+            enabled:
+                root.activeLanFieldId !== ""
+
+            onClicked: {
+
+                root.activeLanFieldId = ""
+
+                GlobalState.loginKeyboardRequest =
+                        false
+
+                GlobalState.activeInputField =
+                        null
+            }
+        }
+    }
+
+    // =========================================================
+    // LAN FLOATING EDIT POPUP
+    // =========================================================
+
+    Loader {
+
+        id:
+            lanFloatingLoader
+
+        z:
+            60
+
+        width:
+            480 * root.scale
+
+        height:
+            160 * root.scale
+
+        x:
+            (root.width - width) / 2
+
+        y:
+            (root.lanVisibleHeight - height) / 2
+
+
+        Behavior on y {
+
+            NumberAnimation {
+
+                duration:
+                    280
+
+                easing.type:
+                    Easing.OutQuart
+            }
+        }
+
+
+        active:
+            root.activeLanFieldId !== ""
+
+        visible:
+            active
+
+
+        property string loadedFieldId: ""
+        property string loadedLabel: ""
+        property string loadedPlaceholder: ""
+        property string loadedInitialValue: ""
+
+
+        onActiveChanged: {
+
+            if (active) {
+
+                var id =
+                        root.activeLanFieldId
+
+
+                loadedFieldId =
+                        id
+
+
+                // =====================================
+                // IP ADDRESS
+                // =====================================
+
+                if (id === "ip") {
+
+                    loadedLabel =
+                            "IP Address"
+
+                    loadedPlaceholder =
+                            "192.168.1.50"
+
+                    loadedInitialValue =
+                            root.lanIpAddress
+                }
+
+
+                // =====================================
+                // SUBNET
+                // =====================================
+
+                else if (id === "subnet") {
+
+                    loadedLabel =
+                            "Subnet"
+
+                    loadedPlaceholder =
+                            "24"
+
+                    loadedInitialValue =
+                            root.lanSubnet
+                }
+
+
+                // =====================================
+                // GATEWAY
+                // =====================================
+
+                else if (id === "gateway") {
+
+                    loadedLabel =
+                            "Gateway"
+
+                    loadedPlaceholder =
+                            "192.168.1.1"
+
+                    loadedInitialValue =
+                            root.lanGateway
+                }
+
+
+                // =====================================
+                // DNS
+                // =====================================
+
+                else if (id === "dns") {
+
+                    loadedLabel =
+                            "DNS"
+
+                    loadedPlaceholder =
+                            "8.8.8.8"
+
+                    loadedInitialValue =
+                            root.lanDns
+                }
+            }
+        }
+
+
+        sourceComponent:
+
+            LanFloatingCard {
+
+            fieldId:
+                lanFloatingLoader.loadedFieldId
+
+            fieldLabel:
+                lanFloatingLoader.loadedLabel
+
+            placeholderText:
+                lanFloatingLoader.loadedPlaceholder
+
+            initialValue:
+                lanFloatingLoader.loadedInitialValue
+
+
+            onDismiss: {
+
+                root.activeLanFieldId =
+                        ""
+
+                GlobalState.loginKeyboardRequest =
+                        false
+
+                GlobalState.activeInputField =
+                        null
+            }
+
+
+            onConfirmed:
+                function(id, value) {
+
+                // =================================
+                // IP
+                // =================================
+
+                if (id === "ip") {
+
+                    root.lanIpAddress =
+                            value
+
+                    if (root.notify)
+                        root.notify(
+                            "✓ IP Address Saved"
+                        )
+                }
+
+
+                // =================================
+                // SUBNET
+                // =================================
+
+                else if (id === "subnet") {
+
+                    root.lanSubnet =
+                            value
+
+                    if (root.notify)
+                        root.notify(
+                            "✓ Subnet Saved"
+                        )
+                }
+
+
+                // =================================
+                // GATEWAY
+                // =================================
+
+                else if (id === "gateway") {
+
+                    root.lanGateway =
+                            value
+
+                    if (root.notify)
+                        root.notify(
+                            "✓ Gateway Saved"
+                        )
+                }
+
+
+                // =================================
+                // DNS
+                // =================================
+
+                else if (id === "dns") {
+
+                    root.lanDns =
+                            value
+
+                    if (root.notify)
+                        root.notify(
+                            "✓ DNS Saved"
+                        )
+                }
+
+
+                root.activeLanFieldId =
+                        ""
+
+                GlobalState.loginKeyboardRequest =
+                        false
+
+                GlobalState.activeInputField =
+                        null
+            }
+        }
+    }
+
+    // =========================================================
+    // LAN FLOATING CARD COMPONENT
+    // =========================================================
+
+    component LanFloatingCard: Rectangle {
+
+        id:
+            lanFloatCard
+
+
+        property string fieldId: ""
+        property string fieldLabel: ""
+        property string placeholderText: ""
+        property string initialValue: ""
+
+
+        signal confirmed(
+            string id,
+            string value
+        )
+
+        signal dismiss()
+
+
+        anchors.fill:
+            parent
+
+
+        radius:
+            18 * root.scale
+
+
+        color:
+            "#FFFFFF"
+
+
+        border.color:
+            "#2A62D5"
+
+
+        border.width:
+            2
+
+
+        opacity:
+            0
+
+
+        scale:
+            0.90
+
+
+        Component.onCompleted:
+            lanFloatEntrance.start()
+
+
+        ParallelAnimation {
+
+            id:
+                lanFloatEntrance
+
+
+            NumberAnimation {
+
+                target:
+                    lanFloatCard
+
+                property:
+                    "opacity"
+
+                from:
+                    0
+
+                to:
+                    1
+
+                duration:
+                    240
+
+                easing.type:
+                    Easing.OutCubic
+            }
+
+
+            NumberAnimation {
+
+                target:
+                    lanFloatCard
+
+                property:
+                    "scale"
+
+                from:
+                    0.90
+
+                to:
+                    1.0
+
+                duration:
+                    260
+
+                easing.type:
+                    Easing.OutBack
+
+                easing.overshoot:
+                    0.6
+            }
+        }
+
+
+        Column {
+
+            anchors.fill:
+                parent
+
+            anchors.margins:
+                22 * root.scale
+
+            spacing:
+                14 * root.scale
+
+
+            // =====================================
+            // LABEL + CLOSE
+            // =====================================
+
+            Item {
+
+                width:
+                    parent.width
+
+                height:
+                    24 * root.scale
+
+
+                Text {
+
+                    anchors.left:
+                        parent.left
+
+                    anchors.verticalCenter:
+                        parent.verticalCenter
+
+                    text:
+                        lanFloatCard.fieldLabel
+
+                    color:
+                        "#52627E"
+
+                    font.pixelSize:
+                        s5Typography.body
+                }
+
+
+                Rectangle {
+
+                    anchors.right:
+                        parent.right
+
+                    anchors.verticalCenter:
+                        parent.verticalCenter
+
+                    width:
+                        26 * root.scale
+
+                    height:
+                        26 * root.scale
+
+                    radius:
+                        width / 2
+
+
+                    color:
+                        lanCloseHover.containsMouse
+                        ? "#F0F4FF"
+                        : "transparent"
+
+
+                    Behavior on color {
+
+                        ColorAnimation {
+                            duration:
+                                120
+                        }
+                    }
+
+
+                    Text {
+
+                        anchors.centerIn:
+                            parent
+
+                        text:
+                            "✕"
+
+                        color:
+                            "#8898B8"
+
+                        font.pixelSize:
+                            s5Typography.heading
+                    }
+
+
+                    HoverHandler {
+                        id:
+                            lanCloseHover
+                    }
+
+
+                    MouseArea {
+
+                        anchors.fill:
+                            parent
+
+                        onClicked:
+                            lanFloatCard.dismiss()
+                    }
+                }
+            }
+
+
+            // =====================================
+            // INPUT
+            // =====================================
+
+            Rectangle {
+
+                width:
+                    parent.width
+
+                height:
+                    62 * root.scale
+
+                radius:
+                    12 * root.scale
+
+                color:
+                    "#F8FBFF"
+
+                border.width:
+                    2
+
+                border.color:
+                    "#2A62D5"
+
+
+                TextField {
+
+                    id:
+                        lanFloatingInput
+
+
+                    anchors.fill:
+                        parent
+
+
+                    anchors.leftMargin:
+                        16 * root.scale
+
+                    anchors.rightMargin:
+                        58 * root.scale
+
+
+                    text:
+                        lanFloatCard.initialValue
+
+
+                    color:
+                        "#183C8F"
+
+
+                    font.pixelSize:
+                        s5Typography.body
+
+
+                    verticalAlignment:
+                        Text.AlignVCenter
+
+
+                    background:
+                        null
+
+
+                    selectByMouse:
+                        true
+
+
+                    activeFocusOnPress:
+                        true
+
+
+                    placeholderText:
+                        lanFloatCard.placeholderText
+
+
+                    placeholderTextColor:
+                        "#A0ACC2"
+
+
+                    inputMethodHints:
+                        Qt.ImhNone
+
+
+                    Component.onCompleted: {
+
+                        forceActiveFocus()
+
+
+                        GlobalState.activeInputField =
+                                lanFloatingInput
+
+
+                        GlobalState.loginKeyboardRequest =
+                                true
+                    }
+
+
+                    onAccepted: {
+
+                        var value =
+                                text.trim()
+
+
+                        text =
+                                value
+
+
+                        lanFloatCard.confirmed(
+                            lanFloatCard.fieldId,
+                            value
+                        )
+
+
+                        focus =
+                                false
+                    }
+                }
+
+
+                // =================================
+                // SAVE BUTTON
+                // =================================
+
+                Rectangle {
+
+                    id:
+                        lanSaveButton
+
+
+                    width:
+                        40 * root.scale
+
+                    height:
+                        40 * root.scale
+
+
+                    radius:
+                        width / 2
+
+
+                    anchors {
+
+                        right:
+                            parent.right
+
+                        rightMargin:
+                            10 * root.scale
+
+                        verticalCenter:
+                            parent.verticalCenter
+                    }
+
+
+                    color:
+                        "#1B56CC"
+
+
+                    scale:
+                        lanSaveMouse.pressed
+                        ? 0.88
+                        : 1.0
+
+
+                    Behavior on scale {
+
+                        NumberAnimation {
+                            duration:
+                                100
+                        }
+                    }
+
+
+                    Text {
+
+                        anchors.centerIn:
+                            parent
+
+                        text:
+                            "✓"
+
+                        color:
+                            "white"
+
+                        font.pixelSize:
+                            s5Typography.bodySmall
+                    }
+
+
+                    MouseArea {
+
+                        id:
+                            lanSaveMouse
+
+                        anchors.fill:
+                            parent
+
+
+                        onClicked: {
+
+                            var value =
+                                    lanFloatingInput.text.trim()
+
+
+                            lanFloatingInput.text =
+                                    value
+
+
+                            lanFloatCard.confirmed(
+                                lanFloatCard.fieldId,
+                                value
+                            )
+
+
+                            lanFloatingInput.focus =
+                                    false
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // =========================================================
+    // LAN SETTINGS CARD COMPONENT
+    // =========================================================
+
+    component LanSettingsCard: Rectangle {
+
+        id:
+            lanCard
+
+
+        property string fieldId: ""
+
+        property string fieldLabel: ""
+
+        property string placeholderText: ""
+
+        property string displayValue: ""
+
+
+        Layout.fillWidth:
+            true
+
+
+        Layout.preferredHeight:
+            145 * root.scale
+
+
+        implicitHeight:
+            145 * root.scale
+
+
+        radius:
+            18 * root.scale
+
+
+        color:
+            lanCardHover.containsMouse
+            ? "#F4F8FF"
+            : "#FFFFFF"
+
+
+        border.color:
+            lanCardHover.containsMouse
+            ? "#5E9BFF"
+            : "#D9E2F2"
+
+
+        border.width:
+            1
+
+
+        Behavior on color {
+
+            ColorAnimation {
+                duration:
+                    150
+            }
+        }
+
+
+        Behavior on border.color {
+
+            ColorAnimation {
+                duration:
+                    150
+            }
+        }
+
+
+        scale:
+            lanCardHover.containsMouse
+            ? 1.01
+            : 1.0
+
+
+        Behavior on scale {
+
+            NumberAnimation {
+
+                duration:
+                    150
+
+                easing.type:
+                    Easing.OutQuad
+            }
+        }
+
+
+        HoverHandler {
+
+            id:
+                lanCardHover
+        }
+
+
+        MouseArea {
+
+            anchors.fill:
+                parent
+
+
+            onClicked: {
+
+                root.activeLanFieldId =
+                        lanCard.fieldId
+            }
+        }
+
+
+        Column {
+
+            anchors.fill:
+                parent
+
+            anchors.margins:
+                20 * root.scale
+
+            spacing:
+                14 * root.scale
+
+
+            Text {
+
+                text:
+                    lanCard.fieldLabel
+
+
+                color:
+                    "#52627E"
+
+
+                font.pixelSize:
+                    s5Typography.heading
+            }
+
+
+            Rectangle {
+
+                width:
+                    parent.width
+
+
+                height:
+                    58 * root.scale
+
+
+                radius:
+                    12 * root.scale
+
+
+                color:
+                    "#F7F9FD"
+
+
+                border.width:
+                    1
+
+
+                border.color:
+                    "#D6DDEA"
+
+
+                Text {
+
+                    anchors.left:
+                        parent.left
+
+                    anchors.leftMargin:
+                        16 * root.scale
+
+
+                    anchors.right:
+                        lanEditCircle.left
+
+                    anchors.rightMargin:
+                        8 * root.scale
+
+
+                    anchors.verticalCenter:
+                        parent.verticalCenter
+
+
+                    text:
+                        lanCard.displayValue.length > 0
+                        ? lanCard.displayValue
+                        : lanCard.placeholderText
+
+
+                    color:
+                        lanCard.displayValue.length > 0
+                        ? "#183C8F"
+                        : "#A0ACC2"
+
+
+                    font.pixelSize:
+                        s5Typography.heading
+
+
+                    elide:
+                        Text.ElideRight
+                }
+
+
+                Rectangle {
+
+                    id:
+                        lanEditCircle
+
+
+                    width:
+                        32 * root.scale
+
+                    height:
+                        32 * root.scale
+
+
+                    radius:
+                        width / 2
+
+
+                    anchors {
+
+                        right:
+                            parent.right
+
+                        rightMargin:
+                            13 * root.scale
+
+                        verticalCenter:
+                            parent.verticalCenter
+                    }
+
+
+                    color:
+                        "#E4EDFF"
+
+
+                    Image {
+
+                        anchors.centerIn:
+                            parent
+
+
+                        source:
+                            "qrc:/qt/qml/Application/assets/images/edit.png"
+
+
+                        width:
+                            Math.max(
+                                14,
+                                16 * root.scale
+                            )
+
+
+                        height:
+                            width
+
+
+                        fillMode:
+                            Image.PreserveAspectFit
+
+
+                        smooth:
+                            true
                     }
                 }
             }
