@@ -3675,3 +3675,117 @@ QString PdfExporter::exportCoilOutputToPdf(
 
     return path;
 }
+
+bool PdfExporter::isPrinterAvailable()
+{
+    QProcess process;
+
+    process.start(
+        "lpstat",
+        QStringList() << "-d"
+        );
+
+    if (!process.waitForFinished(5000)) {
+        qDebug() << "Default printer check timeout";
+        return false;
+    }
+
+    QString output =
+        QString::fromUtf8(process.readAllStandardOutput()).trimmed();
+
+    QString error =
+        QString::fromUtf8(process.readAllStandardError()).trimmed();
+
+    qDebug() << "Default printer:" << output;
+    qDebug() << "Printer error:" << error;
+
+    // Typical output:
+    // system default destination: HP_LaserJet
+
+    return output.startsWith("system default destination:");
+}
+
+bool PdfExporter::printPdfFiles(const QStringList &filePaths)
+{
+    if (filePaths.isEmpty()) {
+        qDebug() << "No files selected for printing";
+        return false;
+    }
+
+    QStringList validFiles;
+
+    for (const QString &filePath : filePaths) {
+
+        QFileInfo fileInfo(filePath);
+
+        if (!fileInfo.exists()) {
+            qDebug() << "File does not exist:" << filePath;
+            continue;
+        }
+
+        if (fileInfo.suffix().toLower() != "pdf") {
+            qDebug() << "Not a PDF file:" << filePath;
+            continue;
+        }
+
+        validFiles.append(filePath);
+    }
+
+    if (validFiles.isEmpty()) {
+        qDebug() << "No valid PDF files to print";
+        return false;
+    }
+
+    QProcess process;
+
+    QStringList arguments;
+
+    // Important:
+    // "--" tells lp that everything after this is a file name.
+    arguments << "--";
+
+    for (const QString &filePath : validFiles) {
+        arguments << filePath;
+    }
+
+    qDebug() << "Printing files:" << validFiles;
+
+    process.start(
+        "lp",
+        arguments
+        );
+
+    if (!process.waitForStarted(5000)) {
+        qDebug() << "Failed to start lp command";
+        qDebug() << process.errorString();
+        return false;
+    }
+
+    if (!process.waitForFinished(15000)) {
+        qDebug() << "Printing command timeout";
+        return false;
+    }
+
+    QString output =
+        QString::fromUtf8(process.readAllStandardOutput());
+
+    QString error =
+        QString::fromUtf8(process.readAllStandardError());
+
+    qDebug() << "Print output:" << output;
+    qDebug() << "Print error:" << error;
+
+    if (process.exitStatus() != QProcess::NormalExit) {
+        qDebug() << "Print process crashed";
+        return false;
+    }
+
+    if (process.exitCode() != 0) {
+        qDebug() << "Print failed with exit code:"
+                 << process.exitCode();
+
+        return false;
+    }
+
+    return true;
+}

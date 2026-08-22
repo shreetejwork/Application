@@ -886,7 +886,7 @@ Item {
 
                         threshold: GlobalState.signalThreshold
 
-                        thresholdLabel: "Thr-S"
+                        thresholdLabel: "Threshold-S"
 
                         maxValue: 1200
 
@@ -1094,7 +1094,7 @@ Item {
                         threshold: GlobalState.amplitudeThreshold
 
 
-                        thresholdLabel: "Thr-A"
+                        thresholdLabel: "Threshold-A"
 
 
                         maxValue: 1200

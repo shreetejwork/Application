@@ -270,6 +270,44 @@ Item {
         }
     }
 
+    function printSelected() {
+
+        var paths = []
+
+        for (var i = 0; i < filteredModel.count; i++) {
+
+            if (filteredModel.get(i).selected) {
+                paths.push(filteredModel.get(i).filePath)
+            }
+        }
+
+        if (paths.length === 0) {
+            notify("⚠ Please select at least one file")
+            return
+        }
+
+        if (!PdfExporter.isPrinterAvailable()) {
+            notify("⚠ No default printer available")
+            return
+        }
+
+        var ok = PdfExporter.printPdfFiles(paths)
+
+        if (ok) {
+
+            notify("✓ " +
+                   paths.length +
+                   " file(s) sent to printer")
+
+            root.deselectAll()
+            root.selectionMode = false
+
+        } else {
+
+            notify("⚠ Failed to send file(s) to printer")
+        }
+    }
+
     Item {
         id: content
         anchors.fill: parent
@@ -373,31 +411,6 @@ Item {
                     anchors.topMargin:    10 * root.scale
                     anchors.bottomMargin: 10 * root.scale
                     spacing: 10 * root.scale
-
-                    // ── REFRESH (pinned left) ──────────────────────
-                    Rectangle {
-                        width: 104 * root.scale
-                        height: 38 * root.scale
-                        radius: 8 * root.scale
-                        color: refreshMa.containsMouse ? "#1A4DB5" : "#1A4DB5"
-                        Behavior on color { ColorAnimation { duration: 120 } }
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: "Refresh"
-                            font.pixelSize: 15
-                            font.weight: Font.Medium
-                            color: "#FFFFFF"
-                        }
-
-                        MouseArea {
-                            id: refreshMa
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: loadFiles()
-                        }
-                    }
 
                     // ── FILTER PILL GROUP ──────────────────────────
                     Rectangle {
@@ -525,6 +538,34 @@ Item {
                             anchors.fill: parent
                             cursorShape: Qt.PointingHandCursor
                             onClicked: root.copySelected()
+                        }
+                    }
+
+                    // ── PRINT ─────────────────────────────────────────────
+                    Rectangle {
+                        visible: root.selectionMode
+                        width: 80 * root.scale
+                        height: 38 * root.scale
+                        radius: 8 * root.scale
+                        color: "#FFFFFF"
+                        border.color: "#1A4DB5"
+                        border.width: 1
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Print"
+                            font.pixelSize: 15
+                            font.weight: Font.Medium
+                            color: "#1A4DB5"
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+
+                            onClicked: {
+                                root.printSelected()
+                            }
                         }
                     }
 

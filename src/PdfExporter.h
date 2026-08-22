@@ -26,6 +26,10 @@ public:
     Q_INVOKABLE bool        deletePdf(const QString &filePath);
     Q_INVOKABLE void        openPdf(const QString &filePath);
 
+    Q_INVOKABLE bool isPrinterAvailable();
+
+    Q_INVOKABLE bool printPdfFiles(const QStringList &filePaths);
+
 
     Q_INVOKABLE QString exportTableToPdf(const QVariantList &data,
                                          const QString &fromDate,
