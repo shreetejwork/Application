@@ -27,6 +27,7 @@
 #include <QPageLayout>
 #include <QStorageInfo>
 #include <QTimer>
+#include <QProcess>
 
 
 PdfExporter::PdfExporter(QObject *parent)
