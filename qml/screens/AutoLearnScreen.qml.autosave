@@ -615,6 +615,7 @@ Item {
                     Text {
                         anchors.right: parent.right
                         anchors.rightMargin: 35 * root.scale
+                        
 
                         anchors.verticalCenter: parent.verticalCenter
 
