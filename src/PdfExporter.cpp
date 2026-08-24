@@ -3748,10 +3748,7 @@ QString PdfExporter::getAvailablePrinter()
 {
     QProcess process;
 
-    process.start(
-        "lpstat",
-        QStringList() << "-p"
-        );
+    process.start("lpstat", QStringList() << "-p");
 
     if (!process.waitForStarted(5000)) {
         qDebug() << "Failed to start lpstat";
@@ -3763,17 +3760,15 @@ QString PdfExporter::getAvailablePrinter()
         return QString();
     }
 
-    if (process.exitStatus() != QProcess::NormalExit
-        || process.exitCode() != 0) {
+    if (process.exitStatus() != QProcess::NormalExit ||
+        process.exitCode() != 0) {
 
         qDebug() << "Failed to get printer list";
         return QString();
     }
 
-    QString output =
-        QString::fromUtf8(
-            process.readAllStandardOutput()
-            );
+    const QString output =
+        QString::fromUtf8(process.readAllStandardOutput());
 
     qDebug() << "lpstat -p output:";
     qDebug().noquote() << output;
@@ -3783,35 +3778,43 @@ QString PdfExporter::getAvailablePrinter()
 
     for (const QString &line : lines) {
 
-        /*
-         Example:
-
-         printer HP_LaserJet_P1007 is idle. enabled since ...
-        */
-
         if (!line.startsWith("printer "))
             continue;
 
-        if (line.contains(
-                "disabled",
-                Qt::CaseInsensitive)) {
+        // Skip disabled printers
+        if (line.contains("disabled", Qt::CaseInsensitive))
+            continue;
+
+        const QString printerName =
+            line.section(' ', 1, 1).trimmed();
+
+        if (printerName.isEmpty())
+            continue;
+
+        // =====================================================
+        // SKIP VIRTUAL / NON-PHYSICAL PRINTERS
+        // =====================================================
+
+        const QString lowerName = printerName.toLower();
+
+        if (lowerName.contains("cups-brf") ||
+            lowerName.contains("braille") ||
+            lowerName.contains("pdf") ||
+            lowerName.contains("virtual")) {
+
+            qDebug() << "Skipping virtual printer:"
+                     << printerName;
+
             continue;
         }
 
-        QString printerName =
-            line.section(' ', 1, 1).trimmed();
+        qDebug() << "Selected physical printer:"
+                 << printerName;
 
-        if (!printerName.isEmpty()) {
-
-            qDebug()
-            << "Selected printer:"
-            << printerName;
-
-            return printerName;
-        }
+        return printerName;
     }
 
-    qDebug() << "No enabled printer found";
+    qDebug() << "No physical enabled printer found";
 
     return QString();
 }
