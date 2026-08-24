@@ -620,7 +620,7 @@ Rectangle {
                                     initial = "S"
 
 
-                                var auditUser = initial + "-" + username
+                                var auditUser = initial + "/" + username
 
 
                                 var auditSaved =
