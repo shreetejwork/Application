@@ -28,6 +28,8 @@ public:
 
     Q_INVOKABLE bool isPrinterAvailable();
 
+    QString getAvailablePrinter();
+
     Q_INVOKABLE bool printPdfFiles(const QStringList &filePaths);
 
 

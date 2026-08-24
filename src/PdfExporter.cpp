@@ -3683,35 +3683,154 @@ bool PdfExporter::isPrinterAvailable()
 
     process.start(
         "lpstat",
-        QStringList() << "-d"
+        QStringList() << "-p"
         );
 
+    if (!process.waitForStarted(5000)) {
+        qDebug() << "Failed to start lpstat";
+        return false;
+    }
+
     if (!process.waitForFinished(5000)) {
-        qDebug() << "Default printer check timeout";
+        qDebug() << "Printer check timeout";
         return false;
     }
 
     QString output =
-        QString::fromUtf8(process.readAllStandardOutput()).trimmed();
+        QString::fromUtf8(
+            process.readAllStandardOutput()
+            );
 
     QString error =
-        QString::fromUtf8(process.readAllStandardError()).trimmed();
+        QString::fromUtf8(
+            process.readAllStandardError()
+            );
 
-    qDebug() << "Default printer:" << output;
-    qDebug() << "Printer error:" << error;
+    qDebug() << "Available printers:";
+    qDebug().noquote() << output;
 
-    // Typical output:
-    // system default destination: HP_LaserJet
+    qDebug() << "Printer check error:";
+    qDebug().noquote() << error;
 
-    return output.startsWith("system default destination:");
-}
-
-bool PdfExporter::printPdfFiles(const QStringList &filePaths)
-{
-    if (filePaths.isEmpty()) {
-        qDebug() << "No files selected for printing";
+    if (process.exitStatus() != QProcess::NormalExit) {
+        qDebug() << "lpstat crashed";
         return false;
     }
+
+    if (process.exitCode() != 0) {
+        qDebug() << "lpstat failed";
+        return false;
+    }
+
+    const QStringList lines =
+        output.split('\n', Qt::SkipEmptyParts);
+
+    for (const QString &line : lines) {
+
+        /*
+         Example:
+
+         printer HP_LaserJet_P1007 is idle. enabled since ...
+         printer Epson_L3150 is idle. enabled since ...
+        */
+
+        if (line.startsWith("printer ")
+            && !line.contains("disabled", Qt::CaseInsensitive)) {
+
+            return true;
+        }
+    }
+
+    return false;
+}
+
+QString PdfExporter::getAvailablePrinter()
+{
+    QProcess process;
+
+    process.start(
+        "lpstat",
+        QStringList() << "-p"
+        );
+
+    if (!process.waitForStarted(5000)) {
+        qDebug() << "Failed to start lpstat";
+        return QString();
+    }
+
+    if (!process.waitForFinished(5000)) {
+        qDebug() << "Printer detection timeout";
+        return QString();
+    }
+
+    if (process.exitStatus() != QProcess::NormalExit
+        || process.exitCode() != 0) {
+
+        qDebug() << "Failed to get printer list";
+        return QString();
+    }
+
+    QString output =
+        QString::fromUtf8(
+            process.readAllStandardOutput()
+            );
+
+    qDebug() << "lpstat -p output:";
+    qDebug().noquote() << output;
+
+    const QStringList lines =
+        output.split('\n', Qt::SkipEmptyParts);
+
+    for (const QString &line : lines) {
+
+        /*
+         Example:
+
+         printer HP_LaserJet_P1007 is idle. enabled since ...
+        */
+
+        if (!line.startsWith("printer "))
+            continue;
+
+        if (line.contains(
+                "disabled",
+                Qt::CaseInsensitive)) {
+            continue;
+        }
+
+        QString printerName =
+            line.section(' ', 1, 1).trimmed();
+
+        if (!printerName.isEmpty()) {
+
+            qDebug()
+            << "Selected printer:"
+            << printerName;
+
+            return printerName;
+        }
+    }
+
+    qDebug() << "No enabled printer found";
+
+    return QString();
+}
+
+bool PdfExporter::printPdfFiles(
+    const QStringList &filePaths)
+{
+    if (filePaths.isEmpty()) {
+
+        qDebug()
+        << "No files selected for printing";
+
+        return false;
+    }
+
+
+    // =========================================================
+    // VALIDATE PDF FILES
+    // =========================================================
 
     QStringList validFiles;
 
@@ -3720,73 +3839,160 @@ bool PdfExporter::printPdfFiles(const QStringList &filePaths)
         QFileInfo fileInfo(filePath);
 
         if (!fileInfo.exists()) {
-            qDebug() << "File does not exist:" << filePath;
+
+            qDebug()
+            << "File does not exist:"
+            << filePath;
+
             continue;
         }
 
-        if (fileInfo.suffix().toLower() != "pdf") {
-            qDebug() << "Not a PDF file:" << filePath;
+        if (fileInfo.suffix()
+                .compare(
+                    "pdf",
+                    Qt::CaseInsensitive
+                    ) != 0) {
+
+            qDebug()
+            << "Not a PDF file:"
+            << filePath;
+
             continue;
         }
 
         validFiles.append(filePath);
     }
 
+
     if (validFiles.isEmpty()) {
-        qDebug() << "No valid PDF files to print";
+
+        qDebug()
+        << "No valid PDF files to print";
+
         return false;
     }
 
-    QProcess process;
+
+    // =========================================================
+    // FIND AVAILABLE PRINTER
+    // =========================================================
+
+    const QString printerName =
+        getAvailablePrinter();
+
+    if (printerName.isEmpty()) {
+
+        qDebug()
+        << "No available printer found";
+
+        return false;
+    }
+
+
+    qDebug()
+        << "Printing to printer:"
+        << printerName;
+
+
+    // =========================================================
+    // BUILD LP COMMAND
+    // =========================================================
 
     QStringList arguments;
 
-    // Important:
-    // "--" tells lp that everything after this is a file name.
-    arguments << "--";
+    arguments
+        << "-d"
+        << printerName
+        << "--";
 
     for (const QString &filePath : validFiles) {
-        arguments << filePath;
+
+        arguments
+            << filePath;
     }
 
-    qDebug() << "Printing files:" << validFiles;
+
+    // =========================================================
+    // SEND PRINT JOB
+    // =========================================================
+
+    QProcess process;
 
     process.start(
         "lp",
         arguments
         );
 
+
     if (!process.waitForStarted(5000)) {
-        qDebug() << "Failed to start lp command";
-        qDebug() << process.errorString();
+
+        qDebug()
+        << "Failed to start lp command";
+
+        qDebug()
+            << process.errorString();
+
         return false;
     }
+
 
     if (!process.waitForFinished(15000)) {
-        qDebug() << "Printing command timeout";
+
+        qDebug()
+        << "Printing command timeout";
+
         return false;
     }
+
 
     QString output =
-        QString::fromUtf8(process.readAllStandardOutput());
+        QString::fromUtf8(
+            process.readAllStandardOutput()
+            );
 
     QString error =
-        QString::fromUtf8(process.readAllStandardError());
+        QString::fromUtf8(
+            process.readAllStandardError()
+            );
 
-    qDebug() << "Print output:" << output;
-    qDebug() << "Print error:" << error;
 
-    if (process.exitStatus() != QProcess::NormalExit) {
-        qDebug() << "Print process crashed";
+    qDebug()
+        << "Print output:";
+
+    qDebug().noquote()
+        << output;
+
+
+    qDebug()
+        << "Print error:";
+
+    qDebug().noquote()
+        << error;
+
+
+    if (process.exitStatus()
+        != QProcess::NormalExit) {
+
+        qDebug()
+        << "Print process crashed";
+
         return false;
     }
+
 
     if (process.exitCode() != 0) {
-        qDebug() << "Print failed with exit code:"
-                 << process.exitCode();
+
+        qDebug()
+        << "Print failed with exit code:"
+        << process.exitCode();
 
         return false;
     }
+
+
+    qDebug()
+        << "Print job successfully submitted to:"
+        << printerName;
 
     return true;
 }
