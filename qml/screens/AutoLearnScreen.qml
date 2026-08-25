@@ -3,6 +3,8 @@ import QtQuick.Layouts
 import QtQuick.Controls
 import AppState 1.0
 
+import Backend 1.0
+
 import "../components"
 
 
@@ -179,14 +181,6 @@ Item {
                         thresholdLabel: "Threshold-S"
 
                         maxValue: 1200
-
-
-                        // ------------------------------------------------
-                        // IMPORTANT
-                        // NO onThresholdClicked HERE
-                        //
-                        // Signal gauge is DISPLAY ONLY.
-                        // ------------------------------------------------
                     }
                 }
 
@@ -225,9 +219,9 @@ Item {
                         label: "Amplitude"
 
 
-                        threshold: GlobalState.amplitudeThreshold
+                        threshold: root.trackingThreshold
 
-                        thresholdLabel: "Threshold-A"
+                        thresholdLabel: "  Tracking\n Threshold"
 
                         maxValue: 1200
 
@@ -365,8 +359,8 @@ Item {
 
                         anchors.verticalCenter: parent.verticalCenter
 
-                        width: 38 * root.scale
-                        height: 38 * root.scale
+                        width: 40 * root.scale
+                        height: 40 * root.scale
 
                         radius: 19 * root.scale
 
@@ -380,7 +374,7 @@ Item {
 
                             text: root.trackingEnabled ? "ON" : "OFF"
 
-                            font.pixelSize: componentTypography.small
+                            font.pixelSize: componentTypography.caption
 
 
                             color: root.trackingEnabled
@@ -406,7 +400,7 @@ Item {
                         Text {
                             text: "Tracking"
 
-                            font.pixelSize: componentTypography.bodySmall
+                            font.pixelSize: componentTypography.body
                             font.weight: Font.Normal
 
                             color: "#333333"
@@ -418,7 +412,7 @@ Item {
                                   ? "Tracking system is enabled"
                                   : "Tracking system is disabled"
 
-                            font.pixelSize: componentTypography.small
+                            font.pixelSize: componentTypography.caption
 
                             color: "#777777"
                         }
@@ -543,7 +537,13 @@ Item {
                     color: "#FFFFFF"
 
                     border.width: 1
-                    border.color: "#DCE2EB"
+                    border.color: root.trackingEnabled
+                                       ? "#DCE2EB"
+                                       : "#E5E7EB"
+
+                        enabled: root.trackingEnabled
+
+                        opacity: root.trackingEnabled ? 1.0 : 0.55
 
 
                     // ---------------------------------------------
@@ -578,8 +578,8 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
 
 
-                        width: 38 * root.scale
-                        height: 38 * root.scale
+                        width: 40 * root.scale
+                        height: 40 * root.scale
 
                         radius: 19 * root.scale
 
@@ -604,23 +604,42 @@ Item {
                     // VALUE
                     // ---------------------------------------------
 
-                    Text {
-                        id: countValue
+                    Rectangle {
+                        id: countValueContainer
 
                         anchors.right: parent.right
-
                         anchors.rightMargin: 20 * root.scale
 
                         anchors.verticalCenter: parent.verticalCenter
 
+                        width: 82 * root.scale
+                        height: 50 * root.scale
 
-                        text: root.trackingCount
+                        radius: 8 * root.scale
 
-                        font.pixelSize: componentTypography.title
+                        color: root.trackingEnabled
+                               ? "#F5F7FC"
+                               : "#ECEEF2"
 
-                        font.weight: Font.Normal
+                        border.width: 1
+                        border.color: root.trackingEnabled
+                                       ? "#DCE2EB"
+                                       : "#E5E7EB"
 
-                        color: "#1A4DB5"
+                        Text {
+                            id: countValue
+
+                            anchors.centerIn: parent
+
+                            text: root.trackingCount
+
+                            font.pixelSize: componentTypography.title
+                            font.weight: Font.Normal
+
+                            color: root.trackingEnabled
+                                   ? "#333333"
+                                   : "#9CA3AF"
+                        }
                     }
 
 
@@ -634,7 +653,7 @@ Item {
 
                         anchors.leftMargin: 12 * root.scale
 
-                        anchors.right: countValue.left
+                        anchors.right: countValueContainer.left
 
                         anchors.rightMargin: 20 * root.scale
 
@@ -653,7 +672,7 @@ Item {
                             elide: Text.ElideRight
 
 
-                            font.pixelSize: componentTypography.bodySmall
+                            font.pixelSize: componentTypography.body
 
                             color: "#333333"
                         }
@@ -668,7 +687,7 @@ Item {
                             elide: Text.ElideRight
 
 
-                            font.pixelSize: componentTypography.small
+                            font.pixelSize: componentTypography.caption
 
                             color: "#777777"
                         }
@@ -740,7 +759,13 @@ Item {
                     color: "#FFFFFF"
 
                     border.width: 1
-                    border.color: "#DCE2EB"
+                    border.color: root.trackingEnabled
+                                       ? "#DCE2EB"
+                                       : "#E5E7EB"
+
+                        enabled: root.trackingEnabled
+
+                        opacity: root.trackingEnabled ? 1.0 : 0.55
 
 
                     // ---------------------------------------------
@@ -775,8 +800,8 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
 
 
-                        width: 38 * root.scale
-                        height: 38 * root.scale
+                        width: 40 * root.scale
+                        height: 40 * root.scale
 
                         radius: 19 * root.scale
 
@@ -801,23 +826,42 @@ Item {
                     // VALUE
                     // ---------------------------------------------
 
-                    Text {
-                        id: thresholdValue
+                    Rectangle {
+                        id: thresholdValueContainer
 
                         anchors.right: parent.right
-
                         anchors.rightMargin: 20 * root.scale
 
                         anchors.verticalCenter: parent.verticalCenter
 
+                        width: 82 * root.scale
+                        height: 50 * root.scale
 
-                        text: root.trackingThreshold
+                        radius: 8 * root.scale
 
-                        font.pixelSize: componentTypography.title
+                        color: root.trackingEnabled
+                               ? "#F5F7FC"
+                               : "#ECEEF2"
 
-                        font.weight: Font.Normal
+                        border.width: 1
+                        border.color: root.trackingEnabled
+                                       ? "#DCE2EB"
+                                       : "#E5E7EB"
 
-                        color: "#1A4DB5"
+                        Text {
+                            id: thresholdValue
+
+                            anchors.centerIn: parent
+
+                            text: root.trackingThreshold
+
+                            font.pixelSize: componentTypography.title
+                            font.weight: Font.Normal
+
+                            color: root.trackingEnabled
+                                   ? "#333333"
+                                   : "#9CA3AF"
+                        }
                     }
 
 
@@ -831,7 +875,7 @@ Item {
 
                         anchors.leftMargin: 12 * root.scale
 
-                        anchors.right: thresholdValue.left
+                        anchors.right: thresholdValueContainer.left
 
                         anchors.rightMargin: 20 * root.scale
 
@@ -850,7 +894,7 @@ Item {
                             elide: Text.ElideRight
 
 
-                            font.pixelSize: componentTypography.bodySmall
+                            font.pixelSize: componentTypography.body
 
                             color: "#333333"
                         }
@@ -865,7 +909,7 @@ Item {
                             elide: Text.ElideRight
 
 
-                            font.pixelSize: componentTypography.small
+                            font.pixelSize: componentTypography.caption
 
                             color: "#777777"
                         }
@@ -936,7 +980,13 @@ Item {
                     color: "#FFFFFF"
 
                     border.width: 1
-                    border.color: "#DCE2EB"
+                    border.color: root.trackingEnabled
+                                       ? "#DCE2EB"
+                                       : "#E5E7EB"
+
+                        enabled: root.trackingEnabled
+
+                        opacity: root.trackingEnabled ? 1.0 : 0.55
 
 
                     // ---------------------------------------------
@@ -971,8 +1021,8 @@ Item {
                         anchors.verticalCenter: parent.verticalCenter
 
 
-                        width: 38 * root.scale
-                        height: 38 * root.scale
+                        width: 40 * root.scale
+                        height: 40 * root.scale
 
                         radius: 19 * root.scale
 
@@ -997,23 +1047,42 @@ Item {
                     // VALUE
                     // ---------------------------------------------
 
-                    Text {
-                        id: toleranceValue
+                    Rectangle {
+                        id: toleranceValueContainer
 
                         anchors.right: parent.right
-
                         anchors.rightMargin: 20 * root.scale
 
                         anchors.verticalCenter: parent.verticalCenter
 
+                        width: 82 * root.scale
+                        height: 50 * root.scale
 
-                        text: "± " + root.trackingTolerance
+                        radius: 8 * root.scale
 
-                        font.pixelSize: componentTypography.title
+                        color: root.trackingEnabled
+                               ? "#F5F7FC"
+                               : "#ECEEF2"
 
-                        font.weight: Font.Normal
+                        border.width: 1
+                        border.color: root.trackingEnabled
+                                       ? "#DCE2EB"
+                                       : "#E5E7EB"
 
-                        color: "#1A4DB5"
+                        Text {
+                            id: toleranceValue
+
+                            anchors.centerIn: parent
+
+                            text: "± " + root.trackingTolerance
+
+                            font.pixelSize: componentTypography.title
+                            font.weight: Font.Normal
+
+                            color: root.trackingEnabled
+                                   ? "#333333"
+                                   : "#9CA3AF"
+                        }
                     }
 
 
@@ -1027,7 +1096,7 @@ Item {
 
                         anchors.leftMargin: 12 * root.scale
 
-                        anchors.right: toleranceValue.left
+                        anchors.right: toleranceValueContainer.left
 
                         anchors.rightMargin: 20 * root.scale
 
@@ -1046,7 +1115,7 @@ Item {
                             elide: Text.ElideRight
 
 
-                            font.pixelSize: componentTypography.bodySmall
+                            font.pixelSize: componentTypography.body
 
                             color: "#333333"
                         }
@@ -1061,7 +1130,7 @@ Item {
                             elide: Text.ElideRight
 
 
-                            font.pixelSize: componentTypography.small
+                            font.pixelSize: componentTypography.caption
 
                             color: "#777777"
                         }
