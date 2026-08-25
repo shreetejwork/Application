@@ -18,6 +18,10 @@ Item {
         scale: root.scale || 1.0
     }
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
 
     // ============================================================
     // PROPERTIES
@@ -25,6 +29,15 @@ Item {
 
     property bool showTopBar: true
     property var globalTopBar
+
+    // ============================================================
+    // TRACKING PARAMETERS
+    // ============================================================
+
+    property real trackingPhase: 50
+    property real trackingTolerance: 5
+    property int trackingCount: 120
+    property real trackingThreshold: 75
 
     property real baseWidth: 1024
     property real baseHeight: 600
@@ -65,7 +78,7 @@ Item {
                 anchors.fill: parent
 
                 trackingCountLabel: "Tracking Phase"
-                trackingPhase: 50
+                trackingPhase: root.trackingPhase
             }
         }
 
@@ -252,134 +265,43 @@ Item {
 
                         anchors.verticalCenter: parent.verticalCenter
 
-                        text: "50°"
+                        text: root.trackingPhase + "°"
 
                         font.pixelSize: componentTypography.title
                         font.weight: Font.Normal
 
                         color: "#1A4DB5"
                     }
-                }
 
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
 
-                // =================================================
-                // TRACKING TOLERANCE
-                // =================================================
+                        onClicked: {
 
-                Rectangle {
-                    id: toleranceBox
+                            if (GlobalState.loggedInUserRole !== "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin)
+                            {
+                                accessDeniedPopup.popupTitle = "Access Denied!"
 
-                    width: parent.width
-                    height: 100 * root.scale
+                                accessDeniedPopup.popupMessage =
+                                        "Only Admin can access"
 
-                    radius: 12 * root.scale
+                                accessDeniedPopup.open()
+                                return
+                            }
 
-                    color: "#FFFFFF"
-
-                    border.width: 1
-                    border.color: "#DCE2EB"
-
-
-                    // ---------------------------------------------
-                    // BLUE SIDE INDICATOR
-                    // ---------------------------------------------
-
-                    Rectangle {
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
-
-                        width: 5 * root.scale
-
-                        color: "#1A4DB5"
-
-                        radius: 2
-                    }
-
-
-                    // ---------------------------------------------
-                    // NUMBER
-                    // ---------------------------------------------
-
-                    Rectangle {
-                        id: toleranceNumber
-
-                        anchors.left: parent.left
-                        anchors.leftMargin: 22 * root.scale
-
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        width: 42 * root.scale
-                        height: 42 * root.scale
-
-                        radius: 21 * root.scale
-
-                        color: "#F0F4FB"
-
-
-                        Text {
-                            anchors.centerIn: parent
-
-                            text: "02"
-
-                            font.pixelSize: componentTypography.caption
-                            font.weight: Font.Normal
-
-                            color: "#1A4DB5"
+                            numberPopup.open(
+                                "Tracking Phase",
+                                root.trackingPhase,
+                                function(value) {
+                                    root.trackingPhase = value
+                                },
+                                0.0,
+                                180.0
+                            )
                         }
-                    }
-
-
-                    // ---------------------------------------------
-                    // DESCRIPTION
-                    // ---------------------------------------------
-
-                    Column {
-                        anchors.left: toleranceNumber.right
-                        anchors.leftMargin: 18 * root.scale
-
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        spacing: 3 * root.scale
-
-
-                        Text {
-                            text: "Tracking Tolerance"
-
-                            font.pixelSize: componentTypography.bodySmall
-                            font.weight: Font.Normal
-
-                            color: "#333333"
-                        }
-
-
-                        Text {
-                            text: "Allowed phase deviation"
-
-                            font.pixelSize: componentTypography.small
-                            font.weight: Font.Normal
-
-                            color: "#777777"
-                        }
-                    }
-
-
-                    // ---------------------------------------------
-                    // VALUE
-                    // ---------------------------------------------
-
-                    Text {
-                        anchors.right: parent.right
-                        anchors.rightMargin: 35 * root.scale
-
-                        anchors.verticalCenter: parent.verticalCenter
-
-                        text: "±5"
-
-                        font.pixelSize: componentTypography.title
-                        font.weight: Font.Normal
-
-                        color: "#1A4DB5"
                     }
                 }
 
@@ -442,7 +364,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
 
-                            text: "03"
+                            text: "02"
 
                             font.pixelSize: componentTypography.caption
                             font.weight: Font.Normal
@@ -496,12 +418,43 @@ Item {
 
                         anchors.verticalCenter: parent.verticalCenter
 
-                        text: "120"
+                        text: root.trackingCount
 
                         font.pixelSize: componentTypography.title
                         font.weight: Font.Normal
 
                         color: "#1A4DB5"
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+
+                            if (GlobalState.loggedInUserRole !== "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin)
+                            {
+                                accessDeniedPopup.popupTitle = "Access Denied!"
+
+                                accessDeniedPopup.popupMessage =
+                                        "Only Admin can access"
+
+                                accessDeniedPopup.open()
+                                return
+                            }
+
+                            numberPopup.open(
+                                "Tracking Count",
+                                root.trackingCount,
+                                function(value) {
+                                    root.trackingCount = Math.round(value)
+                                },
+                                200,
+                                90000
+                            )
+                        }
                     }
                 }
 
@@ -564,7 +517,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
 
-                            text: "04"
+                            text: "03"
 
                             font.pixelSize: componentTypography.caption
                             font.weight: Font.Normal
@@ -616,14 +569,198 @@ Item {
                         anchors.right: parent.right
                         anchors.rightMargin: 35 * root.scale
 
+
                         anchors.verticalCenter: parent.verticalCenter
 
-                        text: "75"
+                        text: root.trackingThreshold
 
                         font.pixelSize: componentTypography.title
                         font.weight: Font.Normal
 
                         color: "#1A4DB5"
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+
+                            if (GlobalState.loggedInUserRole !== "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin)
+                            {
+                                accessDeniedPopup.popupTitle = "Access Denied!"
+
+                                accessDeniedPopup.popupMessage =
+                                        "Only Admin can access"
+
+                                accessDeniedPopup.open()
+                                return
+                            }
+
+                            numberPopup.open(
+                                "Tracking Threshold",
+                                root.trackingThreshold,
+                                function(value) {
+                                    root.trackingThreshold = value
+                                },
+                                200,
+                                6000
+                            )
+                        }
+                    }
+                }
+
+                // =================================================
+                // TRACKING TOLERANCE
+                // =================================================
+
+                Rectangle {
+                    id: toleranceBox
+
+                    width: parent.width
+                    height: 100 * root.scale
+
+                    radius: 12 * root.scale
+
+                    color: "#FFFFFF"
+
+                    border.width: 1
+                    border.color: "#DCE2EB"
+
+
+                    // ---------------------------------------------
+                    // BLUE SIDE INDICATOR
+                    // ---------------------------------------------
+
+                    Rectangle {
+                        anchors.left: parent.left
+                        anchors.top: parent.top
+                        anchors.bottom: parent.bottom
+
+                        width: 5 * root.scale
+
+                        color: "#1A4DB5"
+
+                        radius: 2
+                    }
+
+
+                    // ---------------------------------------------
+                    // NUMBER
+                    // ---------------------------------------------
+
+                    Rectangle {
+                        id: toleranceNumber
+
+                        anchors.left: parent.left
+                        anchors.leftMargin: 22 * root.scale
+
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        width: 42 * root.scale
+                        height: 42 * root.scale
+
+                        radius: 21 * root.scale
+
+                        color: "#F0F4FB"
+
+
+                        Text {
+                            anchors.centerIn: parent
+
+                            text: "04"
+
+                            font.pixelSize: componentTypography.caption
+                            font.weight: Font.Normal
+
+                            color: "#1A4DB5"
+                        }
+                    }
+
+
+                    // ---------------------------------------------
+                    // DESCRIPTION
+                    // ---------------------------------------------
+
+                    Column {
+                        anchors.left: toleranceNumber.right
+                        anchors.leftMargin: 18 * root.scale
+
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        spacing: 3 * root.scale
+
+
+                        Text {
+                            text: "Tracking Tolerance"
+
+                            font.pixelSize: componentTypography.bodySmall
+                            font.weight: Font.Normal
+
+                            color: "#333333"
+                        }
+
+
+                        Text {
+                            text: "Allowed phase deviation"
+
+                            font.pixelSize: componentTypography.small
+                            font.weight: Font.Normal
+
+                            color: "#777777"
+                        }
+                    }
+
+
+                    // ---------------------------------------------
+                    // VALUE
+                    // ---------------------------------------------
+
+                    Text {
+                        anchors.right: parent.right
+                        anchors.rightMargin: 35 * root.scale
+
+                        anchors.verticalCenter: parent.verticalCenter
+
+                        text: "± " + root.trackingTolerance
+
+                        font.pixelSize: componentTypography.title
+                        font.weight: Font.Normal
+
+                        color: "#1A4DB5"
+                    }
+
+                    MouseArea {
+                        anchors.fill: parent
+                        cursorShape: Qt.PointingHandCursor
+
+                        onClicked: {
+
+                            if (GlobalState.loggedInUserRole !== "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin)
+                            {
+                                accessDeniedPopup.popupTitle = "Access Denied!"
+
+                                accessDeniedPopup.popupMessage =
+                                        "Only Admin can access"
+
+                                accessDeniedPopup.open()
+                                return
+                            }
+
+                            numberPopup.open(
+                                "Tracking Tolerance",
+                                root.trackingTolerance,
+                                function(value) {
+                                    root.trackingTolerance = value
+                                },
+                                0.5,
+                                5.0
+                            )
+                        }
                     }
                 }
             }
@@ -636,10 +773,10 @@ Item {
     // ============================================================
 
     CustomPopup {
-        id: popup
-
+        id: numberPopup
+        parent: Overlay.overlay
         anchors.fill: parent
-
+        z: 9999
         globalTopBar: root.globalTopBar
     }
 }
