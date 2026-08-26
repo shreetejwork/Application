@@ -12,7 +12,7 @@ Item {
     id: root
 
     // ===== OPTIONAL TRACKING =====
-    property real trackingPhase: 0.0
+    property real trackingPhase: -1
     property string trackingCountLabel: "Tracking Phase"
 
     property real baseHeight: 400
