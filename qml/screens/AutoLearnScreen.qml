@@ -43,8 +43,8 @@ Item {
     // TRACKING PARAMETERS
     // ============================================================
 
-    property real trackingPhase: 50
-    property real trackingTolerance: 5
+    property real trackingPhase: 0.0
+    property real trackingTolerance: 5.0
     property int trackingCount: 120
     property real trackingThreshold: 75
 
@@ -1147,7 +1147,6 @@ Item {
 
                         cursorShape: Qt.PointingHandCursor
 
-
                         onClicked: {
 
                             if (GlobalState.loggedInUserRole !== "Admin"
@@ -1164,6 +1163,8 @@ Item {
 
                                 return
                             }
+
+                            GlobalState.useDecimal = true
 
 
                             numberPopup.open(

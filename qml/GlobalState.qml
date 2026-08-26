@@ -142,6 +142,8 @@ QtObject {
 
     property real digitalGain: 1.0
 
+    property bool useDecimal: false
+
 
     // =========================================================
     //  MODELS (3 SEPARATE LOG STORES)

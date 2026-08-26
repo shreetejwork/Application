@@ -2,6 +2,8 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 
+import AppState 1.0
+
 Item {
     Typography {
         id: componentTypography
@@ -211,12 +213,20 @@ Item {
                         Layout.fillHeight: true
                         radius: 10
 
-                        color: modelData === "⌫"
-                               ? (mouseArea.pressed ? "#E6B87A" : "#FFCC99")
-                               : (mouseArea.pressed ? "#CCCCCC" : "#F0F0F0")
+                        // "." should be disabled when decimal input is not allowed
+                        property bool decimalDisabled:
+                            modelData === "." && !GlobalState.useDecimal
 
-                        border.color: "#E0E0E0"
+                        color: decimalDisabled
+                               ? "#E5E5E5"
+                               : modelData === "⌫"
+                                 ? (mouseArea.pressed ? "#E6B87A" : "#FFCC99")
+                                 : (mouseArea.pressed ? "#CCCCCC" : "#F0F0F0")
+
+                        border.color: decimalDisabled ? "#D5D5D5" : "#E0E0E0"
                         border.width: 1
+
+                        opacity: decimalDisabled ? 0.45 : 1.0
 
                         Item {
                             anchors.fill: parent
@@ -242,7 +252,8 @@ Item {
                                 text: modelData
 
                                 font.pixelSize: 18
-                                color: "#333"
+
+                                color: decimalDisabled ? "#999999" : "#333333"
                             }
                         }
 
@@ -250,10 +261,33 @@ Item {
                             id: mouseArea
                             anchors.fill: parent
 
+                            enabled: true
+
                             onClicked: {
+
+
+                                if (modelData === "." && !GlobalState.useDecimal) {
+                                    return
+                                }
+
                                 if (modelData === "⌫") {
-                                    inputField.text = inputField.text.slice(0, -1)
-                                } else {
+
+                                    if (inputField.text.length > 0) {
+                                        inputField.text =
+                                                inputField.text.slice(0, -1)
+                                    }
+
+                                }
+                                else if (modelData === ".") {
+
+
+                                    if (inputField.text.indexOf(".") === -1) {
+                                        inputField.text += "."
+                                    }
+
+                                }
+                                else {
+
                                     inputField.text += modelData
                                 }
                             }
@@ -285,7 +319,10 @@ Item {
                     MouseArea {
                         id: cancelMouseArea
                         anchors.fill: parent
-                        onClicked: popup.closePopup()
+                        onClicked: {
+                            popup.closePopup()
+                            GlobalState.useDecimal = false
+                        }
                     }
                 }
 
@@ -353,6 +390,7 @@ Item {
                             popup.closePopup()
                             popup.errorText = ""
                             popup.hasError = false
+                            GlobalState.useDecimal = false
                         }
                     }
                 }
@@ -373,7 +411,10 @@ Item {
         MouseArea {
             anchors.fill: parent
             enabled: popup.isOpen
-            onClicked: popup.closePopup()
+            onClicked: {
+                popup.closePopup()
+                GlobalState.useDecimal = false
+            }
         }
     }
 

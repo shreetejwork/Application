@@ -152,6 +152,8 @@ Item {
 
         GlobalState.loginKeyboardRequest = false
 
+        GlobalState.useDecimal = (fieldId === "dg")
+
         numberPopup.open(
             item.title,
             "",

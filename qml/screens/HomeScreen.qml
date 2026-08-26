@@ -458,16 +458,23 @@ Item {
                             Layout.fillHeight: true
                             radius: 10
 
-                            color: mouseArea.pressed
-                                   ? (modelData === "C" ? "#FF9999"
-                                                        : modelData === "⌫" ? "#FFCC99"
-                                                                            : "#CCCCCC")
-                                   : (modelData === "C" ? "#FFCDD2"
-                                                        : modelData === "⌫" ? "#FFE0B2"
-                                                                            : "#F0F0F0")
+                            property bool decimalDisabled:
+                                modelData === "." && !GlobalState.useDecimal
 
-                            border.color: "#E0E0E0"
+                            color: decimalDisabled
+                                   ? "#E5E5E5"
+                                   : mouseArea.pressed
+                                     ? (modelData === "C" ? "#FF9999"
+                                                          : modelData === "⌫" ? "#FFCC99"
+                                                                              : "#CCCCCC")
+                                     : (modelData === "C" ? "#FFCDD2"
+                                                          : modelData === "⌫" ? "#FFE0B2"
+                                                                              : "#F0F0F0")
+
+                            border.color: decimalDisabled ? "#D5D5D5" : "#E0E0E0"
                             border.width: 1
+
+                            opacity: decimalDisabled ? 0.45 : 1.0
 
                             Item {
                                 anchors.fill: parent
@@ -493,7 +500,8 @@ Item {
                                     text: modelData
 
                                     font.pixelSize: 18
-                                    color: "#333"
+
+                                    color: decimalDisabled ? "#999999" : "#333333"
                                 }
                             }
 
@@ -501,15 +509,40 @@ Item {
                                 id: mouseArea
                                 anchors.fill: parent
 
+                                enabled: true
+
                                 onClicked: {
+
+                                    // "." is visually disabled and does nothing
+                                    if (modelData === "." && !GlobalState.useDecimal) {
+                                        return
+                                    }
+
                                     if (modelData === "C") {
+
                                         inputField.text = ""
                                         popup.errorText = ""
                                         popup.hasError = false
-                                    } else if (modelData === "⌫") {
-                                        if (inputField.text.length > 0)
-                                            inputField.text = inputField.text.slice(0, -1)
-                                    } else {
+
+                                    }
+                                    else if (modelData === "⌫") {
+
+                                        if (inputField.text.length > 0) {
+                                            inputField.text =
+                                                    inputField.text.slice(0, -1)
+                                        }
+
+                                    }
+                                    else if (modelData === ".") {
+
+                                        // Allow only one decimal point
+                                        if (inputField.text.indexOf(".") === -1) {
+                                            inputField.text += "."
+                                        }
+
+                                    }
+                                    else {
+
                                         inputField.text += modelData
                                     }
                                 }
@@ -551,6 +584,8 @@ Item {
                                 popup.closePopup()
                                 popup.errorText = ""
                                 popup.hasError = false
+
+                                GlobalState.useDecimal = false
                             }
                         }
                     }
@@ -619,6 +654,7 @@ Item {
                                 popup.closePopup()
                                 popup.errorText = ""
                                 popup.hasError = false
+                                GlobalState.useDecimal = false
                             }
                         }
                     }
@@ -639,7 +675,10 @@ Item {
             MouseArea {
                 anchors.fill: parent
                 enabled: popup.visible
-                onClicked: popup.visible = false
+                onClicked: {
+                    popup.visible = false
+                    GlobalState.useDecimal = false
+                }
             }
         }
 
@@ -679,6 +718,8 @@ Item {
 
                             return
                         }
+
+                        GlobalState.useDecimal = true
 
 
                         popup.open(

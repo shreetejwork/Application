@@ -12,7 +12,7 @@ Item {
     id: root
 
     // ===== OPTIONAL TRACKING =====
-    property real trackingPhase: -1
+    property real trackingPhase: 0.0
     property string trackingCountLabel: "Tracking Phase"
 
     property real baseHeight: 400
@@ -225,7 +225,7 @@ Item {
             spacing: 2
 
             Text {
-                text: root.trackingPhase
+                text: Number(root.trackingPhase).toFixed(1)
                 font.pixelSize: root.trackingPhase >= 0
                                 ? componentTypography.title
                                 : componentTypography.title
