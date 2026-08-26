@@ -606,7 +606,7 @@ ApplicationWindow {
 
                         SerialManager.setHPF(
                             Math.round(
-                                s1Settings.hpf * 10
+                                s1Settings.hpf
                             )
                         )
                     }
