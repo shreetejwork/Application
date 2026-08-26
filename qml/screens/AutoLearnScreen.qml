@@ -48,7 +48,7 @@ Item {
     property int trackingCount: 120
     property real trackingThreshold: 75
 
-    property bool trackingEnabled: true
+    property bool trackingEnabled: false
 
 
     // ============================================================
@@ -206,8 +206,8 @@ Item {
 
                         // Same sizing logic as Signal Gauge
                         width: Math.min(
-                                   parent.width * 0.90,
-                                   parent.height * 0.94
+                                   parent.width * 0.94,
+                                   parent.height * 0.98
                                    )
 
                         height: width
@@ -500,7 +500,13 @@ Item {
                             // TOGGLE TRACKING
                             // -------------------------------------------------
 
-                            root.trackingEnabled = !root.trackingEnabled
+                            var newState = !root.trackingEnabled
+
+                                // Send ON/OFF command to MCU
+                                SerialManager.setTracking(newState)
+
+                                // Update UI
+                                root.trackingEnabled = newState
 
 
                             // -------------------------------------------------
@@ -593,7 +599,7 @@ Item {
 
                             text: "01"
 
-                            font.pixelSize: componentTypography.caption
+                            font.pixelSize: componentTypography.bodySmall
 
                             color: "#1A4DB5"
                         }
@@ -731,8 +737,13 @@ Item {
 
                                 function(value) {
 
-                                    root.trackingCount =
-                                            Math.round(value)
+                                    var newValue = Math.round(value)
+
+                                    // Send to MCU
+                                    SerialManager.setTrackingCount(newValue)
+
+                                    // Update UI
+                                    root.trackingCount = newValue
                                 },
 
                                 200,
@@ -815,7 +826,7 @@ Item {
 
                             text: "02"
 
-                            font.pixelSize: componentTypography.caption
+                            font.pixelSize: componentTypography.bodySmall
 
                             color: "#1A4DB5"
                         }
@@ -953,12 +964,18 @@ Item {
 
                                 function(value) {
 
-                                    root.trackingThreshold = value
+                                    var newValue = Math.round(value)
+
+                                    // Send to MCU
+                                    SerialManager.setTrackingThreshold(newValue)
+
+                                    // Update UI
+                                    root.trackingThreshold = newValue
                                 },
 
                                 200,
 
-                                6000
+                                10000
                             )
                         }
                     }
@@ -1036,7 +1053,7 @@ Item {
 
                             text: "03"
 
-                            font.pixelSize: componentTypography.caption
+                            font.pixelSize: componentTypography.bodySmall
 
                             color: "#1A4DB5"
                         }
@@ -1175,6 +1192,12 @@ Item {
 
                                 function(value) {
 
+                                    var toleranceValue = Math.round(value * 10)
+
+                                    // Send to MCU
+                                    SerialManager.setTrackingTolerance(toleranceValue)
+
+                                    // Keep original decimal value for UI
                                     root.trackingTolerance = value
                                 },
 

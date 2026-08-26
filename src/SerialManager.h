@@ -102,6 +102,12 @@ public slots:
     void setDigitalGain(int value);
     void setAnalogGain(int value);
 
+    // Tracking Settings
+    void setTracking(bool enabled);
+    void setTrackingCount(int value);
+    void setTrackingThreshold(int value);
+    void setTrackingTolerance(int value);
+
     // Batch Settings
     void setBatch(int state);
 

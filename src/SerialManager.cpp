@@ -234,6 +234,42 @@ void SerialManager::setAnalogGain(int value)
     sendCommand(QString("{K%1}").arg(v));
 }
 
+// =============== Tracking Settings ==================
+
+void SerialManager::setTracking(bool enabled)
+{
+    sendCommand(enabled ? "{D11111}" : "{D00000}");
+}
+
+void SerialManager::setTrackingCount(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value, 5, 10, QChar('0'));
+
+    sendCommand(QString("{P%1}").arg(v));
+}
+
+
+void SerialManager::setTrackingThreshold(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value, 5, 10, QChar('0'));
+
+    sendCommand(QString("{Q%1}").arg(v));
+}
+
+
+void SerialManager::setTrackingTolerance(int value)
+{
+    QString v =
+        QString("%1")
+            .arg(value, 5, 10, QChar('0'));
+
+    sendCommand(QString("{R%1}").arg(v));
+}
+
 // =============== D-duster ======================
 
 void SerialManager::setDDuster(bool enabled)
