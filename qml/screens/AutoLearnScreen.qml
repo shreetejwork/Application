@@ -43,7 +43,8 @@ Item {
     // TRACKING PARAMETERS
     // ============================================================
 
-    property real trackingPhase: 0.0
+    property real trackingPhase: Number(SerialManager.trackingPhase)
+
     property real trackingTolerance: 5.0
     property int trackingCount: 120
     property real trackingThreshold: 75
@@ -122,11 +123,9 @@ Item {
                 id: analogGauge
 
                 anchors.fill: parent
-
                 anchors.margins: 8 * root.scale
 
                 trackingCountLabel: "Tracking Phase"
-
                 trackingPhase: root.trackingPhase
             }
         }
@@ -775,7 +774,7 @@ Item {
                                     root.trackingCount = newValue
                                 },
 
-                                200,
+                                500,
 
                                 90000
                             )

@@ -453,14 +453,20 @@ void SerialManager::onReadyRead()
             str.split(',');
 
 
-        if (fields.size() != 4)
+        if (fields.size() != 5)
         {
-            qDebug() << "Invalid packet";
+            qDebug() << "Invalid packet. Expected 5 parameters, received:"
+                     << fields.size();
             continue;
         }
 
 
-        bool ok1, ok2, ok3, ok4;
+        bool ok1, ok2, ok3, ok4, ok5;
+
+
+        // =====================================================
+        // 1st Parameter - Product Phase
+        // =====================================================
 
         int phaseRaw =
             fields[0].trimmed().toInt(&ok1);
@@ -468,15 +474,41 @@ void SerialManager::onReadyRead()
         double phase =
             phaseRaw / 10.0;
 
+
+        // =====================================================
+        // 2nd Parameter - Signal
+        // =====================================================
+
         int signal =
             fields[1].trimmed().toInt(&ok2);
+
+
+        // =====================================================
+        // 3rd Parameter - Amplitude
+        // =====================================================
 
         int amplitude =
             fields[2].trimmed().toInt(&ok3);
 
+
+        // =====================================================
+        // 4th Parameter - Coil
+        // =====================================================
+
         int coil =
             fields[3].trimmed().toInt(&ok4);
 
+
+        // =====================================================
+        // 5th Parameter - Tracking Phase
+        // Same handling as Product Phase
+        // =====================================================
+
+        int trackingPhaseRaw =
+            fields[4].trimmed().toInt(&ok5);
+
+        double trackingPhaseValue =
+            trackingPhaseRaw / 10.0;
 
         if (!(ok1 && ok2 && ok3 && ok4))
         {
@@ -486,13 +518,40 @@ void SerialManager::onReadyRead()
 
 
         // Validate ranges
-        if (phase > 180 ||
+        if (phase < 0 ||
+            phase > 180 ||
+            signal < 0 ||
             signal > 30000 ||
+            amplitude < 0 ||
             amplitude > 14000 ||
+            coil < 0 ||
             coil > 10000)
         {
-            qDebug() << "Packet out of range";
+            qDebug() << "Main packet out of range";
             continue;
+        }
+
+        // =====================================================
+        // Validate 5th parameter - Tracking Phase
+        // Valid range: 0 to 180
+        // Invalid value will be sent to QML as "---"
+        // =====================================================
+
+        QString newTrackingPhase;
+
+        if (!ok5 ||
+            trackingPhaseValue < 0 ||
+            trackingPhaseValue > 180)
+        {
+            qDebug() << "Invalid Tracking Phase:"
+                     << fields[4];
+
+            newTrackingPhase = "---";
+        }
+        else
+        {
+            newTrackingPhase =
+                QString::number(trackingPhaseValue, 'f', 1);
         }
 
 
@@ -503,6 +562,13 @@ void SerialManager::onReadyRead()
             m_productPhase = phase;
 
             emit productPhaseChanged();
+        }
+
+        if (m_trackingPhase != newTrackingPhase)
+        {
+            m_trackingPhase = newTrackingPhase;
+
+            emit trackingPhaseChanged();
         }
 
 
@@ -538,6 +604,11 @@ void SerialManager::onReadyRead()
             qDebug() << "Coil Balancing ON - Display only, not storing coil value";
         }
     }
+}
+
+QString SerialManager::trackingPhase() const
+{
+    return m_trackingPhase;
 }
 
 void SerialManager::processCoilBuffer()

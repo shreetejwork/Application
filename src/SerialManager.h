@@ -17,6 +17,10 @@ class SerialManager : public QObject
                    READ productPhase
                        NOTIFY productPhaseChanged)
 
+    Q_PROPERTY(QString trackingPhase
+                   READ trackingPhase
+                       NOTIFY trackingPhaseChanged)
+
     Q_PROPERTY(int signal
                    READ signal
                        NOTIFY signalChanged)
@@ -46,6 +50,8 @@ public:
     {
         return m_productPhase;
     }
+
+    QString trackingPhase() const;
 
     int signal() const
     {
@@ -116,6 +122,8 @@ public slots:
 signals:
     void productPhaseChanged();
 
+    void trackingPhaseChanged();
+
     void signalChanged();
 
     void amplitudeChanged();
@@ -158,6 +166,8 @@ private:
     QByteArray rxBuffer;
 
     double m_productPhase = 0.0;   // 0 - 180
+
+    QString m_trackingPhase = "---";
 
     int m_signal = 0;         // 0 - 30000
 
