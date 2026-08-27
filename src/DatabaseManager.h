@@ -78,6 +78,19 @@ public:
 
     Q_INVOKABLE QVariantMap getDDSettings();
 
+    // =====================================================
+    // TRACKING SETTINGS
+    // =====================================================
+
+
+    Q_INVOKABLE bool saveTrackingCount(int count);
+
+    Q_INVOKABLE bool saveTrackingThreshold(int threshold);
+
+    Q_INVOKABLE bool saveTrackingTolerance(double tolerance);
+
+    Q_INVOKABLE QVariantMap getTrackingSettings();
+
 
     // =====================================================
     // FILTER SETTINGS

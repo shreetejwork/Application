@@ -360,23 +360,139 @@ void DatabaseManager::createTables()
     )");
 
     query.exec(R"(
-        CREATE TABLE IF NOT EXISTS machineparameters (
-            id INTEGER PRIMARY KEY,
-            machinePhase INTEGER,
-            signalThr INTEGER,
-            ampThr INTEGER,
-            ddPower INTEGER,
-            ddFreq REAL
-        );
-    )");
+    CREATE TABLE IF NOT EXISTS machineparameters (
+        id INTEGER PRIMARY KEY,
+
+        machinePhase INTEGER,
+        signalThr INTEGER,
+        ampThr INTEGER,
+
+        ddPower INTEGER,
+        ddFreq REAL,
+
+
+        trackingCount INTEGER DEFAULT 500,
+        trackingThreshold INTEGER DEFAULT 20,
+        trackingTolerance REAL DEFAULT 5.0
+    );
+)");
+
+    // ============================================================
+    // ENSURE TRACKING COLUMNS EXIST
+    // ============================================================
+
+    QSqlQuery trackingColumnCheck;
+
+
+    // ------------------------------------------------------------
+    // trackingCount
+    // ------------------------------------------------------------
+
+    trackingColumnCheck.prepare(R"(
+    SELECT COUNT(*)
+    FROM pragma_table_info('machineparameters')
+    WHERE name = 'trackingCount'
+)");
+
+    if (trackingColumnCheck.exec()
+        && trackingColumnCheck.next()
+        && trackingColumnCheck.value(0).toInt() == 0)
+    {
+        QSqlQuery alterQuery;
+
+        if (!alterQuery.exec(R"(
+        ALTER TABLE machineparameters
+        ADD COLUMN trackingCount INTEGER DEFAULT 500
+    )"))
+        {
+            qWarning()
+            << "Failed to add trackingCount column:"
+            << alterQuery.lastError().text();
+        }
+    }
+
+
+    // ------------------------------------------------------------
+    // trackingThreshold
+    // ------------------------------------------------------------
+
+    trackingColumnCheck.prepare(R"(
+    SELECT COUNT(*)
+    FROM pragma_table_info('machineparameters')
+    WHERE name = 'trackingThreshold'
+)");
+
+    if (trackingColumnCheck.exec()
+        && trackingColumnCheck.next()
+        && trackingColumnCheck.value(0).toInt() == 0)
+    {
+        QSqlQuery alterQuery;
+
+        if (!alterQuery.exec(R"(
+        ALTER TABLE machineparameters
+        ADD COLUMN trackingThreshold INTEGER DEFAULT 200
+    )"))
+        {
+            qWarning()
+            << "Failed to add trackingThreshold column:"
+            << alterQuery.lastError().text();
+        }
+    }
+
+
+    // ------------------------------------------------------------
+    // trackingTolerance
+    // ------------------------------------------------------------
+
+    trackingColumnCheck.prepare(R"(
+    SELECT COUNT(*)
+    FROM pragma_table_info('machineparameters')
+    WHERE name = 'trackingTolerance'
+)");
+
+    if (trackingColumnCheck.exec()
+        && trackingColumnCheck.next()
+        && trackingColumnCheck.value(0).toInt() == 0)
+    {
+        QSqlQuery alterQuery;
+
+        if (!alterQuery.exec(R"(
+        ALTER TABLE machineparameters
+        ADD COLUMN trackingTolerance REAL DEFAULT 5.0
+    )"))
+        {
+            qWarning()
+            << "Failed to add trackingTolerance column:"
+            << alterQuery.lastError().text();
+        }
+    }
 
     query.exec(R"(
-        INSERT OR IGNORE INTO machineparameters
-            (id, machinePhase, signalThr, ampThr, ddPower, ddFreq)
-            VALUES
-        (1, 0, 0, 0, 0, 25.0);
-
-    )");
+    INSERT OR IGNORE INTO machineparameters
+    (
+        id,
+        machinePhase,
+        signalThr,
+        ampThr,
+        ddPower,
+        ddFreq,
+        trackingCount,
+        trackingThreshold,
+        trackingTolerance
+    )
+    VALUES
+    (
+        1,
+        0,
+        0,
+        0,
+        0,
+        25.0,
+        500,
+        200,
+        5.0
+    );
+)");
 
     // S1 SETTINGS PARAMETERS
     query.exec(R"(
@@ -420,6 +536,7 @@ void DatabaseManager::createTables()
         );
     )");
 
+
     // ============================================================
     // PRODUCT LIBRARY
     // ============================================================
@@ -434,12 +551,6 @@ void DatabaseManager::createTables()
         }
     }
 
-    // ============================================================
-    // DEFAULT PRODUCT LIBRARY ENTRY
-    // ============================================================
-    // Always keep one default product in group 1. It uses the same
-    // default parameter values as a newly added product and becomes
-    // the fallback active product when no active product exists.
     QString defaultTableName = productLibraryTableName(1);
 
     if (!defaultTableName.isEmpty() && productLibraryTableExists(1))
@@ -960,18 +1071,7 @@ bool DatabaseManager::saveCoilOutputAverage(int average)
         return false;
     }
 
-    /*
-        Keep only latest 30 days
-        Example:
-        31 July:
-        delete 01 July
-        Keep:
-        02 July - 31 July
-        01 August:
-        delete 02 July
-        Keep:
-        03 July - 01 August
-    */
+
     QDate deleteLimit =
         today.addDays(-29);
 
@@ -1738,6 +1838,140 @@ QVariantMap DatabaseManager::getDDSettings()
     {
         data["ddPower"] = query.value("ddPower");
         data["ddFreq"] = query.value("ddFreq");
+    }
+
+    return data;
+}
+
+// ============================================================
+// TRACKING SETTINGS
+// ============================================================
+
+bool DatabaseManager::saveTrackingCount(int count)
+{
+    QSqlQuery query;
+
+    query.prepare(R"(
+        UPDATE machineparameters
+        SET trackingCount = ?
+        WHERE id = 1
+    )");
+
+    query.addBindValue(count);
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed to save trackingCount:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    qDebug()
+        << "Tracking Count saved:"
+        << count;
+
+    emit machineParametersChanged();
+
+    return true;
+}
+
+
+bool DatabaseManager::saveTrackingThreshold(int threshold)
+{
+    QSqlQuery query;
+
+    query.prepare(R"(
+        UPDATE machineparameters
+        SET trackingThreshold = ?
+        WHERE id = 1
+    )");
+
+    query.addBindValue(threshold);
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed to save trackingThreshold:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    qDebug()
+        << "Tracking Threshold saved:"
+        << threshold;
+
+    emit machineParametersChanged();
+
+    return true;
+}
+
+
+bool DatabaseManager::saveTrackingTolerance(double tolerance)
+{
+    QSqlQuery query;
+
+    query.prepare(R"(
+        UPDATE machineparameters
+        SET trackingTolerance = ?
+        WHERE id = 1
+    )");
+
+    query.addBindValue(tolerance);
+
+    if (!query.exec())
+    {
+        qDebug()
+        << "Failed to save trackingTolerance:"
+        << query.lastError().text();
+
+        return false;
+    }
+
+    qDebug()
+        << "Tracking Tolerance saved:"
+        << tolerance;
+
+    emit machineParametersChanged();
+
+    return true;
+}
+
+
+QVariantMap DatabaseManager::getTrackingSettings()
+{
+    QVariantMap data;
+
+    QSqlQuery query;
+
+    query.prepare(R"(
+        SELECT
+            trackingCount,
+            trackingThreshold,
+            trackingTolerance
+        FROM machineparameters
+        WHERE id = 1
+    )");
+
+    if (query.exec() && query.next())
+    {
+
+        data["trackingCount"] =
+            query.value("trackingCount");
+
+        data["trackingThreshold"] =
+            query.value("trackingThreshold");
+
+        data["trackingTolerance"] =
+            query.value("trackingTolerance");
+    }
+    else
+    {
+        qDebug()
+        << "Failed to load Tracking Settings:"
+        << query.lastError().text();
     }
 
     return data;

@@ -746,6 +746,68 @@ ApplicationWindow {
                 )
             }
 
+            // =====================================================
+            // TRACKING SETTINGS
+            // =====================================================
+
+            var trackingSettings =
+                    databaseManager.getTrackingSettings()
+
+
+            if (
+                trackingSettings.trackingCount
+                !== undefined
+            )
+            {
+
+                parameterQueue.push(
+                    function() {
+
+                        SerialManager.setTrackingCount(
+                            trackingSettings.trackingCount
+                        )
+                    }
+                )
+            }
+
+
+            if (
+                trackingSettings.trackingThreshold
+                !== undefined
+            )
+            {
+
+                parameterQueue.push(
+                    function() {
+
+                        SerialManager.setTrackingThreshold(
+                            trackingSettings.trackingThreshold
+                        )
+                    }
+                )
+            }
+
+
+            if (
+                trackingSettings.trackingTolerance
+                !== undefined
+            )
+            {
+
+                parameterQueue.push(
+                    function() {
+
+                        SerialManager.setTrackingTolerance(
+
+                            Math.round(
+                                trackingSettings.trackingTolerance
+                                * 10
+                            )
+                        )
+                    }
+                )
+            }
+
 
             // =====================================================
             // START SENDING

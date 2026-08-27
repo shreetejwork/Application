@@ -64,6 +64,33 @@ Item {
                              )
 
 
+    Component.onCompleted: {
+
+        var settings =
+                databaseManager.getTrackingSettings()
+
+        if (settings
+                && Object.keys(settings).length > 0)
+        {
+
+            root.trackingCount =
+                    settings.trackingCount
+
+            root.trackingThreshold =
+                    settings.trackingThreshold
+
+            root.trackingTolerance =
+                    settings.trackingTolerance
+
+            console.log(
+                        "Tracking settings loaded:",
+                        "Count =", root.trackingCount,
+                        "Threshold =", root.trackingThreshold,
+                        "Tolerance =", root.trackingTolerance
+                        )
+        }
+    }
+
     // ============================================================
     // BACKGROUND
     // ============================================================
@@ -742,6 +769,8 @@ Item {
                                     // Send to MCU
                                     SerialManager.setTrackingCount(newValue)
 
+                                    databaseManager.saveTrackingCount(newValue)
+
                                     // Update UI
                                     root.trackingCount = newValue
                                 },
@@ -968,6 +997,8 @@ Item {
 
                                     // Send to MCU
                                     SerialManager.setTrackingThreshold(newValue)
+
+                                    databaseManager.saveTrackingThreshold(newValue)
 
                                     // Update UI
                                     root.trackingThreshold = newValue
@@ -1196,6 +1227,8 @@ Item {
 
                                     // Send to MCU
                                     SerialManager.setTrackingTolerance(toleranceValue)
+
+                                    databaseManager.saveTrackingTolerance(value)
 
                                     // Keep original decimal value for UI
                                     root.trackingTolerance = value
