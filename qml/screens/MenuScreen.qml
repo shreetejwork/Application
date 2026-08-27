@@ -158,18 +158,18 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
 
-                            if (GlobalState.loggedInUserRole !== "Admin"
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin)
-                            {
-                                accessDeniedPopup.popupTitle = "Access Denied!"
+                            // if (GlobalState.loggedInUserRole !== "Admin"
+                            //         && !GlobalState.developerLogin
+                            //         && !GlobalState.engineerLogin)
+                            // {
+                            //     accessDeniedPopup.popupTitle = "Access Denied!"
 
-                                accessDeniedPopup.popupMessage =
-                                        "Only Admin can access"
+                            //     accessDeniedPopup.popupMessage =
+                            //             "Only Admin can access"
 
-                                accessDeniedPopup.open()
-                                return
-                            }
+                            //     accessDeniedPopup.open()
+                            //     return
+                            // }
 
                             navigateTo("FactorySettings")
                         }

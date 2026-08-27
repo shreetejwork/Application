@@ -182,7 +182,7 @@ Item {
 
                     MenuTile {
                         iconSource: "qrc:/qt/qml/Application/assets/images/bug.png"
-                        label:      ""
+                        label:      "Debug Console"
                         iconSize:   100 * root.scale
                         visible: true
                         enabled: true

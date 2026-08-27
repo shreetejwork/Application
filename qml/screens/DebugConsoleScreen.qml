@@ -181,7 +181,7 @@ Item {
                 anchors.topMargin: 20
                 anchors.bottomMargin: 20
 
-                width: parent.width/2 - 40
+                width: parent.width * 0.62
 
                 radius: 10
 
@@ -274,7 +274,7 @@ Item {
                 anchors.topMargin:20
                 anchors.bottomMargin:20
 
-                width: parent.width/2 - 40
+                width: parent.width * 0.30
 
                 radius:10
 

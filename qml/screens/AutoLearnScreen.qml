@@ -52,6 +52,8 @@ Item {
     property bool trackingEnabled: false
 
 
+
+
     // ============================================================
     // BASE SIZE
     // ============================================================
@@ -83,13 +85,6 @@ Item {
 
         root.trackingPhase = phase
 
-        console.log(
-            "Tracking Phase Initial Value:",
-            SerialManager.trackingPhase,
-            "=>",
-            root.trackingPhase
-        )
-
 
         // --------------------------------------------------------
         // Load saved tracking settings
@@ -113,14 +108,6 @@ Item {
                 root.trackingTolerance =
                         Number(settings.trackingTolerance)
             }
-
-
-            console.log(
-                "Tracking Settings Loaded:",
-                "Count =", root.trackingCount,
-                "Threshold =", root.trackingThreshold,
-                "Tolerance =", root.trackingTolerance
-            )
         }
     }
 
@@ -142,28 +129,6 @@ Item {
             }
 
             root.trackingPhase = phase
-
-            console.log(
-                "========================================"
-            )
-
-            console.log(
-                "Tracking Phase Changed"
-            )
-
-            console.log(
-                "SerialManager.trackingPhase:",
-                SerialManager.trackingPhase
-            )
-
-            console.log(
-                "root.trackingPhase:",
-                root.trackingPhase
-            )
-
-            console.log(
-                "========================================"
-            )
         }
     }
 
