@@ -201,14 +201,11 @@ Item {
 
                 anchors.margins: 8 * root.scale
 
-
-                // ------------------------------------------------
-                // TRACKING PHASE
-                // ------------------------------------------------
-
                 trackingCountLabel: "Tracking Phase"
 
                 trackingPhase: root.trackingPhase
+
+                showTrackingPhase: true
             }
         }
 
@@ -1634,45 +1631,6 @@ Item {
                 }
             }
         }
-    }
-
-
-    // ============================================================
-    // TRACKING PHASE DEBUG DISPLAY
-    // ============================================================
-    //
-    // REMOVE THIS AFTER CONFIRMING THE VALUE.
-    //
-    // This tells us whether the value is reaching this QML screen.
-    // ============================================================
-
-    Text {
-        id: trackingPhaseDebug
-
-        anchors.left:
-            parent.left
-
-        anchors.top:
-            parent.top
-
-        anchors.leftMargin:
-            15 * root.scale
-
-        anchors.topMargin:
-            8 * root.scale
-
-        z:
-            10000
-
-        text:
-            "Tracking Phase: "
-            + Number(root.trackingPhase).toFixed(1)
-
-        font.pixelSize:
-            18 * root.scale
-
-        color:
-            "red"
     }
 
 
