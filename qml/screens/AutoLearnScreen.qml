@@ -43,7 +43,7 @@ Item {
     // TRACKING PARAMETERS
     // ============================================================
 
-    property real trackingPhase: Number(SerialManager.trackingPhase)
+    property real trackingPhase: 0.0
 
     property real trackingTolerance: 5.0
     property int trackingCount: 120
@@ -62,35 +62,111 @@ Item {
     property real scale: Math.min(
                              width / baseWidth,
                              height / baseHeight
-                             )
+                         )
 
+
+    // ============================================================
+    // INITIALIZATION
+    // ============================================================
 
     Component.onCompleted: {
 
-        var settings =
-                databaseManager.getTrackingSettings()
+        // --------------------------------------------------------
+        // Get current tracking phase from SerialManager
+        // --------------------------------------------------------
 
-        if (settings
-                && Object.keys(settings).length > 0)
-        {
+        var phase = Number(SerialManager.trackingPhase)
 
-            root.trackingCount =
-                    settings.trackingCount
+        if (isNaN(phase)) {
+            phase = 0.0
+        }
 
-            root.trackingThreshold =
-                    settings.trackingThreshold
+        root.trackingPhase = phase
 
-            root.trackingTolerance =
-                    settings.trackingTolerance
+        console.log(
+            "Tracking Phase Initial Value:",
+            SerialManager.trackingPhase,
+            "=>",
+            root.trackingPhase
+        )
+
+
+        // --------------------------------------------------------
+        // Load saved tracking settings
+        // --------------------------------------------------------
+
+        var settings = databaseManager.getTrackingSettings()
+
+        if (settings && Object.keys(settings).length > 0) {
+
+            if (settings.trackingCount !== undefined) {
+                root.trackingCount =
+                        Number(settings.trackingCount)
+            }
+
+            if (settings.trackingThreshold !== undefined) {
+                root.trackingThreshold =
+                        Number(settings.trackingThreshold)
+            }
+
+            if (settings.trackingTolerance !== undefined) {
+                root.trackingTolerance =
+                        Number(settings.trackingTolerance)
+            }
+
 
             console.log(
-                        "Tracking settings loaded:",
-                        "Count =", root.trackingCount,
-                        "Threshold =", root.trackingThreshold,
-                        "Tolerance =", root.trackingTolerance
-                        )
+                "Tracking Settings Loaded:",
+                "Count =", root.trackingCount,
+                "Threshold =", root.trackingThreshold,
+                "Tolerance =", root.trackingTolerance
+            )
         }
     }
+
+
+    // ============================================================
+    // SERIAL MANAGER CONNECTION
+    // ============================================================
+
+    Connections {
+        target: SerialManager
+
+        function onTrackingPhaseChanged() {
+
+            var phase =
+                    Number(SerialManager.trackingPhase)
+
+            if (isNaN(phase)) {
+                phase = 0.0
+            }
+
+            root.trackingPhase = phase
+
+            console.log(
+                "========================================"
+            )
+
+            console.log(
+                "Tracking Phase Changed"
+            )
+
+            console.log(
+                "SerialManager.trackingPhase:",
+                SerialManager.trackingPhase
+            )
+
+            console.log(
+                "root.trackingPhase:",
+                root.trackingPhase
+            )
+
+            console.log(
+                "========================================"
+            )
+        }
+    }
+
 
     // ============================================================
     // BACKGROUND
@@ -115,7 +191,6 @@ Item {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
 
-            // 27% SCREEN WIDTH
             width: parent.width * 0.30
 
 
@@ -123,9 +198,16 @@ Item {
                 id: analogGauge
 
                 anchors.fill: parent
+
                 anchors.margins: 8 * root.scale
 
+
+                // ------------------------------------------------
+                // TRACKING PHASE
+                // ------------------------------------------------
+
                 trackingCountLabel: "Tracking Phase"
+
                 trackingPhase: root.trackingPhase
             }
         }
@@ -142,7 +224,6 @@ Item {
             anchors.top: parent.top
             anchors.bottom: parent.bottom
 
-            // 28% SCREEN WIDTH
             width: parent.width * 0.28
 
 
@@ -169,8 +250,10 @@ Item {
 
                     width: parent.width
 
-                    height: (gaugesColumn.height
-                             - gaugesColumn.spacing) / 2
+                    height: (
+                        gaugesColumn.height
+                        - gaugesColumn.spacing
+                    ) / 2
 
 
                     CircularGauge {
@@ -179,11 +262,10 @@ Item {
                         anchors.centerIn: parent
 
 
-                        // Keep circular gauge proportional
                         width: Math.min(
                                    parent.width * 0.90,
                                    parent.height * 0.94
-                                   )
+                               )
 
                         height: width
 
@@ -202,11 +284,14 @@ Item {
                             + "</span>"
 
 
-                        threshold: GlobalState.signalThreshold
+                        threshold:
+                            GlobalState.signalThreshold
 
-                        thresholdLabel: "Threshold-S"
+                        thresholdLabel:
+                            "Threshold-S"
 
-                        maxValue: 1200
+                        maxValue:
+                            1200
                     }
                 }
 
@@ -220,8 +305,10 @@ Item {
 
                     width: parent.width
 
-                    height: (gaugesColumn.height
-                             - gaugesColumn.spacing) / 2
+                    height: (
+                        gaugesColumn.height
+                        - gaugesColumn.spacing
+                    ) / 2
 
 
                     CircularGauge {
@@ -230,34 +317,30 @@ Item {
                         anchors.centerIn: parent
 
 
-                        // Same sizing logic as Signal Gauge
                         width: Math.min(
                                    parent.width * 0.94,
                                    parent.height * 0.98
-                                   )
+                               )
 
                         height: width
 
 
-                        value: SerialManager.amplitude
+                        value:
+                            SerialManager.amplitude
 
 
-                        label: "Amplitude"
+                        label:
+                            "Amplitude"
 
 
-                        threshold: root.trackingThreshold
+                        threshold:
+                            root.trackingThreshold
 
-                        thresholdLabel: "  Tracking\n Threshold"
+                        thresholdLabel:
+                            "  Tracking\n Threshold"
 
-                        maxValue: 1200
-
-
-                        // ------------------------------------------------
-                        // IMPORTANT
-                        // NO onThresholdClicked HERE
-                        //
-                        // Amplitude gauge is DISPLAY ONLY.
-                        // ------------------------------------------------
+                        maxValue:
+                            1200
                     }
                 }
             }
@@ -278,7 +361,6 @@ Item {
             anchors.bottom: parent.bottom
 
 
-            // Compact margins
             anchors.leftMargin: 18 * root.scale
             anchors.rightMargin: 22 * root.scale
 
@@ -303,22 +385,28 @@ Item {
                 Text {
                     text: "Tracking Parameters"
 
-                    font.pixelSize: componentTypography.title
+                    font.pixelSize:
+                        componentTypography.title
 
-                    font.weight: Font.Normal
+                    font.weight:
+                        Font.Normal
 
-                    color: "#1A4DB5"
+                    color:
+                        "#1A4DB5"
                 }
 
 
                 Rectangle {
 
                     width: 55 * root.scale
+
                     height: 3 * root.scale
 
-                    radius: height / 2
+                    radius:
+                        height / 2
 
-                    color: "#1A4DB5"
+                    color:
+                        "#1A4DB5"
                 }
             }
 
@@ -333,183 +421,259 @@ Item {
                 anchors.left: parent.left
                 anchors.right: parent.right
 
-                anchors.top: parametersHeader.bottom
+                anchors.top:
+                    parametersHeader.bottom
 
-                anchors.topMargin: 20 * root.scale
+                anchors.topMargin:
+                    20 * root.scale
 
-                spacing: 25 * root.scale
+                spacing:
+                    25 * root.scale
 
+
+                // =================================================
+                // 01 - TRACKING ON / OFF
+                // =================================================
 
                 Rectangle {
                     id: trackingButtonBox
 
-                    width: parent.width
-                    height: 88 * root.scale
+                    width:
+                        parent.width
 
-                    radius: 12 * root.scale
+                    height:
+                        88 * root.scale
 
-                    color: "#FFFFFF"
+                    radius:
+                        12 * root.scale
 
-                    border.width: 1
-                    border.color: "#DCE2EB"
+                    color:
+                        "#FFFFFF"
+
+                    border.width:
+                        1
+
+                    border.color:
+                        "#DCE2EB"
 
 
-                    // =========================================================
+                    // ------------------------------------------------
                     // BLUE SIDE INDICATOR
-                    // =========================================================
+                    // ------------------------------------------------
 
                     Rectangle {
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
 
-                        width: 5 * root.scale
+                        anchors.left:
+                            parent.left
 
-                        radius: 2
+                        anchors.top:
+                            parent.top
 
-                        color: root.trackingEnabled
-                               ? "#1A4DB5"
-                               : "#9CA3AF"
+                        anchors.bottom:
+                            parent.bottom
+
+                        width:
+                            5 * root.scale
+
+                        radius:
+                            2
+
+                        color:
+                            root.trackingEnabled
+                            ? "#1A4DB5"
+                            : "#9CA3AF"
                     }
 
 
-                    // =========================================================
+                    // ------------------------------------------------
                     // TRACKING ICON / NUMBER
-                    // =========================================================
+                    // ------------------------------------------------
 
                     Rectangle {
                         id: trackingNumber
 
-                        anchors.left: parent.left
-                        anchors.leftMargin: 16 * root.scale
+                        anchors.left:
+                            parent.left
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.leftMargin:
+                            16 * root.scale
 
-                        width: 40 * root.scale
-                        height: 40 * root.scale
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
-                        radius: 19 * root.scale
+                        width:
+                            40 * root.scale
 
-                        color: root.trackingEnabled
-                               ? "#E8EEFB"
-                               : "#F0F0F0"
+                        height:
+                            40 * root.scale
+
+                        radius:
+                            19 * root.scale
+
+                        color:
+                            root.trackingEnabled
+                            ? "#E8EEFB"
+                            : "#F0F0F0"
 
 
                         Text {
-                            anchors.centerIn: parent
 
-                            text: root.trackingEnabled ? "ON" : "OFF"
+                            anchors.centerIn:
+                                parent
 
-                            font.pixelSize: componentTypography.caption
+                            text:
+                                root.trackingEnabled
+                                ? "ON"
+                                : "OFF"
 
+                            font.pixelSize:
+                                componentTypography.caption
 
-                            color: root.trackingEnabled
-                                   ? "#1A4DB5"
-                                   : "#777777"
+                            color:
+                                root.trackingEnabled
+                                ? "#1A4DB5"
+                                : "#777777"
                         }
                     }
 
 
-                    // =========================================================
+                    // ------------------------------------------------
                     // DESCRIPTION
-                    // =========================================================
+                    // ------------------------------------------------
 
                     Column {
-                        anchors.left: trackingNumber.right
-                        anchors.leftMargin: 12 * root.scale
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left:
+                            trackingNumber.right
 
-                        spacing: 2 * root.scale
+                        anchors.leftMargin:
+                            12 * root.scale
+
+                        anchors.verticalCenter:
+                            parent.verticalCenter
+
+                        spacing:
+                            2 * root.scale
 
 
                         Text {
-                            text: "Tracking"
 
-                            font.pixelSize: componentTypography.body
-                            font.weight: Font.Normal
+                            text:
+                                "Tracking"
 
-                            color: "#333333"
+                            font.pixelSize:
+                                componentTypography.body
+
+                            font.weight:
+                                Font.Normal
+
+                            color:
+                                "#333333"
                         }
 
 
                         Text {
-                            text: root.trackingEnabled
-                                  ? "Tracking system is enabled"
-                                  : "Tracking system is disabled"
 
-                            font.pixelSize: componentTypography.caption
+                            text:
+                                root.trackingEnabled
+                                ? "Tracking system is enabled"
+                                : "Tracking system is disabled"
 
-                            color: "#777777"
+                            font.pixelSize:
+                                componentTypography.caption
+
+                            color:
+                                "#777777"
                         }
                     }
 
 
-                    // =========================================================
+                    // ------------------------------------------------
                     // ON / OFF SWITCH
-                    // =========================================================
+                    // ------------------------------------------------
 
                     Rectangle {
                         id: trackingSwitch
 
-                        anchors.right: parent.right
-                        anchors.rightMargin: 20 * root.scale
+                        anchors.right:
+                            parent.right
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.rightMargin:
+                            20 * root.scale
 
-                        width: 90 * root.scale
-                        height: 42 * root.scale
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
-                        radius: height / 2
+                        width:
+                            90 * root.scale
 
-                        color: root.trackingEnabled
-                               ? "#1A4DB5"
-                               : "#D1D5DB"
+                        height:
+                            42 * root.scale
+
+                        radius:
+                            height / 2
+
+                        color:
+                            root.trackingEnabled
+                            ? "#1A4DB5"
+                            : "#D1D5DB"
+
 
                         Behavior on color {
+
                             ColorAnimation {
-                                duration: 150
+                                duration:
+                                    150
                             }
                         }
 
 
                         Text {
-                            anchors.centerIn: parent
 
-                            text: root.trackingEnabled
-                                  ? "ON"
-                                  : "OFF"
+                            anchors.centerIn:
+                                parent
 
-                            font.pixelSize: componentTypography.bodySmall
+                            text:
+                                root.trackingEnabled
+                                ? "ON"
+                                : "OFF"
 
+                            font.pixelSize:
+                                componentTypography.bodySmall
 
-                            color: root.trackingEnabled
-                                   ? "white"
-                                   : "#555555"
+                            color:
+                                root.trackingEnabled
+                                ? "white"
+                                : "#555555"
                         }
                     }
 
 
-                    // =========================================================
+                    // ------------------------------------------------
                     // CLICK
-                    // =========================================================
+                    // ------------------------------------------------
 
                     MouseArea {
-                        anchors.fill: parent
 
-                        cursorShape: Qt.PointingHandCursor
+                        anchors.fill:
+                            parent
+
+                        cursorShape:
+                            Qt.PointingHandCursor
 
 
                         onClicked: {
 
-                            // -------------------------------------------------
+                            // ----------------------------------------
                             // ACCESS CHECK
-                            // -------------------------------------------------
+                            // ----------------------------------------
 
-                            if (GlobalState.loggedInUserRole !== "Admin"
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin)
-                            {
+                            if (
+                                GlobalState.loggedInUserRole !== "Admin"
+                                && !GlobalState.developerLogin
+                                && !GlobalState.engineerLogin
+                            ) {
+
                                 accessDeniedPopup.popupTitle =
                                         "Access Denied!"
 
@@ -522,22 +686,28 @@ Item {
                             }
 
 
-                            // -------------------------------------------------
+                            // ----------------------------------------
                             // TOGGLE TRACKING
-                            // -------------------------------------------------
+                            // ----------------------------------------
 
-                            var newState = !root.trackingEnabled
-
-                                // Send ON/OFF command to MCU
-                                SerialManager.setTracking(newState)
-
-                                // Update UI
-                                root.trackingEnabled = newState
+                            var newState =
+                                    !root.trackingEnabled
 
 
-                            // -------------------------------------------------
-                            // OPTIONAL NOTIFICATION
-                            // -------------------------------------------------
+                            // Send command to MCU
+                            SerialManager.setTracking(
+                                newState
+                            )
+
+
+                            // Update UI
+                            root.trackingEnabled =
+                                    newState
+
+
+                            // ----------------------------------------
+                            // NOTIFICATION
+                            // ----------------------------------------
 
                             if (root.globalTopBar) {
 
@@ -561,188 +731,254 @@ Item {
                 Rectangle {
                     id: countBox
 
-                    width: parent.width
-                    height: 88 * root.scale
+                    width:
+                        parent.width
 
-                    radius: 12 * root.scale
+                    height:
+                        88 * root.scale
 
-                    color: "#FFFFFF"
+                    radius:
+                        12 * root.scale
 
-                    border.width: 1
-                    border.color: root.trackingEnabled
-                                       ? "#DCE2EB"
-                                       : "#E5E7EB"
+                    color:
+                        "#FFFFFF"
 
-                        enabled: root.trackingEnabled
+                    border.width:
+                        1
 
-                        opacity: root.trackingEnabled ? 1.0 : 0.55
+                    border.color:
+                        root.trackingEnabled
+                        ? "#DCE2EB"
+                        : "#E5E7EB"
+
+                    enabled:
+                        root.trackingEnabled
+
+                    opacity:
+                        root.trackingEnabled
+                        ? 1.0
+                        : 0.55
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // BLUE SIDE INDICATOR
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Rectangle {
 
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
+                        anchors.left:
+                            parent.left
 
-                        width: 5 * root.scale
+                        anchors.top:
+                            parent.top
 
-                        radius: 2
+                        anchors.bottom:
+                            parent.bottom
 
-                        color: "#1A4DB5"
+                        width:
+                            5 * root.scale
+
+                        radius:
+                            2
+
+                        color:
+                            "#1A4DB5"
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // NUMBER
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Rectangle {
                         id: countNumber
 
-                        anchors.left: parent.left
+                        anchors.left:
+                            parent.left
 
-                        anchors.leftMargin: 16 * root.scale
+                        anchors.leftMargin:
+                            16 * root.scale
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
+                        width:
+                            40 * root.scale
 
-                        width: 40 * root.scale
-                        height: 40 * root.scale
+                        height:
+                            40 * root.scale
 
-                        radius: 19 * root.scale
+                        radius:
+                            19 * root.scale
 
-
-                        color: "#F0F4FB"
+                        color:
+                            "#F0F4FB"
 
 
                         Text {
 
-                            anchors.centerIn: parent
+                            anchors.centerIn:
+                                parent
 
-                            text: "01"
+                            text:
+                                "01"
 
-                            font.pixelSize: componentTypography.bodySmall
+                            font.pixelSize:
+                                componentTypography.bodySmall
 
-                            color: "#1A4DB5"
+                            color:
+                                "#1A4DB5"
                         }
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // VALUE
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Rectangle {
                         id: countValueContainer
 
-                        anchors.right: parent.right
-                        anchors.rightMargin: 20 * root.scale
+                        anchors.right:
+                            parent.right
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.rightMargin:
+                            20 * root.scale
 
-                        width: 82 * root.scale
-                        height: 50 * root.scale
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
-                        radius: 8 * root.scale
+                        width:
+                            82 * root.scale
 
-                        color: root.trackingEnabled
-                               ? "#F5F7FC"
-                               : "#ECEEF2"
+                        height:
+                            50 * root.scale
 
-                        border.width: 1
-                        border.color: root.trackingEnabled
-                                       ? "#DCE2EB"
-                                       : "#E5E7EB"
+                        radius:
+                            8 * root.scale
+
+                        color:
+                            root.trackingEnabled
+                            ? "#F5F7FC"
+                            : "#ECEEF2"
+
+                        border.width:
+                            1
+
+                        border.color:
+                            root.trackingEnabled
+                            ? "#DCE2EB"
+                            : "#E5E7EB"
+
 
                         Text {
                             id: countValue
 
-                            anchors.centerIn: parent
+                            anchors.centerIn:
+                                parent
 
-                            text: root.trackingCount
+                            text:
+                                root.trackingCount
 
-                            font.pixelSize: componentTypography.title
-                            font.weight: Font.Normal
+                            font.pixelSize:
+                                componentTypography.title
 
-                            color: root.trackingEnabled
-                                   ? "#333333"
-                                   : "#9CA3AF"
+                            font.weight:
+                                Font.Normal
+
+                            color:
+                                root.trackingEnabled
+                                ? "#333333"
+                                : "#9CA3AF"
                         }
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // DESCRIPTION
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Column {
 
-                        anchors.left: countNumber.right
+                        anchors.left:
+                            countNumber.right
 
-                        anchors.leftMargin: 12 * root.scale
+                        anchors.leftMargin:
+                            12 * root.scale
 
-                        anchors.right: countValueContainer.left
+                        anchors.right:
+                            countValueContainer.left
 
-                        anchors.rightMargin: 20 * root.scale
+                        anchors.rightMargin:
+                            20 * root.scale
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
-
-                        spacing: 2 * root.scale
+                        spacing:
+                            2 * root.scale
 
 
                         Text {
 
-                            width: parent.width
+                            width:
+                                parent.width
 
-                            text: "Tracking Count"
+                            text:
+                                "Tracking Count"
 
-                            elide: Text.ElideRight
+                            elide:
+                                Text.ElideRight
 
+                            font.pixelSize:
+                                componentTypography.body
 
-                            font.pixelSize: componentTypography.body
-
-                            color: "#333333"
+                            color:
+                                "#333333"
                         }
 
 
                         Text {
 
-                            width: parent.width
+                            width:
+                                parent.width
 
-                            text: "Current tracking count"
+                            text:
+                                "Current tracking count"
 
-                            elide: Text.ElideRight
+                            elide:
+                                Text.ElideRight
 
+                            font.pixelSize:
+                                componentTypography.caption
 
-                            font.pixelSize: componentTypography.caption
-
-                            color: "#777777"
+                            color:
+                                "#777777"
                         }
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // CLICK
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     MouseArea {
 
-                        anchors.fill: parent
+                        anchors.fill:
+                            parent
 
-                        cursorShape: Qt.PointingHandCursor
+                        cursorShape:
+                            Qt.PointingHandCursor
 
 
                         onClicked: {
 
-                            if (GlobalState.loggedInUserRole !== "Admin"
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin)
-                            {
+                            if (
+                                GlobalState.loggedInUserRole !== "Admin"
+                                && !GlobalState.developerLogin
+                                && !GlobalState.engineerLogin
+                            ) {
+
                                 accessDeniedPopup.popupTitle =
                                         "Access Denied!"
 
@@ -763,15 +999,22 @@ Item {
 
                                 function(value) {
 
-                                    var newValue = Math.round(value)
+                                    var newValue =
+                                            Math.round(value)
 
-                                    // Send to MCU
-                                    SerialManager.setTrackingCount(newValue)
 
-                                    databaseManager.saveTrackingCount(newValue)
+                                    SerialManager.setTrackingCount(
+                                        newValue
+                                    )
 
-                                    // Update UI
-                                    root.trackingCount = newValue
+
+                                    databaseManager.saveTrackingCount(
+                                        newValue
+                                    )
+
+
+                                    root.trackingCount =
+                                            newValue
                                 },
 
                                 500,
@@ -790,188 +1033,254 @@ Item {
                 Rectangle {
                     id: thresholdBox
 
-                    width: parent.width
-                    height: 88 * root.scale
+                    width:
+                        parent.width
 
-                    radius: 12 * root.scale
+                    height:
+                        88 * root.scale
 
-                    color: "#FFFFFF"
+                    radius:
+                        12 * root.scale
 
-                    border.width: 1
-                    border.color: root.trackingEnabled
-                                       ? "#DCE2EB"
-                                       : "#E5E7EB"
+                    color:
+                        "#FFFFFF"
 
-                        enabled: root.trackingEnabled
+                    border.width:
+                        1
 
-                        opacity: root.trackingEnabled ? 1.0 : 0.55
+                    border.color:
+                        root.trackingEnabled
+                        ? "#DCE2EB"
+                        : "#E5E7EB"
+
+                    enabled:
+                        root.trackingEnabled
+
+                    opacity:
+                        root.trackingEnabled
+                        ? 1.0
+                        : 0.55
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // BLUE SIDE INDICATOR
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Rectangle {
 
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
+                        anchors.left:
+                            parent.left
 
-                        width: 5 * root.scale
+                        anchors.top:
+                            parent.top
 
-                        radius: 2
+                        anchors.bottom:
+                            parent.bottom
 
-                        color: "#1A4DB5"
+                        width:
+                            5 * root.scale
+
+                        radius:
+                            2
+
+                        color:
+                            "#1A4DB5"
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // NUMBER
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Rectangle {
                         id: thresholdNumber
 
-                        anchors.left: parent.left
+                        anchors.left:
+                            parent.left
 
-                        anchors.leftMargin: 16 * root.scale
+                        anchors.leftMargin:
+                            16 * root.scale
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
+                        width:
+                            40 * root.scale
 
-                        width: 40 * root.scale
-                        height: 40 * root.scale
+                        height:
+                            40 * root.scale
 
-                        radius: 19 * root.scale
+                        radius:
+                            19 * root.scale
 
-
-                        color: "#F0F4FB"
+                        color:
+                            "#F0F4FB"
 
 
                         Text {
 
-                            anchors.centerIn: parent
+                            anchors.centerIn:
+                                parent
 
-                            text: "02"
+                            text:
+                                "02"
 
-                            font.pixelSize: componentTypography.bodySmall
+                            font.pixelSize:
+                                componentTypography.bodySmall
 
-                            color: "#1A4DB5"
+                            color:
+                                "#1A4DB5"
                         }
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // VALUE
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Rectangle {
                         id: thresholdValueContainer
 
-                        anchors.right: parent.right
-                        anchors.rightMargin: 20 * root.scale
+                        anchors.right:
+                            parent.right
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.rightMargin:
+                            20 * root.scale
 
-                        width: 82 * root.scale
-                        height: 50 * root.scale
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
-                        radius: 8 * root.scale
+                        width:
+                            82 * root.scale
 
-                        color: root.trackingEnabled
-                               ? "#F5F7FC"
-                               : "#ECEEF2"
+                        height:
+                            50 * root.scale
 
-                        border.width: 1
-                        border.color: root.trackingEnabled
-                                       ? "#DCE2EB"
-                                       : "#E5E7EB"
+                        radius:
+                            8 * root.scale
+
+                        color:
+                            root.trackingEnabled
+                            ? "#F5F7FC"
+                            : "#ECEEF2"
+
+                        border.width:
+                            1
+
+                        border.color:
+                            root.trackingEnabled
+                            ? "#DCE2EB"
+                            : "#E5E7EB"
+
 
                         Text {
                             id: thresholdValue
 
-                            anchors.centerIn: parent
+                            anchors.centerIn:
+                                parent
 
-                            text: root.trackingThreshold
+                            text:
+                                root.trackingThreshold
 
-                            font.pixelSize: componentTypography.title
-                            font.weight: Font.Normal
+                            font.pixelSize:
+                                componentTypography.title
 
-                            color: root.trackingEnabled
-                                   ? "#333333"
-                                   : "#9CA3AF"
+                            font.weight:
+                                Font.Normal
+
+                            color:
+                                root.trackingEnabled
+                                ? "#333333"
+                                : "#9CA3AF"
                         }
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // DESCRIPTION
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Column {
 
-                        anchors.left: thresholdNumber.right
+                        anchors.left:
+                            thresholdNumber.right
 
-                        anchors.leftMargin: 12 * root.scale
+                        anchors.leftMargin:
+                            12 * root.scale
 
-                        anchors.right: thresholdValueContainer.left
+                        anchors.right:
+                            thresholdValueContainer.left
 
-                        anchors.rightMargin: 20 * root.scale
+                        anchors.rightMargin:
+                            20 * root.scale
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
-
-                        spacing: 2 * root.scale
+                        spacing:
+                            2 * root.scale
 
 
                         Text {
 
-                            width: parent.width
+                            width:
+                                parent.width
 
-                            text: "Tracking Threshold"
+                            text:
+                                "Tracking Threshold"
 
-                            elide: Text.ElideRight
+                            elide:
+                                Text.ElideRight
 
+                            font.pixelSize:
+                                componentTypography.body
 
-                            font.pixelSize: componentTypography.body
-
-                            color: "#333333"
+                            color:
+                                "#333333"
                         }
 
 
                         Text {
 
-                            width: parent.width
+                            width:
+                                parent.width
 
-                            text: "Maximum tracking threshold"
+                            text:
+                                "Maximum tracking threshold"
 
-                            elide: Text.ElideRight
+                            elide:
+                                Text.ElideRight
 
+                            font.pixelSize:
+                                componentTypography.caption
 
-                            font.pixelSize: componentTypography.caption
-
-                            color: "#777777"
+                            color:
+                                "#777777"
                         }
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // CLICK
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     MouseArea {
 
-                        anchors.fill: parent
+                        anchors.fill:
+                            parent
 
-                        cursorShape: Qt.PointingHandCursor
+                        cursorShape:
+                            Qt.PointingHandCursor
 
 
                         onClicked: {
 
-                            if (GlobalState.loggedInUserRole !== "Admin"
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin)
-                            {
+                            if (
+                                GlobalState.loggedInUserRole !== "Admin"
+                                && !GlobalState.developerLogin
+                                && !GlobalState.engineerLogin
+                            ) {
+
                                 accessDeniedPopup.popupTitle =
                                         "Access Denied!"
 
@@ -992,15 +1301,22 @@ Item {
 
                                 function(value) {
 
-                                    var newValue = Math.round(value)
+                                    var newValue =
+                                            Math.round(value)
 
-                                    // Send to MCU
-                                    SerialManager.setTrackingThreshold(newValue)
 
-                                    databaseManager.saveTrackingThreshold(newValue)
+                                    SerialManager.setTrackingThreshold(
+                                        newValue
+                                    )
 
-                                    // Update UI
-                                    root.trackingThreshold = newValue
+
+                                    databaseManager.saveTrackingThreshold(
+                                        newValue
+                                    )
+
+
+                                    root.trackingThreshold =
+                                            newValue
                                 },
 
                                 200,
@@ -1019,187 +1335,254 @@ Item {
                 Rectangle {
                     id: toleranceBox
 
-                    width: parent.width
-                    height: 88 * root.scale
+                    width:
+                        parent.width
 
-                    radius: 12 * root.scale
+                    height:
+                        88 * root.scale
 
-                    color: "#FFFFFF"
+                    radius:
+                        12 * root.scale
 
-                    border.width: 1
-                    border.color: root.trackingEnabled
-                                       ? "#DCE2EB"
-                                       : "#E5E7EB"
+                    color:
+                        "#FFFFFF"
 
-                        enabled: root.trackingEnabled
+                    border.width:
+                        1
 
-                        opacity: root.trackingEnabled ? 1.0 : 0.55
+                    border.color:
+                        root.trackingEnabled
+                        ? "#DCE2EB"
+                        : "#E5E7EB"
+
+                    enabled:
+                        root.trackingEnabled
+
+                    opacity:
+                        root.trackingEnabled
+                        ? 1.0
+                        : 0.55
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // BLUE SIDE INDICATOR
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Rectangle {
 
-                        anchors.left: parent.left
-                        anchors.top: parent.top
-                        anchors.bottom: parent.bottom
+                        anchors.left:
+                            parent.left
 
-                        width: 5 * root.scale
+                        anchors.top:
+                            parent.top
 
-                        radius: 2
+                        anchors.bottom:
+                            parent.bottom
 
-                        color: "#1A4DB5"
+                        width:
+                            5 * root.scale
+
+                        radius:
+                            2
+
+                        color:
+                            "#1A4DB5"
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // NUMBER
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Rectangle {
                         id: toleranceNumber
 
-                        anchors.left: parent.left
+                        anchors.left:
+                            parent.left
 
-                        anchors.leftMargin: 16 * root.scale
+                        anchors.leftMargin:
+                            16 * root.scale
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
+                        width:
+                            40 * root.scale
 
-                        width: 40 * root.scale
-                        height: 40 * root.scale
+                        height:
+                            40 * root.scale
 
-                        radius: 19 * root.scale
+                        radius:
+                            19 * root.scale
 
-
-                        color: "#F0F4FB"
+                        color:
+                            "#F0F4FB"
 
 
                         Text {
 
-                            anchors.centerIn: parent
+                            anchors.centerIn:
+                                parent
 
-                            text: "03"
+                            text:
+                                "03"
 
-                            font.pixelSize: componentTypography.bodySmall
+                            font.pixelSize:
+                                componentTypography.bodySmall
 
-                            color: "#1A4DB5"
+                            color:
+                                "#1A4DB5"
                         }
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // VALUE
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Rectangle {
                         id: toleranceValueContainer
 
-                        anchors.right: parent.right
-                        anchors.rightMargin: 20 * root.scale
+                        anchors.right:
+                            parent.right
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.rightMargin:
+                            20 * root.scale
 
-                        width: 82 * root.scale
-                        height: 50 * root.scale
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
-                        radius: 8 * root.scale
+                        width:
+                            82 * root.scale
 
-                        color: root.trackingEnabled
-                               ? "#F5F7FC"
-                               : "#ECEEF2"
+                        height:
+                            50 * root.scale
 
-                        border.width: 1
-                        border.color: root.trackingEnabled
-                                       ? "#DCE2EB"
-                                       : "#E5E7EB"
+                        radius:
+                            8 * root.scale
+
+                        color:
+                            root.trackingEnabled
+                            ? "#F5F7FC"
+                            : "#ECEEF2"
+
+                        border.width:
+                            1
+
+                        border.color:
+                            root.trackingEnabled
+                            ? "#DCE2EB"
+                            : "#E5E7EB"
+
 
                         Text {
                             id: toleranceValue
 
-                            anchors.centerIn: parent
+                            anchors.centerIn:
+                                parent
 
-                            text: "± " + root.trackingTolerance
+                            text:
+                                "± " + root.trackingTolerance
 
-                            font.pixelSize: componentTypography.title
-                            font.weight: Font.Normal
+                            font.pixelSize:
+                                componentTypography.title
 
-                            color: root.trackingEnabled
-                                   ? "#333333"
-                                   : "#9CA3AF"
+                            font.weight:
+                                Font.Normal
+
+                            color:
+                                root.trackingEnabled
+                                ? "#333333"
+                                : "#9CA3AF"
                         }
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // DESCRIPTION
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     Column {
 
-                        anchors.left: toleranceNumber.right
+                        anchors.left:
+                            toleranceNumber.right
 
-                        anchors.leftMargin: 12 * root.scale
+                        anchors.leftMargin:
+                            12 * root.scale
 
-                        anchors.right: toleranceValueContainer.left
+                        anchors.right:
+                            toleranceValueContainer.left
 
-                        anchors.rightMargin: 20 * root.scale
+                        anchors.rightMargin:
+                            20 * root.scale
 
-                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.verticalCenter:
+                            parent.verticalCenter
 
-
-                        spacing: 2 * root.scale
+                        spacing:
+                            2 * root.scale
 
 
                         Text {
 
-                            width: parent.width
+                            width:
+                                parent.width
 
-                            text: "Tracking Tolerance"
+                            text:
+                                "Tracking Tolerance"
 
-                            elide: Text.ElideRight
+                            elide:
+                                Text.ElideRight
 
+                            font.pixelSize:
+                                componentTypography.body
 
-                            font.pixelSize: componentTypography.body
-
-                            color: "#333333"
+                            color:
+                                "#333333"
                         }
 
 
                         Text {
 
-                            width: parent.width
+                            width:
+                                parent.width
 
-                            text: "Allowed phase deviation"
+                            text:
+                                "Allowed phase deviation"
 
-                            elide: Text.ElideRight
+                            elide:
+                                Text.ElideRight
 
+                            font.pixelSize:
+                                componentTypography.caption
 
-                            font.pixelSize: componentTypography.caption
-
-                            color: "#777777"
+                            color:
+                                "#777777"
                         }
                     }
 
 
-                    // ---------------------------------------------
+                    // ------------------------------------------------
                     // CLICK
-                    // ---------------------------------------------
+                    // ------------------------------------------------
 
                     MouseArea {
 
-                        anchors.fill: parent
+                        anchors.fill:
+                            parent
 
-                        cursorShape: Qt.PointingHandCursor
+                        cursorShape:
+                            Qt.PointingHandCursor
+
 
                         onClicked: {
 
-                            if (GlobalState.loggedInUserRole !== "Admin"
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin)
-                            {
+                            if (
+                                GlobalState.loggedInUserRole !== "Admin"
+                                && !GlobalState.developerLogin
+                                && !GlobalState.engineerLogin
+                            ) {
+
                                 accessDeniedPopup.popupTitle =
                                         "Access Denied!"
 
@@ -1211,7 +1594,9 @@ Item {
                                 return
                             }
 
-                            GlobalState.useDecimal = true
+
+                            GlobalState.useDecimal =
+                                    true
 
 
                             numberPopup.open(
@@ -1222,15 +1607,22 @@ Item {
 
                                 function(value) {
 
-                                    var toleranceValue = Math.round(value * 10)
+                                    var mcuValue =
+                                            Math.round(value * 10)
 
-                                    // Send to MCU
-                                    SerialManager.setTrackingTolerance(toleranceValue)
 
-                                    databaseManager.saveTrackingTolerance(value)
+                                    SerialManager.setTrackingTolerance(
+                                        mcuValue
+                                    )
 
-                                    // Keep original decimal value for UI
-                                    root.trackingTolerance = value
+
+                                    databaseManager.saveTrackingTolerance(
+                                        value
+                                    )
+
+
+                                    root.trackingTolerance =
+                                            value
                                 },
 
                                 0.5,
@@ -1246,18 +1638,61 @@ Item {
 
 
     // ============================================================
+    // TRACKING PHASE DEBUG DISPLAY
+    // ============================================================
+    //
+    // REMOVE THIS AFTER CONFIRMING THE VALUE.
+    //
+    // This tells us whether the value is reaching this QML screen.
+    // ============================================================
+
+    Text {
+        id: trackingPhaseDebug
+
+        anchors.left:
+            parent.left
+
+        anchors.top:
+            parent.top
+
+        anchors.leftMargin:
+            15 * root.scale
+
+        anchors.topMargin:
+            8 * root.scale
+
+        z:
+            10000
+
+        text:
+            "Tracking Phase: "
+            + Number(root.trackingPhase).toFixed(1)
+
+        font.pixelSize:
+            18 * root.scale
+
+        color:
+            "red"
+    }
+
+
+    // ============================================================
     // COMMON NUMBER EDIT POPUP
     // ============================================================
 
     CustomPopup {
         id: numberPopup
 
-        parent: Overlay.overlay
+        parent:
+            Overlay.overlay
 
-        anchors.fill: parent
+        anchors.fill:
+            parent
 
-        z: 9999
+        z:
+            9999
 
-        globalTopBar: root.globalTopBar
+        globalTopBar:
+            root.globalTopBar
     }
 }
