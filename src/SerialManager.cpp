@@ -306,7 +306,7 @@ bool SerialManager::openPort(const QString &port)
 
     serial.setPortName(port);
 
-    serial.setBaudRate(QSerialPort::Baud115200);
+    serial.setBaudRate(25600);
     serial.setDataBits(QSerialPort::Data8);
     serial.setParity(QSerialPort::NoParity);
     serial.setStopBits(QSerialPort::OneStop);
