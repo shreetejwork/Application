@@ -64,8 +64,41 @@ Item {
     property real scale: Math.min(
                              width / baseWidth,
                              height / baseHeight
-                         )
+                             )
 
+
+    // ============================================================
+    // SAVE TRACKING SETTING AUDIT
+    // ============================================================
+
+    function saveTrackingSettingAudit(action, oldValue, newValue)
+    {
+        var role = GlobalState.loggedInUserRole
+        var username = GlobalState.loggedInUserName
+
+        var auditUser = "---"
+
+        if (role !== "" && username !== "") {
+
+            var initial = "U"
+
+            if (role === "Admin")
+                initial = "A"
+            else if (role === "Supervisor")
+                initial = "S"
+            else if (role === "Operator")
+                initial = "O"
+
+            auditUser = initial + "/" + username
+        }
+
+        databaseManager.addAuditTrailRecord(
+                    auditUser,
+                    oldValue.toString(),
+                    newValue.toString(),
+                    action
+                    )
+    }
 
     // ============================================================
     // INITIALIZATION
@@ -213,9 +246,9 @@ Item {
                     width: parent.width
 
                     height: (
-                        gaugesColumn.height
-                        - gaugesColumn.spacing
-                    ) / 2
+                                gaugesColumn.height
+                                - gaugesColumn.spacing
+                                ) / 2
 
 
                     CircularGauge {
@@ -227,7 +260,7 @@ Item {
                         width: Math.min(
                                    parent.width * 0.90,
                                    parent.height * 0.94
-                               )
+                                   )
 
                         height: width
 
@@ -268,9 +301,9 @@ Item {
                     width: parent.width
 
                     height: (
-                        gaugesColumn.height
-                        - gaugesColumn.spacing
-                    ) / 2
+                                gaugesColumn.height
+                                - gaugesColumn.spacing
+                                ) / 2
 
 
                     CircularGauge {
@@ -282,7 +315,7 @@ Item {
                         width: Math.min(
                                    parent.width * 0.94,
                                    parent.height * 0.98
-                               )
+                                   )
 
                         height: width
 
@@ -626,15 +659,11 @@ Item {
 
                         onClicked: {
 
-                            // ----------------------------------------
-                            // ACCESS CHECK
-                            // ----------------------------------------
-
                             if (
-                                GlobalState.loggedInUserRole !== "Admin"
-                                && !GlobalState.developerLogin
-                                && !GlobalState.engineerLogin
-                            ) {
+                                    GlobalState.loggedInUserRole !== "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin
+                                    ) {
 
                                 accessDeniedPopup.popupTitle =
                                         "Access Denied!"
@@ -652,19 +681,33 @@ Item {
                             // TOGGLE TRACKING
                             // ----------------------------------------
 
+                            var oldState =
+                                    root.trackingEnabled
+
                             var newState =
                                     !root.trackingEnabled
 
 
                             // Send command to MCU
                             SerialManager.setTracking(
-                                newState
-                            )
+                                        newState
+                                        )
 
 
                             // Update UI
                             root.trackingEnabled =
                                     newState
+
+
+                            // ----------------------------------------
+                            // SAVE AUDIT
+                            // ----------------------------------------
+
+                            saveTrackingSettingAudit(
+                                        "Tracking " + (newState ? "Enabled" : "Disabled"),
+                                        oldState ? "ON" : "OFF",
+                                        newState ? "ON" : "OFF"
+                                        )
 
 
                             // ----------------------------------------
@@ -674,10 +717,10 @@ Item {
                             if (root.globalTopBar) {
 
                                 root.globalTopBar.showNotification(
-                                    root.trackingEnabled
-                                    ? "✓ Tracking Enabled"
-                                    : "Tracking Disabled"
-                                )
+                                            root.trackingEnabled
+                                            ? "✓ Tracking Enabled"
+                                            : "Tracking Disabled"
+                                            )
 
                                 root.globalTopBar.resetSessionTimer()
                             }
@@ -936,10 +979,10 @@ Item {
                         onClicked: {
 
                             if (
-                                GlobalState.loggedInUserRole !== "Admin"
-                                && !GlobalState.developerLogin
-                                && !GlobalState.engineerLogin
-                            ) {
+                                    GlobalState.loggedInUserRole !== "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin
+                                    ) {
 
                                 accessDeniedPopup.popupTitle =
                                         "Access Denied!"
@@ -955,34 +998,45 @@ Item {
 
                             numberPopup.open(
 
-                                "Tracking Count",
+                                        "Tracking Count",
 
-                                root.trackingCount,
+                                        root.trackingCount,
 
-                                function(value) {
+                                        function(value) {
 
-                                    var newValue =
-                                            Math.round(value)
+                                            var oldValue =
+                                                    root.trackingCount
 
-
-                                    SerialManager.setTrackingCount(
-                                        newValue
-                                    )
+                                            var newValue =
+                                                    Math.round(value)
 
 
-                                    databaseManager.saveTrackingCount(
-                                        newValue
-                                    )
+                                            SerialManager.setTrackingCount(
+                                                        newValue
+                                                        )
 
 
-                                    root.trackingCount =
-                                            newValue
-                                },
+                                            databaseManager.saveTrackingCount(
+                                                        newValue
+                                                        )
 
-                                500,
 
-                                90000
-                            )
+                                            root.trackingCount =
+                                                    newValue
+
+
+                                            // Save audit trail
+                                            saveTrackingSettingAudit(
+                                                        "Tracking Count Changed",
+                                                        oldValue,
+                                                        newValue
+                                                        )
+                                        },
+
+                                        500,
+
+                                        90000
+                                        )
                         }
                     }
                 }
@@ -1238,10 +1292,10 @@ Item {
                         onClicked: {
 
                             if (
-                                GlobalState.loggedInUserRole !== "Admin"
-                                && !GlobalState.developerLogin
-                                && !GlobalState.engineerLogin
-                            ) {
+                                    GlobalState.loggedInUserRole !== "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin
+                                    ) {
 
                                 accessDeniedPopup.popupTitle =
                                         "Access Denied!"
@@ -1257,34 +1311,45 @@ Item {
 
                             numberPopup.open(
 
-                                "Tracking Threshold",
+                                        "Tracking Threshold",
 
-                                root.trackingThreshold,
+                                        root.trackingThreshold,
 
-                                function(value) {
+                                        function(value) {
 
-                                    var newValue =
-                                            Math.round(value)
+                                            var oldValue =
+                                                    root.trackingThreshold
 
-
-                                    SerialManager.setTrackingThreshold(
-                                        newValue
-                                    )
+                                            var newValue =
+                                                    Math.round(value)
 
 
-                                    databaseManager.saveTrackingThreshold(
-                                        newValue
-                                    )
+                                            SerialManager.setTrackingThreshold(
+                                                        newValue
+                                                        )
 
 
-                                    root.trackingThreshold =
-                                            newValue
-                                },
+                                            databaseManager.saveTrackingThreshold(
+                                                        newValue
+                                                        )
 
-                                200,
 
-                                10000
-                            )
+                                            root.trackingThreshold =
+                                                    newValue
+
+
+                                            // Save audit trail
+                                            saveTrackingSettingAudit(
+                                                        "Tracking Threshold Changed",
+                                                        oldValue,
+                                                        newValue
+                                                        )
+                                        },
+
+                                        200,
+
+                                        10000
+                                        )
                         }
                     }
                 }
@@ -1540,10 +1605,10 @@ Item {
                         onClicked: {
 
                             if (
-                                GlobalState.loggedInUserRole !== "Admin"
-                                && !GlobalState.developerLogin
-                                && !GlobalState.engineerLogin
-                            ) {
+                                    GlobalState.loggedInUserRole !== "Admin"
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin
+                                    ) {
 
                                 accessDeniedPopup.popupTitle =
                                         "Access Denied!"
@@ -1563,34 +1628,45 @@ Item {
 
                             numberPopup.open(
 
-                                "Tracking Tolerance",
+                                        "Tracking Tolerance",
 
-                                root.trackingTolerance,
+                                        root.trackingTolerance,
 
-                                function(value) {
+                                        function(value) {
 
-                                    var mcuValue =
-                                            Math.round(value * 10)
+                                            var oldValue =
+                                                    root.trackingTolerance
 
-
-                                    SerialManager.setTrackingTolerance(
-                                        mcuValue
-                                    )
+                                            var mcuValue =
+                                                    Math.round(value * 10)
 
 
-                                    databaseManager.saveTrackingTolerance(
-                                        value
-                                    )
+                                            SerialManager.setTrackingTolerance(
+                                                        mcuValue
+                                                        )
 
 
-                                    root.trackingTolerance =
-                                            value
-                                },
+                                            databaseManager.saveTrackingTolerance(
+                                                        value
+                                                        )
 
-                                0.5,
 
-                                5.0
-                            )
+                                            root.trackingTolerance =
+                                                    value
+
+
+                                            // Save audit trail
+                                            saveTrackingSettingAudit(
+                                                        "Tracking Tolerance Changed",
+                                                        oldValue,
+                                                        value
+                                                        )
+                                        },
+
+                                        0.5,
+
+                                        5.0
+                                        )
                         }
                     }
                 }

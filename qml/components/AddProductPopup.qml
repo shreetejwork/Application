@@ -8,6 +8,8 @@ Popup {
 
     id: popup
 
+    property var globalTopBar: null
+
     Typography {
         id: addProductTypography
         scale: 1.0
@@ -457,7 +459,10 @@ Popup {
 
                     validationMsg.text = ""
 
+                    popup.globalTopBar.resetSessionTimer()
+
                     popup.close()
+
                 }
 
                 Text {

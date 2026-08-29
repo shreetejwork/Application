@@ -35,6 +35,8 @@ Item {
     property real baseHeight: 600
     property real scale: Math.max(0.75, Math.min(width / baseWidth, height / baseHeight))
 
+    property var globalTopBar
+
     // =====================================================
     // STATIC BACKDROP
     // =====================================================
@@ -52,6 +54,10 @@ Item {
     Component.onCompleted: {
 
         loadAllGroupProducts()
+
+
+        showActiveProductGroup()
+
 
         openAnimation.start()
     }
@@ -307,6 +313,93 @@ Item {
         updateLoadedProduct()
 
         refreshSelectionCount()
+    }
+
+    // =====================================================
+    // FIND ACTIVE PRODUCT FROM ALL GROUPS
+    // =====================================================
+
+    function getActiveProductFromAllGroups()
+    {
+        for (var groupIndex = 0;
+             groupIndex < groupModels.length;
+             groupIndex++) {
+
+            var model = groupModels[groupIndex]
+
+            for (var i = 0; i < model.count; i++) {
+
+                var item = model.get(i)
+
+                if (item.active) {
+
+                    return {
+                        groupNo: groupIndex + 1,
+                        sr: item.sr,
+                        code: item.code,
+                        name: item.name
+                    }
+                }
+            }
+        }
+
+        return null
+    }
+
+    // =====================================================
+    // OPEN GROUP WHICH CONTAINS ACTIVE PRODUCT
+    // =====================================================
+
+    function showActiveProductGroup()
+    {
+        var activeProduct =
+                getActiveProductFromAllGroups()
+
+        if (!activeProduct) {
+
+            // No active product found
+            currentGroup = 1
+            groupCombo.currentIndex = 0
+
+            activeModel = currentModel()
+
+            loadedProduct = null
+            GlobalState.productName = ""
+
+            return
+        }
+
+
+        // -------------------------------------------------
+        // Set current group
+        // -------------------------------------------------
+
+        currentGroup = activeProduct.groupNo
+
+
+        groupCombo.currentIndex =
+                activeProduct.groupNo - 1
+
+
+        // -------------------------------------------------
+        // Show correct model
+        // -------------------------------------------------
+
+        activeModel = currentModel()
+
+
+        // -------------------------------------------------
+        // Update loaded product
+        // -------------------------------------------------
+
+        updateLoadedProduct()
+
+
+        console.log(
+            "Opening active product group:",
+            activeProduct.groupNo,
+            activeProduct.code
+        )
     }
 
     // ================= MODELS =================
@@ -836,6 +929,7 @@ Item {
 
                                                 var model = currentModel()
 
+
                                                 // ============================================
                                                 // GET NEW PRODUCT DETAILS
                                                 // ============================================
@@ -845,6 +939,7 @@ Item {
                                                 for (var i = 0; i < model.count; i++) {
 
                                                     if (model.get(i).sr === srNo) {
+
                                                         selectedProduct = model.get(i)
                                                         break
                                                     }
@@ -855,19 +950,12 @@ Item {
 
 
                                                 // ============================================
-                                                // FIND CURRENTLY ACTIVE PRODUCT
+                                                // FIND PREVIOUSLY ACTIVE PRODUCT
+                                                // SEARCH ALL GROUPS
                                                 // ============================================
 
-                                                var previousProduct = null
-
-                                                for (var j = 0; j < model.count; j++) {
-
-                                                    if (model.get(j).active) {
-
-                                                        previousProduct = model.get(j)
-                                                        break
-                                                    }
-                                                }
+                                                var previousProduct =
+                                                        root.getActiveProductFromAllGroups()
 
 
                                                 // ============================================
@@ -883,8 +971,12 @@ Item {
 
                                                 if (success) {
 
-                                                    root.loadedProduct = selectedProduct
-                                                    GlobalState.productName = selectedProduct.name
+                                                    root.loadedProduct =
+                                                            selectedProduct
+
+                                                    GlobalState.productName =
+                                                            selectedProduct.name
+
 
                                                     // ============================================
                                                     // CURRENT LOGGED-IN USER
@@ -896,17 +988,25 @@ Item {
                                                     var loggedRole =
                                                             GlobalState.loggedInUserRole
 
-
                                                     var loggedInitial = "U"
 
-                                                    if (loggedRole === "Admin")
+                                                    if (GlobalState.developerLogin) {
+                                                        loggedInitial = "D"
+                                                        loggedUser = "Developer"
+                                                    }
+                                                    else if (GlobalState.engineerLogin) {
+                                                        loggedInitial = "E"
+                                                        loggedUser = "Engineer"
+                                                    }
+                                                    else if (loggedRole === "Admin") {
                                                         loggedInitial = "A"
-
-                                                    else if (loggedRole === "Supervisor")
+                                                    }
+                                                    else if (loggedRole === "Supervisor") {
                                                         loggedInitial = "S"
-
-                                                    else if (loggedRole === "Operator")
+                                                    }
+                                                    else if (loggedRole === "Operator") {
                                                         loggedInitial = "O"
+                                                    }
 
 
                                                     var auditUser =
@@ -921,11 +1021,14 @@ Item {
 
                                                     if (previousProduct) {
 
+                                                        var previousGroupText =
+                                                                previousProduct.groupNo < 10
+                                                                ? "0" + previousProduct.groupNo
+                                                                : previousProduct.groupNo
+
                                                         previousProductText =
-                                                                "G" +
-                                                                (currentGroup < 10
-                                                                 ? "0" + currentGroup
-                                                                 : currentGroup)
+                                                                "G"
+                                                                + previousGroupText
                                                                 + "/"
                                                                 + previousProduct.sr
                                                                 + "/"
@@ -937,11 +1040,14 @@ Item {
                                                     // NEW PRODUCT
                                                     // ============================================
 
+                                                    var newGroupText =
+                                                            currentGroup < 10
+                                                            ? "0" + currentGroup
+                                                            : currentGroup
+
                                                     var newProductText =
-                                                            "G" +
-                                                            (currentGroup < 10
-                                                             ? "0" + currentGroup
-                                                             : currentGroup)
+                                                            "G"
+                                                            + newGroupText
                                                             + "/"
                                                             + selectedProduct.sr
                                                             + "/"
@@ -952,13 +1058,12 @@ Item {
                                                     // PRODUCT LOAD AUDIT
                                                     // ============================================
 
-                                                    var auditSaved =
-                                                            databaseManager.addAuditTrailRecord(
-                                                                auditUser,
-                                                                previousProductText,
-                                                                newProductText,
-                                                                "Product Loaded"
-                                                            )
+                                                    databaseManager.addAuditTrailRecord(
+                                                        auditUser,
+                                                        previousProductText,
+                                                        newProductText,
+                                                        "Product Loaded"
+                                                    )
 
 
                                                     // ============================================
@@ -971,7 +1076,7 @@ Item {
 
 
                                                     // ============================================
-                                                    // OPTIONAL NOTIFICATION
+                                                    // NOTIFICATION
                                                     // ============================================
 
                                                     if (root.globalTopBar &&
@@ -981,7 +1086,6 @@ Item {
                                                             "✓ Product loaded successfully"
                                                         )
                                                     }
-
                                                 }
                                             }
                                         }
@@ -1351,6 +1455,8 @@ Item {
         currentModelRef: activeModel
 
         getFreeSrNoFunc: getFreeSrNo
+
+        globalTopBar: root.globalTopBar
 
         onProductSaved: function(productName, productCode) {
 

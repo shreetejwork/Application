@@ -373,7 +373,7 @@ void DatabaseManager::createTables()
 
         trackingCount INTEGER DEFAULT 500,
         trackingThreshold INTEGER DEFAULT 20,
-        trackingTolerance REAL DEFAULT 5.0
+        trackingTolerance REAL DEFAULT 0.5
     );
 )");
 
@@ -490,7 +490,7 @@ void DatabaseManager::createTables()
         25.0,
         500,
         200,
-        5.0
+        0.5
     );
 )");
 
