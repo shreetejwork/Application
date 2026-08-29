@@ -20,6 +20,8 @@ Item {
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
+    property bool todayFilterActive: false
+
     // =====================================================
     // STATIC BACKDROP
     // =====================================================
@@ -649,43 +651,114 @@ Item {
                             width: 100 * root.scale
                             height: 36 * root.scale
                             radius: 6 * root.scale
-                            color: modelData === "TODAY" ? "#1A4DB5" : "#FFFFFF"
+
+                            // =====================================================
+                            // TODAY / RESET BUTTON
+                            // =====================================================
+
+                            color: modelData === "TODAY"
+                                   ? "#1A4DB5"
+                                   : "#FFFFFF"
+
                             border.color: "#1A4DB5"
                             border.width: 1
 
                             Text {
                                 anchors.centerIn: parent
-                                text: modelData
+
+                                text: modelData === "TODAY"
+                                      ? (root.todayFilterActive ? "RESET" : "TODAY")
+                                      : "Create PDF"
+
                                 font.pixelSize: 18
                                 font.weight: Font.Medium
-                                color: modelData === "TODAY" ? "#FFFFFF" : "#1A4DB5"
+
+                                color: modelData === "TODAY"
+                                       ? "#FFFFFF"
+                                       : "#1A4DB5"
                             }
 
                             MouseArea {
                                 anchors.fill: parent
+
                                 cursorShape: Qt.PointingHandCursor
 
                                 onClicked: {
+
+                                    // =================================================
+                                    // TODAY / RESET
+                                    // =================================================
+
                                     if (modelData === "TODAY") {
-                                        let today = Qt.formatDate(new Date(), "dd/MM/yyyy")
-                                        root.fromDate = today
-                                        root.toDate   = today
+
+                                        // ---------------------------------------------
+                                        // If TODAY is already active -> RESET
+                                        // ---------------------------------------------
+
+                                        if (root.todayFilterActive) {
+
+                                            // Call your EXISTING reset function
+                                            root.resetFilters()
+
+                                            // Button goes back to TODAY
+                                            root.todayFilterActive = false
+                                        }
+
+                                        // ---------------------------------------------
+                                        // Otherwise -> apply today's date
+                                        // ---------------------------------------------
+
+                                        else {
+
+                                            var today =
+                                                    Qt.formatDate(
+                                                        new Date(),
+                                                        "dd/MM/yyyy"
+                                                    )
+
+                                            root.fromDate = today
+                                            root.toDate = today
+
+                                            // Button changes to RESET
+                                            root.todayFilterActive = true
+                                        }
                                     }
 
-                                    if (modelData === "Create PDF") {
+                                    // =================================================
+                                    // CREATE PDF
+                                    // =================================================
+
+                                    else if (modelData === "Create PDF") {
 
                                         var filtered = []
 
-                                        for (var i = 0; i < tableList.model.count; i++) {
+                                        for (var i = 0;
+                                             i < tableList.model.count;
+                                             i++) {
 
-                                            var item = tableList.model.get(i)
+                                            var item =
+                                                    tableList.model.get(i)
 
-                                            var userOk = root.userMatchesFilter(item.user)
-                                            var searchOk = item.remark.toLowerCase().includes(root.searchText.toLowerCase())
-                                            var dateOk   = root.dateInRange(item.date)
-                                            var remarkOk = root.remarkInFilter(item.remark)
+                                            var userOk =
+                                                    root.userMatchesFilter(item.user)
 
-                                            if (userOk && searchOk && dateOk && remarkOk) {
+                                            var searchOk =
+                                                    item.remark
+                                                    .toLowerCase()
+                                                    .includes(
+                                                        root.searchText.toLowerCase()
+                                                    )
+
+                                            var dateOk =
+                                                    root.dateInRange(item.date)
+
+                                            var remarkOk =
+                                                    root.remarkInFilter(item.remark)
+
+                                            if (userOk &&
+                                                searchOk &&
+                                                dateOk &&
+                                                remarkOk) {
 
                                                 filtered.push({
                                                     sr: item.sr,
@@ -705,41 +778,57 @@ Item {
                                         }
 
                                         var sessionInfo = {
-                                            "loggedInUserName": GlobalState.loggedInUserName,
-                                            "loggedInUserRole": GlobalState.loggedInUserRole
+                                            "loggedInUserName":
+                                                GlobalState.loggedInUserName,
+
+                                            "loggedInUserRole":
+                                                GlobalState.loggedInUserRole
                                         }
 
+                                        var path =
+                                                PdfExporter.exportTableToPdf(
+                                                    filtered,
+                                                    root.fromDate,
+                                                    root.toDate,
+                                                    "",
+                                                    sessionInfo
+                                                )
 
-                                        // EXPORT PDF
-                                        var path = PdfExporter.exportTableToPdf(
-                                            filtered,
-                                            root.fromDate,
-                                            root.toDate,
-                                            "",
-                                            sessionInfo
-                                        )
+                                        if (globalTopBar &&
+                                            globalTopBar.showNotification) {
 
-                                        // NOTIFICATION
-                                        if (globalTopBar && globalTopBar.showNotification) {
-                                            globalTopBar.showNotification("✓ PDF saved successfully")
+                                            globalTopBar.showNotification(
+                                                "✓ PDF saved successfully"
+                                            )
                                         }
 
-
-                                        // ADD ENTRY TO REPORT LOG
                                         GlobalState.reportsLogModel.append({
-                                            sr: GlobalState.reportsLogModel.count + 1,
-                                            type: "Audit Trail",
-                                            date: Qt.formatDate(new Date(), "dd/MM/yyyy"),
-                                            from: root.fromDate === "" ? "-" : root.fromDate,
-                                            to: root.toDate === "" ? "-" : root.toDate,
+                                            sr:
+                                                GlobalState.reportsLogModel.count + 1,
 
-                                            // Current logged in user
-                                            by: GlobalState.getCurrentUser(),
+                                            type: "Audit Trail",
+
+                                            date:
+                                                Qt.formatDate(
+                                                    new Date(),
+                                                    "dd/MM/yyyy"
+                                                ),
+
+                                            from:
+                                                root.fromDate === ""
+                                                ? "-"
+                                                : root.fromDate,
+
+                                            to:
+                                                root.toDate === ""
+                                                ? "-"
+                                                : root.toDate,
+
+                                            by:
+                                                GlobalState.getCurrentUser(),
 
                                             filePath: path
                                         })
-
-                                        GlobalState.saveLogs()
                                     }
                                 }
                             }
