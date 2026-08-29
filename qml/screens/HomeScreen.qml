@@ -820,7 +820,7 @@ Item {
                                 font.pixelSize: 14
 
 
-                                color: "#6B7280"
+                                color: "#5E5C64"
                             }
 
                             Text {

@@ -152,7 +152,7 @@ Item {
                                 color:
                                     index === root.currentPage
                                     ? "#1450C8"
-                                    : "#7B88A8"
+                                    : "#5E5C64"
 
                                 horizontalAlignment:
                                     Text.AlignHCenter
@@ -248,7 +248,7 @@ Item {
                         anchors.verticalCenter:
                             parent.verticalCenter
 
-                        color: "#C7D2E8"
+                        color: "#5E5C64"
 
                         opacity: 1
                     }
