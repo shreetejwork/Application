@@ -140,7 +140,12 @@ Popup {
 
         validationState = "running"
 
-        // Give Canvas a clean starting state
+        // Reset result animation
+        successFailureAnimation.stop()
+        successFailureCircle.scale = 0.70
+        successFailureCircle.opacity = 0
+        successFailureCircle.visible = false
+
         if (timerArcCanvas)
             timerArcCanvas.requestPaint()
 
@@ -188,7 +193,10 @@ Popup {
                 "Validation Passed"
             )
 
+            // Show success animation
             Qt.callLater(function() {
+
+                showSuccessAnimation()
 
                 GlobalState.countRejection = true
 
@@ -211,6 +219,34 @@ Popup {
 
         if (timerArcCanvas)
             timerArcCanvas.requestPaint()
+    }
+
+    // ============================================================
+    // SHOW SUCCESS ANIMATION
+    // ============================================================
+
+    function showSuccessAnimation()
+    {
+        successFailureCircle.visible = true
+
+        successFailureCircle.scale = 0.70
+        successFailureCircle.opacity = 0
+
+        successFailureAnimation.start()
+    }
+
+    // ============================================================
+    // SHOW FAILURE ANIMATION
+    // ============================================================
+
+    function showFailureAnimation()
+    {
+        successFailureCircle.visible = true
+
+        successFailureCircle.scale = 0.70
+        successFailureCircle.opacity = 0
+
+        successFailureAnimation.start()
     }
 
     // ============================================================
@@ -240,6 +276,8 @@ Popup {
     onClosed: {
 
         countdownTimer.stop()
+
+        successFailureAnimation.stop()
 
         console.log(
             "Validation popup closed"
@@ -289,6 +327,15 @@ Popup {
                 saveValidationAudit(
                     "Validation Failed"
                 )
+
+                // =================================================
+                // FAILURE ANIMATION
+                // =================================================
+
+                Qt.callLater(function() {
+
+                    showFailureAnimation()
+                })
 
                 GlobalState.countRejection = true
 
@@ -632,10 +679,7 @@ Popup {
         // ========================================================
         // MAIN CONTENT
         //
-        // IMPORTANT:
-        // TIMER IS INSIDE THIS COLUMN.
-        //
-        // Therefore Layout.alignment works correctly.
+        // TIMER POSITION IS UNCHANGED
         // ========================================================
 
         ColumnLayout {
@@ -692,7 +736,6 @@ Popup {
                     }
                 }
 
-                // STATUS BADGE
                 Rectangle {
 
                     visible:
@@ -731,7 +774,12 @@ Popup {
             }
 
             // ====================================================
-            // TIMER
+            // TIMER / RESULT AREA
+            //
+            // EXACT SAME:
+            // width  = 190
+            // height = 190
+            // centered by ColumnLayout
             // ====================================================
 
             Item {
@@ -747,151 +795,66 @@ Popup {
                 width: 190
                 height: 190
 
-                visible:
-                    validationScreenPopup.validationState
-                    === "running"
-
                 // =================================================
-                // GREY BACKGROUND RING
+                // TIMER CONTENT
                 // =================================================
 
-                Canvas {
+                Item {
 
-                    id: timerBackgroundCanvas
+                    id: timerContent
 
                     anchors.fill: parent
 
-                    antialiasing: true
+                    visible:
+                        validationScreenPopup.validationState
+                        === "running"
 
-                    onPaint: {
+                    // =============================================
+                    // GREY BACKGROUND RING
+                    // =============================================
 
-                        var ctx =
-                            getContext("2d")
+                    Canvas {
 
-                        ctx.clearRect(
-                            0,
-                            0,
-                            width,
-                            height
-                        )
+                        id: timerBackgroundCanvas
 
-                        var cx =
-                            width / 2
+                        anchors.fill: parent
 
-                        var cy =
-                            height / 2
+                        antialiasing: true
 
-                        var radius =
-                            72
+                        onPaint: {
 
-                        var lineWidth =
-                            10
+                            var ctx =
+                                getContext("2d")
 
-                        ctx.beginPath()
-
-                        ctx.lineWidth =
-                            lineWidth
-
-                        ctx.strokeStyle =
-                            "#E2E7F5"
-
-                        ctx.lineCap =
-                            "round"
-
-                        ctx.arc(
-                            cx,
-                            cy,
-                            radius,
-                            0,
-                            Math.PI * 2,
-                            false
-                        )
-
-                        ctx.stroke()
-                    }
-
-                    Component.onCompleted: {
-                        requestPaint()
-                    }
-                }
-
-                // =================================================
-                // COUNTDOWN ARC
-                // =================================================
-
-                Canvas {
-
-                    id: timerArcCanvas
-
-                    anchors.fill: parent
-
-                    z: 2
-
-                    antialiasing: true
-
-                    onPaint: {
-
-                        var ctx =
-                            getContext("2d")
-
-                        ctx.clearRect(
-                            0,
-                            0,
-                            width,
-                            height
-                        )
-
-                        var cx =
-                            width / 2
-
-                        var cy =
-                            height / 2
-
-                        var radius =
-                            72
-
-                        var lineWidth =
-                            10
-
-                        var duration =
-                            Math.max(
-                                1,
-                                validationScreenPopup.roundDuration
-                            )
-
-                        var remaining =
-                            Math.max(
+                            ctx.clearRect(
                                 0,
-                                Math.min(
-                                    validationScreenPopup.remainingSeconds,
-                                    duration
-                                )
+                                0,
+                                width,
+                                height
                             )
 
-                        var progress =
-                            remaining / duration
+                            var cx =
+                                width / 2
 
-                        var startAngle =
-                            -Math.PI / 2
+                            var cy =
+                                height / 2
 
-                        ctx.beginPath()
+                            var radius =
+                                72
 
-                        ctx.lineWidth =
-                            lineWidth
+                            var lineWidth =
+                                10
 
-                        ctx.strokeStyle =
-                            remaining <= 10
-                            ? "#FF5252"
-                            : "#1A4DB5"
+                            ctx.beginPath()
 
-                        ctx.lineCap =
-                            "round"
+                            ctx.lineWidth =
+                                lineWidth
 
-                        // =================================================
-                        // FULL CIRCLE
-                        // =================================================
+                            ctx.strokeStyle =
+                                "#E2E7F5"
 
-                        if (progress >= 0.999) {
+                            ctx.lineCap =
+                                "round"
 
                             ctx.arc(
                                 cx,
@@ -902,100 +865,444 @@ Popup {
                                 false
                             )
 
+                            ctx.stroke()
                         }
 
-                        // =================================================
-                        // PARTIAL COUNTDOWN ARC
-                        // =================================================
+                        Component.onCompleted: {
+                            requestPaint()
+                        }
+                    }
 
-                        else if (progress > 0) {
+                    // =============================================
+                    // COUNTDOWN ARC
+                    // =============================================
 
-                            var sweep =
-                                progress *
-                                Math.PI *
-                                2
+                    Canvas {
 
-                            ctx.arc(
-                                cx,
-                                cy,
-                                radius,
-                                startAngle,
-                                startAngle + sweep,
-                                false
+                        id: timerArcCanvas
+
+                        anchors.fill: parent
+
+                        z: 2
+
+                        antialiasing: true
+
+                        onPaint: {
+
+                            var ctx =
+                                getContext("2d")
+
+                            ctx.clearRect(
+                                0,
+                                0,
+                                width,
+                                height
                             )
+
+                            var cx =
+                                width / 2
+
+                            var cy =
+                                height / 2
+
+                            var radius =
+                                72
+
+                            var lineWidth =
+                                10
+
+                            var duration =
+                                Math.max(
+                                    1,
+                                    validationScreenPopup.roundDuration
+                                )
+
+                            var remaining =
+                                Math.max(
+                                    0,
+                                    Math.min(
+                                        validationScreenPopup.remainingSeconds,
+                                        duration
+                                    )
+                                )
+
+                            var progress =
+                                remaining / duration
+
+                            var startAngle =
+                                -Math.PI / 2
+
+                            ctx.beginPath()
+
+                            ctx.lineWidth =
+                                lineWidth
+
+                            ctx.strokeStyle =
+                                remaining <= 10
+                                ? "#FF5252"
+                                : "#1A4DB5"
+
+                            ctx.lineCap =
+                                "round"
+
+                            // =====================================
+                            // FULL CIRCLE
+                            // =====================================
+
+                            if (progress >= 0.999) {
+
+                                ctx.arc(
+                                    cx,
+                                    cy,
+                                    radius,
+                                    0,
+                                    Math.PI * 2,
+                                    false
+                                )
+
+                            }
+
+                            // =====================================
+                            // PARTIAL ARC
+                            // =====================================
+
+                            else if (progress > 0) {
+
+                                var sweep =
+                                    progress *
+                                    Math.PI *
+                                    2
+
+                                ctx.arc(
+                                    cx,
+                                    cy,
+                                    radius,
+                                    startAngle,
+                                    startAngle + sweep,
+                                    false
+                                )
+                            }
+
+                            ctx.stroke()
                         }
 
-                        ctx.stroke()
+                        Component.onCompleted: {
+
+                            console.log(
+                                "COUNTDOWN CANVAS CREATED",
+                                width,
+                                height
+                            )
+
+                            requestPaint()
+                        }
+
+                        onWidthChanged: {
+                            requestPaint()
+                        }
+
+                        onHeightChanged: {
+                            requestPaint()
+                        }
                     }
 
-                    Component.onCompleted: {
+                    // =============================================
+                    // TIMER TEXT
+                    // =============================================
 
-                        console.log(
-                            "COUNTDOWN CANVAS CREATED",
-                            width,
-                            height
-                        )
+                    Column {
 
-                        requestPaint()
-                    }
+                        anchors.centerIn: parent
 
-                    onWidthChanged: {
-                        requestPaint()
-                    }
+                        spacing: 2
 
-                    onHeightChanged: {
-                        requestPaint()
+                        z: 10
+
+                        Text {
+
+                            anchors.horizontalCenter:
+                                parent.horizontalCenter
+
+                            text:
+                                validationScreenPopup.formatTime(
+                                    validationScreenPopup.remainingSeconds
+                                )
+
+                            font.pixelSize:
+                                vTypography.title * 1.5
+
+
+
+                            color:
+
+                                validationScreenPopup.remainingSeconds
+                                <= 10
+
+                                ? "#FF5252"
+
+                                : "#1A2E52"
+                        }
+
+                        Text {
+
+                            anchors.horizontalCenter:
+                                parent.horizontalCenter
+
+                            text:
+                                "remaining"
+
+                            font.pixelSize:
+                                vTypography.body * 0.85
+
+                            color:
+                                "#3D3846"
+                        }
                     }
                 }
 
                 // =================================================
-                // TIMER TEXT
+                // SUCCESS / FAILURE RESULT
+                //
+                // SAME 190x190 AREA
                 // =================================================
 
-                Column {
+                Item {
 
-                    anchors.centerIn: parent
+                    id: resultContent
 
-                    spacing: 2
+                    anchors.fill: parent
 
-                    z: 10
+                    visible:
+                        validationScreenPopup.validationState
+                        !== "running"
 
-                    Text {
+                    // =================================================
+                    // ANIMATED OUTER CIRCLE
+                    // =================================================
 
-                        anchors.horizontalCenter:
-                            parent.horizontalCenter
+                    Rectangle {
 
-                        text:
-                            validationScreenPopup.formatTime(
-                                validationScreenPopup.remainingSeconds
-                            )
+                        id: successFailureCircle
 
-                        font.pixelSize:
-                            vTypography.title * 1.5
+                        width: 150
+                        height: 150
 
+                        radius: 75
 
+                        anchors.centerIn: parent
 
-                        color:
+                        visible: false
 
-                            validationScreenPopup.remainingSeconds
-                            <= 10
-                            ? "#FF5252"
-                            : "#1A2E52"
-                    }
+                        opacity: 0
 
-                    Text {
-
-                        anchors.horizontalCenter:
-                            parent.horizontalCenter
-
-                        text:
-                            "remaining"
-
-                        font.pixelSize:
-                            vTypography.body * 0.85
+                        scale: 0.70
 
                         color:
-                            "#8A93A6"
+                            validationScreenPopup.validationState
+                            === "passed"
+                            ? "#2ECC71"
+                            : "#FF5252"
+
+                        border.width: 5
+
+                        border.color:
+                            validationScreenPopup.validationState
+                            === "passed"
+                            ? "#25B866"
+                            : "#E53935"
+
+                        antialiasing: true
+
+                        // =================================================
+                        // INNER CIRCLE
+                        // =================================================
+
+                        Rectangle {
+
+                            id: resultInnerCircle
+
+                            width: 122
+                            height: 122
+
+                            radius: 61
+
+                            anchors.centerIn: parent
+
+                            color: "#FFFFFF"
+
+                            antialiasing: true
+
+                            // =============================================
+                            // RESULT ICON
+                            // =============================================
+
+                            Text {
+
+                                id: resultIcon
+
+                                anchors.centerIn: parent
+
+                                text:
+
+                                    validationScreenPopup.validationState
+                                    === "passed"
+
+                                    ? "✓"
+
+                                    : "✕"
+
+                                font.pixelSize: 68
+
+
+
+                                color:
+
+                                    validationScreenPopup.validationState
+                                    === "passed"
+
+                                    ? "#2ECC71"
+
+                                    : "#FF5252"
+
+                                opacity: 0
+
+                                scale: 0.40
+
+                                antialiasing: true
+                            }
+                        }
+
+                        // =================================================
+                        // SUCCESS / FAILURE ANIMATION
+                        // =================================================
+
+                        SequentialAnimation {
+
+                            id: successFailureAnimation
+
+                            // ---------------------------------------------
+                            // Circle appears
+                            // ---------------------------------------------
+
+                            ParallelAnimation {
+
+                                NumberAnimation {
+
+                                    target:
+                                        successFailureCircle
+
+                                    property:
+                                        "scale"
+
+                                    from: 0.70
+                                    to: 1.0
+
+                                    duration: 420
+
+                                    easing.type:
+                                        Easing.OutBack
+                                }
+
+                                NumberAnimation {
+
+                                    target:
+                                        successFailureCircle
+
+                                    property:
+                                        "opacity"
+
+                                    from: 0
+                                    to: 1
+
+                                    duration: 280
+
+                                    easing.type:
+                                        Easing.OutQuad
+                                }
+                            }
+
+                            // ---------------------------------------------
+                            // Icon appears
+                            // ---------------------------------------------
+
+                            ParallelAnimation {
+
+                                NumberAnimation {
+
+                                    target:
+                                        resultIcon
+
+                                    property:
+                                        "scale"
+
+                                    from: 0.40
+                                    to: 1.0
+
+                                    duration: 300
+
+                                    easing.type:
+                                        Easing.OutBack
+                                }
+
+                                NumberAnimation {
+
+                                    target:
+                                        resultIcon
+
+                                    property:
+                                        "opacity"
+
+                                    from: 0
+                                    to: 1
+
+                                    duration: 250
+
+                                    easing.type:
+                                        Easing.OutQuad
+                                }
+                            }
+
+                            // ---------------------------------------------
+                            // Small pulse
+                            // ---------------------------------------------
+
+                            SequentialAnimation {
+
+                                NumberAnimation {
+
+                                    target:
+                                        successFailureCircle
+
+                                    property:
+                                        "scale"
+
+                                    from: 1.0
+                                    to: 1.06
+
+                                    duration: 180
+
+                                    easing.type:
+                                        Easing.OutQuad
+                                }
+
+                                NumberAnimation {
+
+                                    target:
+                                        successFailureCircle
+
+                                    property:
+                                        "scale"
+
+                                    from: 1.06
+                                    to: 1.0
+
+                                    duration: 180
+
+                                    easing.type:
+                                        Easing.InOutQuad
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1278,7 +1585,7 @@ Popup {
             }
 
             // ====================================================
-            // BOTTOM BUTTON AREA
+            // FLEXIBLE SPACE
             // ====================================================
 
             Item {
@@ -1287,6 +1594,10 @@ Popup {
 
                 Layout.minimumHeight: 1
             }
+
+            // ====================================================
+            // BUTTON
+            // ====================================================
 
             Row {
 
@@ -1328,7 +1639,9 @@ Popup {
 
                             validationScreenPopup.validationState
                             === "passed"
+
                             ? "Done"
+
                             : "Close"
 
                         color: "white"
