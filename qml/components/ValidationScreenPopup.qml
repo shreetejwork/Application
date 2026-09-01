@@ -1,8 +1,6 @@
-
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
-import QtQuick.Shapes
 
 import AppState 1.0
 import Backend 1.0
@@ -119,7 +117,7 @@ Popup {
 
     property bool rejectCycleStarted: false
 
-    // "running" | "passed" | "failed"
+    // running | passed | failed
     property string validationState: "running"
 
     // ============================================================
@@ -154,8 +152,8 @@ Popup {
 
         validationState = "running"
 
-        // Force initial Canvas paint
-        timerArcCanvas.requestPaint()
+        // Make sure Canvas gets a fresh paint
+        timerCanvas.requestPaint()
 
         countdownTimer.start()
     }
@@ -178,14 +176,17 @@ Popup {
 
         Qt.callLater(function() {
 
-            var item = indicatorRepeater.itemAt(currentRound - 1)
+            var item =
+                    indicatorRepeater.itemAt(
+                        currentRound - 1
+                    )
 
             if (item)
                 item.pop()
         })
 
         // ========================================================
-        // FINAL ROUND COMPLETED
+        // FINAL ROUND
         // ========================================================
 
         if (currentRound === totalRounds) {
@@ -194,10 +195,11 @@ Popup {
 
             countdownTimer.stop()
 
-            // Make sure final Canvas state is painted
-            timerArcCanvas.requestPaint()
+            timerCanvas.requestPaint()
 
-            saveValidationAudit("Validation Passed")
+            saveValidationAudit(
+                "Validation Passed"
+            )
 
             Qt.callLater(function() {
 
@@ -208,21 +210,19 @@ Popup {
                     GlobalState.countRejection
                 )
             })
+
+            return
         }
 
         // ========================================================
         // NEXT ROUND
         // ========================================================
 
-        else {
+        currentRound++
 
-            currentRound++
+        remainingSeconds = roundDuration
 
-            remainingSeconds = roundDuration
-
-            // Explicitly repaint for new round
-            timerArcCanvas.requestPaint()
-        }
+        timerCanvas.requestPaint()
     }
 
     // ============================================================
@@ -265,45 +265,37 @@ Popup {
 
         onTriggered: {
 
-            if (validationScreenPopup.validationState !== "running") {
-                stop()
-                return
-            }
-
-            // ====================================================
+            // ================================================
             // COUNTDOWN
-            // ====================================================
+            // ================================================
 
             if (validationScreenPopup.remainingSeconds > 0) {
 
-                validationScreenPopup.remainingSeconds =
-                        validationScreenPopup.remainingSeconds - 1
+                validationScreenPopup.remainingSeconds--
 
-                // =================================================
-                // IMPORTANT:
-                // Explicitly request Canvas repaint after every
-                // countdown tick.
-                // =================================================
-
-                timerArcCanvas.requestPaint()
+                // Explicit repaint
+                timerCanvas.requestPaint()
             }
 
-            // ====================================================
+            // ================================================
             // TIMEOUT
-            // ====================================================
+            // ================================================
 
-            if (validationScreenPopup.remainingSeconds <= 0) {
-
-                validationScreenPopup.remainingSeconds = 0
+            if (
+                validationScreenPopup.remainingSeconds <= 0
+                &&
+                validationScreenPopup.validationState === "running"
+            ) {
 
                 validationScreenPopup.validationState = "failed"
 
-                stop()
+                countdownTimer.stop()
 
-                // Paint final state
-                timerArcCanvas.requestPaint()
+                timerCanvas.requestPaint()
 
-                saveValidationAudit("Validation Failed")
+                saveValidationAudit(
+                    "Validation Failed"
+                )
 
                 GlobalState.countRejection = true
 
@@ -316,23 +308,7 @@ Popup {
     }
 
     // ============================================================
-    // REPAINT ARC WHEN TIME CHANGES
-    // ============================================================
-
-    onRemainingSecondsChanged: {
-
-        if (timerArcCanvas)
-            timerArcCanvas.requestPaint()
-    }
-
-    onRoundDurationChanged: {
-
-        if (timerArcCanvas)
-            timerArcCanvas.requestPaint()
-    }
-
-    // ============================================================
-    // SIGNAL VS THRESHOLD LOGIC
+    // SIGNAL VS THRESHOLD
     // ============================================================
 
     Connections {
@@ -343,19 +319,28 @@ Popup {
 
         function onSignalChanged()
         {
-            if (SerialManager.signal > GlobalState.signalThreshold) {
+            if (
+                SerialManager.signal >
+                GlobalState.signalThreshold
+            ) {
 
-                if (!validationScreenPopup.rejectCycleStarted) {
+                if (
+                    !validationScreenPopup.rejectCycleStarted
+                ) {
 
-                    validationScreenPopup.rejectCycleStarted = true
+                    validationScreenPopup.rejectCycleStarted =
+                            true
                 }
             }
 
             else {
 
-                if (validationScreenPopup.rejectCycleStarted) {
+                if (
+                    validationScreenPopup.rejectCycleStarted
+                ) {
 
-                    validationScreenPopup.rejectCycleStarted = false
+                    validationScreenPopup.rejectCycleStarted =
+                            false
 
                     validationScreenPopup.completeRound()
                 }
@@ -373,17 +358,23 @@ Popup {
 
             NumberAnimation {
                 property: "opacity"
+
                 from: 0
                 to: 1
+
                 duration: 350
+
                 easing.type: Easing.OutQuad
             }
 
             NumberAnimation {
                 property: "scale"
+
                 from: 0.85
                 to: 1.0
+
                 duration: 350
+
                 easing.type: Easing.OutBack
             }
         }
@@ -399,17 +390,23 @@ Popup {
 
             NumberAnimation {
                 property: "opacity"
+
                 from: 1
                 to: 0
+
                 duration: 250
+
                 easing.type: Easing.InQuad
             }
 
             NumberAnimation {
                 property: "scale"
+
                 from: 1
                 to: 0.85
+
                 duration: 250
+
                 easing.type: Easing.InQuad
             }
         }
@@ -423,11 +420,14 @@ Popup {
 
         id: popupContent
 
-        implicitWidth: validationScreenPopup.width
+        implicitWidth:
+            validationScreenPopup.width
 
-        implicitHeight: validationScreenPopup.height
+        implicitHeight:
+            validationScreenPopup.height
 
-        transformOrigin: Item.Center
+        transformOrigin:
+            Item.Center
 
         // ========================================================
         // OUTER GLOW
@@ -437,7 +437,8 @@ Popup {
 
             id: glowBorder
 
-            anchors.centerIn: parent
+            anchors.centerIn:
+                parent
 
             width:
                 parent.width +
@@ -450,16 +451,20 @@ Popup {
             radius:
                 30 * uiScale
 
-            color: "transparent"
+            color:
+                "transparent"
 
             border.color:
                 validationScreenPopup.stateColor
 
-            border.width: 3
+            border.width:
+                3
 
-            opacity: 0.18
+            opacity:
+                0.18
 
-            antialiasing: true
+            antialiasing:
+                true
 
             Behavior on border.color {
 
@@ -471,21 +476,28 @@ Popup {
             SequentialAnimation {
 
                 running:
-                    validationScreenPopup.validationState === "running"
+                    validationScreenPopup.validationState ===
+                    "running"
 
                 loops:
                     Animation.Infinite
 
                 NumberAnimation {
 
-                    target: glowBorder
+                    target:
+                        glowBorder
 
-                    property: "opacity"
+                    property:
+                        "opacity"
 
-                    from: 0.12
-                    to: 0.32
+                    from:
+                        0.12
 
-                    duration: 800
+                    to:
+                        0.32
+
+                    duration:
+                        800
 
                     easing.type:
                         Easing.InOutQuad
@@ -493,14 +505,20 @@ Popup {
 
                 NumberAnimation {
 
-                    target: glowBorder
+                    target:
+                        glowBorder
 
-                    property: "opacity"
+                    property:
+                        "opacity"
 
-                    from: 0.32
-                    to: 0.12
+                    from:
+                        0.32
 
-                    duration: 800
+                    to:
+                        0.12
+
+                    duration:
+                        800
 
                     easing.type:
                         Easing.InOutQuad
@@ -509,17 +527,19 @@ Popup {
         }
 
         // ========================================================
-        // CARD SURFACE
+        // CARD
         // ========================================================
 
         Rectangle {
 
-            anchors.fill: parent
+            anchors.fill:
+                parent
 
             radius:
                 24 * uiScale
 
-            antialiasing: true
+            antialiasing:
+                true
 
             gradient: Gradient {
 
@@ -528,23 +548,28 @@ Popup {
 
                 GradientStop {
 
-                    position: 0.0
+                    position:
+                        0.0
 
-                    color: "#FFFFFF"
+                    color:
+                        "#FFFFFF"
                 }
 
                 GradientStop {
 
-                    position: 1.0
+                    position:
+                        1.0
 
-                    color: "#F0F3FA"
+                    color:
+                        "#F0F3FA"
                 }
             }
 
             border.color:
                 "#D0D8EC"
 
-            border.width: 1
+            border.width:
+                1
         }
 
         // ========================================================
@@ -556,7 +581,8 @@ Popup {
             id: exitButton
 
             visible:
-                validationScreenPopup.validationState === "running"
+                validationScreenPopup.validationState ===
+                "running"
 
             enabled:
                 visible
@@ -581,16 +607,6 @@ Popup {
 
             anchors.rightMargin:
                 25 * uiScale
-
-            opacity:
-                visible ? 1 : 0
-
-            Behavior on opacity {
-
-                NumberAnimation {
-                    duration: 200
-                }
-            }
 
             color:
 
@@ -705,10 +721,6 @@ Popup {
                 Layout.fillWidth:
                     true
 
-                // =================================================
-                // TITLE
-                // =================================================
-
                 Column {
 
                     spacing:
@@ -745,10 +757,6 @@ Popup {
                     }
                 }
 
-                // =================================================
-                // STATUS BADGE
-                // =================================================
-
                 Rectangle {
 
                     radius:
@@ -777,8 +785,9 @@ Popup {
 
                         text:
 
-                            validationScreenPopup.validationState
-                            === "passed"
+                            validationScreenPopup.validationState ===
+                            "passed"
+
                             ? "Passed"
                             : "Failed"
 
@@ -819,49 +828,26 @@ Popup {
                     "running"
 
                 // =================================================
-                // GREY BACKGROUND TRACK
+                // TIMER CANVAS
                 // =================================================
 
-                Rectangle {
+                Canvas {
 
-                    id: timerTrack
+                    id: timerCanvas
 
                     anchors.fill:
                         parent
 
-                    radius:
-                        width / 2
-
-                    color:
-                        "transparent"
-
-                    border.width:
-                        10 * uiScale
-
-                    border.color:
-                        "#E2E7F5"
-
                     antialiasing:
                         true
-                }
-
-                // =================================================
-                // COUNTDOWN CANVAS
-                // =================================================
-
-                Canvas {
-                    id: timerArcCanvas
-
-                    width: 190
-                    height: 190
-
-                    anchors.centerIn: parent
-
-                    z: 100
 
                     onPaint: {
 
                         var ctx = getContext("2d")
+
+                        // =========================================
+                        // CLEAR
+                        // =========================================
 
                         ctx.clearRect(
                             0,
@@ -870,26 +856,164 @@ Popup {
                             height
                         )
 
+                        // =========================================
+                        // CENTER
+                        // =========================================
+
+                        var cx =
+                                width / 2
+
+                        var cy =
+                                height / 2
+
+                        // =========================================
+                        // RADIUS
+                        // =========================================
+
+                        var radius =
+                                Math.min(
+                                    width,
+                                    height
+                                ) * 0.40
+
+                        // =========================================
+                        // LINE WIDTH
+                        // =========================================
+
+                        var lineWidth =
+                                Math.max(
+                                    6,
+                                    10 * uiScale
+                                )
+
+                        // =========================================
+                        // TIMER VALUES
+                        // =========================================
+
+                        var duration =
+                                Math.max(
+                                    1,
+                                    validationScreenPopup.roundDuration
+                                )
+
+                        var remaining =
+                                Math.max(
+                                    0,
+                                    Math.min(
+                                        validationScreenPopup.remainingSeconds,
+                                        duration
+                                    )
+                                )
+
+                        // =========================================
+                        // PROGRESS
+                        // =========================================
+
+                        var progress =
+                                remaining / duration
+
+                        // =========================================
+                        // START ANGLE
+                        //
+                        // -PI / 2 = 12 o'clock
+                        // =========================================
+
+                        var startAngle =
+                                -Math.PI / 2
+
+                        // =================================================
+                        // 1. GREY BACKGROUND RING
+                        // =================================================
+
                         ctx.beginPath()
 
-                        ctx.lineWidth = 20
+                        ctx.lineWidth =
+                                lineWidth
 
-                        ctx.strokeStyle = "#FF0000"
+                        ctx.strokeStyle =
+                                "#E2E7F5"
+
+                        ctx.lineCap =
+                                "round"
 
                         ctx.arc(
-                            width / 2,
-                            height / 2,
-                            70,
+                            cx,
+                            cy,
+                            radius,
                             0,
                             Math.PI * 2,
                             false
                         )
 
                         ctx.stroke()
+
+                        // =================================================
+                        // 2. COUNTDOWN ARC
+                        // =================================================
+
+                        if (progress > 0) {
+
+                            var sweep =
+                                    progress *
+                                    Math.PI *
+                                    2
+
+                            var endAngle =
+                                    startAngle +
+                                    sweep
+
+                            ctx.beginPath()
+
+                            ctx.lineWidth =
+                                    lineWidth
+
+                            ctx.strokeStyle =
+                                    remaining <= 10
+                                    ? "#FF5252"
+                                    : "#1A4DB5"
+
+                            ctx.lineCap =
+                                    "round"
+
+                            ctx.arc(
+                                cx,
+                                cy,
+                                radius,
+                                startAngle,
+                                endAngle,
+                                false
+                            )
+
+                            ctx.stroke()
+                        }
                     }
 
+                    // =================================================
+                    // INITIAL PAINT
+                    // =================================================
+
                     Component.onCompleted: {
-                        console.log("TEST CANVAS CREATED")
+
+                        console.log(
+                            "Validation Canvas created:",
+                            width,
+                            height
+                        )
+
+                        requestPaint()
+                    }
+
+                    // =================================================
+                    // SIZE CHANGED
+                    // =================================================
+
+                    onWidthChanged: {
+
+                        requestPaint()
+                    }
+
+                    onHeightChanged: {
+
                         requestPaint()
                     }
                 }
@@ -906,13 +1030,15 @@ Popup {
                     spacing:
                         2 * uiScale
 
+                    z:
+                        10
+
                     Text {
 
                         anchors.horizontalCenter:
                             parent.horizontalCenter
 
                         text:
-
                             validationScreenPopup.formatTime(
                                 validationScreenPopup.remainingSeconds
                             )
@@ -1002,8 +1128,9 @@ Popup {
 
                         text:
 
-                            validationScreenPopup.validationState
-                            === "passed"
+                            validationScreenPopup.validationState ===
+                            "passed"
+
                             ? "✓"
                             : "✕"
 
@@ -1085,9 +1212,6 @@ Popup {
                         antialiasing:
                             true
 
-                        Layout.alignment:
-                            Qt.AlignVCenter
-
                         Layout.preferredWidth:
                             15 * uiScale
 
@@ -1104,14 +1228,12 @@ Popup {
                                 Animation.Infinite
 
                             NumberAnimation {
-
                                 from: 1
                                 to: 0.25
                                 duration: 600
                             }
 
                             NumberAnimation {
-
                                 from: 0.25
                                 to: 1
                                 duration: 600
@@ -1133,18 +1255,16 @@ Popup {
                         text: {
 
                             if (
-                                validationScreenPopup.validationState
-                                === "failed"
-                            ) {
+                                validationScreenPopup.validationState ===
+                                "failed"
+                            )
                                 return "Validation Failed"
-                            }
 
                             if (
-                                validationScreenPopup.validationState
-                                === "passed"
-                            ) {
+                                validationScreenPopup.validationState ===
+                                "passed"
+                            )
                                 return "Validation Passed"
-                            }
 
                             return "Please pass the sample for validation"
                         }
@@ -1184,10 +1304,6 @@ Popup {
                             popAnim.start()
                         }
 
-                        // =========================================
-                        // ROUND DOT
-                        // =========================================
-
                         Rectangle {
 
                             id: dot
@@ -1204,9 +1320,6 @@ Popup {
                             antialiasing:
                                 true
 
-                            smooth:
-                                true
-
                             Layout.preferredWidth:
                                 40 * uiScale
 
@@ -1220,25 +1333,24 @@ Popup {
                                 ? "#2ECC71"
 
                                 : (
-                                    validationScreenPopup.currentRound
-                                    === index + 1
-
-                                    && validationScreenPopup.validationState
-                                    === "running"
+                                    validationScreenPopup.currentRound ===
+                                    index + 1
+                                    &&
+                                    validationScreenPopup.validationState ===
+                                    "running"
                                   )
 
                                 ? "#FFFFFF"
-
                                 : "#D8DCE6"
 
                             border.width:
 
                                 (
-                                    validationScreenPopup.currentRound
-                                    === index + 1
-
-                                    && validationScreenPopup.validationState
-                                    === "running"
+                                    validationScreenPopup.currentRound ===
+                                    index + 1
+                                    &&
+                                    validationScreenPopup.validationState ===
+                                    "running"
                                 )
 
                                 ? 3
@@ -1247,11 +1359,11 @@ Popup {
                             border.color:
 
                                 (
-                                    validationScreenPopup.currentRound
-                                    === index + 1
-
-                                    && validationScreenPopup.validationState
-                                    === "running"
+                                    validationScreenPopup.currentRound ===
+                                    index + 1
+                                    &&
+                                    validationScreenPopup.validationState ===
+                                    "running"
                                 )
 
                                 ? "#1A4DB5"
@@ -1264,24 +1376,26 @@ Popup {
                                 }
                             }
 
-                            // =====================================
-                            // POP ANIMATION
-                            // =====================================
-
                             SequentialAnimation {
 
                                 id: popAnim
 
                                 NumberAnimation {
 
-                                    target: dot
+                                    target:
+                                        dot
 
-                                    property: "scale"
+                                    property:
+                                        "scale"
 
-                                    from: 1.0
-                                    to: 1.35
+                                    from:
+                                        1.0
 
-                                    duration: 140
+                                    to:
+                                        1.35
+
+                                    duration:
+                                        140
 
                                     easing.type:
                                         Easing.OutQuad
@@ -1289,23 +1403,25 @@ Popup {
 
                                 NumberAnimation {
 
-                                    target: dot
+                                    target:
+                                        dot
 
-                                    property: "scale"
+                                    property:
+                                        "scale"
 
-                                    from: 1.35
-                                    to: 1.0
+                                    from:
+                                        1.35
 
-                                    duration: 160
+                                    to:
+                                        1.0
+
+                                    duration:
+                                        160
 
                                     easing.type:
                                         Easing.OutBack
                                 }
                             }
-
-                            // =====================================
-                            // CHECK MARK
-                            // =====================================
 
                             Text {
 
@@ -1328,10 +1444,6 @@ Popup {
                                     true
                             }
 
-                            // =====================================
-                            // ROUND NUMBER
-                            // =====================================
-
                             Text {
 
                                 anchors.centerIn:
@@ -1345,11 +1457,11 @@ Popup {
 
                                 color:
 
-                                    validationScreenPopup.currentRound
-                                    === index + 1
-
-                                    && validationScreenPopup.validationState
-                                    === "running"
+                                    validationScreenPopup.currentRound ===
+                                    index + 1
+                                    &&
+                                    validationScreenPopup.validationState ===
+                                    "running"
 
                                     ? "#1A4DB5"
                                     : "#8A93A6"
@@ -1358,10 +1470,6 @@ Popup {
                                     vTypography.bodySmall
                             }
                         }
-
-                        // =========================================
-                        // CONNECTING LINE
-                        // =========================================
 
                         Rectangle {
 
@@ -1424,10 +1532,6 @@ Popup {
                     validationScreenPopup.validationState !==
                     "running"
 
-                // =================================================
-                // CLOSE / DONE BUTTON
-                // =================================================
-
                 Rectangle {
 
                     id: closeBtn
@@ -1442,13 +1546,11 @@ Popup {
                         12 * uiScale
 
                     color:
-
                         closeArea.pressed
                         ? "#0D3BA8"
                         : "#1A4DB5"
 
                     scale:
-
                         closeArea.pressed
                         ? 0.96
                         : 1.0
@@ -1463,13 +1565,6 @@ Popup {
                         }
                     }
 
-                    Behavior on color {
-
-                        ColorAnimation {
-                            duration: 150
-                        }
-                    }
-
                     Text {
 
                         anchors.centerIn:
@@ -1477,8 +1572,9 @@ Popup {
 
                         text:
 
-                            validationScreenPopup.validationState
-                            === "passed"
+                            validationScreenPopup.validationState ===
+                            "passed"
+
                             ? "Done"
                             : "Close"
 
@@ -1519,5 +1615,19 @@ Popup {
                 }
             }
         }
+    }
+
+    // ============================================================
+    // REPAINT WHEN TIMER VALUES CHANGE
+    // ============================================================
+
+    onRemainingSecondsChanged: {
+
+        timerCanvas.requestPaint()
+    }
+
+    onRoundDurationChanged: {
+
+        timerCanvas.requestPaint()
     }
 }
