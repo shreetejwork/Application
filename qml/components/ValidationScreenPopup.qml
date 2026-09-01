@@ -1,3 +1,4 @@
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -52,6 +53,7 @@ Popup {
     property int roundDuration: 60
     property int remainingSeconds: roundDuration
 
+    // TRUE when signal has crossed the threshold
     property bool rejectCycleStarted: false
 
     // running | passed | failed
@@ -62,13 +64,10 @@ Popup {
     // ============================================================
 
     property color stateColor:
-
         validationState === "failed"
         ? "#FF5252"
-
         : validationState === "passed"
         ? "#2ECC71"
-
         : "#1A4DB5"
 
     // ============================================================
@@ -96,7 +95,20 @@ Popup {
 
         var auditUser = "---"
 
-        if (role !== "" && username !== "") {
+        // Keep the same Developer / Engineer handling
+        // from the original working code.
+
+        if (GlobalState.developerLogin) {
+
+            auditUser = "D/Developer"
+
+        }
+        else if (GlobalState.engineerLogin) {
+
+            auditUser = "E/Engineer"
+
+        }
+        else if (role !== "" && username !== "") {
 
             var initial = "U"
 
@@ -124,8 +136,10 @@ Popup {
 
     function startValidation()
     {
+        // Always stop an old timer first
         countdownTimer.stop()
 
+        // Reset validation
         currentRound = 1
 
         roundStatus = [
@@ -140,26 +154,62 @@ Popup {
 
         validationState = "running"
 
-        // Reset result animation
+        // ========================================================
+        // RESET RESULT ANIMATION
+        // ========================================================
+
         successFailureAnimation.stop()
+
         successFailureCircle.scale = 0.70
         successFailureCircle.opacity = 0
         successFailureCircle.visible = false
 
+        resultIcon.scale = 0.40
+        resultIcon.opacity = 0
+
+        // ========================================================
+        // RESET TIMER ARC
+        // ========================================================
+
+        if (timerBackgroundCanvas)
+            timerBackgroundCanvas.requestPaint()
+
         if (timerArcCanvas)
             timerArcCanvas.requestPaint()
 
+        // ========================================================
+        // START COUNTDOWN
+        // ========================================================
+
         countdownTimer.start()
+
+        console.log(
+            "Validation started - Round:",
+            currentRound
+        )
     }
 
     // ============================================================
-    // COMPLETE ROUND
+    // COMPLETE CURRENT ROUND
     // ============================================================
 
     function completeRound()
     {
+        // ========================================================
+        // IMPORTANT:
+        // Ignore any signal changes after validation is finished.
+        // ========================================================
+
         if (validationState !== "running")
             return
+
+        // Protect against invalid round
+        if (currentRound < 1 || currentRound > totalRounds)
+            return
+
+        // ========================================================
+        // MARK CURRENT ROUND AS PASSED
+        // ========================================================
 
         var arr = roundStatus.slice()
 
@@ -167,10 +217,23 @@ Popup {
 
         roundStatus = arr
 
+        console.log(
+            "Validation Round Passed:",
+            currentRound,
+            "/",
+            totalRounds
+        )
+
+        // ========================================================
+        // ROUND DOT ANIMATION
+        // ========================================================
+
         Qt.callLater(function() {
 
             var item =
-                indicatorRepeater.itemAt(currentRound - 1)
+                    indicatorRepeater.itemAt(
+                        currentRound - 1
+                    )
 
             if (item)
                 item.pop()
@@ -182,21 +245,41 @@ Popup {
 
         if (currentRound === totalRounds) {
 
-            validationState = "passed"
+            console.log(
+                "FINAL VALIDATION ROUND PASSED"
+            )
 
+            // Stop countdown FIRST
             countdownTimer.stop()
 
+            // Make validation state passed
+            validationState = "passed"
+
+            // Make sure rejection cycle is no longer active
+            rejectCycleStarted = false
+
+            // Make sure the final timer state is painted
             if (timerArcCanvas)
                 timerArcCanvas.requestPaint()
+
+            // ====================================================
+            // SAVE AUDIT
+            // ====================================================
 
             saveValidationAudit(
                 "Validation Passed"
             )
 
-            // Show success animation
+            // ====================================================
+            // SHOW SUCCESS ANIMATION
+            // ====================================================
+
             Qt.callLater(function() {
 
                 showSuccessAnimation()
+
+                // After validation is completely passed,
+                // allow rejection counting again.
 
                 GlobalState.countRejection = true
 
@@ -210,13 +293,25 @@ Popup {
         }
 
         // ========================================================
-        // NEXT ROUND
+        // MOVE TO NEXT ROUND
         // ========================================================
 
         currentRound++
 
+        // Reset timer for next round
         remainingSeconds = roundDuration
 
+        // Reset signal cycle for next sample
+        rejectCycleStarted = false
+
+        console.log(
+            "Starting Validation Round:",
+            currentRound,
+            "/",
+            totalRounds
+        )
+
+        // Repaint timer arc for new round
         if (timerArcCanvas)
             timerArcCanvas.requestPaint()
     }
@@ -227,11 +322,17 @@ Popup {
 
     function showSuccessAnimation()
     {
+        // Make sure result state is visible
         successFailureCircle.visible = true
 
+        // Reset animation state
         successFailureCircle.scale = 0.70
         successFailureCircle.opacity = 0
 
+        resultIcon.scale = 0.40
+        resultIcon.opacity = 0
+
+        // Start animation
         successFailureAnimation.start()
     }
 
@@ -246,6 +347,9 @@ Popup {
         successFailureCircle.scale = 0.70
         successFailureCircle.opacity = 0
 
+        resultIcon.scale = 0.40
+        resultIcon.opacity = 0
+
         successFailureAnimation.start()
     }
 
@@ -255,6 +359,7 @@ Popup {
 
     onOpened: {
 
+        // While validation is running, do not count rejection
         GlobalState.countRejection = false
 
         startValidation()
@@ -267,6 +372,16 @@ Popup {
             "Round duration:",
             roundDuration
         )
+
+        console.log(
+            "Signal threshold:",
+            GlobalState.signalThreshold
+        )
+
+        console.log(
+            "Current round:",
+            currentRound
+        )
     }
 
     // ============================================================
@@ -278,6 +393,8 @@ Popup {
         countdownTimer.stop()
 
         successFailureAnimation.stop()
+
+        rejectCycleStarted = false
 
         console.log(
             "Validation popup closed"
@@ -297,6 +414,10 @@ Popup {
 
         onTriggered: {
 
+            // ====================================================
+            // SAFETY CHECK
+            // ====================================================
+
             if (
                 validationScreenPopup.validationState
                 !== "running"
@@ -305,6 +426,10 @@ Popup {
                 return
             }
 
+            // ====================================================
+            // NORMAL COUNTDOWN
+            // ====================================================
+
             if (
                 validationScreenPopup.remainingSeconds
                 > 1
@@ -312,17 +437,33 @@ Popup {
 
                 validationScreenPopup.remainingSeconds--
 
-            } else {
+            }
+
+            // ====================================================
+            // TIMEOUT
+            // ====================================================
+
+            else {
 
                 validationScreenPopup.remainingSeconds = 0
 
-                validationScreenPopup.validationState =
-                    "failed"
-
+                // Stop timer
                 stop()
 
+                // Stop signal validation
+                validationScreenPopup.rejectCycleStarted = false
+
+                // Mark validation failed
+                validationScreenPopup.validationState =
+                        "failed"
+
+                // Repaint final timer state
                 if (timerArcCanvas)
                     timerArcCanvas.requestPaint()
+
+                // =================================================
+                // SAVE FAILURE AUDIT
+                // =================================================
 
                 saveValidationAudit(
                     "Validation Failed"
@@ -337,17 +478,26 @@ Popup {
                     showFailureAnimation()
                 })
 
+                // =================================================
+                // ALLOW REJECTION COUNTING AGAIN
+                // =================================================
+
                 GlobalState.countRejection = true
 
                 console.log(
                     "Validation Failed"
+                )
+
+                console.log(
+                    "Count Rejection:",
+                    GlobalState.countRejection
                 )
             }
         }
     }
 
     // ============================================================
-    // REPAINT CANVAS
+    // REPAINT TIMER ARC
     // ============================================================
 
     onRemainingSecondsChanged: {
@@ -367,6 +517,7 @@ Popup {
     // ============================================================
 
     Connections {
+
         target: SerialManager
 
         enabled:
@@ -375,6 +526,21 @@ Popup {
 
         function onSignalChanged()
         {
+            // ====================================================
+            // VALIDATION IS NOT RUNNING
+            // ====================================================
+
+            if (
+                validationScreenPopup.validationState
+                !== "running"
+            ) {
+                return
+            }
+
+            // ====================================================
+            // SAMPLE HAS CROSSED SIGNAL THRESHOLD
+            // ====================================================
+
             if (
                 SerialManager.signal
                 > GlobalState.signalThreshold
@@ -385,17 +551,44 @@ Popup {
                 ) {
 
                     validationScreenPopup.rejectCycleStarted =
-                        true
+                            true
+
+                    console.log(
+                        "Validation sample detected - Round:",
+                        validationScreenPopup.currentRound,
+                        "Signal:",
+                        SerialManager.signal,
+                        "Threshold:",
+                        GlobalState.signalThreshold
+                    )
                 }
 
-            } else {
+            }
+
+            // ====================================================
+            // SAMPLE HAS COME BACK BELOW THRESHOLD
+            // ====================================================
+
+            else {
 
                 if (
                     validationScreenPopup.rejectCycleStarted
                 ) {
 
+                    // Reset current sample cycle FIRST
                     validationScreenPopup.rejectCycleStarted =
-                        false
+                            false
+
+                    console.log(
+                        "Validation sample completed - Round:",
+                        validationScreenPopup.currentRound
+                    )
+
+                    // =================================================
+                    // THIS IS THE IMPORTANT PART:
+                    // Every completed HIGH -> LOW cycle passes
+                    // one round, including the FINAL round.
+                    // =================================================
 
                     validationScreenPopup.completeRound()
                 }
@@ -630,8 +823,6 @@ Popup {
 
                 font.pixelSize: 25
 
-
-
                 color:
                     exitMouse.pressed
                     ? "white"
@@ -665,6 +856,9 @@ Popup {
 
                     countdownTimer.stop()
 
+                    validationScreenPopup.rejectCycleStarted =
+                            false
+
                     GlobalState.countRejection = true
 
                     saveValidationAudit(
@@ -678,8 +872,6 @@ Popup {
 
         // ========================================================
         // MAIN CONTENT
-        //
-        // TIMER POSITION IS UNCHANGED
         // ========================================================
 
         ColumnLayout {
@@ -775,11 +967,6 @@ Popup {
 
             // ====================================================
             // TIMER / RESULT AREA
-            //
-            // EXACT SAME:
-            // width  = 190
-            // height = 190
-            // centered by ColumnLayout
             // ====================================================
 
             Item {
@@ -1031,8 +1218,6 @@ Popup {
                             font.pixelSize:
                                 vTypography.title * 1.5
 
-
-
                             color:
 
                                 validationScreenPopup.remainingSeconds
@@ -1062,8 +1247,6 @@ Popup {
 
                 // =================================================
                 // SUCCESS / FAILURE RESULT
-                //
-                // SAME 190x190 AREA
                 // =================================================
 
                 Item {
@@ -1152,8 +1335,6 @@ Popup {
                                     : "✕"
 
                                 font.pixelSize: 68
-
-
 
                                 color:
 
@@ -1499,8 +1680,6 @@ Popup {
 
                                 font.pixelSize:
                                     vTypography.bodySmall
-
-
                             }
 
                             Text {
