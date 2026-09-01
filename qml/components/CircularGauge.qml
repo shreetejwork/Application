@@ -9,11 +9,11 @@ Item {
     id: root
 
     property real sizeRef: Math.min(width, height)
-    
+
     // =========================================================
     // TYPOGRAPHY FOR CIRCULAR GAUGE
     // =========================================================
-    
+
     Typography {
         id: gaugeTypography
         scale: Math.min(root.width / 200, root.height / 200)
