@@ -155,6 +155,11 @@ Popup {
         // Make sure Canvas gets a fresh paint
         timerCanvas.requestPaint()
 
+        console.log(
+            "Validation started. Duration:",
+            roundDuration
+        )
+
         countdownTimer.start()
     }
 
@@ -275,6 +280,11 @@ Popup {
 
                 // Explicit repaint
                 timerCanvas.requestPaint()
+
+                console.log(
+                    "Validation timer:",
+                    validationScreenPopup.remainingSeconds
+                )
             }
 
             // ================================================
@@ -298,6 +308,10 @@ Popup {
                 )
 
                 GlobalState.countRejection = true
+
+                console.log(
+                    "Validation Failed - Timeout"
+                )
 
                 console.log(
                     "Count Rejection:",
