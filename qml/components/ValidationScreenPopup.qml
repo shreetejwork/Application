@@ -850,32 +850,18 @@ Popup {
                 // =================================================
 
                 Canvas {
-
                     id: timerArcCanvas
 
-                    anchors.fill:
-                        parent
+                    width: 190
+                    height: 190
 
-                    antialiasing:
-                        true
+                    anchors.centerIn: parent
 
-                    visible:
-                        validationScreenPopup.validationState ===
-                        "running"
-
-                    // =================================================
-                    // PAINT
-                    // =================================================
+                    z: 100
 
                     onPaint: {
 
                         var ctx = getContext("2d")
-
-                        // ------------------------------------------------
-                        // IMPORTANT FOR RASPBERRY PI:
-                        // Do not rely only on ctx.reset().
-                        // Explicitly clear the canvas.
-                        // ------------------------------------------------
 
                         ctx.clearRect(
                             0,
@@ -884,119 +870,26 @@ Popup {
                             height
                         )
 
-                        var cx =
-                            width / 2
+                        ctx.beginPath()
 
-                        var cy =
-                            height / 2
+                        ctx.lineWidth = 20
 
-                        // ------------------------------------------------
-                        // Radius
-                        // ------------------------------------------------
+                        ctx.strokeStyle = "#FF0000"
 
-                        var radius =
-                            Math.min(width, height) * 0.40
+                        ctx.arc(
+                            width / 2,
+                            height / 2,
+                            70,
+                            0,
+                            Math.PI * 2,
+                            false
+                        )
 
-                        // ------------------------------------------------
-                        // Arc width
-                        // ------------------------------------------------
-
-                        var arcWidth =
-                            Math.max(
-                                8,
-                                10 * uiScale
-                            )
-
-                        // ------------------------------------------------
-                        // Progress
-                        //
-                        // 60 sec = 1.0
-                        // 45 sec = 0.75
-                        // 30 sec = 0.50
-                        // 15 sec = 0.25
-                        //  0 sec = 0.0
-                        // ------------------------------------------------
-
-                        var progress = 0
-
-                        if (validationScreenPopup.roundDuration > 0) {
-
-                            progress =
-                                validationScreenPopup.remainingSeconds /
-                                validationScreenPopup.roundDuration
-                        }
-
-                        // Clamp to 0..1
-
-                        progress =
-                            Math.max(
-                                0,
-                                Math.min(
-                                    1,
-                                    progress
-                                )
-                            )
-
-                        // ------------------------------------------------
-                        // Convert progress to degrees
-                        // ------------------------------------------------
-
-                        var endDeg =
-                            progress * 360
-
-                        // ------------------------------------------------
-                        // Degree -> radians
-                        //
-                        // -90 degrees means 12 o'clock.
-                        // ------------------------------------------------
-
-                        function rad(deg)
-                        {
-                            return (
-                                deg - 90
-                            ) *
-                            Math.PI /
-                            180
-                        }
-
-                        // =================================================
-                        // COUNTDOWN ARC
-                        // =================================================
-
-                        if (progress > 0) {
-
-                            ctx.beginPath()
-
-                            ctx.lineWidth =
-                                arcWidth
-
-                            ctx.strokeStyle =
-                                validationScreenPopup.remainingSeconds <= 10
-                                ? "#FF5252"
-                                : "#1A4DB5"
-
-                            ctx.lineCap =
-                                "round"
-
-                            ctx.arc(
-                                cx,
-                                cy,
-                                radius,
-                                rad(0),
-                                rad(endDeg),
-                                false
-                            )
-
-                            ctx.stroke()
-                        }
+                        ctx.stroke()
                     }
 
-                    // =================================================
-                    // INITIAL PAINT
-                    // =================================================
-
                     Component.onCompleted: {
-
+                        console.log("TEST CANVAS CREATED")
                         requestPaint()
                     }
                 }
