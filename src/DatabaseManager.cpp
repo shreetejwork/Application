@@ -2630,7 +2630,7 @@ bool DatabaseManager::createProductLibraryTable(int groupNo)
 
         ddFreq REAL DEFAULT 32.1,
 
-        digitalGain REAL DEFAULT 1,
+        digitalGain REAL DEFAULT 0.5,
 
         analogGain REAL DEFAULT 1,
 
@@ -2879,7 +2879,7 @@ bool DatabaseManager::addProductLibraryProduct(
             14000,
             40,
             32.1,
-            1,
+            0.5,
             1,
             0
         )
