@@ -590,7 +590,7 @@ void DatabaseManager::createTables()
                         14000,
                         40,
                         32.1,
-                        1,
+                        0.5,
                         1,
                         1
                     )
@@ -622,7 +622,7 @@ void DatabaseManager::createTables()
                         ampThr = COALESCE(ampThr, 14000),
                         ddPower = COALESCE(ddPower, 40),
                         ddFreq = COALESCE(ddFreq, 32.1),
-                        digitalGain = COALESCE(digitalGain, 1),
+                        digitalGain = COALESCE(digitalGain, 0.5),
                         analogGain = COALESCE(analogGain, 1)
                     WHERE sr_no = 1
                 )").arg(defaultTableName));
