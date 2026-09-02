@@ -527,11 +527,11 @@ void DatabaseManager::createTables()
         (
             1,
             10,
-            2.0,
+            30,
             0,
             250,
             250,
-            1.0,
+            0.5,
             1.0
         );
     )");
