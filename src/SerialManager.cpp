@@ -494,42 +494,62 @@ void SerialManager::onReadyRead()
         return;
     }
 
-    while (rxBuffer.size() >= 84)
+    while (rxBuffer.size() >= 4)
     {
-        qDebug() << "RX buffer length before XY scan=" << rxBuffer.size();
+        int start = -1;
+        for (int i = 0; i + 1 < rxBuffer.size(); ++i)
+        {
+            if (static_cast<unsigned char>(rxBuffer[i]) == 0xA5 &&
+                static_cast<unsigned char>(rxBuffer[i + 1]) == 0x5A)
+            {
+                start = i;
+                break;
+            }
+        }
 
-        const int start = rxBuffer.indexOf(QByteArray::fromHex("A55A"));
         if (start < 0)
         {
-            qDebug() << "No XY start marker found in RX buffer; trimming stale bytes";
-            if (rxBuffer.size() > 84)
-                rxBuffer.remove(0, rxBuffer.size() - 84);
+            qDebug() << "No XY start marker found in RX buffer; first bytes="
+                     << rxBuffer.left(qMin(32, rxBuffer.size())).toHex();
+            if (rxBuffer.size() > 64)
+                rxBuffer.remove(0, rxBuffer.size() - 64);
             break;
         }
 
         if (start > 0)
         {
-            qDebug() << "Discarding" << start << "bytes before start marker";
+            qDebug() << "Discarding" << start << "bytes before XY start marker";
             rxBuffer.remove(0, start);
         }
 
-        if (rxBuffer.size() < 84)
+        int end = -1;
+        for (int i = 2; i + 1 < rxBuffer.size(); ++i)
+        {
+            if (static_cast<unsigned char>(rxBuffer[i]) == 0xE9 &&
+                static_cast<unsigned char>(rxBuffer[i + 1]) == 0x43)
+            {
+                end = i;
+                break;
+            }
+        }
+
+        if (end < 0)
             return;
 
-        const QByteArray frame = rxBuffer.mid(0, 84);
+        const QByteArray frame = rxBuffer.mid(0, end + 2);
         QVariantList decodedData;
 
-        if (parseXyPlotFrame(frame, decodedData))
+        if (frame.size() == 84 && parseXyPlotFrame(frame, decodedData))
         {
             qDebug() << "Valid XY frame found; updating plot data";
             updateXyPlotData(decodedData);
-            rxBuffer.remove(0, 84);
+            rxBuffer.remove(0, frame.size());
             continue;
         }
 
         qDebug() << "XY frame invalid; dropping 1 byte and retrying";
         rxBuffer.remove(0, 1);
-        if (rxBuffer.size() < 84)
+        if (rxBuffer.size() < 4)
             break;
     }
 
