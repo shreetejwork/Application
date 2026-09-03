@@ -385,7 +385,19 @@ bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outD
     if (frame.size() != 84)
         return false;
 
-    const QByteArray payload = frame.mid(4, 80);
+    if (static_cast<unsigned char>(frame[0]) != 0xA5 ||
+        static_cast<unsigned char>(frame[1]) != 0x5A)
+    {
+        return false;
+    }
+
+    if (static_cast<unsigned char>(frame[82]) != 0xE9 ||
+        static_cast<unsigned char>(frame[83]) != 0x43)
+    {
+        return false;
+    }
+
+    const QByteArray payload = frame.mid(2, 80);
     if (payload.size() != 80)
         return false;
 
@@ -399,23 +411,17 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
 
     outData.clear();
 
-    const int pointCount = 10;
-
-    for (int i = 0; i < pointCount; ++i)
+    for (int i = 0; i + 3 < payload.size(); i += 4)
     {
-        const int base = i * 8;
+        const quint8 xHi = static_cast<quint8>(payload.at(i));
+        const quint8 xLo = static_cast<quint8>(payload.at(i + 1));
+        const quint8 yHi = static_cast<quint8>(payload.at(i + 2));
+        const quint8 yLo = static_cast<quint8>(payload.at(i + 3));
 
-        const qint32 xRaw = qFromLittleEndian<qint32>(
-            reinterpret_cast<const uchar *>(payload.constData() + base));
-        const qint32 yRaw = qFromLittleEndian<qint32>(
-            reinterpret_cast<const uchar *>(payload.constData() + base + 4));
-
-        // Keep the decoder aligned with the existing static sample range.
-        if (xRaw < -500 || xRaw > 500 || yRaw < -500 || yRaw > 500)
-        {
-            qDebug() << "XY plot payload value out of expected range:" << xRaw << yRaw;
-            return false;
-        }
+        const qint16 xRaw = static_cast<qint16>((static_cast<quint16>(xHi) << 8) |
+                                              static_cast<quint16>(xLo));
+        const qint16 yRaw = static_cast<qint16>((static_cast<quint16>(yHi) << 8) |
+                                              static_cast<quint16>(yLo));
 
         QVariantMap point;
         point["x"] = static_cast<qreal>(xRaw);
@@ -424,7 +430,7 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
     }
 
     qDebug() << "Decoded XY payload: points=" << outData.size()
-             << "first=" << outData.first().toMap();
+             << "first=" << (outData.isEmpty() ? QVariantMap() : outData.first().toMap());
 
     return !outData.isEmpty();
 }

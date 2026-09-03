@@ -4,6 +4,7 @@ import QtQuick.Layouts
 import QtCore
 import AppState 1.0
 import CustomComponents 1.0
+import Backend 1.0
 
 
 import "../components"
