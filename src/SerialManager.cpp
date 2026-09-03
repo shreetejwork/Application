@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QFile>
 #include <QSerialPortInfo>
+#include <QRegularExpression>
 #include <QtEndian>
 
 #include <QTime>
