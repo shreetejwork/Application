@@ -123,6 +123,12 @@ Item {
         }
     }
 
+    Component.onCompleted: {
+        if (SerialManager && SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0) {
+            root.magneticFieldData = SerialManager.xyPlotData
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
         color: "#F5F7FC"

@@ -410,6 +410,8 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
     }
 
     outData.clear();
+    quint16 firstRawValue = 0;
+    quint16 lastRawValue = 0;
 
     for (int i = 0; i < 40; ++i)
     {
@@ -417,8 +419,14 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
         const quint16 value = (static_cast<quint16>(static_cast<quint8>(payload.at(offset))) << 8) |
                               static_cast<quint16>(static_cast<quint8>(payload.at(offset + 1)));
 
+        if (i == 0)
+            firstRawValue = value;
+        lastRawValue = value;
+
         const qreal xValue = -90.0 + (180.0 * i / 39.0);
-        const qreal yValue = static_cast<qreal>(value);
+        const qreal yValue = qBound(-100.0,
+                                    static_cast<qreal>(value) / 3.0,
+                                    100.0);
 
         QVariantMap point;
         point["x"] = xValue;
@@ -430,8 +438,8 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
     qDebug() << "XY frame received: 84 bytes"
              << "XY payload: 80 bytes"
              << "XY points:" << outData.size()
-             << "XY first value:" << outData.first().toMap()["y"]
-             << "XY last value:" << outData.last().toMap()["y"];
+             << "XY first value:" << firstRawValue
+             << "XY last value:" << lastRawValue;
     return !outData.isEmpty();
 }
 
