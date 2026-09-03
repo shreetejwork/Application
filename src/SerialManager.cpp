@@ -502,6 +502,65 @@ void SerialManager::onReadyRead()
             updateXyPlotData(decodedData);
     }
 
+    // Some MCU/USB serial adapters deliver the frame as space-separated hex text.
+    while (xyRxBuffer.indexOf(QByteArray::fromHex("A55A")) < 0)
+    {
+        const QString text = QString::fromLatin1(xyRxBuffer);
+        QRegularExpression tokenExpression("\\S+");
+        QRegularExpressionMatchIterator matches = tokenExpression.globalMatch(text);
+        QList<QRegularExpressionMatch> tokenMatches;
+
+        while (matches.hasNext())
+            tokenMatches.append(matches.next());
+
+        int startToken = -1;
+        for (int i = 0; i + 1 < tokenMatches.size(); ++i)
+        {
+            if (tokenMatches[i].captured().compare("A5", Qt::CaseInsensitive) == 0 &&
+                tokenMatches[i + 1].captured().compare("5A", Qt::CaseInsensitive) == 0)
+            {
+                startToken = i;
+                break;
+            }
+        }
+
+        if (startToken < 0)
+            break;
+
+        if (tokenMatches.size() < startToken + 84)
+            break;
+
+        if (tokenMatches[startToken + 82].captured().compare("E9", Qt::CaseInsensitive) != 0 ||
+            tokenMatches[startToken + 83].captured().compare("43", Qt::CaseInsensitive) != 0)
+        {
+            xyRxBuffer.remove(0, tokenMatches[startToken].capturedStart() + 2);
+            continue;
+        }
+
+        QByteArray frame;
+        bool validFrame = true;
+        for (int i = startToken; i < startToken + 84; ++i)
+        {
+            const QByteArray byte = QByteArray::fromHex(tokenMatches[i].captured().toLatin1());
+            if (byte.size() != 1)
+            {
+                validFrame = false;
+                break;
+            }
+            frame.append(byte);
+        }
+
+        const int consumed = tokenMatches[startToken + 83].capturedEnd();
+        xyRxBuffer.remove(0, consumed);
+
+        if (!validFrame)
+            continue;
+
+        QVariantList decodedData;
+        if (parseXyPlotFrame(frame, decodedData))
+            updateXyPlotData(decodedData);
+    }
+
     // MCU requesting parameters
         if (rxBuffer.contains("{*****}"))
     {
