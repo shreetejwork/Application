@@ -180,6 +180,7 @@ private:
     QSerialPort serial;
 
     QByteArray rxBuffer;
+    QByteArray xyRxBuffer;
 
     double m_productPhase = 0.0;   // 0 - 180
 
