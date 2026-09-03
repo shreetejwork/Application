@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QFile>
 #include <QSerialPortInfo>
+#include <QtEndian>
 
 #include <QTime>
 
@@ -379,6 +380,66 @@ void SerialManager::setAmplitudeThreshold(int value)
     sendCommand(QString("{C%1}").arg(v));
 }
 
+bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outData)
+{
+    if (frame.size() != 84)
+        return false;
+
+    const QByteArray payload = frame.mid(4, 80);
+    if (payload.size() != 80)
+        return false;
+
+    return decodeXyPlotPayload(payload, outData);
+}
+
+bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList &outData)
+{
+    if (payload.size() != 80)
+        return false;
+
+    outData.clear();
+
+    const int pointCount = 10;
+
+    for (int i = 0; i < pointCount; ++i)
+    {
+        const int base = i * 8;
+
+        const qint32 xRaw = qFromLittleEndian<qint32>(
+            reinterpret_cast<const uchar *>(payload.constData() + base));
+        const qint32 yRaw = qFromLittleEndian<qint32>(
+            reinterpret_cast<const uchar *>(payload.constData() + base + 4));
+
+        // Keep the decoder aligned with the existing static sample range.
+        if (xRaw < -500 || xRaw > 500 || yRaw < -500 || yRaw > 500)
+        {
+            qDebug() << "XY plot payload value out of expected range:" << xRaw << yRaw;
+            return false;
+        }
+
+        QVariantMap point;
+        point["x"] = static_cast<qreal>(xRaw);
+        point["y"] = static_cast<qreal>(yRaw);
+        outData.append(point);
+    }
+
+    qDebug() << "Decoded XY payload: points=" << outData.size()
+             << "first=" << outData.first().toMap();
+
+    return !outData.isEmpty();
+}
+
+void SerialManager::updateXyPlotData(const QVariantList &data)
+{
+    if (m_xyPlotData == data)
+        return;
+
+    m_xyPlotData = data;
+    emit xyPlotDataChanged();
+
+    qDebug() << "XY plot data updated with" << m_xyPlotData.size() << "points";
+}
+
 void SerialManager::onReadyRead()
 {
     QByteArray data = serial.readAll();
@@ -399,6 +460,33 @@ void SerialManager::onReadyRead()
         qDebug() << "RX buffer overflow. Clearing.";
         rxBuffer.clear();
         return;
+    }
+
+    while (rxBuffer.size() >= 84)
+    {
+        bool frameConsumed = false;
+
+        for (int offset = 0; offset + 84 <= rxBuffer.size(); ++offset)
+        {
+            const QByteArray frame = rxBuffer.mid(offset, 84);
+            QVariantList decodedData;
+
+            if (parseXyPlotFrame(frame, decodedData))
+            {
+                qDebug() << "Valid XY plot frame detected; payload bytes:" << frame.mid(4, 80).size();
+                updateXyPlotData(decodedData);
+                rxBuffer.remove(0, offset + 84);
+                frameConsumed = true;
+                break;
+            }
+        }
+
+        if (!frameConsumed)
+        {
+            if (rxBuffer.size() > 84)
+                rxBuffer.remove(0, rxBuffer.size() - 84);
+            break;
+        }
     }
 
     // MCU requesting parameters

@@ -6,6 +6,7 @@
 #include <QByteArray>
 #include <QSerialPort>
 #include <QSerialPortInfo>
+#include <QVariantList>
 #include <QVector>
 #include <QTimer>
 
@@ -40,6 +41,10 @@ class SerialManager : public QObject
     Q_PROPERTY(QString rawTxLog
                    READ rawTxLog
                        NOTIFY rawTxLogChanged)
+
+    Q_PROPERTY(QVariantList xyPlotData
+                   READ xyPlotData
+                       NOTIFY xyPlotDataChanged)
 
 public:
     explicit SerialManager(QObject *parent = nullptr);
@@ -76,6 +81,11 @@ public:
     QString rawTxLog() const
     {
         return m_rawTxLog;
+    }
+
+    QVariantList xyPlotData() const
+    {
+        return m_xyPlotData;
     }
 
     Q_INVOKABLE bool isConnected() const
@@ -136,6 +146,8 @@ signals:
 
     void rawTxLogChanged();
 
+    void xyPlotDataChanged();
+
 private slots:
     void onReadyRead();
 
@@ -147,6 +159,10 @@ private:
     void appendRxLog(const QString &text);
 
     void appendTxLog(const QString &text);
+
+    bool parseXyPlotFrame(const QByteArray &frame, QVariantList &outData);
+    bool decodeXyPlotPayload(const QByteArray &payload, QVariantList &outData);
+    void updateXyPlotData(const QVariantList &data);
 
     bool m_coilBalancingOn = false;
 
@@ -178,6 +194,8 @@ private:
     QString m_rawRxLog;
 
     QString m_rawTxLog;
+
+    QVariantList m_xyPlotData;
 };
 
 
