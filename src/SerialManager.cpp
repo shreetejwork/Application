@@ -382,7 +382,7 @@ void SerialManager::setAmplitudeThreshold(int value)
 
 bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outData)
 {
-    if (frame.size() != 84)
+    if (frame.size() < 84)
         return false;
 
     if (static_cast<unsigned char>(frame[0]) != 0xA5 ||
@@ -391,13 +391,11 @@ bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outD
         return false;
     }
 
-    if (static_cast<unsigned char>(frame[82]) != 0xE9 ||
-        static_cast<unsigned char>(frame[83]) != 0x43)
-    {
+    int footerPos = frame.lastIndexOf(QByteArray::fromHex("E943"));
+    if (footerPos < 0 || footerPos < 2)
         return false;
-    }
 
-    const QByteArray payload = frame.mid(2, 80);
+    const QByteArray payload = frame.mid(2, qMin(80, footerPos - 2));
     if (payload.size() != 80)
         return false;
 
@@ -423,9 +421,16 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
         const qint16 yRaw = static_cast<qint16>((static_cast<quint16>(yHi) << 8) |
                                               static_cast<quint16>(yLo));
 
+        const qreal xValue = qBound(-100.0,
+                                   static_cast<qreal>(xRaw) / 3.0,
+                                   100.0);
+        const qreal yValue = qBound(-100.0,
+                                   static_cast<qreal>(yRaw) / 3.0,
+                                   100.0);
+
         QVariantMap point;
-        point["x"] = static_cast<qreal>(xRaw);
-        point["y"] = static_cast<qreal>(yRaw);
+        point["x"] = xValue;
+        point["y"] = yValue;
         outData.append(point);
     }
 
@@ -468,31 +473,33 @@ void SerialManager::onReadyRead()
         return;
     }
 
-    while (rxBuffer.size() >= 84)
+    while (rxBuffer.size() >= 4)
     {
-        bool frameConsumed = false;
-
-        for (int offset = 0; offset + 84 <= rxBuffer.size(); ++offset)
+        const int start = rxBuffer.indexOf(QByteArray::fromHex("A55A"));
+        if (start < 0)
         {
-            const QByteArray frame = rxBuffer.mid(offset, 84);
-            QVariantList decodedData;
-
-            if (parseXyPlotFrame(frame, decodedData))
-            {
-                qDebug() << "Valid XY plot frame detected; payload bytes:" << frame.mid(4, 80).size();
-                updateXyPlotData(decodedData);
-                rxBuffer.remove(0, offset + 84);
-                frameConsumed = true;
-                break;
-            }
-        }
-
-        if (!frameConsumed)
-        {
-            if (rxBuffer.size() > 84)
-                rxBuffer.remove(0, rxBuffer.size() - 84);
+            if (rxBuffer.size() > 16)
+                rxBuffer.remove(0, rxBuffer.size() - 16);
             break;
         }
+
+        const int end = rxBuffer.indexOf(QByteArray::fromHex("E943"), start + 2);
+        if (end < 0)
+            return;
+
+        const QByteArray frame = rxBuffer.mid(start, end - start + 2);
+        QVariantList decodedData;
+
+        if (parseXyPlotFrame(frame, decodedData))
+        {
+            qDebug() << "Valid XY plot frame detected; payload bytes:" << 80;
+            updateXyPlotData(decodedData);
+            rxBuffer.remove(0, end + 2);
+            continue;
+        }
+
+        rxBuffer.remove(0, start + 2);
+        break;
     }
 
     // MCU requesting parameters
