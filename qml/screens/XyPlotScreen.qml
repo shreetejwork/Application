@@ -100,21 +100,23 @@ Item {
     property real bodyFont:  13 * scale
     property real smallFont: 11 * scale
 
-    property var magneticFieldData:
-        (SerialManager && SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0)
-        ? SerialManager.xyPlotData
-        : [
-            { x: -90, y: -55 },
-            { x: -70, y: -32 },
-            { x: -50, y:  -8 },
-            { x: -30, y:  18 },
-            { x: -10, y:  36 },
-            { x:  10, y:  44 },
-            { x:  30, y:  28 },
-            { x:  50, y:   6 },
-            { x:  70, y: -18 },
-            { x:  90, y: -42 }
-        ]
+    property var magneticFieldData: []
+
+    Connections {
+        target: SerialManager
+
+        function onXyPlotDataChanged() {
+            if (SerialManager && SerialManager.xyPlotData) {
+                root.magneticFieldData = SerialManager.xyPlotData
+            }
+        }
+    }
+
+    Component.onCompleted: {
+        if (SerialManager && SerialManager.xyPlotData) {
+            root.magneticFieldData = SerialManager.xyPlotData
+        }
+    }
 
     Rectangle {
         anchors.fill: parent
