@@ -382,32 +382,48 @@ void SerialManager::setAmplitudeThreshold(int value)
 
 bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outData)
 {
-    if (frame.size() < 84)
+    if (frame.size() != 84)
+    {
+        qDebug() << "XY frame rejected: bad size=" << frame.size() << "expected 84";
         return false;
+    }
 
     if (static_cast<unsigned char>(frame[0]) != 0xA5 ||
         static_cast<unsigned char>(frame[1]) != 0x5A)
     {
+        qDebug() << "XY frame rejected: bad start marker";
         return false;
     }
 
-    int footerPos = frame.lastIndexOf(QByteArray::fromHex("E943"));
-    if (footerPos < 0 || footerPos < 2)
+    if (static_cast<unsigned char>(frame[82]) != 0xE9 ||
+        static_cast<unsigned char>(frame[83]) != 0x43)
+    {
+        qDebug() << "XY frame rejected: bad end marker";
         return false;
+    }
 
-    const QByteArray payload = frame.mid(2, qMin(80, footerPos - 2));
+    const QByteArray payload = frame.mid(2, 80);
     if (payload.size() != 80)
+    {
+        qDebug() << "XY frame rejected: payload size invalid=" << payload.size();
         return false;
+    }
 
+    qDebug() << "XY plot packet accepted: start=A5 5A, payload=80 bytes, end=E9 43";
     return decodeXyPlotPayload(payload, outData);
 }
 
 bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList &outData)
 {
     if (payload.size() != 80)
+    {
+        qDebug() << "XY payload rejected: size=" << payload.size();
         return false;
+    }
 
     outData.clear();
+
+    qDebug() << "XY payload bytes:" << payload.toHex();
 
     for (int i = 0; i + 3 < payload.size(); i += 4)
     {
@@ -416,10 +432,10 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
         const quint8 yHi = static_cast<quint8>(payload.at(i + 2));
         const quint8 yLo = static_cast<quint8>(payload.at(i + 3));
 
-        const qint16 xRaw = static_cast<qint16>((static_cast<quint16>(xHi) << 8) |
-                                              static_cast<quint16>(xLo));
-        const qint16 yRaw = static_cast<qint16>((static_cast<quint16>(yHi) << 8) |
-                                              static_cast<quint16>(yLo));
+        const quint16 xRaw = (static_cast<quint16>(xHi) << 8) |
+                             static_cast<quint16>(xLo);
+        const quint16 yRaw = (static_cast<quint16>(yHi) << 8) |
+                             static_cast<quint16>(yLo);
 
         const qreal xValue = qBound(-100.0,
                                    static_cast<qreal>(xRaw) / 3.0,
@@ -432,10 +448,15 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
         point["x"] = xValue;
         point["y"] = yValue;
         outData.append(point);
+
+        if (outData.size() <= 5)
+        {
+            qDebug() << "XY point" << outData.size() << "=> x=" << xValue << "y=" << yValue;
+        }
     }
 
-    qDebug() << "Decoded XY payload: points=" << outData.size()
-             << "first=" << (outData.isEmpty() ? QVariantMap() : outData.first().toMap());
+    qDebug() << "Decoded XY payload: points=" << outData.size();
+    qDebug() << "First decoded XY point=" << (outData.isEmpty() ? QVariantMap() : outData.first().toMap());
 
     return !outData.isEmpty();
 }
@@ -473,33 +494,43 @@ void SerialManager::onReadyRead()
         return;
     }
 
-    while (rxBuffer.size() >= 4)
+    while (rxBuffer.size() >= 84)
     {
+        qDebug() << "RX buffer length before XY scan=" << rxBuffer.size();
+
         const int start = rxBuffer.indexOf(QByteArray::fromHex("A55A"));
         if (start < 0)
         {
-            if (rxBuffer.size() > 16)
-                rxBuffer.remove(0, rxBuffer.size() - 16);
+            qDebug() << "No XY start marker found in RX buffer; trimming stale bytes";
+            if (rxBuffer.size() > 84)
+                rxBuffer.remove(0, rxBuffer.size() - 84);
             break;
         }
 
-        const int end = rxBuffer.indexOf(QByteArray::fromHex("E943"), start + 2);
-        if (end < 0)
+        if (start > 0)
+        {
+            qDebug() << "Discarding" << start << "bytes before start marker";
+            rxBuffer.remove(0, start);
+        }
+
+        if (rxBuffer.size() < 84)
             return;
 
-        const QByteArray frame = rxBuffer.mid(start, end - start + 2);
+        const QByteArray frame = rxBuffer.mid(0, 84);
         QVariantList decodedData;
 
         if (parseXyPlotFrame(frame, decodedData))
         {
-            qDebug() << "Valid XY plot frame detected; payload bytes:" << 80;
+            qDebug() << "Valid XY frame found; updating plot data";
             updateXyPlotData(decodedData);
-            rxBuffer.remove(0, end + 2);
+            rxBuffer.remove(0, 84);
             continue;
         }
 
-        rxBuffer.remove(0, start + 2);
-        break;
+        qDebug() << "XY frame invalid; dropping 1 byte and retrying";
+        rxBuffer.remove(0, 1);
+        if (rxBuffer.size() < 84)
+            break;
     }
 
     // MCU requesting parameters
