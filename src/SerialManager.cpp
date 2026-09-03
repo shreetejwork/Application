@@ -412,6 +412,7 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
     outData.clear();
     quint16 firstRawValue = 0;
     quint16 lastRawValue = 0;
+    QStringList decodedValues;
 
     for (int i = 0; i < 40; ++i)
     {
@@ -422,6 +423,7 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
         if (i == 0)
             firstRawValue = value;
         lastRawValue = value;
+        decodedValues.append(QString::number(value));
 
         const qreal xValue = -90.0 + (180.0 * i / 39.0);
         const qreal yValue = qBound(-100.0,
@@ -440,6 +442,7 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
              << "XY points:" << outData.size()
              << "XY first value:" << firstRawValue
              << "XY last value:" << lastRawValue;
+    qDebug() << "XY converted values:" << decodedValues.join(", ");
     return !outData.isEmpty();
 }
 
@@ -460,6 +463,7 @@ void SerialManager::onReadyRead()
 
     if (!data.isEmpty())
     {
+        qDebug() << "XY serial bytes received:" << data.size();
         // Show exactly what arrived from UART
         appendRxLog(QString::fromUtf8(data));
 
@@ -535,6 +539,8 @@ void SerialManager::onReadyRead()
         if (startToken < 0)
             break;
 
+        qDebug() << "XY ASCII start found; tokens=" << tokenMatches.size();
+
         if (tokenMatches.size() < startToken + 84)
             break;
 
@@ -566,7 +572,10 @@ void SerialManager::onReadyRead()
 
         QVariantList decodedData;
         if (parseXyPlotFrame(frame, decodedData))
+        {
+            qDebug() << "XY ASCII frame converted to" << decodedData.size() << "plot points";
             updateXyPlotData(decodedData);
+        }
     }
 
     // MCU requesting parameters
