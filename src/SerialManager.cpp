@@ -382,34 +382,66 @@ void SerialManager::setAmplitudeThreshold(int value)
 
 bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outData)
 {
-    if (frame.size() != 84)
+    QString text = QString::fromLatin1(frame);
+    text.replace('\r', ' ');
+    text.replace('\n', ' ');
+
+    QStringList tokens = text.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+    if (tokens.size() < 4)
     {
-        qDebug() << "XY frame rejected: bad size=" << frame.size() << "expected 84";
+        qDebug() << "XY frame rejected: not enough ASCII tokens";
         return false;
     }
 
-    if (static_cast<unsigned char>(frame[0]) != 0xA5 ||
-        static_cast<unsigned char>(frame[1]) != 0x5A)
+    int startIndex = -1;
+    for (int i = 0; i + 1 < tokens.size(); ++i)
     {
-        qDebug() << "XY frame rejected: bad start marker";
+        if (tokens[i].compare("A5", Qt::CaseInsensitive) == 0 &&
+            tokens[i + 1].compare("5A", Qt::CaseInsensitive) == 0)
+        {
+            startIndex = i;
+            break;
+        }
+    }
+
+    if (startIndex < 0)
+    {
+        qDebug() << "XY frame rejected: no A5 5A start marker in ASCII stream";
         return false;
     }
 
-    if (static_cast<unsigned char>(frame[82]) != 0xE9 ||
-        static_cast<unsigned char>(frame[83]) != 0x43)
+    int endIndex = -1;
+    for (int i = startIndex + 2; i + 1 < tokens.size(); ++i)
     {
-        qDebug() << "XY frame rejected: bad end marker";
+        if (tokens[i].compare("E9", Qt::CaseInsensitive) == 0 &&
+            tokens[i + 1].compare("43", Qt::CaseInsensitive) == 0)
+        {
+            endIndex = i;
+            break;
+        }
+    }
+
+    if (endIndex < 0)
+    {
+        qDebug() << "XY frame rejected: no E9 43 end marker in ASCII stream";
         return false;
     }
 
-    const QByteArray payload = frame.mid(2, 80);
+    QByteArray payload;
+    for (int i = startIndex + 2; i < endIndex; ++i)
+    {
+        QByteArray byte = QByteArray::fromHex(tokens[i].toLatin1());
+        if (byte.size() == 1)
+            payload.append(byte.at(0));
+    }
+
     if (payload.size() != 80)
     {
-        qDebug() << "XY frame rejected: payload size invalid=" << payload.size();
+        qDebug() << "XY payload rejected: ASCII payload size=" << payload.size();
         return false;
     }
 
-    qDebug() << "XY plot packet accepted: start=A5 5A, payload=80 bytes, end=E9 43";
+    qDebug() << "XY plot packet accepted: ASCII A5 5A -> payload 80 bytes -> E9 43";
     return decodeXyPlotPayload(payload, outData);
 }
 
@@ -494,63 +526,61 @@ void SerialManager::onReadyRead()
         return;
     }
 
-    while (rxBuffer.size() >= 4)
+    QString rxText = QString::fromLatin1(rxBuffer);
+    rxText.replace('\r', ' ');
+    rxText.replace('\n', ' ');
+
+    QStringList tokens = rxText.split(QRegularExpression("\\s+"), Qt::SkipEmptyParts);
+    int startIndex = -1;
+    for (int i = 0; i + 1 < tokens.size(); ++i)
     {
-        int start = -1;
-        for (int i = 0; i + 1 < rxBuffer.size(); ++i)
+        if (tokens[i].compare("A5", Qt::CaseInsensitive) == 0 &&
+            tokens[i + 1].compare("5A", Qt::CaseInsensitive) == 0)
         {
-            if (static_cast<unsigned char>(rxBuffer[i]) == 0xA5 &&
-                static_cast<unsigned char>(rxBuffer[i + 1]) == 0x5A)
+            startIndex = i;
+            break;
+        }
+    }
+
+    if (startIndex >= 0)
+    {
+        int endIndex = -1;
+        for (int i = startIndex + 2; i + 1 < tokens.size(); ++i)
+        {
+            if (tokens[i].compare("E9", Qt::CaseInsensitive) == 0 &&
+                tokens[i + 1].compare("43", Qt::CaseInsensitive) == 0)
             {
-                start = i;
+                endIndex = i;
                 break;
             }
         }
 
-        if (start < 0)
+        if (endIndex >= 0)
         {
-            qDebug() << "No XY start marker found in RX buffer; first bytes="
-                     << rxBuffer.left(qMin(32, rxBuffer.size())).toHex();
-            if (rxBuffer.size() > 64)
-                rxBuffer.remove(0, rxBuffer.size() - 64);
-            break;
-        }
+            QByteArray asciiFrame;
+            for (int i = startIndex; i <= endIndex + 1; ++i)
+                asciiFrame.append(tokens[i].toLatin1()).append(' ');
 
-        if (start > 0)
-        {
-            qDebug() << "Discarding" << start << "bytes before XY start marker";
-            rxBuffer.remove(0, start);
-        }
-
-        int end = -1;
-        for (int i = 2; i + 1 < rxBuffer.size(); ++i)
-        {
-            if (static_cast<unsigned char>(rxBuffer[i]) == 0xE9 &&
-                static_cast<unsigned char>(rxBuffer[i + 1]) == 0x43)
+            QVariantList decodedData;
+            if (parseXyPlotFrame(asciiFrame, decodedData))
             {
-                end = i;
-                break;
+                qDebug() << "Valid XY ASCII frame found; updating plot data";
+                updateXyPlotData(decodedData);
+                rxBuffer.clear();
+            }
+            else
+            {
+                qDebug() << "ASCII XY frame invalid; dropping buffer";
+                rxBuffer.clear();
             }
         }
-
-        if (end < 0)
-            return;
-
-        const QByteArray frame = rxBuffer.mid(0, end + 2);
-        QVariantList decodedData;
-
-        if (frame.size() == 84 && parseXyPlotFrame(frame, decodedData))
-        {
-            qDebug() << "Valid XY frame found; updating plot data";
-            updateXyPlotData(decodedData);
-            rxBuffer.remove(0, frame.size());
-            continue;
-        }
-
-        qDebug() << "XY frame invalid; dropping 1 byte and retrying";
-        rxBuffer.remove(0, 1);
-        if (rxBuffer.size() < 4)
-            break;
+    }
+    else
+    {
+        qDebug() << "No XY start marker found in RX buffer; first bytes="
+                 << rxBuffer.left(qMin(64, rxBuffer.size())).toHex();
+        if (rxBuffer.size() > 128)
+            rxBuffer.remove(0, rxBuffer.size() - 128);
     }
 
     // MCU requesting parameters
