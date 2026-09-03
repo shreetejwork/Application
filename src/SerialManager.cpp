@@ -539,10 +539,16 @@ void SerialManager::onReadyRead()
         if (startToken < 0)
             break;
 
-        qDebug() << "XY ASCII start found; tokens=" << tokenMatches.size();
+        qDebug() << "XY ASCII start found; start token=" << startToken
+                 << "available tokens=" << tokenMatches.size()
+                 << "required tokens=" << (startToken + 84)
+                 << "missing tokens=" << qMax(0, startToken + 84 - tokenMatches.size());
 
         if (tokenMatches.size() < startToken + 84)
+        {
+            qDebug() << "XY ASCII frame incomplete; retaining buffer";
             break;
+        }
 
         if (tokenMatches[startToken + 82].captured().compare("E9", Qt::CaseInsensitive) != 0 ||
             tokenMatches[startToken + 83].captured().compare("43", Qt::CaseInsensitive) != 0)

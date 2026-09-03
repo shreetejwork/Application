@@ -119,6 +119,9 @@ Item {
         target: SerialManager
 
         function onXyPlotDataChanged() {
+            if (SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0)
+                root.magneticFieldData = SerialManager.xyPlotData
+
             console.log("XY QML data received: points=" + SerialManager.xyPlotData.length,
                         "first=" + (SerialManager.xyPlotData.length > 0 ? SerialManager.xyPlotData[0].y : "none"),
                         "last=" + (SerialManager.xyPlotData.length > 0 ? SerialManager.xyPlotData[SerialManager.xyPlotData.length - 1].y : "none"))
@@ -324,7 +327,9 @@ Item {
                     anchors.topMargin:    8 * root.scale
                     anchors.bottomMargin: 8 * root.scale
 
-                    fieldData:       root.magneticFieldData
+                    fieldData:       (SerialManager && SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0)
+                                     ? SerialManager.xyPlotData
+                                     : root.magneticFieldData
                     showPointLabels: false
                 }
             }
