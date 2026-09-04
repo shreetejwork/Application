@@ -1,4 +1,3 @@
-
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -829,6 +828,10 @@ Popup {
                     : "#1A4DB5"
             }
 
+            // ====================================================
+            // EXISTING MOUSE INPUT
+            // ====================================================
+
             MouseArea {
 
                 id: exitMouse
@@ -836,6 +839,8 @@ Popup {
                 anchors.fill: parent
 
                 hoverEnabled: true
+
+                preventStealing: true
 
                 cursorShape:
                     Qt.PointingHandCursor
@@ -866,6 +871,47 @@ Popup {
                     )
 
                     validationScreenPopup.close()
+                }
+            }
+
+            // ====================================================
+            // TOUCHSCREEN INPUT
+            // ====================================================
+
+            MultiPointTouchArea {
+
+                id: exitTouchArea
+
+                anchors.fill: parent
+
+                maximumTouchPoints: 1
+
+                onPressed: {
+
+                    exitButton.scale = 0.92
+                }
+
+                onReleased: {
+
+                    exitButton.scale = 1.0
+
+                    countdownTimer.stop()
+
+                    validationScreenPopup.rejectCycleStarted =
+                            false
+
+                    GlobalState.countRejection = true
+
+                    saveValidationAudit(
+                        "Validation Skipped"
+                    )
+
+                    validationScreenPopup.close()
+                }
+
+                onCanceled: {
+
+                    exitButton.scale = 1.0
                 }
             }
         }
@@ -1829,14 +1875,35 @@ Popup {
                             vTypography.body
                     }
 
+                    // ====================================================
+                    // EXISTING MOUSE INPUT
+                    // ====================================================
+
                     MouseArea {
 
                         id: closeArea
 
                         anchors.fill: parent
 
+                        preventStealing: true
+
                         cursorShape:
                             Qt.PointingHandCursor
+
+                        onPressed: {
+
+                            closeBtn.scale = 0.96
+                        }
+
+                        onReleased: {
+
+                            closeBtn.scale = 1.0
+                        }
+
+                        onCanceled: {
+
+                            closeBtn.scale = 1.0
+                        }
 
                         onClicked: {
 
@@ -1850,6 +1917,45 @@ Popup {
                                 "Count Rejection:",
                                 GlobalState.countRejection
                             )
+                        }
+                    }
+
+                    // ====================================================
+                    // TOUCHSCREEN INPUT
+                    // ====================================================
+
+                    MultiPointTouchArea {
+
+                        id: closeTouchArea
+
+                        anchors.fill: parent
+
+                        maximumTouchPoints: 1
+
+                        onPressed: {
+
+                            closeBtn.scale = 0.96
+                        }
+
+                        onReleased: {
+
+                            closeBtn.scale = 1.0
+
+                            countdownTimer.stop()
+
+                            GlobalState.countRejection = true
+
+                            validationScreenPopup.close()
+
+                            console.log(
+                                "Count Rejection:",
+                                GlobalState.countRejection
+                            )
+                        }
+
+                        onCanceled: {
+
+                            closeBtn.scale = 1.0
                         }
                     }
                 }
