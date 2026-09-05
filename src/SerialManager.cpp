@@ -5,10 +5,41 @@
 #include <QTimer>
 #include <QFile>
 #include <QSerialPortInfo>
-#include <QRegularExpression>
 #include <QtEndian>
 
+#include <cstdint>
+
 #include <QTime>
+
+namespace
+{
+constexpr uint8_t XY_SYNC1 = 0xA5;
+constexpr uint8_t XY_SYNC2 = 0x5A;
+constexpr int XY_SAMPLES = 20;
+constexpr int XY_DATA_SIZE = 80;
+constexpr int XY_CRC_SIZE = 2;
+constexpr int XY_PACKET_SIZE = 2 + XY_DATA_SIZE + XY_CRC_SIZE;
+
+uint16_t crc16Ccitt(const QByteArray &data)
+{
+    uint16_t crc = 0xFFFF;
+
+    for (const char byte : data)
+    {
+        crc ^= static_cast<uint16_t>(static_cast<uint8_t>(byte)) << 8;
+
+        for (int bit = 0; bit < 8; ++bit)
+        {
+            if (crc & 0x8000)
+                crc = static_cast<uint16_t>((crc << 1) ^ 0x1021);
+            else
+                crc = static_cast<uint16_t>(crc << 1);
+        }
+    }
+
+    return crc;
+}
+}
 
 SerialManager::SerialManager(QObject *parent)
     : QObject(parent)
@@ -383,67 +414,71 @@ void SerialManager::setAmplitudeThreshold(int value)
 
 bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outData)
 {
-    if (frame.size() != 84)
+    if (frame.size() != XY_PACKET_SIZE)
     {
         qDebug() << "XY frame rejected: size=" << frame.size();
         return false;
     }
 
-    if (static_cast<quint8>(frame.at(0)) != 0xA5 ||
-        static_cast<quint8>(frame.at(1)) != 0x5A ||
-        static_cast<quint8>(frame.at(82)) != 0xE9 ||
-        static_cast<quint8>(frame.at(83)) != 0x43)
+    if (static_cast<uint8_t>(frame.at(0)) != XY_SYNC1 ||
+        static_cast<uint8_t>(frame.at(1)) != XY_SYNC2)
     {
-        qDebug() << "XY frame rejected: invalid markers";
+        qDebug() << "XY frame rejected: invalid synchronization";
         return false;
     }
 
-    return decodeXyPlotPayload(frame.mid(2, 80), outData);
+    const QByteArray payload = frame.mid(2, XY_DATA_SIZE);
+    const int crcOffset = 2 + XY_DATA_SIZE;
+    const uint16_t calculatedCrc = crc16Ccitt(payload);
+    const uint16_t receivedCrc =
+        (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset))) << 8) |
+        static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset + 1)));
+
+    qDebug() << "XY CRC calculated:" << Qt::hex << calculatedCrc
+             << "received:" << receivedCrc << Qt::dec;
+
+    if (calculatedCrc != receivedCrc)
+    {
+        qDebug() << "XY CRC FAIL";
+        return false;
+    }
+
+    qDebug() << "XY CRC PASS";
+    return decodeXyPlotPayload(payload, outData);
 }
 
 bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList &outData)
 {
-    if (payload.size() != 80)
+    if (payload.size() != XY_DATA_SIZE)
     {
         qDebug() << "XY payload rejected: size=" << payload.size();
         return false;
     }
 
     outData.clear();
-    quint16 firstRawValue = 0;
-    quint16 lastRawValue = 0;
-    QStringList decodedValues;
-
-    for (int i = 0; i < 40; ++i)
+    for (int i = 0; i < XY_SAMPLES; ++i)
     {
-        const int offset = i * 2;
-        const quint16 value = (static_cast<quint16>(static_cast<quint8>(payload.at(offset))) << 8) |
-                              static_cast<quint16>(static_cast<quint8>(payload.at(offset + 1)));
+        const int offset = i * 4;
+        const auto readSignedValue = [&payload](int valueOffset) {
+            const uint16_t raw =
+                (static_cast<uint16_t>(static_cast<uint8_t>(payload.at(valueOffset))) << 8) |
+                static_cast<uint16_t>(static_cast<uint8_t>(payload.at(valueOffset + 1)));
+            return static_cast<int16_t>(raw);
+        };
 
-        if (i == 0)
-            firstRawValue = value;
-        lastRawValue = value;
-        decodedValues.append(QString::number(value));
-
-        const qreal xValue = -90.0 + (180.0 * i / 39.0);
-        const qreal yValue = qBound(-100.0,
-                                    static_cast<qreal>(value) / 3.0,
-                                    100.0);
+        const int16_t xValue = readSignedValue(offset);
+        const int16_t yValue = readSignedValue(offset + 2);
 
         QVariantMap point;
-        point["x"] = xValue;
-        point["y"] = yValue;
+        point["x"] = static_cast<int>(xValue);
+        point["y"] = static_cast<int>(yValue);
         outData.append(point);
     }
 
-    qDebug() << "Decoded XY payload: points=" << outData.size();
-    qDebug() << "XY frame received: 84 bytes"
-             << "XY payload: 80 bytes"
-             << "XY points:" << outData.size()
-             << "XY first value:" << firstRawValue
-             << "XY last value:" << lastRawValue;
-    qDebug() << "XY converted values:" << decodedValues.join(", ");
-    return !outData.isEmpty();
+    qDebug() << "Decoded XY payload: points=" << outData.size()
+             << "first=" << outData.first().toMap()
+             << "last=" << outData.last().toMap();
+    return outData.size() == XY_SAMPLES;
 }
 
 void SerialManager::updateXyPlotData(const QVariantList &data)
@@ -489,98 +524,35 @@ void SerialManager::onReadyRead()
 
     while (true)
     {
-        const qsizetype startIndex = xyRxBuffer.indexOf(QByteArray::fromHex("A55A"));
+        const QByteArray sync = QByteArray(1, static_cast<char>(XY_SYNC1)) +
+                                QByteArray(1, static_cast<char>(XY_SYNC2));
+        const qsizetype startIndex = xyRxBuffer.indexOf(sync);
         if (startIndex < 0)
+        {
+            if (xyRxBuffer.endsWith(static_cast<char>(XY_SYNC1)))
+                xyRxBuffer = xyRxBuffer.right(1);
+            else
+                xyRxBuffer.clear();
             break;
+        }
 
         if (startIndex > 0)
             xyRxBuffer.remove(0, startIndex);
 
-        if (xyRxBuffer.size() < 84)
+        if (xyRxBuffer.size() < XY_PACKET_SIZE)
             break;
 
-        const QByteArray frame = xyRxBuffer.left(84);
-        xyRxBuffer.remove(0, 84);
-
-        if (static_cast<quint8>(frame.at(82)) != 0xE9 ||
-            static_cast<quint8>(frame.at(83)) != 0x43)
-        {
-            qDebug() << "XY frame rejected: invalid end marker";
-            continue;
-        }
-
-        QVariantList decodedData;
-        if (parseXyPlotFrame(frame, decodedData))
-            updateXyPlotData(decodedData);
-    }
-
-    // Some MCU/USB serial adapters deliver the frame as space-separated hex text.
-    while (xyRxBuffer.indexOf(QByteArray::fromHex("A55A")) < 0)
-    {
-        const QString text = QString::fromLatin1(xyRxBuffer);
-        QRegularExpression tokenExpression("\\S+");
-        QRegularExpressionMatchIterator matches = tokenExpression.globalMatch(text);
-        QList<QRegularExpressionMatch> tokenMatches;
-
-        while (matches.hasNext())
-            tokenMatches.append(matches.next());
-
-        int startToken = -1;
-        for (int i = 0; i + 1 < tokenMatches.size(); ++i)
-        {
-            if (tokenMatches[i].captured().compare("A5", Qt::CaseInsensitive) == 0 &&
-                tokenMatches[i + 1].captured().compare("5A", Qt::CaseInsensitive) == 0)
-            {
-                startToken = i;
-                break;
-            }
-        }
-
-        if (startToken < 0)
-            break;
-
-        qDebug() << "XY ASCII start found; start token=" << startToken
-                 << "available tokens=" << tokenMatches.size()
-                 << "required tokens=" << (startToken + 84)
-                 << "missing tokens=" << qMax(0, startToken + 84 - tokenMatches.size());
-
-        if (tokenMatches.size() < startToken + 84)
-        {
-            qDebug() << "XY ASCII frame incomplete; retaining buffer";
-            break;
-        }
-
-        if (tokenMatches[startToken + 82].captured().compare("E9", Qt::CaseInsensitive) != 0 ||
-            tokenMatches[startToken + 83].captured().compare("43", Qt::CaseInsensitive) != 0)
-        {
-            xyRxBuffer.remove(0, tokenMatches[startToken].capturedStart() + 2);
-            continue;
-        }
-
-        QByteArray frame;
-        bool validFrame = true;
-        for (int i = startToken; i < startToken + 84; ++i)
-        {
-            const QByteArray byte = QByteArray::fromHex(tokenMatches[i].captured().toLatin1());
-            if (byte.size() != 1)
-            {
-                validFrame = false;
-                break;
-            }
-            frame.append(byte);
-        }
-
-        const int consumed = tokenMatches[startToken + 83].capturedEnd();
-        xyRxBuffer.remove(0, consumed);
-
-        if (!validFrame)
-            continue;
+        const QByteArray frame = xyRxBuffer.left(XY_PACKET_SIZE);
 
         QVariantList decodedData;
         if (parseXyPlotFrame(frame, decodedData))
         {
-            qDebug() << "XY ASCII frame converted to" << decodedData.size() << "plot points";
+            xyRxBuffer.remove(0, XY_PACKET_SIZE);
             updateXyPlotData(decodedData);
+        }
+        else
+        {
+            xyRxBuffer.remove(0, 1);
         }
     }
 
