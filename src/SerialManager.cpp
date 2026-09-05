@@ -514,6 +514,28 @@ void SerialManager::updateXyPlotData(const QVariantList &data)
     qDebug() << "XY plot data updated with" << m_xyPlotData.size() << "points";
 }
 
+void SerialManager::logXyPacketBeforePlotUpdate(const QByteArray &frame,
+                                                 const QVariantList &data)
+{
+    QStringList pairs;
+    for (int i = 0; i < data.size(); ++i)
+    {
+        const QVariantMap point = data.at(i).toMap();
+        pairs.append(QString("P%1 raw=(%2,%3) plot=(%4,%5)")
+                         .arg(i + 1)
+                         .arg(point.value(QStringLiteral("rawX")).toInt())
+                         .arg(point.value(QStringLiteral("rawY")).toInt())
+                         .arg(point.value(QStringLiteral("x")).toDouble(), 0, 'f', 2)
+                         .arg(point.value(QStringLiteral("y")).toDouble(), 0, 'f', 2));
+    }
+
+    qDebug() << "XY FULL INCOMING PACKET BEFORE PLOT UPDATE"
+             << "total bytes:" << frame.size()
+             << "hex:" << frame.toHex(' ');
+    qDebug() << "XY PLOT ARRAY BEFORE UPDATE: points=" << data.size()
+             << pairs.join(" | ");
+}
+
 void SerialManager::processXyAsciiBuffer()
 {
     while (true)
@@ -583,6 +605,7 @@ void SerialManager::processXyAsciiBuffer()
         if (parseXyPlotFrame(frame, decodedData))
         {
             xyRxBuffer.remove(0, tokens[startToken + XY_PACKET_SIZE - 1].capturedEnd());
+            logXyPacketBeforePlotUpdate(frame, decodedData);
             updateXyPlotData(decodedData);
         }
         else
@@ -653,6 +676,7 @@ void SerialManager::onReadyRead()
             if (parseXyPlotFrame(frame, decodedData))
             {
                 xyRxBuffer.remove(0, XY_PACKET_SIZE);
+                logXyPacketBeforePlotUpdate(frame, decodedData);
                 updateXyPlotData(decodedData);
             }
             else

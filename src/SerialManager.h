@@ -163,6 +163,8 @@ private:
     bool parseXyPlotFrame(const QByteArray &frame, QVariantList &outData);
     bool decodeXyPlotPayload(const QByteArray &payload, QVariantList &outData);
     void processXyAsciiBuffer();
+    void logXyPacketBeforePlotUpdate(const QByteArray &frame,
+                                     const QVariantList &data);
     void updateXyPlotData(const QVariantList &data);
 
     bool m_coilBalancingOn = false;
