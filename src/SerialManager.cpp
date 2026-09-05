@@ -19,6 +19,8 @@ constexpr int XY_SAMPLES = 20;
 constexpr int XY_DATA_SIZE = 80;
 constexpr int XY_CRC_SIZE = 2;
 constexpr int XY_PACKET_SIZE = 2 + XY_DATA_SIZE + XY_CRC_SIZE;
+constexpr qreal XY_PLOT_LIMIT = 100.0;
+constexpr qreal XY_SIGNED_SCALE = XY_PLOT_LIMIT / 32768.0;
 
 uint16_t crc16Ccitt(const QByteArray &data)
 {
@@ -456,6 +458,8 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
     }
 
     outData.clear();
+    QStringList decimalPairs;
+
     for (int i = 0; i < XY_SAMPLES; ++i)
     {
         const int offset = i * 4;
@@ -469,15 +473,30 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
         const int16_t xValue = readSignedValue(offset);
         const int16_t yValue = readSignedValue(offset + 2);
 
+        const qreal plotX = qBound(-XY_PLOT_LIMIT,
+                                   static_cast<qreal>(xValue) * XY_SIGNED_SCALE,
+                                   XY_PLOT_LIMIT);
+        const qreal plotY = qBound(-XY_PLOT_LIMIT,
+                                   static_cast<qreal>(yValue) * XY_SIGNED_SCALE,
+                                   XY_PLOT_LIMIT);
+
         QVariantMap point;
-        point["x"] = static_cast<int>(xValue);
-        point["y"] = static_cast<int>(yValue);
+        point["x"] = plotX;
+        point["y"] = plotY;
+        point["rawX"] = static_cast<int>(xValue);
+        point["rawY"] = static_cast<int>(yValue);
         outData.append(point);
+
+        decimalPairs.append(QString("P%1 raw=(%2,%3) plot=(%4,%5)")
+                                .arg(i + 1)
+                                .arg(static_cast<int>(xValue))
+                                .arg(static_cast<int>(yValue))
+                                .arg(plotX, 0, 'f', 2)
+                                .arg(plotY, 0, 'f', 2));
     }
 
     qDebug() << "Decoded XY payload: points=" << outData.size()
-             << "first=" << outData.first().toMap()
-             << "last=" << outData.last().toMap();
+             << "signed decimal XY pairs:" << decimalPairs.join(" | ");
     return outData.size() == XY_SAMPLES;
 }
 

@@ -119,8 +119,20 @@ Item {
         target: SerialManager
 
         function onXyPlotDataChanged() {
-            if (SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0)
-                root.magneticFieldData = SerialManager.xyPlotData
+            if (SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0) {
+                root.magneticFieldData = SerialManager.xyPlotData.slice()
+
+                var pairs = []
+                for (var i = 0; i < root.magneticFieldData.length; ++i)
+                    pairs.push("P" + (i + 1) + " raw=("
+                               + root.magneticFieldData[i].rawX + ","
+                               + root.magneticFieldData[i].rawY + ") plot=("
+                               + root.magneticFieldData[i].x + ","
+                               + root.magneticFieldData[i].y + ")")
+
+                console.log("XY QML array updated: points=" + root.magneticFieldData.length,
+                            pairs.join(" | "))
+            }
 
             console.log("XY QML data received: points=" + SerialManager.xyPlotData.length,
                         "first=" + (SerialManager.xyPlotData.length > 0 ? SerialManager.xyPlotData[0].y : "none"),
