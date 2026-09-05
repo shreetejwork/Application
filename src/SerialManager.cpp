@@ -5,6 +5,7 @@
 #include <QTimer>
 #include <QFile>
 #include <QSerialPortInfo>
+#include <QRegularExpression>
 #include <QtEndian>
 
 #include <cstdint>
@@ -513,6 +514,85 @@ void SerialManager::updateXyPlotData(const QVariantList &data)
     qDebug() << "XY plot data updated with" << m_xyPlotData.size() << "points";
 }
 
+void SerialManager::processXyAsciiBuffer()
+{
+    while (true)
+    {
+        const QString text = QString::fromLatin1(xyRxBuffer);
+        QRegularExpressionMatchIterator matches =
+            QRegularExpression(QStringLiteral("\\S+")).globalMatch(text);
+        QList<QRegularExpressionMatch> tokens;
+
+        while (matches.hasNext())
+            tokens.append(matches.next());
+
+        if (tokens.size() < 2)
+            return;
+
+        int startToken = -1;
+        for (int i = 0; i + 1 < tokens.size(); ++i)
+        {
+            if (tokens[i].captured().compare(QStringLiteral("A5"), Qt::CaseInsensitive) == 0 &&
+                tokens[i + 1].captured().compare(QStringLiteral("5A"), Qt::CaseInsensitive) == 0)
+            {
+                startToken = i;
+                break;
+            }
+        }
+
+        if (startToken < 0)
+        {
+            const auto lastToken = tokens.constLast();
+            if (lastToken.capturedStart() > 0)
+                xyRxBuffer = xyRxBuffer.mid(lastToken.capturedStart());
+            return;
+        }
+
+        if (tokens.constLast().capturedEnd() == text.size())
+            return;
+
+        const int availableTokens = tokens.size() - startToken;
+        if (availableTokens < XY_PACKET_SIZE)
+        {
+            xyRxBuffer = xyRxBuffer.mid(tokens[startToken].capturedStart());
+            qDebug() << "XY ASCII sync found; waiting for total packet bytes:"
+                     << availableTokens << "/" << XY_PACKET_SIZE;
+            return;
+        }
+
+        QByteArray frame;
+        for (int i = 0; i < XY_PACKET_SIZE; ++i)
+        {
+            const QByteArray byte = QByteArray::fromHex(
+                tokens[startToken + i].captured().toLatin1());
+            if (byte.size() != 1)
+            {
+                qDebug() << "XY ASCII token rejected:"
+                         << tokens[startToken + i].captured();
+                xyRxBuffer.remove(0, tokens[startToken].capturedEnd());
+                frame.clear();
+                break;
+            }
+            frame.append(byte);
+        }
+
+        if (frame.isEmpty())
+            continue;
+
+        QVariantList decodedData;
+        if (parseXyPlotFrame(frame, decodedData))
+        {
+            xyRxBuffer.remove(0, tokens[startToken + XY_PACKET_SIZE - 1].capturedEnd());
+            updateXyPlotData(decodedData);
+        }
+        else
+        {
+            qDebug() << "XY ASCII packet rejected; resynchronizing";
+            xyRxBuffer.remove(0, tokens[startToken].capturedStart() + 2);
+        }
+    }
+}
+
 void SerialManager::onReadyRead()
 {
     QByteArray data = serial.readAll();
@@ -546,44 +626,44 @@ void SerialManager::onReadyRead()
         xyRxBuffer.clear();
     }
 
-    while (true)
+    const QByteArray sync = QByteArray(1, static_cast<char>(XY_SYNC1)) +
+                            QByteArray(1, static_cast<char>(XY_SYNC2));
+
+    if (xyRxBuffer.indexOf(sync) >= 0)
     {
-        const QByteArray sync = QByteArray(1, static_cast<char>(XY_SYNC1)) +
-                                QByteArray(1, static_cast<char>(XY_SYNC2));
-        const qsizetype startIndex = xyRxBuffer.indexOf(sync);
-        if (startIndex < 0)
+        while (true)
         {
-            qDebug() << "XY waiting for sync; buffer before cleanup:"
-                     << xyRxBuffer.size();
-            if (xyRxBuffer.endsWith(static_cast<char>(XY_SYNC1)))
-                xyRxBuffer = xyRxBuffer.right(1);
+            const qsizetype startIndex = xyRxBuffer.indexOf(sync);
+            if (startIndex < 0)
+                break;
+
+            if (startIndex > 0)
+                xyRxBuffer.remove(0, startIndex);
+
+            if (xyRxBuffer.size() < XY_PACKET_SIZE)
+            {
+                qDebug() << "XY sync found; waiting for total packet bytes:"
+                         << xyRxBuffer.size() << "/" << XY_PACKET_SIZE;
+                break;
+            }
+
+            const QByteArray frame = xyRxBuffer.left(XY_PACKET_SIZE);
+
+            QVariantList decodedData;
+            if (parseXyPlotFrame(frame, decodedData))
+            {
+                xyRxBuffer.remove(0, XY_PACKET_SIZE);
+                updateXyPlotData(decodedData);
+            }
             else
-                xyRxBuffer.clear();
-            break;
+            {
+                xyRxBuffer.remove(0, 1);
+            }
         }
-
-        if (startIndex > 0)
-            xyRxBuffer.remove(0, startIndex);
-
-        if (xyRxBuffer.size() < XY_PACKET_SIZE)
-        {
-            qDebug() << "XY sync found; waiting for total packet bytes:"
-                     << xyRxBuffer.size() << "/" << XY_PACKET_SIZE;
-            break;
-        }
-
-        const QByteArray frame = xyRxBuffer.left(XY_PACKET_SIZE);
-
-        QVariantList decodedData;
-        if (parseXyPlotFrame(frame, decodedData))
-        {
-            xyRxBuffer.remove(0, XY_PACKET_SIZE);
-            updateXyPlotData(decodedData);
-        }
-        else
-        {
-            xyRxBuffer.remove(0, 1);
-        }
+    }
+    else
+    {
+        processXyAsciiBuffer();
     }
 
     // MCU requesting parameters
