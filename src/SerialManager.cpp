@@ -16,9 +16,12 @@ namespace
 constexpr uint8_t XY_SYNC1 = 0xA5;
 constexpr uint8_t XY_SYNC2 = 0x5A;
 constexpr int XY_SAMPLES = 20;
+constexpr int XY_SYNC_SIZE = 2;
 constexpr int XY_DATA_SIZE = 80;
 constexpr int XY_CRC_SIZE = 2;
-constexpr int XY_PACKET_SIZE = 2 + XY_DATA_SIZE + XY_CRC_SIZE;
+constexpr int XY_PAYLOAD_OFFSET = XY_SYNC_SIZE;
+constexpr int XY_CRC_OFFSET = XY_PAYLOAD_OFFSET + XY_DATA_SIZE;
+constexpr int XY_PACKET_SIZE = XY_SYNC_SIZE + XY_DATA_SIZE + XY_CRC_SIZE;
 constexpr qreal XY_PLOT_LIMIT = 100.0;
 constexpr qreal XY_SIGNED_SCALE = XY_PLOT_LIMIT / 32768.0;
 
@@ -429,12 +432,11 @@ bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outD
         return false;
     }
 
-    const QByteArray payload = frame.mid(2, XY_DATA_SIZE);
-    const int crcOffset = 2 + XY_DATA_SIZE;
+    const QByteArray payload = frame.mid(XY_PAYLOAD_OFFSET, XY_DATA_SIZE);
     const uint16_t calculatedCrc = crc16Ccitt(payload);
     const uint16_t receivedCrc =
-        (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset))) << 8) |
-        static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset + 1)));
+        (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(XY_CRC_OFFSET))) << 8) |
+        static_cast<uint16_t>(static_cast<uint8_t>(frame.at(XY_CRC_OFFSET + 1)));
 
     qDebug() << "XY CRC calculated:" << Qt::hex << calculatedCrc
              << "received:" << receivedCrc << Qt::dec;
@@ -517,7 +519,10 @@ void SerialManager::onReadyRead()
 
     if (!data.isEmpty())
     {
-        qDebug() << "XY serial bytes received:" << data.size();
+        const QByteArray preview = data.left(12).toHex(' ');
+        qDebug() << "XY serial bytes received:" << data.size()
+                 << "preview:" << preview
+                 << "sync index:" << data.indexOf(QByteArray::fromHex("A55A"));
         // Show exactly what arrived from UART
         appendRxLog(QString::fromUtf8(data));
 
@@ -548,6 +553,8 @@ void SerialManager::onReadyRead()
         const qsizetype startIndex = xyRxBuffer.indexOf(sync);
         if (startIndex < 0)
         {
+            qDebug() << "XY waiting for sync; buffer before cleanup:"
+                     << xyRxBuffer.size();
             if (xyRxBuffer.endsWith(static_cast<char>(XY_SYNC1)))
                 xyRxBuffer = xyRxBuffer.right(1);
             else
@@ -559,7 +566,11 @@ void SerialManager::onReadyRead()
             xyRxBuffer.remove(0, startIndex);
 
         if (xyRxBuffer.size() < XY_PACKET_SIZE)
+        {
+            qDebug() << "XY sync found; waiting for total packet bytes:"
+                     << xyRxBuffer.size() << "/" << XY_PACKET_SIZE;
             break;
+        }
 
         const QByteArray frame = xyRxBuffer.left(XY_PACKET_SIZE);
 
