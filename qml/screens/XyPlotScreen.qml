@@ -78,12 +78,12 @@ Item {
                 }
 
                 var savedPath = PdfExporter.exportXYPlotToPdf(
-                        tempImage,
-                        productPhaseText.text,
-                        signalText.text,
-                        amplitudeText.text,
-                        sessionInfo
-                )
+                            tempImage,
+                            productPhaseText.text,
+                            signalText.text,
+                            amplitudeText.text,
+                            sessionInfo
+                            )
                 console.log("XY Plot PDF saved at:", savedPath)
 
                 if (notify) {
@@ -101,24 +101,21 @@ Item {
     property real smallFont: 11 * scale
 
     property var magneticFieldData: (SerialManager && SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0)
-                                     ? SerialManager.xyPlotData
-                                     : [
-                                         { x: -90, y: -55 },
-                                         { x: -70, y: -32 },
-                                         { x: -50, y:  -8 },
-                                         { x: -30, y:  18 },
-                                         { x: -10, y:  36 },
-                                         { x:  10, y:  44 },
-                                         { x:  30, y:  28 },
-                                         { x:  50, y:   6 },
-                                         { x:  70, y: -18 },
-                                         { x:  90, y: -42 }
-                                     ]
+                                    ? SerialManager.xyPlotData
+                                    : [
+                                          { x: -90, y: -55 },
+                                          { x: -70, y: -32 },
+                                          { x: -50, y:  -8 },
+                                          { x: -30, y:  18 },
+                                          { x: -10, y:  36 },
+                                          { x:  10, y:  44 },
+                                          { x:  30, y:  28 },
+                                          { x:  50, y:   6 },
+                                          { x:  70, y: -18 },
+                                          { x:  90, y: -42 }
+                                      ]
 
-    property var xyLineHistory: (SerialManager && SerialManager.xyPlotData
-                                  && SerialManager.xyPlotData.length === 20)
-                                 ? [SerialManager.xyPlotData.slice()]
-                                 : []
+    property var xyLineHistory: []
 
     function addXYTrace(points) {
         if (!points || points.length !== 20)
@@ -127,9 +124,9 @@ Item {
         var trace = []
         for (var i = 0; i < points.length; ++i) {
             trace.push({
-                x: points[i].x,
-                y: points[i].y
-            })
+                           x: points[i].x,
+                           y: points[i].y
+                       })
         }
 
         var updatedHistory = xyLineHistory.slice()
@@ -167,6 +164,10 @@ Item {
     }
 
     Component.onCompleted: {
+        if (SerialManager && SerialManager.xyPlotData
+                && SerialManager.xyPlotData.length === 20)
+            root.addXYTrace(SerialManager.xyPlotData)
+
         console.log("XY QML initial data: points=" + root.magneticFieldData.length)
     }
 
@@ -275,7 +276,9 @@ Item {
 
                             Text {
                                 id: productPhaseText
-                                text: "40"
+                                text:                     Number(
+                                                              SerialManager.productPhase
+                                                              ).toFixed(1)
                                 font.pixelSize: plotTypography.body
                                 color: "#1A4DB5"
                             }
@@ -305,7 +308,7 @@ Item {
 
                             Text {
                                 id: signalText
-                                text: "400"
+                                text: SerialManager.signal
                                 font.pixelSize: plotTypography.body
                                 color: "#0F8A60"
                             }
@@ -335,7 +338,7 @@ Item {
 
                             Text {
                                 id: amplitudeText
-                                text: "250"
+                                text: SerialManager.amplitude
                                 font.pixelSize: plotTypography.body
                                 color: "#D64545"
                             }
