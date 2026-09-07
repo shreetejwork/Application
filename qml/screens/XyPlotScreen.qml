@@ -164,10 +164,6 @@ Item {
     }
 
     Component.onCompleted: {
-        if (SerialManager && SerialManager.xyPlotData
-                && SerialManager.xyPlotData.length === 20)
-            root.addXYTrace(SerialManager.xyPlotData)
-
         console.log("XY QML initial data: points=" + root.magneticFieldData.length)
     }
 

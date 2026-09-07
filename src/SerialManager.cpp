@@ -505,9 +505,6 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
 
 void SerialManager::updateXyPlotData(const QVariantList &data)
 {
-    if (m_xyPlotData == data)
-        return;
-
     m_xyPlotData = data;
     emit xyPlotDataChanged();
 
