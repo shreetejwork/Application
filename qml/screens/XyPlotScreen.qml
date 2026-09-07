@@ -115,12 +115,38 @@ Item {
                                          { x:  90, y: -42 }
                                      ]
 
+    property var xyLineHistory: (SerialManager && SerialManager.xyPlotData
+                                  && SerialManager.xyPlotData.length === 20)
+                                 ? [SerialManager.xyPlotData.slice()]
+                                 : []
+
+    function addXYTrace(points) {
+        if (!points || points.length !== 20)
+            return
+
+        var trace = []
+        for (var i = 0; i < points.length; ++i) {
+            trace.push({
+                x: points[i].x,
+                y: points[i].y
+            })
+        }
+
+        var updatedHistory = xyLineHistory.slice()
+        updatedHistory.push(trace)
+        while (updatedHistory.length > 5)
+            updatedHistory.shift()
+
+        xyLineHistory = updatedHistory
+    }
+
     Connections {
         target: SerialManager
 
         function onXyPlotDataChanged() {
             if (SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0) {
                 root.magneticFieldData = SerialManager.xyPlotData.slice()
+                root.addXYTrace(SerialManager.xyPlotData)
 
                 var pairs = []
                 for (var i = 0; i < root.magneticFieldData.length; ++i)
@@ -339,9 +365,7 @@ Item {
                     anchors.topMargin:    8 * root.scale
                     anchors.bottomMargin: 8 * root.scale
 
-                    fieldData:       (SerialManager && SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0)
-                                     ? SerialManager.xyPlotData
-                                     : root.magneticFieldData
+                    fieldHistory:    root.xyLineHistory
                     showPointLabels: false
                 }
             }

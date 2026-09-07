@@ -18,6 +18,11 @@ class MagneticFieldPlotItem : public QQuickPaintedItem
                        WRITE setFieldData
                            NOTIFY fieldDataChanged)
 
+    Q_PROPERTY(QVariantList fieldHistory
+                   READ fieldHistory
+                       WRITE setFieldHistory
+                           NOTIFY fieldHistoryChanged)
+
     // =====================================================
     // SHOW / HIDE POINT LABELS
     // =====================================================
@@ -39,6 +44,9 @@ public:
     QVariantList fieldData() const;
     void setFieldData(const QVariantList &data);
 
+    QVariantList fieldHistory() const;
+    void setFieldHistory(const QVariantList &history);
+
     // =====================================================
     // POINT LABELS
     // =====================================================
@@ -49,6 +57,8 @@ public:
 signals:
     void fieldDataChanged();
 
+    void fieldHistoryChanged();
+
     void showPointLabelsChanged();
 
 private:
@@ -57,6 +67,8 @@ private:
     // =====================================================
 
     QVariantList m_fieldData;
+
+    QVariantList m_fieldHistory;
 
     // =====================================================
     // LABEL VISIBILITY

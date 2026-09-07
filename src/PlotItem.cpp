@@ -31,6 +31,23 @@ void MagneticFieldPlotItem::setFieldData(const QVariantList &data)
     update();
 }
 
+QVariantList MagneticFieldPlotItem::fieldHistory() const
+{
+    return m_fieldHistory;
+}
+
+void MagneticFieldPlotItem::setFieldHistory(const QVariantList &history)
+{
+    if (m_fieldHistory == history)
+        return;
+
+    m_fieldHistory = history;
+
+    emit fieldHistoryChanged();
+
+    update();
+}
+
 // =====================================================
 // SHOW LABELS
 // =====================================================
@@ -155,49 +172,16 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
         "-Y"
         );
 
-    if (m_fieldData.isEmpty())
+    const QVariantList traces = m_fieldHistory.isEmpty()
+                                    ? QVariantList{m_fieldData}
+                                    : m_fieldHistory;
+
+    if (traces.isEmpty() || traces.first().toList().isEmpty())
         return;
 
     // =====================================================
     // CURVE
     // =====================================================
-
-    QVector<QPointF> points;
-
-    QPainterPath curvePath;
-
-    bool firstPoint = true;
-
-    for (const QVariant &v : m_fieldData) {
-
-        QVariantMap pointMap = v.toMap();
-
-        qreal xValue = pointMap["x"].toReal();
-        qreal yValue = pointMap["y"].toReal();
-
-        qreal px =
-            center.x()
-            + (xValue / 100.0) * axisX;
-
-        qreal py =
-            center.y()
-            - (yValue / 100.0) * axisY;
-
-        QPointF point(px, py);
-
-        points.append(point);
-
-        if (firstPoint) {
-
-            curvePath.moveTo(point);
-
-            firstPoint = false;
-
-        } else {
-
-            curvePath.lineTo(point);
-        }
-    }
 
     QPen curvePen(QColor("#3B6FD8"));
     curvePen.setWidthF(4);
@@ -206,7 +190,34 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
 
     painter->setPen(curvePen);
 
-    painter->drawPath(curvePath);
+    QVector<QVector<QPointF>> tracePoints;
+
+    for (const QVariant &traceValue : traces) {
+        const QVariantList trace = traceValue.toList();
+        if (trace.isEmpty())
+            continue;
+
+        QPainterPath curvePath;
+        QVector<QPointF> points;
+
+        for (const QVariant &v : trace) {
+            const QVariantMap pointMap = v.toMap();
+            const qreal xValue = pointMap["x"].toReal();
+            const qreal yValue = pointMap["y"].toReal();
+            const QPointF point(
+                center.x() + (xValue / 100.0) * axisX,
+                center.y() - (yValue / 100.0) * axisY);
+
+            points.append(point);
+            if (points.size() == 1)
+                curvePath.moveTo(point);
+            else
+                curvePath.lineTo(point);
+        }
+
+        painter->drawPath(curvePath);
+        tracePoints.append(points);
+    }
 
     // =====================================================
     // POINTS
@@ -218,65 +229,63 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
 
     painter->setFont(valueFont);
 
-    for (int i = 0; i < points.size(); ++i) {
+    for (int traceIndex = 0; traceIndex < tracePoints.size(); ++traceIndex) {
+        const QVariantList trace = traces[traceIndex].toList();
+        const QVector<QPointF> &points = tracePoints[traceIndex];
 
-        QPointF p = points[i];
-
-        QVariantMap pointMap =
-            m_fieldData[i].toMap();
+        for (int i = 0; i < points.size(); ++i) {
+            const QPointF p = points[i];
+            const QVariantMap pointMap = trace[i].toMap();
 
         // =============================================
         // OPTIONAL LABELS
         // =============================================
 
-        if (m_showPointLabels) {
+            if (m_showPointLabels) {
 
-            QString valueText =
+                QString valueText =
                 QString("(%1, %2)")
                     .arg(pointMap["x"].toInt())
                     .arg(pointMap["y"].toInt());
 
-            QFontMetrics fm(valueFont);
+                QFontMetrics fm(valueFont);
 
-            QRect textRect =
+                QRect textRect =
                 fm.boundingRect(valueText);
 
-            QRectF valueBox(
+                QRectF valueBox(
                 p.x() - textRect.width()/2.0 - 12,
                 p.y() - 42,
                 textRect.width() + 24,
                 28
                 );
 
-            painter->setPen(Qt::NoPen);
-            painter->setBrush(QColor("#1B365D"));
+                painter->setPen(Qt::NoPen);
+                painter->setBrush(QColor("#1B365D"));
 
-            painter->drawRoundedRect(
+                painter->drawRoundedRect(
                 valueBox,
                 8,
                 8
                 );
 
-            painter->setPen(Qt::white);
+                painter->setPen(Qt::white);
 
-            painter->drawText(
+                painter->drawText(
                 valueBox,
                 Qt::AlignCenter,
                 valueText
                 );
-        }
+            }
 
         // =============================================
         // POINT
         // =============================================
 
-        painter->setPen(QPen(Qt::white, 3));
-        painter->setBrush(QColor("#3B6FD8"));
+            painter->setPen(QPen(Qt::white, 3));
+            painter->setBrush(QColor("#3B6FD8"));
 
-        painter->drawEllipse(
-            p,
-            4,
-            4
-            );
+            painter->drawEllipse(p, 4, 4);
+        }
     }
 }
