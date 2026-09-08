@@ -997,8 +997,8 @@ Item {
                     }
 
                     Rectangle {
-                        width: parent.width * 0.100
-                        height: homeScreen.defectCardVisible ? 80 : 0
+                        width: parent.width * 0.98
+                        height: homeScreen.defectCardVisible ? 70 : 0
                         visible: homeScreen.defectCardVisible
 
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -1010,12 +1010,19 @@ Item {
 
                         Column {
                             anchors.fill: parent
-                            anchors.margins: 10
-                            spacing: 8
+                            anchors.leftMargin: 12
+                            anchors.rightMargin: 12
+                            anchors.topMargin: 7
+                            anchors.bottomMargin: 7
+
+                            spacing: 5
 
                             Text {
                                 width: parent.width
+                                height: 18
+
                                 horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
 
                                 text: "DEFECT DETECTED"
                                 color: "#1A4DB5"
@@ -1024,11 +1031,15 @@ Item {
 
                             Row {
                                 width: parent.width
+                                height: 28
                                 spacing: 0
 
                                 Text {
                                     width: parent.width / 3
-                                    horizontalAlignment: Text.AlignHCenter
+                                    height: parent.height
+
+                                    horizontalAlignment: Text.AlignLeft
+                                    verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
 
                                     text: "Defect Phase: " + SerialManager.defectPhase
@@ -1038,7 +1049,10 @@ Item {
 
                                 Text {
                                     width: parent.width / 3
-                                    horizontalAlignment: Text.AlignHCenter
+                                    height: parent.height
+
+                                    horizontalAlignment: Text.AlignCenter
+                                    verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
 
                                     text: "Defect Signal: " + SerialManager.defectSignal
@@ -1048,7 +1062,10 @@ Item {
 
                                 Text {
                                     width: parent.width / 3
-                                    horizontalAlignment: Text.AlignHCenter
+                                    height: parent.height
+
+                                    horizontalAlignment: Text.AlignRight
+                                    verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
 
                                     text: "Defect Amplitude: " + SerialManager.defectAmplitude
