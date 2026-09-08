@@ -1026,7 +1026,7 @@ Item {
 
                                 text: "DEFECT DETECTED"
                                 color: "#1A4DB5"
-                                font.pixelSize: 15
+                                font.pixelSize: 18
                             }
 
                             Row {
@@ -1044,7 +1044,7 @@ Item {
 
                                     text: "Phase: " + SerialManager.defectPhase
                                     color: "#5E5C64"
-                                    font.pixelSize: 14
+                                    font.pixelSize: 16
                                 }
 
                                 Text {
@@ -1057,7 +1057,7 @@ Item {
 
                                     text: "Signal: " + SerialManager.defectSignal
                                     color: "#5E5C64"
-                                    font.pixelSize: 14
+                                    font.pixelSize: 16
                                 }
 
                                 Text {
@@ -1070,7 +1070,7 @@ Item {
 
                                     text: "Amplitude: " + SerialManager.defectAmplitude
                                     color: "#5E5C64"
-                                    font.pixelSize: 14
+                                    font.pixelSize: 16
                                 }
                             }
                         }
