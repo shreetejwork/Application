@@ -1042,7 +1042,7 @@ Item {
                                     verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
 
-                                    text: "Defect Phase: " + SerialManager.defectPhase
+                                    text: "Phase: " + SerialManager.defectPhase
                                     color: "#5E5C64"
                                     font.pixelSize: 14
                                 }
@@ -1055,7 +1055,7 @@ Item {
                                     verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
 
-                                    text: "Defect Signal: " + SerialManager.defectSignal
+                                    text: "Signal: " + SerialManager.defectSignal
                                     color: "#5E5C64"
                                     font.pixelSize: 14
                                 }
@@ -1068,7 +1068,7 @@ Item {
                                     verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
 
-                                    text: "Defect Amplitude: " + SerialManager.defectAmplitude
+                                    text: "Amplitude: " + SerialManager.defectAmplitude
                                     color: "#5E5C64"
                                     font.pixelSize: 14
                                 }
