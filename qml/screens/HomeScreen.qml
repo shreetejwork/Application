@@ -1002,11 +1002,27 @@ Item {
                         visible: homeScreen.defectCardVisible
 
                         anchors.horizontalCenter: parent.horizontalCenter
+                        anchors.verticalCenterOffset: -8
 
                         radius: 14
                         color: "#FFFFFF"
-                        border.color: "#D0D8EC"
+
+                        border.color: "#E57373"
                         border.width: 1
+
+                        // Subtle red glow behind the card
+                        Rectangle {
+                            anchors.fill: parent
+                            anchors.margins: -3
+
+                            radius: 17
+                            color: "transparent"
+
+                            border.color: "#35E53935"
+                            border.width: 3
+
+                            z: -1
+                        }
 
                         Column {
                             anchors.fill: parent
