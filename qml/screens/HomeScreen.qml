@@ -997,12 +997,14 @@ Item {
                     }
 
                     Rectangle {
+                        id: defectCard
+
                         width: parent.width * 0.98
                         height: homeScreen.defectCardVisible ? 70 : 0
                         visible: homeScreen.defectCardVisible
 
                         anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenterOffset: -8
+                        anchors.verticalCenterOffset: -18
 
                         radius: 14
                         color: "#FFFFFF"
@@ -1010,22 +1012,39 @@ Item {
                         border.color: "#E57373"
                         border.width: 1
 
-                        // Subtle red glow behind the card
+                        transformOrigin: Item.Center
+
+                        // --------------------------------------------------
+                        // Red Glow Border
+                        // --------------------------------------------------
                         Rectangle {
-                            anchors.fill: parent
-                            anchors.margins: -3
+                            id: defectGlowBorder
+
+                            anchors.centerIn: parent
+
+                            width: parent.width + 8
+                            height: parent.height + 8
 
                             radius: 17
+
                             color: "transparent"
 
-                            border.color: "#35E53935"
+                            border.color: "#E53935"
                             border.width: 3
+
+                            opacity: 0.15
+
+                            antialiasing: true
 
                             z: -1
                         }
 
+                        // --------------------------------------------------
+                        // Card Content
+                        // --------------------------------------------------
                         Column {
                             anchors.fill: parent
+
                             anchors.leftMargin: 12
                             anchors.rightMargin: 12
                             anchors.topMargin: 7
@@ -1041,6 +1060,7 @@ Item {
                                 verticalAlignment: Text.AlignVCenter
 
                                 text: "DEFECT DETECTED"
+
                                 color: "#1A4DB5"
                                 font.pixelSize: 16
                             }
@@ -1048,6 +1068,7 @@ Item {
                             Row {
                                 width: parent.width
                                 height: 28
+
                                 spacing: 0
 
                                 Text {
@@ -1056,9 +1077,11 @@ Item {
 
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
+
                                     elide: Text.ElideRight
 
                                     text: "Phase: " + SerialManager.defectPhase
+
                                     color: "#5E5C64"
                                     font.pixelSize: 18
                                 }
@@ -1069,9 +1092,11 @@ Item {
 
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
+
                                     elide: Text.ElideRight
 
                                     text: "Signal: " + SerialManager.defectSignal
+
                                     color: "#5E5C64"
                                     font.pixelSize: 18
                                 }
@@ -1082,12 +1107,86 @@ Item {
 
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
+
                                     elide: Text.ElideRight
 
                                     text: "Amplitude: " + SerialManager.defectAmplitude
+
                                     color: "#5E5C64"
                                     font.pixelSize: 18
                                 }
+                            }
+                        }
+
+                        // --------------------------------------------------
+                        // Zoom In / Zoom Out Animation
+                        // --------------------------------------------------
+                        SequentialAnimation {
+                            running: homeScreen.defectCardVisible
+                            loops: Animation.Infinite
+
+                            NumberAnimation {
+                                target: defectCard
+                                property: "scale"
+
+                                from: 1.0
+                                to: 1.025
+
+                                duration: 650
+
+                                easing.type: Easing.InOutSine
+                            }
+
+                            NumberAnimation {
+                                target: defectCard
+                                property: "scale"
+
+                                from: 1.025
+                                to: 1.0
+
+                                duration: 650
+
+                                easing.type: Easing.InOutSine
+                            }
+
+                            PauseAnimation {
+                                duration: 350
+                            }
+                        }
+
+                        // --------------------------------------------------
+                        // Red Glow Pulse Animation
+                        // --------------------------------------------------
+                        SequentialAnimation {
+                            running: homeScreen.defectCardVisible
+                            loops: Animation.Infinite
+
+                            NumberAnimation {
+                                target: defectGlowBorder
+                                property: "opacity"
+
+                                from: 0.12
+                                to: 0.35
+
+                                duration: 700
+
+                                easing.type: Easing.InOutQuad
+                            }
+
+                            NumberAnimation {
+                                target: defectGlowBorder
+                                property: "opacity"
+
+                                from: 0.35
+                                to: 0.12
+
+                                duration: 700
+
+                                easing.type: Easing.InOutQuad
+                            }
+
+                            PauseAnimation {
+                                duration: 300
                             }
                         }
                     }
