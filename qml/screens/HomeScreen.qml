@@ -1004,7 +1004,6 @@ Item {
                         visible: homeScreen.defectCardVisible
 
                         anchors.horizontalCenter: parent.horizontalCenter
-                        anchors.verticalCenterOffset: -18
 
                         radius: 14
                         color: "#FFFFFF"
@@ -1012,10 +1011,17 @@ Item {
                         border.color: "#E57373"
                         border.width: 1
 
-                        transformOrigin: Item.Center
+                        antialiasing: true
 
                         // --------------------------------------------------
-                        // Red Glow Border
+                        // MOVE CARD UP
+                        // --------------------------------------------------
+                        transform: Translate {
+                            y: -25
+                        }
+
+                        // --------------------------------------------------
+                        // RED GLOW BORDER
                         // --------------------------------------------------
                         Rectangle {
                             id: defectGlowBorder
@@ -1040,7 +1046,7 @@ Item {
                         }
 
                         // --------------------------------------------------
-                        // Card Content
+                        // CONTENT
                         // --------------------------------------------------
                         Column {
                             anchors.fill: parent
@@ -1119,7 +1125,7 @@ Item {
                         }
 
                         // --------------------------------------------------
-                        // Zoom In / Zoom Out Animation
+                        // ZOOM IN / OUT
                         // --------------------------------------------------
                         SequentialAnimation {
                             running: homeScreen.defectCardVisible
@@ -1155,7 +1161,7 @@ Item {
                         }
 
                         // --------------------------------------------------
-                        // Red Glow Pulse Animation
+                        // RED GLOW PULSE
                         // --------------------------------------------------
                         SequentialAnimation {
                             running: homeScreen.defectCardVisible
