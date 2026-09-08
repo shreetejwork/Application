@@ -30,6 +30,18 @@ class SerialManager : public QObject
                    READ amplitude
                        NOTIFY amplitudeChanged)
 
+    Q_PROPERTY(double defectPhase
+                   READ defectPhase
+                       NOTIFY defectPhaseChanged)
+
+    Q_PROPERTY(int defectSignal
+                   READ defectSignal
+                       NOTIFY defectSignalChanged)
+
+    Q_PROPERTY(int defectAmplitude
+                   READ defectAmplitude
+                       NOTIFY defectAmplitudeChanged)
+
     Q_PROPERTY(int coilOutput
                    READ coilOutput
                        NOTIFY coilOutputChanged)
@@ -66,6 +78,21 @@ public:
     int amplitude() const
     {
         return m_amplitude;
+    }
+
+    double defectPhase() const
+    {
+        return m_defectPhase;
+    }
+
+    int defectSignal() const
+    {
+        return m_defectSignal;
+    }
+
+    int defectAmplitude() const
+    {
+        return m_defectAmplitude;
     }
 
     int coilOutput() const
@@ -138,6 +165,14 @@ signals:
 
     void amplitudeChanged();
 
+    void defectPhaseChanged();
+
+    void defectSignalChanged();
+
+    void defectAmplitudeChanged();
+
+    void defectPacketReceived();
+
     void coilOutputChanged();
 
     void mcuParameterRequestReceived();
@@ -192,6 +227,12 @@ private:
     int m_signal = 0;         // 0 - 30000
 
     int m_amplitude = 0;      // 0 - 14000
+
+    double m_defectPhase = 0.0;
+
+    int m_defectSignal = 0;
+
+    int m_defectAmplitude = 0;
 
     int m_coilOutput = 0;     // 0 - 10000
 

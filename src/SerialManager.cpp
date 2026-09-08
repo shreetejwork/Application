@@ -699,8 +699,12 @@ void SerialManager::onReadyRead()
 
     while (true)
     {
-        // Find packet start
-        int start = rxBuffer.indexOf('N');
+        const int normalStart = rxBuffer.indexOf('N');
+        const int defectStart = rxBuffer.indexOf('D');
+        int start = normalStart;
+
+        if (start < 0 || (defectStart >= 0 && defectStart < start))
+            start = defectStart;
 
         if (start < 0)
         {
@@ -710,8 +714,9 @@ void SerialManager::onReadyRead()
             return;
         }
 
-        // Find packet end
-        int end = rxBuffer.indexOf('n', start);
+        const bool isDefectPacket = rxBuffer.at(start) == 'D';
+        const char endMarker = isDefectPacket ? 'd' : 'n';
+        int end = rxBuffer.indexOf(endMarker, start);
 
         if (end < 0)
             return;     // wait for complete packet
@@ -730,7 +735,7 @@ void SerialManager::onReadyRead()
 
 
         // Remove start/end markers
-        str.remove(0,1);    // remove N
+        str.remove(0,1);    // remove N or D
         str.chop(1);        // remove n
         str = str.trimmed();
 
@@ -739,15 +744,23 @@ void SerialManager::onReadyRead()
             str.split(',');
 
 
-        if (fields.size() != 5)
+        if (isDefectPacket && fields.size() != 4)
         {
-            qDebug() << "Invalid packet. Expected 5 parameters, received:"
+            qDebug() << "Invalid defect packet. Expected 4 parameters, received:"
+                     << fields.size();
+            continue;
+        }
+
+        if (!isDefectPacket && fields.size() != 4 && fields.size() != 5)
+        {
+            qDebug() << "Invalid packet. Expected 4 or 5 parameters, received:"
                      << fields.size();
             continue;
         }
 
 
-        bool ok1, ok2, ok3, ok4, ok5;
+        bool ok1, ok2, ok3, ok4;
+        bool ok5 = false;
 
 
         // =====================================================
@@ -790,11 +803,15 @@ void SerialManager::onReadyRead()
         // Same handling as Product Phase
         // =====================================================
 
-        int trackingPhaseRaw =
-            fields[4].trimmed().toInt(&ok5);
+        double trackingPhaseValue = 0.0;
 
-        double trackingPhaseValue =
-            trackingPhaseRaw / 10.0;
+        if (fields.size() == 5)
+        {
+            int trackingPhaseRaw =
+                fields[4].trimmed().toInt(&ok5);
+
+            trackingPhaseValue = trackingPhaseRaw / 10.0;
+        }
 
         if (!(ok1 && ok2 && ok3 && ok4))
         {
@@ -823,18 +840,43 @@ void SerialManager::onReadyRead()
         // Invalid value will be sent to QML as "---"
         // =====================================================
 
-        QString newTrackingPhase;
+        if (isDefectPacket)
+        {
+            if (!qFuzzyCompare(m_defectPhase + 1.0,
+                               phase + 1.0))
+            {
+                m_defectPhase = phase;
+                emit defectPhaseChanged();
+            }
 
-        if (!ok5 ||
+            if (signal != m_defectSignal)
+            {
+                m_defectSignal = signal;
+                emit defectSignalChanged();
+            }
+
+            if (amplitude != m_defectAmplitude)
+            {
+                m_defectAmplitude = amplitude;
+                emit defectAmplitudeChanged();
+            }
+
+            emit defectPacketReceived();
+            continue;
+        }
+
+        QString newTrackingPhase = m_trackingPhase;
+
+        if (fields.size() == 5 && (!ok5 ||
             trackingPhaseValue < 0 ||
-            trackingPhaseValue > 180)
+            trackingPhaseValue > 180))
         {
             qDebug() << "Invalid Tracking Phase:"
                      << fields[4];
 
             newTrackingPhase = "---";
         }
-        else
+        else if (fields.size() == 5)
         {
             newTrackingPhase =
                 QString::number(trackingPhaseValue, 'f', 1);

@@ -23,6 +23,8 @@ Item {
     property int batchRejectionBuffer: 0
     property bool batchBufferActive: false
 
+    property bool defectCardVisible: false
+
     property var validationPopup
 
     function loadMachineParameterSettings()
@@ -90,8 +92,21 @@ Item {
         }
     }
 
+    Timer {
+        id: defectCardTimer
+        interval: 5000
+        repeat: false
+
+        onTriggered: homeScreen.defectCardVisible = false
+    }
+
     Connections {
         target: SerialManager
+
+        function onDefectPacketReceived() {
+            homeScreen.defectCardVisible = true
+            defectCardTimer.restart()
+        }
 
         function onSignalChanged() {
 
@@ -978,6 +993,49 @@ Item {
                                         10,
                                         3000
                                         )
+                        }
+                    }
+
+                    Rectangle {
+                        width: parent.width * 0.85
+                        height: homeScreen.defectCardVisible ? 112 : 0
+                        visible: homeScreen.defectCardVisible
+
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        radius: 14
+                        color: "#FFFFFF"
+                        border.color: "#D0D8EC"
+                        border.width: 1
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 5
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: "DEFECT DETECTED"
+                                color: "#1A4DB5"
+                                font.pixelSize: 15
+                            }
+
+                            Text {
+                                text: "Defect Phase: " + SerialManager.defectPhase
+                                color: "#5E5C64"
+                                font.pixelSize: 14
+                            }
+
+                            Text {
+                                text: "Defect Signal: " + SerialManager.defectSignal
+                                color: "#5E5C64"
+                                font.pixelSize: 14
+                            }
+
+                            Text {
+                                text: "Defect Amplitude: " + SerialManager.defectAmplitude
+                                color: "#5E5C64"
+                                font.pixelSize: 14
+                            }
                         }
                     }
                 }
