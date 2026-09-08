@@ -94,7 +94,7 @@ Item {
 
     Timer {
         id: defectCardTimer
-        interval: 5000
+        interval: 10000
         repeat: false
 
         onTriggered: homeScreen.defectCardVisible = false
@@ -997,8 +997,8 @@ Item {
                     }
 
                     Rectangle {
-                        width: parent.width * 0.85
-                        height: homeScreen.defectCardVisible ? 90 : 0
+                        width: parent.width * 0.100
+                        height: homeScreen.defectCardVisible ? 80 : 0
                         visible: homeScreen.defectCardVisible
 
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -1020,7 +1020,6 @@ Item {
                                 text: "DEFECT DETECTED"
                                 color: "#1A4DB5"
                                 font.pixelSize: 15
-                                font.bold: true
                             }
 
                             Row {
