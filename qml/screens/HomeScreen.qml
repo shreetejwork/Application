@@ -1017,7 +1017,7 @@ Item {
                         // MOVE CARD UP
                         // --------------------------------------------------
                         transform: Translate {
-                            y: -25
+                            y: -9
                         }
 
                         // --------------------------------------------------
@@ -1067,7 +1067,7 @@ Item {
 
                                 text: "DEFECT DETECTED"
 
-                                color: "#1A4DB5"
+                                color: "#5E5C64"
                                 font.pixelSize: 16
                             }
 
@@ -1088,7 +1088,7 @@ Item {
 
                                     text: "Phase: " + SerialManager.defectPhase
 
-                                    color: "#5E5C64"
+                                    color: "#1A4DB5"
                                     font.pixelSize: 18
                                 }
 
@@ -1103,7 +1103,7 @@ Item {
 
                                     text: "Signal: " + SerialManager.defectSignal
 
-                                    color: "#5E5C64"
+                                    color: "#1A4DB5"
                                     font.pixelSize: 18
                                 }
 
@@ -1118,7 +1118,7 @@ Item {
 
                                     text: "Amplitude: " + SerialManager.defectAmplitude
 
-                                    color: "#5E5C64"
+                                    color: "#1A4DB5"
                                     font.pixelSize: 18
                                 }
                             }
