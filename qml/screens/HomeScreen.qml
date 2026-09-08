@@ -1038,7 +1038,7 @@ Item {
                                     width: parent.width / 3
                                     height: parent.height
 
-                                    horizontalAlignment: Text.AlignLeft
+                                    horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
 
@@ -1051,7 +1051,7 @@ Item {
                                     width: parent.width / 3
                                     height: parent.height
 
-                                    horizontalAlignment: Text.AlignCenter
+                                    horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
 
@@ -1064,7 +1064,7 @@ Item {
                                     width: parent.width / 3
                                     height: parent.height
 
-                                    horizontalAlignment: Text.AlignRight
+                                    horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
                                     elide: Text.ElideRight
 
