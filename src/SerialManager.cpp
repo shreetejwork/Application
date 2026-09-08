@@ -620,25 +620,36 @@ void SerialManager::onReadyRead()
     if (!data.isEmpty())
     {
         const QByteArray preview = data.left(12).toHex(' ');
+
         qDebug() << "XY serial bytes received:" << data.size()
                  << "preview:" << preview
-                 << "sync index:" << data.indexOf(QByteArray::fromHex("A55A"));
+                 << "sync index:"
+                 << data.indexOf(QByteArray::fromHex("A55A"));
+
         // Show exactly what arrived from UART
         appendRxLog(QString::fromUtf8(data));
 
-        // Existing buffer for parser
+        // Existing buffers
         rxBuffer.append(data);
         xyRxBuffer.append(data);
     }
 
 
-    // Safety protection
-    if(rxBuffer.size() > 4096)
+    // =====================================================
+    // Safety protection - Main RX buffer
+    // =====================================================
+
+    if (rxBuffer.size() > 4096)
     {
         qDebug() << "RX buffer overflow. Clearing.";
         rxBuffer.clear();
         return;
     }
+
+
+    // =====================================================
+    // Safety protection - XY RX buffer
+    // =====================================================
 
     if (xyRxBuffer.size() > 4096)
     {
@@ -646,34 +657,58 @@ void SerialManager::onReadyRead()
         xyRxBuffer.clear();
     }
 
-    const QByteArray sync = QByteArray(1, static_cast<char>(XY_SYNC1)) +
-                            QByteArray(1, static_cast<char>(XY_SYNC2));
+
+    // =====================================================
+    // XY PLOT PROCESSING
+    // =====================================================
+
+    const QByteArray sync =
+        QByteArray(1, static_cast<char>(XY_SYNC1)) +
+        QByteArray(1, static_cast<char>(XY_SYNC2));
+
 
     if (xyRxBuffer.indexOf(sync) >= 0)
     {
         while (true)
         {
-            const qsizetype startIndex = xyRxBuffer.indexOf(sync);
+            const qsizetype startIndex =
+                xyRxBuffer.indexOf(sync);
+
             if (startIndex < 0)
                 break;
+
 
             if (startIndex > 0)
                 xyRxBuffer.remove(0, startIndex);
 
+
             if (xyRxBuffer.size() < XY_PACKET_SIZE)
             {
-                qDebug() << "XY sync found; waiting for total packet bytes:"
-                         << xyRxBuffer.size() << "/" << XY_PACKET_SIZE;
+                qDebug()
+                << "XY sync found; waiting for total packet bytes:"
+                << xyRxBuffer.size()
+                << "/"
+                << XY_PACKET_SIZE;
+
                 break;
             }
 
-            const QByteArray frame = xyRxBuffer.left(XY_PACKET_SIZE);
+
+            const QByteArray frame =
+                xyRxBuffer.left(XY_PACKET_SIZE);
+
 
             QVariantList decodedData;
+
+
             if (parseXyPlotFrame(frame, decodedData))
             {
                 xyRxBuffer.remove(0, XY_PACKET_SIZE);
-                logXyPacketBeforePlotUpdate(frame, decodedData);
+
+                logXyPacketBeforePlotUpdate(
+                    frame,
+                    decodedData);
+
                 updateXyPlotData(decodedData);
             }
             else
@@ -687,140 +722,499 @@ void SerialManager::onReadyRead()
         processXyAsciiBuffer();
     }
 
-    // MCU requesting parameters
-        if (rxBuffer.contains("{*****}"))
+
+    // =====================================================
+    // MCU REQUESTING MACHINE PARAMETERS
+    // =====================================================
+
+    if (rxBuffer.contains("{*****}"))
     {
         rxBuffer.replace("{*****}", "");
 
-        qDebug() << "MCU requested machine settings.";
+        qDebug()
+            << "MCU requested machine settings.";
 
         emit mcuParameterRequestReceived();
     }
 
+
+    // =====================================================
+    // N / D PACKET PROCESSING
+    // =====================================================
+
     while (true)
     {
-        const int normalStart = rxBuffer.indexOf('N');
-        const int defectStart = rxBuffer.indexOf('D');
-        int start = normalStart;
+        // -------------------------------------------------
+        // Find next normal packet
+        // N........n
+        // -------------------------------------------------
 
-        if (start < 0 || (defectStart >= 0 && defectStart < start))
+        const int normalStart =
+            rxBuffer.indexOf('N');
+
+
+        // -------------------------------------------------
+        // Find next defect packet
+        // D........d
+        // -------------------------------------------------
+
+        const int defectStart =
+            rxBuffer.indexOf('D');
+
+
+        int start =
+            normalStart;
+
+
+        // Select whichever packet starts first
+        if (start < 0 ||
+            (defectStart >= 0 && defectStart < start))
+        {
             start = defectStart;
+        }
+
+
+        // -------------------------------------------------
+        // No N or D packet found
+        // -------------------------------------------------
 
         if (start < 0)
         {
-            if(rxBuffer.size() > 10)
-                rxBuffer.remove(0, rxBuffer.size()-10);
+            // Keep a small amount of data in case the
+            // packet is fragmented across serial reads.
+            if (rxBuffer.size() > 10)
+            {
+                rxBuffer.remove(
+                    0,
+                    rxBuffer.size() - 10);
+            }
 
             return;
         }
 
-        const bool isDefectPacket = rxBuffer.at(start) == 'D';
-        const char endMarker = isDefectPacket ? 'd' : 'n';
-        int end = rxBuffer.indexOf(endMarker, start);
+
+        // -------------------------------------------------
+        // Determine packet type
+        // -------------------------------------------------
+
+        const bool isDefectPacket =
+            (rxBuffer.at(start) == 'D');
+
+
+        const char endMarker =
+            isDefectPacket ? 'd' : 'n';
+
+
+        // -------------------------------------------------
+        // Find packet end marker
+        // -------------------------------------------------
+
+        const int end =
+            rxBuffer.indexOf(
+                endMarker,
+                start);
+
+
+        // -------------------------------------------------
+        // Packet not complete yet
+        // Wait for next readyRead()
+        // -------------------------------------------------
 
         if (end < 0)
-            return;     // wait for complete packet
+            return;
 
 
-        QByteArray packet =
-            rxBuffer.mid(start, end - start + 1);
+        // -------------------------------------------------
+        // Extract complete packet
+        // -------------------------------------------------
 
-        rxBuffer.remove(0, end + 1);
+        const QByteArray packet =
+            rxBuffer.mid(
+                start,
+                end - start + 1);
 
+
+        // Remove processed packet from buffer
+        rxBuffer.remove(
+            0,
+            end + 1);
+
+
+        // -------------------------------------------------
+        // Convert packet to QString
+        // -------------------------------------------------
 
         QString str =
             QString::fromUtf8(packet).trimmed();
 
+
         qDebug() << "RX :" << str;
 
 
-        // Remove start/end markers
-        str.remove(0,1);    // remove N or D
-        str.chop(1);        // remove n
-        str = str.trimmed();
+        // -------------------------------------------------
+        // Remove packet start marker
+        // N or D
+        // -------------------------------------------------
+
+        str.remove(0, 1);
 
 
-        QStringList fields =
+        // -------------------------------------------------
+        // Remove packet end marker
+        // n or d
+        // -------------------------------------------------
+
+        str.chop(1);
+
+
+        str =
+            str.trimmed();
+
+
+        // -------------------------------------------------
+        // Split parameters
+        // -------------------------------------------------
+
+        const QStringList fields =
             str.split(',');
 
 
-        if (isDefectPacket && fields.size() != 4)
+        // =================================================
+        // DEFECT PACKET
+        //
+        // ONLY accepted format:
+        //
+        // D00381,00260,00968d
+        //
+        // Fields:
+        // [0] = Phase
+        // [1] = Signal
+        // [2] = Amplitude
+        //
+        // There is NO coil value.
+        // =================================================
+
+        if (isDefectPacket)
         {
-            qDebug() << "Invalid defect packet. Expected 4 parameters, received:"
-                     << fields.size();
+            // -------------------------------------------------
+            // Defect packet MUST contain exactly 3 parameters
+            // -------------------------------------------------
+
+            if (fields.size() != 3)
+            {
+                qDebug()
+                << "Invalid defect packet."
+                << "Expected exactly 3 parameters, received:"
+                << fields.size()
+                << "Packet:"
+                << packet;
+
+                continue;
+            }
+
+
+            // -------------------------------------------------
+            // Conversion flags
+            // -------------------------------------------------
+
+            bool okPhase = false;
+            bool okSignal = false;
+            bool okAmplitude = false;
+
+
+            // -------------------------------------------------
+            // 1st Parameter - Defect Phase
+            //
+            // Example:
+            // 00381 -> 38.1
+            // -------------------------------------------------
+
+            const int phaseRaw =
+                fields[0]
+                    .trimmed()
+                    .toInt(&okPhase);
+
+
+            const double phase =
+                phaseRaw / 10.0;
+
+
+            // -------------------------------------------------
+            // 2nd Parameter - Defect Signal
+            // -------------------------------------------------
+
+            const int signal =
+                fields[1]
+                    .trimmed()
+                    .toInt(&okSignal);
+
+
+            // -------------------------------------------------
+            // 3rd Parameter - Defect Amplitude
+            // -------------------------------------------------
+
+            const int amplitude =
+                fields[2]
+                    .trimmed()
+                    .toInt(&okAmplitude);
+
+
+            // -------------------------------------------------
+            // Numeric validation
+            // -------------------------------------------------
+
+            if (!(okPhase &&
+                  okSignal &&
+                  okAmplitude))
+            {
+                qDebug()
+                << "Invalid defect packet:"
+                << "non-numeric value."
+                << "Packet:"
+                << packet;
+
+                continue;
+            }
+
+
+            // -------------------------------------------------
+            // Range validation
+            // -------------------------------------------------
+
+            if (phase < 0 ||
+                phase > 180 ||
+                signal < 0 ||
+                signal > 30000 ||
+                amplitude < 0 ||
+                amplitude > 14000)
+            {
+                qDebug()
+                << "Invalid defect packet:"
+                << "value out of range."
+                << "Phase:"
+                << phase
+                << "Signal:"
+                << signal
+                << "Amplitude:"
+                << amplitude;
+
+                continue;
+            }
+
+
+            // -------------------------------------------------
+            // Update Defect Phase
+            // -------------------------------------------------
+
+            if (!qFuzzyCompare(
+                    m_defectPhase + 1.0,
+                    phase + 1.0))
+            {
+                m_defectPhase =
+                    phase;
+
+                emit defectPhaseChanged();
+            }
+
+
+            // -------------------------------------------------
+            // Update Defect Signal
+            // -------------------------------------------------
+
+            if (signal !=
+                m_defectSignal)
+            {
+                m_defectSignal =
+                    signal;
+
+                emit defectSignalChanged();
+            }
+
+
+            // -------------------------------------------------
+            // Update Defect Amplitude
+            // -------------------------------------------------
+
+            if (amplitude !=
+                m_defectAmplitude)
+            {
+                m_defectAmplitude =
+                    amplitude;
+
+                emit defectAmplitudeChanged();
+            }
+
+
+            // -------------------------------------------------
+            // Debug
+            // -------------------------------------------------
+
+            qDebug()
+                << "========================================";
+
+            qDebug()
+                << "DEFECT PACKET RECEIVED";
+
+            qDebug()
+                << "Raw Packet       :" << packet;
+
+            qDebug()
+                << "Defect Phase     :" << phase;
+
+            qDebug()
+                << "Defect Signal    :" << signal;
+
+            qDebug()
+                << "Defect Amplitude :" << amplitude;
+
+            qDebug()
+                << "========================================";
+
+
+            // -------------------------------------------------
+            // Notify QML
+            // -------------------------------------------------
+
+            emit defectPacketReceived();
+
+
+            // -------------------------------------------------
+            // IMPORTANT:
+            //
+            // Do NOT process this packet as an N packet.
+            // Do NOT access fields[3].
+            // Do NOT modify m_coilOutput.
+            // -------------------------------------------------
+
             continue;
         }
 
-        if (!isDefectPacket && fields.size() != 4 && fields.size() != 5)
+
+        // =================================================
+        // NORMAL PACKET
+        //
+        // Accepted formats:
+        //
+        // N00027,00500,14000,02500n
+        //
+        // OR
+        //
+        // N00027,00500,14000,02500,00150n
+        // =================================================
+
+        if (fields.size() != 4 &&
+            fields.size() != 5)
         {
-            qDebug() << "Invalid packet. Expected 4 or 5 parameters, received:"
-                     << fields.size();
+            qDebug()
+            << "Invalid normal packet."
+            << "Expected 4 or 5 parameters, received:"
+            << fields.size()
+            << "Packet:"
+            << packet;
+
             continue;
         }
 
 
-        bool ok1, ok2, ok3, ok4;
+        // -------------------------------------------------
+        // Conversion flags
+        // -------------------------------------------------
+
+        bool ok1 = false;
+        bool ok2 = false;
+        bool ok3 = false;
+        bool ok4 = false;
         bool ok5 = false;
 
 
-        // =====================================================
+        // =================================================
         // 1st Parameter - Product Phase
-        // =====================================================
+        // =================================================
 
-        int phaseRaw =
-            fields[0].trimmed().toInt(&ok1);
+        const int phaseRaw =
+            fields[0]
+                .trimmed()
+                .toInt(&ok1);
 
-        double phase =
+
+        const double phase =
             phaseRaw / 10.0;
 
 
-        // =====================================================
+        // =================================================
         // 2nd Parameter - Signal
-        // =====================================================
+        // =================================================
 
-        int signal =
-            fields[1].trimmed().toInt(&ok2);
+        const int signal =
+            fields[1]
+                .trimmed()
+                .toInt(&ok2);
 
 
-        // =====================================================
+        // =================================================
         // 3rd Parameter - Amplitude
-        // =====================================================
+        // =================================================
 
-        int amplitude =
-            fields[2].trimmed().toInt(&ok3);
+        const int amplitude =
+            fields[2]
+                .trimmed()
+                .toInt(&ok3);
 
 
-        // =====================================================
+        // =================================================
         // 4th Parameter - Coil
-        // =====================================================
+        // =================================================
 
-        int coil =
-            fields[3].trimmed().toInt(&ok4);
+        const int coil =
+            fields[3]
+                .trimmed()
+                .toInt(&ok4);
 
 
-        // =====================================================
+        // =================================================
         // 5th Parameter - Tracking Phase
+        //
         // Same handling as Product Phase
-        // =====================================================
+        // =================================================
 
-        double trackingPhaseValue = 0.0;
+        double trackingPhaseValue =
+            0.0;
+
 
         if (fields.size() == 5)
         {
-            int trackingPhaseRaw =
-                fields[4].trimmed().toInt(&ok5);
+            const int trackingPhaseRaw =
+                fields[4]
+                    .trimmed()
+                    .toInt(&ok5);
 
-            trackingPhaseValue = trackingPhaseRaw / 10.0;
+
+            trackingPhaseValue =
+                trackingPhaseRaw / 10.0;
         }
 
-        if (!(ok1 && ok2 && ok3 && ok4))
+
+        // =================================================
+        // Validate numeric normal packet
+        // =================================================
+
+        if (!(ok1 &&
+              ok2 &&
+              ok3 &&
+              ok4))
         {
-            qDebug() << "Non numeric packet";
+            qDebug()
+            << "Non numeric normal packet:"
+            << packet;
+
             continue;
         }
 
 
-        // Validate ranges
+        // =================================================
+        // Validate normal packet ranges
+        // =================================================
+
         if (phase < 0 ||
             phase > 180 ||
             signal < 0 ||
@@ -830,106 +1224,137 @@ void SerialManager::onReadyRead()
             coil < 0 ||
             coil > 10000)
         {
-            qDebug() << "Main packet out of range";
+            qDebug()
+            << "Normal packet out of range:"
+            << packet;
+
             continue;
         }
 
-        // =====================================================
-        // Validate 5th parameter - Tracking Phase
-        // Valid range: 0 to 180
-        // Invalid value will be sent to QML as "---"
-        // =====================================================
 
-        if (isDefectPacket)
+        // =================================================
+        // Tracking Phase
+        //
+        // Valid range:
+        // 0 to 180
+        //
+        // Invalid value:
+        // "---"
+        // =================================================
+
+        QString newTrackingPhase =
+            m_trackingPhase;
+
+
+        if (fields.size() == 5 &&
+            (!ok5 ||
+             trackingPhaseValue < 0 ||
+             trackingPhaseValue > 180))
         {
-            if (!qFuzzyCompare(m_defectPhase + 1.0,
-                               phase + 1.0))
-            {
-                m_defectPhase = phase;
-                emit defectPhaseChanged();
-            }
+            qDebug()
+            << "Invalid Tracking Phase:"
+            << fields[4];
 
-            if (signal != m_defectSignal)
-            {
-                m_defectSignal = signal;
-                emit defectSignalChanged();
-            }
 
-            if (amplitude != m_defectAmplitude)
-            {
-                m_defectAmplitude = amplitude;
-                emit defectAmplitudeChanged();
-            }
-
-            emit defectPacketReceived();
-            continue;
-        }
-
-        QString newTrackingPhase = m_trackingPhase;
-
-        if (fields.size() == 5 && (!ok5 ||
-            trackingPhaseValue < 0 ||
-            trackingPhaseValue > 180))
-        {
-            qDebug() << "Invalid Tracking Phase:"
-                     << fields[4];
-
-            newTrackingPhase = "---";
+            newTrackingPhase =
+                "---";
         }
         else if (fields.size() == 5)
         {
             newTrackingPhase =
-                QString::number(trackingPhaseValue, 'f', 1);
+                QString::number(
+                    trackingPhaseValue,
+                    'f',
+                    1);
         }
 
 
-        // Update properties
-        if (!qFuzzyCompare(m_productPhase + 1.0,
-                           phase + 1.0))
+        // =================================================
+        // Update Product Phase
+        // =================================================
+
+        if (!qFuzzyCompare(
+                m_productPhase + 1.0,
+                phase + 1.0))
         {
-            m_productPhase = phase;
+            m_productPhase =
+                phase;
 
             emit productPhaseChanged();
         }
 
-        if (m_trackingPhase != newTrackingPhase)
+
+        // =================================================
+        // Update Tracking Phase
+        // =================================================
+
+        if (m_trackingPhase !=
+            newTrackingPhase)
         {
-            m_trackingPhase = newTrackingPhase;
+            m_trackingPhase =
+                newTrackingPhase;
 
             emit trackingPhaseChanged();
         }
 
 
-        if (signal != m_signal)
+        // =================================================
+        // Update Signal
+        // =================================================
+
+        if (signal !=
+            m_signal)
         {
-            m_signal = signal;
+            m_signal =
+                signal;
+
             emit signalChanged();
         }
 
 
-        if (amplitude != m_amplitude)
+        // =================================================
+        // Update Amplitude
+        // =================================================
+
+        if (amplitude !=
+            m_amplitude)
         {
-            m_amplitude = amplitude;
+            m_amplitude =
+                amplitude;
+
             emit amplitudeChanged();
         }
 
 
-        // Always update UI coil output value
-        if (coil != m_coilOutput)
+        // =================================================
+        // Update Coil Output
+        // =================================================
+
+        if (coil !=
+            m_coilOutput)
         {
-            m_coilOutput = coil;
+            m_coilOutput =
+                coil;
+
             emit coilOutputChanged();
         }
 
 
-        // Only store samples when Coil Balancing is OFF
-        if(!m_coilBalancingOn)
+        // =================================================
+        // Store Coil Sample
+        //
+        // Only when Coil Balancing is OFF
+        // =================================================
+
+        if (!m_coilBalancingOn)
         {
             m_coilBuffer.append(coil);
         }
         else
         {
-            qDebug() << "Coil Balancing ON - Display only, not storing coil value";
+            qDebug()
+            << "Coil Balancing ON - Display only,"
+               "not storing coil value";
         }
     }
 }
