@@ -998,7 +998,7 @@ Item {
 
                     Rectangle {
                         width: parent.width * 0.85
-                        height: homeScreen.defectCardVisible ? 112 : 0
+                        height: homeScreen.defectCardVisible ? 90 : 0
                         visible: homeScreen.defectCardVisible
 
                         anchors.horizontalCenter: parent.horizontalCenter
@@ -1009,32 +1009,53 @@ Item {
                         border.width: 1
 
                         Column {
-                            anchors.centerIn: parent
-                            spacing: 5
+                            anchors.fill: parent
+                            anchors.margins: 10
+                            spacing: 8
 
                             Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
+                                width: parent.width
+                                horizontalAlignment: Text.AlignHCenter
+
                                 text: "DEFECT DETECTED"
                                 color: "#1A4DB5"
                                 font.pixelSize: 15
+                                font.bold: true
                             }
 
-                            Text {
-                                text: "Defect Phase: " + SerialManager.defectPhase
-                                color: "#5E5C64"
-                                font.pixelSize: 14
-                            }
+                            Row {
+                                width: parent.width
+                                spacing: 0
 
-                            Text {
-                                text: "Defect Signal: " + SerialManager.defectSignal
-                                color: "#5E5C64"
-                                font.pixelSize: 14
-                            }
+                                Text {
+                                    width: parent.width / 3
+                                    horizontalAlignment: Text.AlignHCenter
+                                    elide: Text.ElideRight
 
-                            Text {
-                                text: "Defect Amplitude: " + SerialManager.defectAmplitude
-                                color: "#5E5C64"
-                                font.pixelSize: 14
+                                    text: "Defect Phase: " + SerialManager.defectPhase
+                                    color: "#5E5C64"
+                                    font.pixelSize: 14
+                                }
+
+                                Text {
+                                    width: parent.width / 3
+                                    horizontalAlignment: Text.AlignHCenter
+                                    elide: Text.ElideRight
+
+                                    text: "Defect Signal: " + SerialManager.defectSignal
+                                    color: "#5E5C64"
+                                    font.pixelSize: 14
+                                }
+
+                                Text {
+                                    width: parent.width / 3
+                                    horizontalAlignment: Text.AlignHCenter
+                                    elide: Text.ElideRight
+
+                                    text: "Defect Amplitude: " + SerialManager.defectAmplitude
+                                    color: "#5E5C64"
+                                    font.pixelSize: 14
+                                }
                             }
                         }
                     }
