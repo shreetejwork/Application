@@ -360,6 +360,8 @@ ApplicationWindow {
 
     Component.onCompleted: {
 
+        SerialManager.setBaudRate(GlobalState.baudRate)
+
         applyFontToAllChildren(
             root.contentItem
         )

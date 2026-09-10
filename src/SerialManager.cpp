@@ -335,6 +335,43 @@ void SerialManager::setDDFrequency(int value)
     sendCommand(QString("{M%1}").arg(v));
 }
 
+void SerialManager::setBaudRate(int baudRate)
+{
+    if (baudRate != 115200 &&
+        baudRate != 256000)
+    {
+        qDebug() << "Unsupported baud rate:" << baudRate;
+        return;
+    }
+
+    if (serial.baudRate() == baudRate)
+    {
+        qDebug() << "Baud rate already set to:" << baudRate;
+        return;
+    }
+
+    const bool wasOpen = serial.isOpen();
+
+    if (wasOpen)
+    {
+        if (!serial.setBaudRate(baudRate))
+        {
+            qDebug() << "Failed to change baud rate to:"
+                     << baudRate
+                     << "Error:"
+                     << serial.errorString();
+            return;
+        }
+    }
+    else
+    {
+        serial.setBaudRate(baudRate);
+    }
+
+    qDebug() << "Serial baud rate changed to:"
+             << baudRate;
+}
+
 // ================= MD Data ==================
 
 bool SerialManager::openPort(const QString &port)

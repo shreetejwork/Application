@@ -38,6 +38,8 @@ QtObject {
 
         property string productName: ""
 
+        property int baudRate: 115200
+
     }
 
     property var reportSettings: Settings {
@@ -54,6 +56,8 @@ QtObject {
     property bool showProductLib: settings.showProductLib
     property bool showTrackingScreen: settings.showTrackingScreen
 
+    property int baudRate: settings.baudRate
+
     property string blockedUsersJson:   settings.blockedUsersJson
     property string failedAttemptsJson: settings.failedAttemptsJson
 
@@ -68,6 +72,8 @@ QtObject {
     property string networkSelectedTab: settings.networkSelectedTab
 
 
+
+
     onNetworkSelectedTabChanged: settings.networkSelectedTab = networkSelectedTab
 
     onBlockedUsersJsonChanged:   settings.blockedUsersJson   = blockedUsersJson
@@ -78,6 +84,8 @@ QtObject {
     onShowAuditTrailChanged: settings.showAuditTrail = showAuditTrail
     onShowProductLibChanged: settings.showProductLib = showProductLib
     onShowTrackingScreenChanged: settings.showTrackingScreen = showTrackingScreen
+
+    onBaudRateChanged: settings.baudRate = baudRate
 
     onMachinePowerStateChanged: settings.machinePowerState = machinePowerState
 

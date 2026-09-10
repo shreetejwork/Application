@@ -138,6 +138,7 @@ public slots:
     void setLPF(int value);
     void setHPF(int value);
 
+
     void setOperateDelay(int value);
     void setHoldDelay(int value);
     void setRelayDelay(int value);
@@ -155,6 +156,8 @@ public slots:
     void setBatch(int state);
 
     void setCoilBalancingStatus(bool status);
+
+    void setBaudRate(int baudRate);
 
 signals:
     void productPhaseChanged();

@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import AppState 1.0
+import Backend 1.0
 
 import "../components"
 
@@ -241,7 +242,7 @@ Item {
                     }
                 }
 
-                // ===== Card 4 =====
+                // ===== Card 5 =====
                 Rectangle {
                     width: flow.cardWidth
                     height: 120 * root.scale
@@ -280,6 +281,167 @@ Item {
 
                             onToggledChanged: {
                                 GlobalState.showTrackingScreen = toggled
+                            }
+                        }
+                    }
+                }
+
+                // ===== Card 6 : Baud Rate =====
+                Rectangle {
+                    width: flow.cardWidth
+                    height: 120 * root.scale
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.color: "#E5E7EB"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 4
+
+                            Text {
+                                text: "Baud Rate"
+                                font.pixelSize: 20
+                                color: "#111827"
+                            }
+
+                            Text {
+                                text: GlobalState.baudRate + " bps"
+                                font.pixelSize: 16
+                                color: "#6B7280"
+                            }
+                        }
+
+                        ComboBox {
+                            id: baudRateCombo
+
+                            Layout.preferredWidth: 180 * root.scale
+                            Layout.preferredHeight: 52 * root.scale
+
+                            model: [
+                                "115200",
+                                "256000"
+                            ]
+
+                            currentIndex: GlobalState.baudRate === 256000 ? 1 : 0
+
+                            font.pixelSize: 18 * root.scale
+
+                            // Main button
+                            background: Rectangle {
+                                radius: 8 * root.scale
+                                color: baudRateCombo.pressed ? "#E5E7EB" : "#FFFFFF"
+                                border.width: 1.5 * root.scale
+                                border.color: "#D0D8EC"
+                            }
+
+                            contentItem: Text {
+                                leftPadding: 16 * root.scale
+                                rightPadding: 42 * root.scale
+
+                                text: baudRateCombo.displayText
+                                font.pixelSize: 18 * root.scale
+                                color: "#1A1A1A"
+                                verticalAlignment: Text.AlignVCenter
+                                elide: Text.ElideRight
+                            }
+
+                            // Large, easy-to-touch arrow area
+                            indicator: Canvas {
+                                x: baudRateCombo.width - width - 12 * root.scale
+                                y: (baudRateCombo.height - height) / 2
+
+                                width: 24 * root.scale
+                                height: 24 * root.scale
+
+                                onPaint: {
+                                    var ctx = getContext("2d")
+                                    ctx.clearRect(0, 0, width, height)
+
+                                    ctx.beginPath()
+                                    ctx.moveTo(5 * root.scale, 8 * root.scale)
+                                    ctx.lineTo(12 * root.scale, 16 * root.scale)
+                                    ctx.lineTo(19 * root.scale, 8 * root.scale)
+
+                                    ctx.lineWidth = 2.5 * root.scale
+                                    ctx.strokeStyle = "#1A4DB5"
+                                    ctx.lineCap = "round"
+                                    ctx.lineJoin = "round"
+                                    ctx.stroke()
+                                }
+                            }
+
+                            // Touch-friendly popup
+                            popup: Popup {
+                                y: baudRateCombo.height + 6 * root.scale
+
+                                width: baudRateCombo.width
+                                padding: 6 * root.scale
+
+                                background: Rectangle {
+                                    radius: 8 * root.scale
+                                    color: "#FFFFFF"
+                                    border.width: 1.5 * root.scale
+                                    border.color: "#D0D8EC"
+                                }
+
+                                contentItem: ListView {
+                                    implicitHeight: contentHeight
+                                    clip: true
+
+                                    model: baudRateCombo.popup.visible
+                                           ? baudRateCombo.delegateModel
+                                           : null
+
+                                    delegate: ItemDelegate {
+                                        width: baudRateCombo.width - 12 * root.scale
+                                        height: 52 * root.scale
+
+                                        highlighted: ListView.isCurrentItem
+
+                                        contentItem: Text {
+                                            text: modelData
+                                            font.pixelSize: 18 * root.scale
+                                            color: "#1A1A1A"
+                                            verticalAlignment: Text.AlignVCenter
+                                            leftPadding: 14 * root.scale
+                                        }
+
+                                        background: Rectangle {
+                                            radius: 6 * root.scale
+                                            color: highlighted ? "#E5E7EB" : "#FFFFFF"
+                                        }
+
+                                        onClicked: {
+                                            baudRateCombo.currentIndex = index
+                                            baudRateCombo.popup.close()
+
+                                            var selectedBaudRate = parseInt(modelData)
+
+                                            if (selectedBaudRate === 115200 ||
+                                                selectedBaudRate === 256000) {
+
+                                                GlobalState.baudRate = selectedBaudRate
+                                                SerialManager.setBaudRate(selectedBaudRate)
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            // Keep keyboard/mouse activation working too
+                            onActivated: {
+                                var selectedBaudRate = parseInt(currentText)
+
+                                if (selectedBaudRate === 115200 ||
+                                    selectedBaudRate === 256000) {
+
+                                    GlobalState.baudRate = selectedBaudRate
+                                    SerialManager.setBaudRate(selectedBaudRate)
+                                }
                             }
                         }
                     }
