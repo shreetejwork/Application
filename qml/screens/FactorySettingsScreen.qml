@@ -11,13 +11,24 @@ Item {
 
     UsbUpdatePopup {
         id: usbUpdatePopup
-        anchors.fill: parent
+
         z: 1000
 
-        onStartRequested: UsbSoftwareUpdateManager.startUsbUpdate()
-        onCancelRequested: UsbSoftwareUpdateManager.cancelUpdate()
-        onConfirmRequested: UsbSoftwareUpdateManager.confirmRestart()
-        onDeclineRequested: UsbSoftwareUpdateManager.declineRestart()
+        onStartRequested: {
+            UsbSoftwareUpdateManager.startUsbUpdate()
+        }
+
+        onCancelRequested: {
+            UsbSoftwareUpdateManager.cancelUpdate()
+        }
+
+        onConfirmRequested: {
+            UsbSoftwareUpdateManager.confirmRestart()
+        }
+
+        onDeclineRequested: {
+            UsbSoftwareUpdateManager.declineRestart()
+        }
     }
 
     Connections {
