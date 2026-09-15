@@ -13,6 +13,7 @@
 #include "PlotItem.h"
 #include "SerialManager.h"
 #include "LanManager.h"
+#include "UsbSoftwareUpdateManager.h"
 
 
 int main(int argc, char *argv[])
@@ -103,6 +104,7 @@ int main(int argc, char *argv[])
     // =========================================================
 
     SystemController systemController;
+    UsbSoftwareUpdateManager usbUpdateManager;
     WiFiScanner wifi;
     PdfExporter pdfExporter;
     SystemDiagnosis diag;
@@ -111,6 +113,10 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(
         "SystemController",
         &systemController);
+
+    engine.rootContext()->setContextProperty(
+        "UsbSoftwareUpdateManager",
+        &usbUpdateManager);
 
     engine.rootContext()->setContextProperty(
         "WiFiScanner",

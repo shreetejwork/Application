@@ -10,6 +10,7 @@ public:
     explicit SystemController(QObject *parent = nullptr);
 
     Q_INVOKABLE void shutdown();
+    Q_INVOKABLE void reboot();
 };
 
 #endif // SYSTEMCONTROLLER_H

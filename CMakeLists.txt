@@ -12,6 +12,7 @@ qt_standard_project_setup(REQUIRES 6.5)
 qt_add_executable(appApplication
     src/main.cpp
     src/PdfExporter.cpp
+    src/UsbSoftwareUpdateManager.cpp
 )
 
 qt_add_qml_module(appApplication
@@ -59,6 +60,7 @@ qt_add_qml_module(appApplication
         qml/screens/ProductLibraryScreen.qml
         qml/components/PowerOffPopup.qml
         qml/components/PdfPreview.qml
+        qml/components/UsbUpdatePopup.qml
         qml/screens/BatchMenuScreen.qml
 
     RESOURCES
@@ -113,6 +115,8 @@ qt_add_qml_module(appApplication
         QML_FILES qml/screens/DeveloperSettingsScreen.qml
         SOURCES src/SystemDiagnosis.h
         SOURCES src/SystemDiagnosis.cpp
+        SOURCES src/UsbSoftwareUpdateManager.h
+        SOURCES src/UsbSoftwareUpdateManager.cpp
         QML_FILES qml/screens/ReportsScreen.qml
         QML_FILES qml/screens/ReportsLogScreen.qml
         QML_FILES qml/screens/BatchHistoryScreen.qml

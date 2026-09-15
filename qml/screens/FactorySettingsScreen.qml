@@ -7,6 +7,54 @@ Item {
     id: root
     anchors.fill: parent
 
+    property var updatePopup: null
+
+    UsbUpdatePopup {
+        id: usbUpdatePopup
+        anchors.fill: parent
+        z: 1000
+
+        onStartRequested: UsbSoftwareUpdateManager.startUsbUpdate()
+        onCancelRequested: UsbSoftwareUpdateManager.cancelUpdate()
+        onConfirmRequested: UsbSoftwareUpdateManager.confirmRestart()
+        onDeclineRequested: UsbSoftwareUpdateManager.declineRestart()
+    }
+
+    Connections {
+        target: UsbSoftwareUpdateManager
+
+        function onUpdateStatusChanged() {
+            usbUpdatePopup.statusText = UsbSoftwareUpdateManager.updateStatus
+        }
+
+        function onUpdateProgressChanged() {
+            usbUpdatePopup.progress = UsbSoftwareUpdateManager.updateProgress
+        }
+
+        function onUpdateRunningChanged() {
+            usbUpdatePopup.isRunning = UsbSoftwareUpdateManager.updateRunning
+        }
+
+        function onUpdateFinishedChanged() {
+            usbUpdatePopup.canClose = UsbSoftwareUpdateManager.updateFinished
+            if (UsbSoftwareUpdateManager.updateFinished && !UsbSoftwareUpdateManager.confirmationRequired && UsbSoftwareUpdateManager.updateError !== "") {
+                usbUpdatePopup.showErrorMessage(UsbSoftwareUpdateManager.updateError)
+            }
+        }
+
+        function onConfirmationRequiredChanged() {
+            if (UsbSoftwareUpdateManager.confirmationRequired) {
+                usbUpdatePopup.showSuccessConfirmation()
+            }
+        }
+
+        function onUpdateErrorChanged() {
+            if (UsbSoftwareUpdateManager.updateError !== "") {
+                usbUpdatePopup.showErrorMessage(UsbSoftwareUpdateManager.updateError)
+            }
+        }
+    }
+
     property real baseWidth:  1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
@@ -144,7 +192,10 @@ Item {
                         iconSource: "qrc:/qt/qml/Application/assets/images/usbupdate.png"
                         label:      "Software Update \n(USB)"
                         iconSize:   100 * root.scale
-                        onTileClicked: navigateTo("UsbSoftwareUpdate")
+                        onTileClicked: {
+                            console.log("USB software update tapped")
+                            usbUpdatePopup.openUpdate()
+                        }
                     }
                 }
 

@@ -10,3 +10,8 @@ void SystemController::shutdown()
 {
     QProcess::execute("/sbin/shutdown", QStringList() << "-h" << "now");
 }
+
+void SystemController::reboot()
+{
+    QProcess::startDetached("/sbin/reboot");
+}
