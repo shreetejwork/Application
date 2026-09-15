@@ -112,6 +112,8 @@ finalize_update() {
     if validate_app_dir "$APP_ROOT"; then
       log "New application installed successfully"
       echo "SUCCESS" > "$STATE_FILE"
+      log "Rebooting Raspberry Pi to start the new application"
+      /sbin/reboot
       exit 0
     fi
   fi
