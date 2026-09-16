@@ -380,7 +380,8 @@ public slots:
         sourceSize = updateArchiveInfo.size();
         const qint64 reserveSpace = qMax<qint64>(256LL * 1024LL * 1024LL, sourceSize / 2LL);
         requiredSize = sourceSize + reserveSpace;
-        const QStorageInfo targetStorage(QString::fromUtf8(kAppDeployPath));
+        // The deployment directory may not exist before the first update.
+        const QStorageInfo targetStorage(QStringLiteral("/home/pi"));
         if (!targetStorage.isReady() || targetStorage.bytesAvailable() < requiredSize) {
             errorMessage = QStringLiteral("Not enough storage space to update the application.");
             emit errorOccurred(errorMessage);
