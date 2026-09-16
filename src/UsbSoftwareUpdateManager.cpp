@@ -117,6 +117,36 @@ static bool isValidApplicationDirectory(const QString &path)
     return false;
 }
 
+static bool flattenExtractedApplication(const QString &stagingPath, QString *errorText)
+{
+    if (isValidApplicationDirectory(stagingPath))
+        return true;
+
+    QDir stagingDir(stagingPath);
+    const QFileInfoList directories = stagingDir.entryInfoList(
+        QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden);
+    if (directories.size() != 1 || !isValidApplicationDirectory(directories.first().absoluteFilePath()))
+        return true;
+
+    const QString wrapperPath = directories.first().absoluteFilePath();
+    const QFileInfoList entries = QDir(wrapperPath).entryInfoList(
+        QDir::AllEntries | QDir::NoDotAndDotDot | QDir::Hidden);
+    for (const QFileInfo &entry : entries) {
+        const QString destinationPath = stagingDir.filePath(entry.fileName());
+        if (!QDir().rename(entry.absoluteFilePath(), destinationPath)) {
+            *errorText = QStringLiteral("Could not prepare extracted application files.");
+            return false;
+        }
+    }
+
+    if (!QDir().rmdir(wrapperPath)) {
+        *errorText = QStringLiteral("Could not prepare extracted application directory.");
+        return false;
+    }
+
+    return true;
+}
+
 static bool removeDirectoryContents(const QString &path)
 {
     QDir dir(path);
@@ -447,6 +477,9 @@ public slots:
                                    .arg(QString::fromLocal8Bit(tarProcess.readAllStandardError()).trimmed());
                 success = false;
             }
+
+            if (success && !flattenExtractedApplication(stagingPath, &errorMessage))
+                success = false;
         }
 
         if (success && !QFile::remove(stagedArchivePath)) {
