@@ -244,6 +244,13 @@ static bool copyUpdateArchive(const QString &sourcePath,
                               qint64 *copiedBytes,
                               QString *errorText)
 {
+    const QFileInfo destinationInfo(destinationPath);
+    if (!QDir().mkpath(destinationInfo.absolutePath())) {
+        *errorText = QStringLiteral("Could not create update staging directory: %1")
+                         .arg(destinationInfo.absolutePath());
+        return false;
+    }
+
     QFile sourceFile(sourcePath);
     if (!sourceFile.open(QIODevice::ReadOnly)) {
         *errorText = QStringLiteral("USB disconnected or could not be read.");
@@ -252,7 +259,8 @@ static bool copyUpdateArchive(const QString &sourcePath,
 
     QFile destinationFile(destinationPath);
     if (!destinationFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
-        *errorText = QStringLiteral("Could not write update files.");
+        *errorText = QStringLiteral("Could not write update files to %1: %2")
+                         .arg(destinationPath, destinationFile.errorString());
         return false;
     }
 
@@ -406,6 +414,14 @@ public slots:
 
         emit statusChanged(QStringLiteral("Updating application..."));
         emit progressChanged(40);
+
+        if (!QDir().mkpath(stagingPath)) {
+            errorMessage = QStringLiteral("Could not create update staging directory.");
+            emit errorOccurred(errorMessage);
+            writeState(QStringLiteral("NONE"));
+            emit finished();
+            return;
+        }
 
         const QString stagedArchivePath = QDir(stagingPath).filePath(QStringLiteral("ApplicationNew.tar.gz"));
         bool success = copyUpdateArchive(updateArchivePath,
