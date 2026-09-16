@@ -363,14 +363,14 @@ public slots:
             return;
         }
 
-        emit statusChanged(QStringLiteral("Checking ApplicationNew.zip..."));
+        emit statusChanged(QStringLiteral("Checking ApplicationNew.tar.gz..."));
         emit progressChanged(25);
 
         const QString usbRoot = selectedUsb.rootPath();
-        const QString updateArchivePath = QDir(usbRoot).filePath(QStringLiteral("ApplicationNew.zip"));
+        const QString updateArchivePath = QDir(usbRoot).filePath(QStringLiteral("ApplicationNew.tar.gz"));
         const QFileInfo updateArchiveInfo(updateArchivePath);
         if (!updateArchiveInfo.exists() || !updateArchiveInfo.isFile() || !updateArchiveInfo.isReadable()) {
-            errorMessage = QStringLiteral("ApplicationNew.zip not found on USB.");
+            errorMessage = QStringLiteral("ApplicationNew.tar.gz not found on USB.");
             emit errorOccurred(errorMessage);
             writeState(QStringLiteral("NONE"));
             emit finished();
@@ -406,7 +406,7 @@ public slots:
         emit statusChanged(QStringLiteral("Updating application..."));
         emit progressChanged(40);
 
-        const QString stagedArchivePath = QDir(stagingPath).filePath(QStringLiteral("ApplicationNew.zip"));
+        const QString stagedArchivePath = QDir(stagingPath).filePath(QStringLiteral("ApplicationNew.tar.gz"));
         bool success = copyUpdateArchive(updateArchivePath,
                                           stagedArchivePath,
                                           &copiedBytes,
@@ -414,20 +414,20 @@ public slots:
 
         if (success) {
             emit progressChanged(70);
-            QProcess unzipProcess;
-            unzipProcess.start(QStringLiteral("unzip"), {
-                QStringLiteral("-o"),
+            QProcess tarProcess;
+            tarProcess.start(QStringLiteral("tar"), {
+                QStringLiteral("-xzf"),
                 stagedArchivePath,
-                QStringLiteral("-d"),
+                QStringLiteral("-C"),
                 stagingPath
             });
 
-            if (!unzipProcess.waitForStarted() || !unzipProcess.waitForFinished()) {
+            if (!tarProcess.waitForStarted() || !tarProcess.waitForFinished()) {
                 errorMessage = QStringLiteral("Could not extract the update archive.");
                 success = false;
-            } else if (unzipProcess.exitStatus() != QProcess::NormalExit || unzipProcess.exitCode() != 0) {
+            } else if (tarProcess.exitStatus() != QProcess::NormalExit || tarProcess.exitCode() != 0) {
                 errorMessage = QStringLiteral("Could not extract the update archive: %1")
-                                   .arg(QString::fromLocal8Bit(unzipProcess.readAllStandardError()).trimmed());
+                                   .arg(QString::fromLocal8Bit(tarProcess.readAllStandardError()).trimmed());
                 success = false;
             }
         }
