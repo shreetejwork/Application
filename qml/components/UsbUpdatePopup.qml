@@ -204,10 +204,10 @@ Popup {
         anchors.leftMargin: 28
         anchors.rightMargin: 28
 
-        anchors.topMargin: 16
-        anchors.bottomMargin: 16
+        anchors.topMargin: 14
+        anchors.bottomMargin: 14
 
-        spacing: 7
+        spacing: 6
 
         // ========================================================
         // HEADER
@@ -216,13 +216,13 @@ Popup {
         Item {
 
             Layout.fillWidth: true
-            Layout.preferredHeight: 60
+            Layout.preferredHeight: 62
 
             Column {
 
                 anchors.centerIn: parent
 
-                spacing: 2
+                spacing: 3
 
                 Label {
 
@@ -230,13 +230,15 @@ Popup {
 
                     color: popupRoot.primaryColor
 
-                    font.pixelSize: 28
+                    font.pixelSize: 30
+                    font.weight: Font.DemiBold
 
+                    horizontalAlignment:
+                        Text.AlignHCenter
 
                     anchors.horizontalCenter:
                         parent.horizontalCenter
                 }
-
 
                 Label {
 
@@ -245,7 +247,11 @@ Popup {
                     color:
                         popupRoot.secondaryColor
 
-                    font.pixelSize: 13
+                    font.pixelSize: 15
+                    font.weight: Font.Medium
+
+                    horizontalAlignment:
+                        Text.AlignHCenter
 
                     anchors.horizontalCenter:
                         parent.horizontalCenter
@@ -262,9 +268,12 @@ Popup {
             id: stepArea
 
             Layout.fillWidth: true
-            Layout.preferredHeight: 76
+            Layout.preferredHeight: 78
 
-            // Base connector
+            // ----------------------------------------------------
+            // BASE CONNECTOR
+            // ----------------------------------------------------
+
             Rectangle {
 
                 anchors.left: parent.left
@@ -275,14 +284,17 @@ Popup {
 
                 y: 18
 
-                height: 3
+                height: 4
 
                 radius: 2
 
                 color: "#D9DEE8"
             }
 
-            // Progress connector
+            // ----------------------------------------------------
+            // PROGRESS CONNECTOR
+            // ----------------------------------------------------
+
             Rectangle {
 
                 x: 95
@@ -297,13 +309,17 @@ Popup {
                            )
                        )
 
-                height: 3
+                height: 4
 
                 radius: 2
 
                 color:
                     popupRoot.successColor
             }
+
+            // ----------------------------------------------------
+            // STEP ITEMS
+            // ----------------------------------------------------
 
             Repeater {
 
@@ -320,14 +336,18 @@ Popup {
                     x:
                         index * (stepArea.width / 4)
 
+                    // ------------------------------------------------
+                    // STEP CIRCLE
+                    // ------------------------------------------------
+
                     Rectangle {
 
                         id: stepCircle
 
-                        width: 38
-                        height: 38
+                        width: 40
+                        height: 40
 
-                        radius: 19
+                        radius: 20
 
                         y: 0
 
@@ -388,17 +408,21 @@ Popup {
                                 return "#718096"
                             }
 
-                            font.pixelSize: 16
+                            font.pixelSize: 20
 
                         }
                     }
+
+                    // ------------------------------------------------
+                    // STEP LABEL
+                    // ------------------------------------------------
 
                     Label {
 
                         anchors.top:
                             stepCircle.bottom
 
-                        anchors.topMargin: 6
+                        anchors.topMargin: 7
 
                         anchors.left:
                             parent.left
@@ -409,10 +433,10 @@ Popup {
                         text: {
 
                             if (index === 0)
-                                return "Check USB"
+                                return "Checking USB"
 
                             if (index === 1)
-                                return "Check ApplicationNew"
+                                return "Checking ApplicationNew"
 
                             if (index === 2)
                                 return "Installing Application"
@@ -421,9 +445,10 @@ Popup {
                         }
 
                         color:
-                            popupRoot.secondaryColor
+                            popupRoot.textColor
 
-                        font.pixelSize: 11
+                        font.pixelSize: 16
+                        font.weight: Font.Medium
 
                         horizontalAlignment:
                             Text.AlignHCenter
@@ -433,6 +458,11 @@ Popup {
 
                         wrapMode:
                             Text.WordWrap
+
+                        maximumLineCount: 2
+
+                        elide:
+                            Text.ElideRight
                     }
                 }
             }
@@ -446,7 +476,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 128
+            Layout.preferredHeight: 118
 
             // ----------------------------------------------------
             // PROGRESS
@@ -456,8 +486,8 @@ Popup {
 
                 anchors.centerIn: parent
 
-                width: 120
-                height: 120
+                width: 116
+                height: 116
 
                 visible:
                     !popupRoot.showError &&
@@ -482,7 +512,7 @@ Popup {
                         var centerY =
                                 height / 2
 
-                        var radius = 48
+                        var radius = 47
 
                         // Background ring
                         ctx.beginPath()
@@ -548,7 +578,7 @@ Popup {
                     color:
                         popupRoot.primaryColor
 
-                    font.pixelSize: 23
+                    font.pixelSize: 28
 
                 }
             }
@@ -561,10 +591,10 @@ Popup {
 
                 anchors.centerIn: parent
 
-                width: 116
-                height: 116
+                width: 112
+                height: 112
 
-                radius: 58
+                radius: 56
 
                 visible:
                     popupRoot.showError
@@ -586,7 +616,7 @@ Popup {
                     color:
                         popupRoot.errorColor
 
-                    font.pixelSize: 54
+                    font.pixelSize: 56
 
                 }
             }
@@ -599,10 +629,10 @@ Popup {
 
                 anchors.centerIn: parent
 
-                width: 116
-                height: 116
+                width: 112
+                height: 112
 
-                radius: 58
+                radius: 56
 
                 visible:
                     popupRoot.showConfirmation
@@ -624,7 +654,7 @@ Popup {
                     color:
                         popupRoot.successColor
 
-                    font.pixelSize: 48
+                    font.pixelSize: 50
 
                 }
             }
@@ -638,7 +668,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 54
+            Layout.preferredHeight: 58
 
             radius: 12
 
@@ -670,17 +700,21 @@ Popup {
 
                 anchors.fill: parent
 
-                anchors.leftMargin: 16
-                anchors.rightMargin: 16
+                anchors.leftMargin: 18
+                anchors.rightMargin: 18
 
                 spacing: 12
 
+                // ------------------------------------------------
+                // STATUS INDICATOR
+                // ------------------------------------------------
+
                 Rectangle {
 
-                    Layout.preferredWidth: 9
-                    Layout.preferredHeight: 9
+                    Layout.preferredWidth: 10
+                    Layout.preferredHeight: 10
 
-                    radius: 4.5
+                    radius: 5
 
                     color: {
 
@@ -715,6 +749,10 @@ Popup {
                     }
                 }
 
+                // ------------------------------------------------
+                // STATUS TEXT
+                // ------------------------------------------------
+
                 Label {
 
                     Layout.fillWidth: true
@@ -730,10 +768,8 @@ Popup {
                     color:
                         popupRoot.textColor
 
-                    font.pixelSize: 14
-
-                    font.weight:
-                        Font.Medium
+                    font.pixelSize: 16
+                    font.weight: Font.Medium
 
                     horizontalAlignment:
                         Text.AlignHCenter
@@ -743,6 +779,11 @@ Popup {
 
                     wrapMode:
                         Text.WordWrap
+
+                    maximumLineCount: 2
+
+                    elide:
+                        Text.ElideRight
                 }
             }
         }
@@ -755,7 +796,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 25
+            Layout.preferredHeight: 28
 
             visible:
                 popupRoot.showConfirmation
@@ -766,13 +807,17 @@ Popup {
             color:
                 popupRoot.textColor
 
-            font.pixelSize: 18
+            font.pixelSize: 17
+            font.weight: Font.Medium
 
             horizontalAlignment:
                 Text.AlignHCenter
 
             verticalAlignment:
                 Text.AlignVCenter
+
+            wrapMode:
+                Text.WordWrap
         }
 
         // ========================================================
@@ -783,7 +828,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 44
+            Layout.preferredHeight: 46
 
             // ----------------------------------------------------
             // CANCEL
@@ -793,8 +838,8 @@ Popup {
 
                 id: cancelButton
 
-                width: 135
-                height: 44
+                width: 140
+                height: 46
 
                 anchors.left:
                     parent.left
@@ -821,7 +866,7 @@ Popup {
                     color:
                         popupRoot.secondaryColor
 
-                    font.pixelSize: 14
+                    font.pixelSize: 18
                     font.weight: Font.Medium
                 }
 
@@ -850,8 +895,8 @@ Popup {
 
                 id: yesButton
 
-                width: 135
-                height: 44
+                width: 140
+                height: 46
 
                 anchors.right:
                     noButton.left
@@ -874,8 +919,8 @@ Popup {
 
                     color: "#FFFFFF"
 
-                    font.pixelSize: 14
-
+                    font.pixelSize: 18
+                    font.weight: Font.Medium
                 }
 
                 MouseArea {
@@ -897,8 +942,8 @@ Popup {
 
                 id: noButton
 
-                width: 135
-                height: 44
+                width: 140
+                height: 46
 
                 anchors.right:
                     parent.right
@@ -924,7 +969,7 @@ Popup {
                     color:
                         popupRoot.secondaryColor
 
-                    font.pixelSize: 14
+                    font.pixelSize: 18
                     font.weight: Font.Medium
                 }
 
@@ -949,8 +994,8 @@ Popup {
 
                 id: okButton
 
-                width: 135
-                height: 44
+                width: 140
+                height: 46
 
                 anchors.horizontalCenter:
                     parent.horizontalCenter
@@ -971,8 +1016,8 @@ Popup {
 
                     color: "#FFFFFF"
 
-                    font.pixelSize: 14
-
+                    font.pixelSize: 18
+                    font.weight: Font.Medium
                 }
 
                 MouseArea {

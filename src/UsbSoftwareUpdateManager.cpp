@@ -239,6 +239,45 @@ static bool copyDirectoryRecursive(const QString &sourceDir,
     return true;
 }
 
+static bool copyUpdateArchive(const QString &sourcePath,
+                              const QString &destinationPath,
+                              qint64 *copiedBytes,
+                              QString *errorText)
+{
+    QFile sourceFile(sourcePath);
+    if (!sourceFile.open(QIODevice::ReadOnly)) {
+        *errorText = QStringLiteral("USB disconnected or could not be read.");
+        return false;
+    }
+
+    QFile destinationFile(destinationPath);
+    if (!destinationFile.open(QIODevice::WriteOnly | QIODevice::Truncate)) {
+        *errorText = QStringLiteral("Could not write update files.");
+        return false;
+    }
+
+    QByteArray buffer(64 * 1024, '\0');
+    while (true) {
+        const qint64 readSize = sourceFile.read(buffer.data(), buffer.size());
+        if (readSize < 0) {
+            *errorText = QStringLiteral("USB disconnected or could not be read.");
+            return false;
+        }
+        if (readSize == 0)
+            break;
+
+        if (destinationFile.write(buffer.constData(), readSize) != readSize) {
+            *errorText = QStringLiteral("Update failed: Not enough storage space.");
+            return false;
+        }
+
+        if (copiedBytes != nullptr)
+            *copiedBytes += readSize;
+    }
+
+    return true;
+}
+
 static bool hasEnoughFreeSpace(const QString &sourcePath, const QString &targetPath, qint64 *requiredSize)
 {
     const qint64 sourceSize = directorySize(sourcePath);
@@ -324,29 +363,25 @@ public slots:
             return;
         }
 
-        emit statusChanged(QStringLiteral("Checking ApplicationNew..."));
+        emit statusChanged(QStringLiteral("Checking ApplicationNew.zip..."));
         emit progressChanged(25);
 
         const QString usbRoot = selectedUsb.rootPath();
-        const QString appNewPath = QDir(usbRoot).filePath(QStringLiteral("ApplicationNew"));
-        if (!directoryExistsAndReadable(appNewPath)) {
-            errorMessage = QStringLiteral("ApplicationNew folder not found on USB.");
+        const QString updateArchivePath = QDir(usbRoot).filePath(QStringLiteral("ApplicationNew.zip"));
+        const QFileInfo updateArchiveInfo(updateArchivePath);
+        if (!updateArchiveInfo.exists() || !updateArchiveInfo.isFile() || !updateArchiveInfo.isReadable()) {
+            errorMessage = QStringLiteral("ApplicationNew.zip not found on USB.");
             emit errorOccurred(errorMessage);
             writeState(QStringLiteral("NONE"));
             emit finished();
             return;
         }
 
-        if (!isValidApplicationDirectory(appNewPath)) {
-            errorMessage = QStringLiteral("Invalid ApplicationNew folder.");
-            emit errorOccurred(errorMessage);
-            writeState(QStringLiteral("NONE"));
-            emit finished();
-            return;
-        }
-
-        sourceSize = directorySize(appNewPath);
-        if (!hasEnoughFreeSpace(appNewPath, QString::fromUtf8(kAppDeployPath), &requiredSize)) {
+        sourceSize = updateArchiveInfo.size();
+        const qint64 reserveSpace = qMax<qint64>(256LL * 1024LL * 1024LL, sourceSize / 2LL);
+        requiredSize = sourceSize + reserveSpace;
+        const QStorageInfo targetStorage(QString::fromUtf8(kAppDeployPath));
+        if (!targetStorage.isReady() || targetStorage.bytesAvailable() < requiredSize) {
             errorMessage = QStringLiteral("Not enough storage space to update the application.");
             emit errorOccurred(errorMessage);
             writeState(QStringLiteral("NONE"));
@@ -371,15 +406,36 @@ public slots:
         emit statusChanged(QStringLiteral("Updating application..."));
         emit progressChanged(40);
 
-        const bool success = copyDirectoryRecursive(appNewPath,
-                                                   stagingPath,
-                                                   &copiedBytes,
-                                                   qMax<qint64>(sourceSize, 1),
-                                                   [this](qint64 current, qint64 percentage) {
-                                                       Q_UNUSED(current);
-                                                       emit progressChanged(percentage);
-                                                   },
-                                                   &errorMessage);
+        const QString stagedArchivePath = QDir(stagingPath).filePath(QStringLiteral("ApplicationNew.zip"));
+        bool success = copyUpdateArchive(updateArchivePath,
+                                          stagedArchivePath,
+                                          &copiedBytes,
+                                          &errorMessage);
+
+        if (success) {
+            emit progressChanged(70);
+            QProcess unzipProcess;
+            unzipProcess.start(QStringLiteral("unzip"), {
+                QStringLiteral("-o"),
+                stagedArchivePath,
+                QStringLiteral("-d"),
+                stagingPath
+            });
+
+            if (!unzipProcess.waitForStarted() || !unzipProcess.waitForFinished()) {
+                errorMessage = QStringLiteral("Could not extract the update archive.");
+                success = false;
+            } else if (unzipProcess.exitStatus() != QProcess::NormalExit || unzipProcess.exitCode() != 0) {
+                errorMessage = QStringLiteral("Could not extract the update archive: %1")
+                                   .arg(QString::fromLocal8Bit(unzipProcess.readAllStandardError()).trimmed());
+                success = false;
+            }
+        }
+
+        if (success && !QFile::remove(stagedArchivePath)) {
+            errorMessage = QStringLiteral("Could not remove the update archive after extraction.");
+            success = false;
+        }
 
         if (!success) {
             if (QDir(stagingPath).exists())
@@ -394,7 +450,7 @@ public slots:
 
         if (!isValidApplicationDirectory(stagingPath)) {
             removeDirectoryRecursively(stagingPath);
-            errorMessage = QStringLiteral("Invalid ApplicationNew folder.");
+            errorMessage = QStringLiteral("Invalid extracted application archive.");
             emit errorOccurred(errorMessage);
             writeState(QStringLiteral("NONE"));
             emit finished();
