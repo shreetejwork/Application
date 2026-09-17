@@ -1051,8 +1051,8 @@ Item {
                         Column {
                             anchors.fill: parent
 
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
                             anchors.topMargin: 7
                             anchors.bottomMargin: 7
 
@@ -1069,6 +1069,9 @@ Item {
 
                                 color: "#5E5C64"
                                 font.pixelSize: 16
+
+                                // Never truncate the title
+                                elide: Text.ElideNone
                             }
 
                             Row {
@@ -1077,36 +1080,55 @@ Item {
 
                                 spacing: 0
 
+                                // --------------------------------------------------
+                                // PHASE
+                                // --------------------------------------------------
                                 Text {
                                     width: parent.width / 3
                                     height: parent.height
 
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
-
-                                    elide: Text.ElideRight
 
                                     text: "Phase: " + SerialManager.defectPhase
 
                                     color: "#1A4DB5"
                                     font.pixelSize: 18
+
+                                    // Do not show "..."
+                                    elide: Text.ElideNone
+
+                                    // Allow the complete value to remain visible
+                                    minimumPixelSize: 12
+                                    fontSizeMode: Text.Fit
                                 }
 
+                                // --------------------------------------------------
+                                // SIGNAL
+                                // --------------------------------------------------
                                 Text {
                                     width: parent.width / 3
                                     height: parent.height
 
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
-
-                                    elide: Text.ElideRight
 
                                     text: "Signal: " + SerialManager.defectSignal
 
                                     color: "#1A4DB5"
                                     font.pixelSize: 18
+
+                                    // Do not show "..."
+                                    elide: Text.ElideNone
+
+                                    // Automatically reduce font slightly if required
+                                    minimumPixelSize: 12
+                                    fontSizeMode: Text.Fit
                                 }
 
+                                // --------------------------------------------------
+                                // AMPLITUDE
+                                // --------------------------------------------------
                                 Text {
                                     width: parent.width / 3
                                     height: parent.height
@@ -1114,12 +1136,19 @@ Item {
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
 
-                                    elide: Text.ElideRight
-
                                     text: "Amplitude: " + SerialManager.defectAmplitude
 
                                     color: "#1A4DB5"
                                     font.pixelSize: 18
+
+                                    // IMPORTANT:
+                                    // Remove ElideRight so 5-digit amplitude
+                                    // is never replaced by "..."
+                                    elide: Text.ElideNone
+
+                                    // Fit the complete text inside the available width
+                                    minimumPixelSize: 12
+                                    fontSizeMode: Text.Fit
                                 }
                             }
                         }
