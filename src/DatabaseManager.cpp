@@ -2021,6 +2021,73 @@ bool DatabaseManager::saveS1Settings(
         return false;
     }
 
+    // Keep the active product's stored settings in sync with the
+    // currently displayed system value, instead of letting the global
+    // filtersettings row overwrite the product-specific value.
+    QSqlDatabase db = QSqlDatabase::database();
+
+    if (!db.isValid() || !db.isOpen())
+        return true;
+
+    int activeGroup = -1;
+    int activeSrNo = -1;
+
+    for (int groupNo = 1; groupNo <= 10; ++groupNo)
+    {
+        QString tableName = productLibraryTableName(groupNo);
+
+        if (tableName.isEmpty() || !productLibraryTableExists(groupNo))
+            continue;
+
+        QString sql = QString(R"(
+            SELECT sr_no
+            FROM %1
+            WHERE active = 1
+            LIMIT 1
+        )").arg(tableName);
+
+        QSqlQuery activeQuery(db);
+
+        if (!activeQuery.exec(sql))
+        {
+            qDebug() << "Failed to find active product for S1 save:"
+                     << tableName
+                     << activeQuery.lastError().text();
+            continue;
+        }
+
+        if (activeQuery.next())
+        {
+            activeGroup = groupNo;
+            activeSrNo = activeQuery.value("sr_no").toInt();
+            break;
+        }
+    }
+
+    if (activeGroup == -1 || activeSrNo == -1)
+        return true;
+
+    QString activeTable = productLibraryTableName(activeGroup);
+    QString updateProductSql = QString(R"(
+        UPDATE %1
+        SET digitalGain = ?,
+            analogGain = ?
+        WHERE sr_no = ?
+          AND active = 1
+    )").arg(activeTable);
+
+    QSqlQuery productQuery(db);
+    productQuery.prepare(updateProductSql);
+    productQuery.addBindValue(digitalGain);
+    productQuery.addBindValue(analogGain);
+    productQuery.addBindValue(activeSrNo);
+
+    if (!productQuery.exec())
+    {
+        qDebug() << "Failed to update active product S1 settings:"
+                 << productQuery.lastError().text();
+        return false;
+    }
 
     return true;
 }
