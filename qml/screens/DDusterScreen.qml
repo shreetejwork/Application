@@ -749,7 +749,7 @@ Item {
                                     root.batchRejectionCount = 0
 
                                     root.rejectionCountAtLastBuffer =
-                                            Number(GlobalState.rejectedCount)
+                                            Number(GlobalState.activeBatchRejectCount)
 
                                     rejectionBufferTimer.start()
 
@@ -930,7 +930,10 @@ Item {
                                         GlobalState.batchPaused = false
 
                                         root.rejectionCountAtLastBuffer =
-                                                    Number(GlobalState.activeBatchRejectCount)
+                                                    Math.max(
+                                                        root.rejectionCountAtLastBuffer,
+                                                        Number(GlobalState.activeBatchRejectCount)
+                                                    )
 
                                         databaseManager.addBatchReportEvent(
                                             root.activeBatchReportId,
