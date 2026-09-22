@@ -804,7 +804,7 @@ Popup {
                 exitMouse.pressed
                 ? "#D32F2F"
 
-                : exitMouse.containsMouse
+                : exitHover.hovered
                 ? "#F8D7DA"
 
                 : "#FFFFFF"
@@ -829,69 +829,41 @@ Popup {
             }
 
             // ====================================================
-            // EXISTING MOUSE INPUT
+            // POINTER INPUT
+            // ====================================================
+            // TapHandler handles both mouse clicks and touchscreen
+            // taps consistently across Qt 6 builds.
+            // HoverHandler preserves the existing mouse hover behavior.
             // ====================================================
 
-            MouseArea {
+            HoverHandler {
+                id: exitHover
 
-                id: exitMouse
+                cursorShape:
+                    Qt.PointingHandCursor
+            }
 
-                anchors.fill: parent
+            TapHandler {
+                id: exitTap
 
-                hoverEnabled: true
-
-                preventStealing: true
+                gesturePolicy:
+                    TapHandler.ReleaseWithinBounds
 
                 cursorShape:
                     Qt.PointingHandCursor
 
-                onPressed: {
-                    exitButton.scale = 0.92
-                }
-
-                onReleased: {
-                    exitButton.scale = 1.0
+                onPressedChanged: {
+                    if (pressed)
+                        exitButton.scale = 0.92
+                    else
+                        exitButton.scale = 1.0
                 }
 
                 onCanceled: {
                     exitButton.scale = 1.0
                 }
 
-                onClicked: {
-
-                    countdownTimer.stop()
-
-                    validationScreenPopup.rejectCycleStarted =
-                            false
-
-                    GlobalState.countRejection = true
-
-                    saveValidationAudit(
-                        "Validation Skipped"
-                    )
-
-                    validationScreenPopup.close()
-                }
-            }
-
-            // ====================================================
-            // TOUCHSCREEN INPUT
-            // ====================================================
-
-            MultiPointTouchArea {
-
-                id: exitTouchArea
-
-                anchors.fill: parent
-
-                maximumTouchPoints: 1
-
-                onPressed: {
-
-                    exitButton.scale = 0.92
-                }
-
-                onReleased: {
+                onTapped: {
 
                     exitButton.scale = 1.0
 
@@ -907,11 +879,6 @@ Popup {
                     )
 
                     validationScreenPopup.close()
-                }
-
-                onCanceled: {
-
-                    exitButton.scale = 1.0
                 }
             }
         }
@@ -1876,68 +1843,33 @@ Popup {
                     }
 
                     // ====================================================
-                    // EXISTING MOUSE INPUT
+                    // POINTER INPUT
+                    // ====================================================
+                    // TapHandler handles both mouse clicks and touchscreen
+                    // taps consistently across Qt 6 builds.
                     // ====================================================
 
-                    MouseArea {
+                    TapHandler {
+                        id: closeTap
 
-                        id: closeArea
-
-                        anchors.fill: parent
-
-                        preventStealing: true
+                        gesturePolicy:
+                            TapHandler.ReleaseWithinBounds
 
                         cursorShape:
                             Qt.PointingHandCursor
 
-                        onPressed: {
-
-                            closeBtn.scale = 0.96
-                        }
-
-                        onReleased: {
-
-                            closeBtn.scale = 1.0
+                        onPressedChanged: {
+                            if (pressed)
+                                closeBtn.scale = 0.96
+                            else
+                                closeBtn.scale = 1.0
                         }
 
                         onCanceled: {
-
                             closeBtn.scale = 1.0
                         }
 
-                        onClicked: {
-
-                            countdownTimer.stop()
-
-                            GlobalState.countRejection = true
-
-                            validationScreenPopup.close()
-
-                            console.log(
-                                "Count Rejection:",
-                                GlobalState.countRejection
-                            )
-                        }
-                    }
-
-                    // ====================================================
-                    // TOUCHSCREEN INPUT
-                    // ====================================================
-
-                    MultiPointTouchArea {
-
-                        id: closeTouchArea
-
-                        anchors.fill: parent
-
-                        maximumTouchPoints: 1
-
-                        onPressed: {
-
-                            closeBtn.scale = 0.96
-                        }
-
-                        onReleased: {
+                        onTapped: {
 
                             closeBtn.scale = 1.0
 
@@ -1951,11 +1883,6 @@ Popup {
                                 "Count Rejection:",
                                 GlobalState.countRejection
                             )
-                        }
-
-                        onCanceled: {
-
-                            closeBtn.scale = 1.0
                         }
                     }
                 }
