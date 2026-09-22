@@ -828,44 +828,31 @@ Popup {
                     : "#1A4DB5"
             }
 
-            // ====================================================
-            // POINTER INPUT
-            // ====================================================
-            // TapHandler handles both mouse clicks and touchscreen
-            // taps consistently across Qt 6 builds.
-            // HoverHandler preserves the existing mouse hover behavior.
-            // ====================================================
+            MouseArea {
+                id: exitMouse
 
-            HoverHandler {
-                id: exitHover
+                anchors.fill: parent
 
-                cursorShape:
-                    Qt.PointingHandCursor
-            }
+                hoverEnabled: true
 
-            TapHandler {
-                id: exitTap
-
-                gesturePolicy:
-                    TapHandler.ReleaseWithinBounds
+                preventStealing: true
 
                 cursorShape:
                     Qt.PointingHandCursor
 
-                onPressedChanged: {
-                    if (pressed)
-                        exitButton.scale = 0.92
-                    else
-                        exitButton.scale = 1.0
+                onPressed: {
+                    exitButton.scale = 0.92
+                }
+
+                onReleased: {
+                    exitButton.scale = 1.0
                 }
 
                 onCanceled: {
                     exitButton.scale = 1.0
                 }
 
-                onTapped: {
-
-                    exitButton.scale = 1.0
+                onClicked: {
 
                     countdownTimer.stop()
 
@@ -1842,36 +1829,29 @@ Popup {
                             vTypography.body
                     }
 
-                    // ====================================================
-                    // POINTER INPUT
-                    // ====================================================
-                    // TapHandler handles both mouse clicks and touchscreen
-                    // taps consistently across Qt 6 builds.
-                    // ====================================================
+                    MouseArea {
+                        id: closeArea
 
-                    TapHandler {
-                        id: closeTap
+                        anchors.fill: parent
 
-                        gesturePolicy:
-                            TapHandler.ReleaseWithinBounds
+                        preventStealing: true
 
                         cursorShape:
                             Qt.PointingHandCursor
 
-                        onPressedChanged: {
-                            if (pressed)
-                                closeBtn.scale = 0.96
-                            else
-                                closeBtn.scale = 1.0
+                        onPressed: {
+                            closeBtn.scale = 0.96
+                        }
+
+                        onReleased: {
+                            closeBtn.scale = 1.0
                         }
 
                         onCanceled: {
                             closeBtn.scale = 1.0
                         }
 
-                        onTapped: {
-
-                            closeBtn.scale = 1.0
+                        onClicked: {
 
                             countdownTimer.stop()
 
