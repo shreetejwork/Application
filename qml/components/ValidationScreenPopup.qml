@@ -322,14 +322,11 @@ Popup {
                 color: exitMouse.pressed ? "white" : "#1A4DB5"
             }
 
-            MouseArea {
+            TapHandler {
                 id: exitMouse
-                anchors.fill: parent
-                hoverEnabled: true
-                    onPressed: if (globalTopBar) globalTopBar.showNotification("Validation exit pressed")
-                    onReleased: if (globalTopBar) globalTopBar.showNotification("Validation exit released")
-                onClicked: {
-                    if (globalTopBar) globalTopBar.showNotification("Validation exit clicked")
+                onTapped: {
+                    if (globalTopBar)
+                        globalTopBar.showNotification("Validation exit clicked")
                     countdownTimer.stop()
                     rejectCycleStarted = false
                     GlobalState.countRejection = true
@@ -686,13 +683,11 @@ Popup {
                         font.pixelSize: vTypography.body
                     }
 
-                    MouseArea {
+                    TapHandler {
                         id: closeArea
-                        anchors.fill: parent
-                        onPressed: if (globalTopBar) globalTopBar.showNotification("Validation close pressed")
-                        onReleased: if (globalTopBar) globalTopBar.showNotification("Validation close released")
-                        onClicked: {
-                            if (globalTopBar) globalTopBar.showNotification("Validation close clicked")
+                        onTapped: {
+                            if (globalTopBar)
+                                globalTopBar.showNotification("Validation close clicked")
                             countdownTimer.stop()
                             GlobalState.countRejection = true
                             validationScreenPopup.close()

@@ -1820,7 +1820,7 @@ ApplicationWindow {
     // VALIDATION SCREEN POPUP
     // =========================================================
 
-    ValidationScreenPopup {
+    ValidationPopup {
 
         id:
             validationScreenPopup
