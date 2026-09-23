@@ -1824,6 +1824,9 @@ ApplicationWindow {
 
         id:
             validationScreenPopup
+
+        globalTopBar:
+            mainTopBar
     }
 
 

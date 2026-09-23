@@ -27,6 +27,7 @@ Popup {
     }
 
     property int totalRounds: 3
+    property var globalTopBar: null
     property int currentRound: 1
     property var roundStatus: [false, false, false]
     property int roundDuration: 60
@@ -325,7 +326,10 @@ Popup {
                 id: exitMouse
                 anchors.fill: parent
                 hoverEnabled: true
+                    onPressed: if (globalTopBar) globalTopBar.showNotification("Validation exit pressed")
+                    onReleased: if (globalTopBar) globalTopBar.showNotification("Validation exit released")
                 onClicked: {
+                    if (globalTopBar) globalTopBar.showNotification("Validation exit clicked")
                     countdownTimer.stop()
                     rejectCycleStarted = false
                     GlobalState.countRejection = true
@@ -685,7 +689,10 @@ Popup {
                     MouseArea {
                         id: closeArea
                         anchors.fill: parent
+                        onPressed: if (globalTopBar) globalTopBar.showNotification("Validation close pressed")
+                        onReleased: if (globalTopBar) globalTopBar.showNotification("Validation close released")
                         onClicked: {
+                            if (globalTopBar) globalTopBar.showNotification("Validation close clicked")
                             countdownTimer.stop()
                             GlobalState.countRejection = true
                             validationScreenPopup.close()

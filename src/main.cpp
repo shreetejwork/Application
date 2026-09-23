@@ -1,7 +1,11 @@
 #include <QGuiApplication>
+#include <QEvent>
+#include <QMouseEvent>
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
+#include <QDebug>
 #include <QQuickWindow>
+#include <QTouchEvent>
 #include <QFontDatabase>
 #include <QFont>
 
@@ -14,6 +18,46 @@
 #include "SerialManager.h"
 #include "LanManager.h"
 #include "UsbSoftwareUpdateManager.h"
+
+class InputTraceFilter final : public QObject
+{
+public:
+    explicit InputTraceFilter(QObject *parent = nullptr)
+        : QObject(parent)
+    {
+    }
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override
+    {
+        Q_UNUSED(watched)
+
+        switch (event->type()) {
+        case QEvent::TouchBegin:
+        case QEvent::TouchUpdate:
+        case QEvent::TouchEnd:
+        case QEvent::TouchCancel: {
+            const auto *touchEvent = static_cast<const QTouchEvent *>(event);
+            qInfo() << "INPUT_TRACE touch" << event->type()
+                    << "points=" << touchEvent->points().size();
+            break;
+        }
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseButtonDblClick: {
+            const auto *mouseEvent = static_cast<const QMouseEvent *>(event);
+            qInfo() << "INPUT_TRACE mouse" << event->type()
+                    << "button=" << mouseEvent->button()
+                    << "position=" << mouseEvent->position();
+            break;
+        }
+        default:
+            break;
+        }
+
+        return false;
+    }
+};
 
 
 int main(int argc, char *argv[])
@@ -30,6 +74,12 @@ int main(int argc, char *argv[])
         Qt::HighDpiScaleFactorRoundingPolicy::PassThrough);
 
     QGuiApplication app(argc, argv);
+
+        qInfo() << "INPUT_TRACE platform=" << QGuiApplication::platformName()
+            << "QT_QPA_PLATFORM=" << qgetenv("QT_QPA_PLATFORM")
+            << "XDG_SESSION_TYPE=" << qgetenv("XDG_SESSION_TYPE")
+            << "WAYLAND_DISPLAY=" << qgetenv("WAYLAND_DISPLAY")
+            << "DISPLAY=" << qgetenv("DISPLAY");
 
     SerialManager serialManager;
 
@@ -167,6 +217,9 @@ int main(int argc, char *argv[])
 
     if (window)
     {
+        auto *inputTraceFilter = new InputTraceFilter(window);
+        window->installEventFilter(inputTraceFilter);
+
         window->setWidth(1024);
         window->setHeight(600);
 
