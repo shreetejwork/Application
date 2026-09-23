@@ -960,7 +960,7 @@ Item {
 
                             popup.open(
 
-                                        "Thr-S",
+                                        "Threshold-S",
 
                                         signalGauge.threshold,
 
@@ -984,14 +984,14 @@ Item {
 
 
                                             saveMachineSettingAudit(
-                                                "Thr-S Changed",
+                                                "Threshold-S Changed",
                                                 oldValue,
                                                 val
                                             )
                                         },
 
                                         10,
-                                        3000
+                                        10000
                                         )
                         }
                     }
@@ -1407,7 +1407,7 @@ Item {
 
                             popup.open(
 
-                                        "Thr-A",
+                                        "Threshold-A",
 
                                         ampGauge.threshold,
 
@@ -1432,7 +1432,7 @@ Item {
 
 
                                             saveMachineSettingAudit(
-                                                "Thr-A Changed",
+                                                "Threshold-A Changed",
                                                 oldValue,
                                                 val
                                             )
