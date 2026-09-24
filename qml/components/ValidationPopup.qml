@@ -1,3 +1,4 @@
+
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
@@ -7,20 +8,22 @@ import Backend 1.0
 Popup {
     id: validationpopupnew
 
+    // ================================================================
+    // POPUP SETUP
+    // ================================================================
+
+    parent: Overlay.overlay
+
     width: 850
     height: 540
 
-    x: Overlay.overlay
-       ? Math.round((Overlay.overlay.width - width) / 2)
-       : 0
-
-    y: Overlay.overlay
-       ? Math.round((Overlay.overlay.height - height) / 2)
-       : 0
+    x: Math.round((Overlay.overlay.width - width) / 2)
+    y: Math.round((Overlay.overlay.height - height) / 2)
 
     modal: true
     focus: true
     dim: true
+
     closePolicy: Popup.NoAutoClose
 
     property var globalTopBar: null
@@ -37,10 +40,10 @@ Popup {
 
     readonly property color stateColor:
         validationState === "failed"
-            ? "#FF5252"
-            : validationState === "passed"
-                ? "#2ECC71"
-                : "#1A4DB5"
+        ? "#FF5252"
+        : validationState === "passed"
+          ? "#2ECC71"
+          : "#1A4DB5"
 
     Overlay.modal: Rectangle {
         color: "#66000000"
@@ -51,9 +54,9 @@ Popup {
         scale: 1.0
     }
 
-    // ------------------------------------------------------------------
-    // Helper functions
-    // ------------------------------------------------------------------
+    // ================================================================
+    // HELPER FUNCTIONS
+    // ================================================================
 
     function formatTime(value) {
         var minutes = Math.floor(value / 60)
@@ -77,9 +80,11 @@ Popup {
 
         if (GlobalState.developerLogin) {
             auditUser = "D/Developer"
-        } else if (GlobalState.engineerLogin) {
+        }
+        else if (GlobalState.engineerLogin) {
             auditUser = "E/Engineer"
-        } else if (role !== "" && username !== "") {
+        }
+        else if (role !== "" && username !== "") {
 
             if (role === "Admin")
                 prefix = "A"
@@ -99,9 +104,9 @@ Popup {
         )
     }
 
-    // ------------------------------------------------------------------
-    // Result animation
-    // ------------------------------------------------------------------
+    // ================================================================
+    // RESULT ANIMATION
+    // ================================================================
 
     function resetResult() {
         resultAnimation.stop()
@@ -125,9 +130,9 @@ Popup {
         resultAnimation.start()
     }
 
-    // ------------------------------------------------------------------
-    // Validation reset
-    // ------------------------------------------------------------------
+    // ================================================================
+    // VALIDATION RESET
+    // ================================================================
 
     function resetValidation() {
         countdown.stop()
@@ -148,11 +153,12 @@ Popup {
         countdown.start()
     }
 
-    // ------------------------------------------------------------------
-    // Round handling
-    // ------------------------------------------------------------------
+    // ================================================================
+    // ROUND HANDLING
+    // ================================================================
 
     function finishRound() {
+
         if (validationState !== "running")
             return
 
@@ -167,15 +173,17 @@ Popup {
         var completedIndex = currentRound - 1
 
         Qt.callLater(function() {
-            var markerItem = roundRepeater.itemAt(completedIndex)
+
+            var markerItem =
+                    roundRepeater.itemAt(completedIndex)
 
             if (markerItem && markerItem.pulse)
                 markerItem.pulse()
         })
 
-        // --------------------------------------------------------------
-        // Final round completed
-        // --------------------------------------------------------------
+        // ------------------------------------------------------------
+        // FINAL ROUND
+        // ------------------------------------------------------------
 
         if (currentRound === totalRounds) {
 
@@ -195,9 +203,9 @@ Popup {
             return
         }
 
-        // --------------------------------------------------------------
-        // Move to next round
-        // --------------------------------------------------------------
+        // ------------------------------------------------------------
+        // NEXT ROUND
+        // ------------------------------------------------------------
 
         currentRound++
 
@@ -207,11 +215,12 @@ Popup {
         timerProgress.requestPaint()
     }
 
-    // ------------------------------------------------------------------
-    // Exit / close handling
-    // ------------------------------------------------------------------
+    // ================================================================
+    // EXIT / CLOSE
+    // ================================================================
 
     function skipValidation() {
+
         countdown.stop()
 
         rejectCycleStarted = false
@@ -226,6 +235,7 @@ Popup {
     }
 
     function closeValidation() {
+
         countdown.stop()
 
         rejectCycleStarted = false
@@ -237,17 +247,21 @@ Popup {
         close()
     }
 
-    // ------------------------------------------------------------------
-    // Popup lifecycle
-    // ------------------------------------------------------------------
+    // ================================================================
+    // POPUP LIFECYCLE
+    // ================================================================
 
     onOpened: {
+
         GlobalState.countRejection = false
+
         resetValidation()
     }
 
     onClosed: {
+
         countdown.stop()
+
         resultAnimation.stop()
 
         rejectCycleStarted = false
@@ -261,9 +275,9 @@ Popup {
         timerProgress.requestPaint()
     }
 
-    // ------------------------------------------------------------------
-    // Countdown timer
-    // ------------------------------------------------------------------
+    // ================================================================
+    // COUNTDOWN
+    // ================================================================
 
     Timer {
         id: countdown
@@ -275,7 +289,9 @@ Popup {
         onTriggered: {
 
             if (validationpopupnew.validationState !== "running") {
+
                 stop()
+
                 return
             }
 
@@ -304,22 +320,24 @@ Popup {
         }
     }
 
-    // ------------------------------------------------------------------
-    // Serial signal monitoring
-    // ------------------------------------------------------------------
+    // ================================================================
+    // SERIAL SIGNAL MONITORING
+    // ================================================================
 
     Connections {
         target: SerialManager
 
-        enabled: validationpopupnew.visible &&
-                 validationpopupnew.validationState === "running"
+        enabled:
+            validationpopupnew.visible &&
+            validationpopupnew.validationState === "running"
 
         function onSignalChanged() {
 
             if (validationpopupnew.validationState !== "running")
                 return
 
-            if (SerialManager.signal > GlobalState.signalThreshold) {
+            if (SerialManager.signal >
+                    GlobalState.signalThreshold) {
 
                 validationpopupnew.rejectCycleStarted = true
 
@@ -335,9 +353,9 @@ Popup {
         }
     }
 
-    // ------------------------------------------------------------------
-    // Popup opening animation
-    // ------------------------------------------------------------------
+    // ================================================================
+    // OPEN ANIMATION
+    // ================================================================
 
     enter: Transition {
 
@@ -345,25 +363,31 @@ Popup {
 
             NumberAnimation {
                 property: "opacity"
+
                 from: 0
                 to: 1
+
                 duration: 350
+
                 easing.type: Easing.OutQuad
             }
 
             NumberAnimation {
                 property: "scale"
+
                 from: 0.85
                 to: 1
+
                 duration: 350
+
                 easing.type: Easing.OutBack
             }
         }
     }
 
-    // ------------------------------------------------------------------
-    // Popup closing animation
-    // ------------------------------------------------------------------
+    // ================================================================
+    // CLOSE ANIMATION
+    // ================================================================
 
     exit: Transition {
 
@@ -371,35 +395,50 @@ Popup {
 
             NumberAnimation {
                 property: "opacity"
+
                 from: 1
                 to: 0
+
                 duration: 250
+
                 easing.type: Easing.InQuad
             }
 
             NumberAnimation {
                 property: "scale"
+
                 from: 1
                 to: 0.85
+
                 duration: 250
+
                 easing.type: Easing.InQuad
             }
         }
     }
 
-    // ==================================================================
+    // ================================================================
     // MAIN CONTENT
-    // ==================================================================
+    //
+    // Same design as the original popup.
+    // contentItem is used so the Popup follows the same structure
+    // as the working Login popup.
+    // ================================================================
 
-    background: Item {
+    background: Rectangle {
+        color: "transparent"
+        border.width: 0
+    }
+
+    contentItem: Item {
         id: content
 
         width: validationpopupnew.width
         height: validationpopupnew.height
 
-        // --------------------------------------------------------------
-        // Outer glow
-        // --------------------------------------------------------------
+        // ============================================================
+        // OUTER GLOW
+        // ============================================================
 
         Rectangle {
             id: glow
@@ -416,33 +455,40 @@ Popup {
             border.color: validationpopupnew.stateColor
             border.width: 3
 
-            opacity: 0.18
+            opacity: 0.25
 
             antialiasing: true
 
             SequentialAnimation on opacity {
-                running: validationpopupnew.validationState === "running"
+
+                running:
+                    validationpopupnew.validationState === "running"
+
                 loops: Animation.Infinite
 
                 NumberAnimation {
                     from: 0.12
                     to: 0.32
+
                     duration: 800
+
                     easing.type: Easing.InOutQuad
                 }
 
                 NumberAnimation {
                     from: 0.32
                     to: 0.12
+
                     duration: 800
+
                     easing.type: Easing.InOutQuad
                 }
             }
         }
 
-        // --------------------------------------------------------------
-        // Main background
-        // --------------------------------------------------------------
+        // ============================================================
+        // MAIN BACKGROUND
+        // ============================================================
 
         Rectangle {
             anchors.fill: parent
@@ -470,14 +516,21 @@ Popup {
             }
         }
 
-        // --------------------------------------------------------------
-        // Exit button
-        // --------------------------------------------------------------
+        // ============================================================
+        // EXIT BUTTON
+        //
+        // Same interaction structure as LoginPopup:
+        // - direct Rectangle
+        // - MouseArea fills button
+        // - explicit acceptedButtons
+        // - high z
+        // ============================================================
 
         Rectangle {
             id: exitButton
 
-            visible: validationpopupnew.validationState === "running"
+            visible:
+                validationpopupnew.validationState === "running"
 
             width: 45
             height: 45
@@ -490,16 +543,23 @@ Popup {
             anchors.topMargin: 25
             anchors.rightMargin: 25
 
-            color: exitMouseArea.pressed
-                   ? "#D32F2F"
-                   : "#FFFFFF"
+            color:
+                exitMouseArea.pressed
+                ? "#D32F2F"
+                : "#FFFFFF"
 
             border.color: "#D0D8EC"
             border.width: 1
 
-            scale: exitMouseArea.pressed ? 0.92 : 1
+            scale:
+                exitMouseArea.pressed
+                ? 0.92
+                : 1
+
+            z: 999
 
             Behavior on scale {
+
                 NumberAnimation {
                     duration: 80
                 }
@@ -512,30 +572,46 @@ Popup {
 
                 font.pixelSize: 25
 
-                color: exitMouseArea.pressed
-                       ? "white"
-                       : "#1A4DB5"
+                color:
+                    exitMouseArea.pressed
+                    ? "white"
+                    : "#1A4DB5"
             }
 
-            // MouseArea handles both mouse and touchscreen input.
             MouseArea {
                 id: exitMouseArea
 
                 anchors.fill: parent
 
+                acceptedButtons: Qt.LeftButton
+
                 hoverEnabled: false
 
+                z: 1000
+
+                onPressed: {
+                    mouse.accepted = true
+                }
+
+                onReleased: {
+                    mouse.accepted = true
+                }
+
                 onClicked: {
+
+                    mouse.accepted = true
+
                     validationpopupnew.skipValidation()
                 }
             }
         }
 
-        // --------------------------------------------------------------
-        // Main layout
-        // --------------------------------------------------------------
+        // ============================================================
+        // MAIN LAYOUT
+        // ============================================================
 
         ColumnLayout {
+
             anchors.fill: parent
 
             anchors.leftMargin: 34
@@ -545,15 +621,17 @@ Popup {
 
             spacing: 12
 
-            // ----------------------------------------------------------
-            // Header
-            // ----------------------------------------------------------
+            // ========================================================
+            // HEADER
+            // ========================================================
 
             RowLayout {
+
                 Layout.fillWidth: true
                 Layout.preferredHeight: 45
 
                 Column {
+
                     Layout.fillWidth: true
 
                     spacing: 6
@@ -567,6 +645,7 @@ Popup {
                     }
 
                     Rectangle {
+
                         width: 80
                         height: 4
 
@@ -577,52 +656,62 @@ Popup {
                 }
 
                 Rectangle {
-                    visible: validationpopupnew.validationState !== "running"
+
+                    visible:
+                        validationpopupnew.validationState !== "running"
 
                     height: 34
                     width: badge.implicitWidth + 28
 
                     radius: 17
 
-                    color: validationpopupnew.stateColor
+                    color:
+                        validationpopupnew.stateColor
 
                     Text {
+
                         id: badge
 
                         anchors.centerIn: parent
 
-                        text: validationpopupnew.validationState === "passed"
-                              ? "Passed"
-                              : "Failed"
+                        text:
+                            validationpopupnew.validationState === "passed"
+                            ? "Passed"
+                            : "Failed"
 
                         color: "white"
 
-                        font.pixelSize: typography.bodySmall
+                        font.pixelSize:
+                            typography.bodySmall
                     }
                 }
             }
 
-            // ----------------------------------------------------------
-            // Timer / Result
-            // ----------------------------------------------------------
+            // ========================================================
+            // TIMER / RESULT
+            // ========================================================
 
             Item {
-                Layout.alignment: Qt.AlignHCenter
+
+                Layout.alignment:
+                    Qt.AlignHCenter
 
                 Layout.preferredWidth: 190
                 Layout.preferredHeight: 190
 
-                // ------------------------------------------------------
-                // Running state
-                // ------------------------------------------------------
+                // ====================================================
+                // RUNNING STATE
+                // ====================================================
 
                 Item {
+
                     anchors.fill: parent
 
-                    visible: validationpopupnew.validationState === "running"
+                    visible:
+                        validationpopupnew.validationState === "running"
 
-                    // Background ring
                     Canvas {
+
                         id: timerBackground
 
                         anchors.fill: parent
@@ -662,8 +751,8 @@ Popup {
                         }
                     }
 
-                    // Progress ring
                     Canvas {
+
                         id: timerProgress
 
                         anchors.fill: parent
@@ -675,19 +764,19 @@ Popup {
                             var context = getContext("2d")
 
                             var duration =
-                                    Math.max(
-                                        1,
-                                        validationpopupnew.roundDuration
-                                    )
+                                Math.max(
+                                    1,
+                                    validationpopupnew.roundDuration
+                                )
 
                             var progress =
-                                    Math.max(
-                                        0,
-                                        Math.min(
-                                            validationpopupnew.remainingSeconds,
-                                            duration
-                                        )
-                                    ) / duration
+                                Math.max(
+                                    0,
+                                    Math.min(
+                                        validationpopupnew.remainingSeconds,
+                                        duration
+                                    )
+                                ) / duration
 
                             context.clearRect(
                                 0,
@@ -701,9 +790,9 @@ Popup {
                             context.lineWidth = 10
 
                             context.strokeStyle =
-                                    validationpopupnew.remainingSeconds <= 10
-                                    ? "#FF5252"
-                                    : "#1A4DB5"
+                                validationpopupnew.remainingSeconds <= 10
+                                ? "#FF5252"
+                                : "#1A4DB5"
 
                             context.lineCap = "round"
 
@@ -717,7 +806,8 @@ Popup {
                                     Math.PI * 2
                                 )
 
-                            } else if (progress > 0) {
+                            }
+                            else if (progress > 0) {
 
                                 context.arc(
                                     width / 2,
@@ -737,8 +827,8 @@ Popup {
                         }
                     }
 
-                    // Timer text
                     Column {
+
                         anchors.centerIn: parent
 
                         spacing: 2
@@ -746,43 +836,51 @@ Popup {
                         z: 3
 
                         Text {
+
                             anchors.horizontalCenter: parent.horizontalCenter
 
-                            text: validationpopupnew.formatTime(
-                                      validationpopupnew.remainingSeconds
-                                  )
+                            text:
+                                validationpopupnew.formatTime(
+                                    validationpopupnew.remainingSeconds
+                                )
 
                             color:
                                 validationpopupnew.remainingSeconds <= 10
                                 ? "#FF5252"
                                 : "#1A2E52"
 
-                            font.pixelSize: typography.title * 1.5
+                            font.pixelSize:
+                                typography.title * 1.5
                         }
 
                         Text {
-                            anchors.horizontalCenter: parent.horizontalCenter
+
+                            anchors.horizontalCenter:
+                                parent.horizontalCenter
 
                             text: "remaining"
 
                             color: "#3D3846"
 
-                            font.pixelSize: typography.body * 0.85
+                            font.pixelSize:
+                                typography.body * 0.85
                         }
                     }
                 }
 
-                // ------------------------------------------------------
-                // Result state
-                // ------------------------------------------------------
+                // ====================================================
+                // RESULT STATE
+                // ====================================================
 
                 Item {
+
                     anchors.fill: parent
 
                     visible:
                         validationpopupnew.validationState !== "running"
 
                     Rectangle {
+
                         id: resultCircle
 
                         width: 150
@@ -810,6 +908,7 @@ Popup {
                             : "#E53935"
 
                         Rectangle {
+
                             width: 122
                             height: 122
 
@@ -820,6 +919,7 @@ Popup {
                             color: "white"
 
                             Text {
+
                                 id: resultMark
 
                                 anchors.centerIn: parent
@@ -844,11 +944,12 @@ Popup {
                 }
             }
 
-            // ----------------------------------------------------------
-            // Status message
-            // ----------------------------------------------------------
+            // ========================================================
+            // STATUS MESSAGE
+            // ========================================================
 
             Rectangle {
+
                 Layout.fillWidth: true
 
                 Layout.preferredHeight: 68
@@ -857,25 +958,32 @@ Popup {
 
                 color: "white"
 
-                border.color: validationpopupnew.stateColor
+                border.color:
+                    validationpopupnew.stateColor
+
                 border.width: 1.5
 
                 RowLayout {
+
                     anchors.centerIn: parent
 
                     spacing: 14
 
                     Rectangle {
+
                         width: 15
                         height: 15
 
                         radius: 7.5
 
-                        color: validationpopupnew.stateColor
+                        color:
+                            validationpopupnew.stateColor
                     }
 
                     Text {
-                        font.pixelSize: typography.subHeading
+
+                        font.pixelSize:
+                            typography.subHeading
 
                         color: "#1A4DB5"
 
@@ -889,19 +997,23 @@ Popup {
                 }
             }
 
-            // ----------------------------------------------------------
-            // Round indicators
-            // ----------------------------------------------------------
+            // ========================================================
+            // ROUND INDICATORS
+            // ========================================================
 
             RowLayout {
-                Layout.alignment: Qt.AlignHCenter
+
+                Layout.alignment:
+                    Qt.AlignHCenter
 
                 spacing: 0
 
                 Repeater {
+
                     id: roundRepeater
 
-                    model: validationpopupnew.totalRounds
+                    model:
+                        validationpopupnew.totalRounds
 
                     delegate: RowLayout {
 
@@ -912,6 +1024,7 @@ Popup {
                         }
 
                         Rectangle {
+
                             id: marker
 
                             width: 40
@@ -940,6 +1053,7 @@ Popup {
                                 : "#D8DCE6"
 
                             Text {
+
                                 anchors.centerIn: parent
 
                                 visible:
@@ -949,10 +1063,12 @@ Popup {
 
                                 color: "white"
 
-                                font.pixelSize: typography.bodySmall
+                                font.pixelSize:
+                                    typography.bodySmall
                             }
 
                             Text {
+
                                 anchors.centerIn: parent
 
                                 visible:
@@ -966,13 +1082,16 @@ Popup {
                                     ? "#1A4DB5"
                                     : "#8A93A6"
 
-                                font.pixelSize: typography.bodySmall
+                                font.pixelSize:
+                                    typography.bodySmall
                             }
 
                             SequentialAnimation {
+
                                 id: markerAnimation
 
                                 NumberAnimation {
+
                                     target: marker
 
                                     property: "scale"
@@ -984,6 +1103,7 @@ Popup {
                                 }
 
                                 NumberAnimation {
+
                                     target: marker
 
                                     property: "scale"
@@ -993,12 +1113,14 @@ Popup {
 
                                     duration: 160
 
-                                    easing.type: Easing.OutBack
+                                    easing.type:
+                                        Easing.OutBack
                                 }
                             }
                         }
 
                         Rectangle {
+
                             visible:
                                 index <
                                 validationpopupnew.totalRounds - 1
@@ -1018,29 +1140,33 @@ Popup {
                 }
             }
 
-            // ----------------------------------------------------------
-            // Flexible spacer
-            // ----------------------------------------------------------
+            // ========================================================
+            // FLEXIBLE SPACER
+            // ========================================================
 
             Item {
+
                 Layout.fillHeight: true
 
                 Layout.minimumHeight: 1
             }
 
-            // ----------------------------------------------------------
-            // Bottom button
-            // ----------------------------------------------------------
+            // ========================================================
+            // BOTTOM BUTTON
+            // ========================================================
 
             Row {
+
                 visible:
                     validationpopupnew.validationState !== "running"
 
-                Layout.alignment: Qt.AlignHCenter
+                Layout.alignment:
+                    Qt.AlignHCenter
 
                 spacing: 22
 
                 Rectangle {
+
                     id: closeButton
 
                     width: 160
@@ -1058,13 +1184,17 @@ Popup {
                         ? 0.97
                         : 1
 
+                    z: 999
+
                     Behavior on scale {
+
                         NumberAnimation {
                             duration: 80
                         }
                     }
 
                     Text {
+
                         anchors.centerIn: parent
 
                         text:
@@ -1074,18 +1204,38 @@ Popup {
 
                         color: "white"
 
-                        font.pixelSize: typography.body
+                        font.pixelSize:
+                            typography.body
                     }
 
-                    // MouseArea supports mouse + touchscreen.
+                    // ====================================================
+                    // SAME BUTTON METHOD AS LOGIN POPUP
+                    // ====================================================
+
                     MouseArea {
+
                         id: closeMouseArea
 
                         anchors.fill: parent
 
+                        acceptedButtons: Qt.LeftButton
+
                         hoverEnabled: false
 
+                        z: 1000
+
+                        onPressed: {
+                            mouse.accepted = true
+                        }
+
+                        onReleased: {
+                            mouse.accepted = true
+                        }
+
                         onClicked: {
+
+                            mouse.accepted = true
+
                             validationpopupnew.closeValidation()
                         }
                     }
@@ -1094,16 +1244,18 @@ Popup {
         }
     }
 
-    // ==================================================================
+    // ================================================================
     // RESULT ANIMATION
-    // ==================================================================
+    // ================================================================
 
     SequentialAnimation {
+
         id: resultAnimation
 
         ParallelAnimation {
 
             NumberAnimation {
+
                 target: resultCircle
 
                 property: "scale"
@@ -1113,10 +1265,12 @@ Popup {
 
                 duration: 420
 
-                easing.type: Easing.OutBack
+                easing.type:
+                    Easing.OutBack
             }
 
             NumberAnimation {
+
                 target: resultCircle
 
                 property: "opacity"
@@ -1126,13 +1280,15 @@ Popup {
 
                 duration: 280
 
-                easing.type: Easing.OutQuad
+                easing.type:
+                    Easing.OutQuad
             }
         }
 
         ParallelAnimation {
 
             NumberAnimation {
+
                 target: resultMark
 
                 property: "scale"
@@ -1142,10 +1298,12 @@ Popup {
 
                 duration: 300
 
-                easing.type: Easing.OutBack
+                easing.type:
+                    Easing.OutBack
             }
 
             NumberAnimation {
+
                 target: resultMark
 
                 property: "opacity"
@@ -1155,7 +1313,8 @@ Popup {
 
                 duration: 250
 
-                easing.type: Easing.OutQuad
+                easing.type:
+                    Easing.OutQuad
             }
         }
     }
