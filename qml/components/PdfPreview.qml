@@ -201,35 +201,38 @@ Popup {
 
                 // TOUCH DRAG TEST ONLY
                 // This does not move or modify the PDF.
-                DragHandler {
-                    id: pdfDragTest
+                MultiPointTouchArea {
+                    id: touchTest
 
-                    target: null
+                    anchors.fill: parent
+                    z: 1000
 
-                    acceptedDevices:
-                        PointerDevice.TouchScreen
+                    minimumTouchPoints: 1
+                    maximumTouchPoints: 1
+                    mouseEnabled: false
 
-                    onActiveChanged: {
+                    onPressed: {
+                        console.log("========== TOUCH TEST ==========")
+                        console.log("[TOUCH] PRESSED")
+                        console.log("[TOUCH] X:", touchPoints[0].x)
+                        console.log("[TOUCH] Y:", touchPoints[0].y)
+                    }
+
+                    onUpdated: {
                         console.log(
-                            "[PDF-DRAG] active:",
-                            active
+                            "[TOUCH] MOVED:",
+                            touchPoints[0].x,
+                            touchPoints[0].y
                         )
                     }
 
-                    onTranslationChanged: {
-                        console.log(
-                            "[PDF-DRAG] translation:",
-                            translation.x,
-                            translation.y
-                        )
+                    onReleased: {
+                        console.log("[TOUCH] RELEASED")
+                        console.log("================================")
                     }
 
-                    onCentroidChanged: {
-                        console.log(
-                            "[PDF-DRAG] position:",
-                            centroid.position.x,
-                            centroid.position.y
-                        )
+                    onCanceled: {
+                        console.log("[TOUCH] CANCELED")
                     }
                 }
 
