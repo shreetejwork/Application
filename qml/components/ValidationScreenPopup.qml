@@ -27,7 +27,6 @@ Popup {
     }
 
     property int totalRounds: 3
-    property var globalTopBar: null
     property int currentRound: 1
     property var roundStatus: [false, false, false]
     property int roundDuration: 60
@@ -322,11 +321,11 @@ Popup {
                 color: exitMouse.pressed ? "white" : "#1A4DB5"
             }
 
-            TapHandler {
+            MouseArea {
                 id: exitMouse
-                onTapped: {
-                    if (globalTopBar)
-                        globalTopBar.showNotification("Validation exit clicked")
+                anchors.fill: parent
+                hoverEnabled: true
+                onClicked: {
                     countdownTimer.stop()
                     rejectCycleStarted = false
                     GlobalState.countRejection = true
@@ -683,11 +682,10 @@ Popup {
                         font.pixelSize: vTypography.body
                     }
 
-                    TapHandler {
+                    MouseArea {
                         id: closeArea
-                        onTapped: {
-                            if (globalTopBar)
-                                globalTopBar.showNotification("Validation close clicked")
+                        anchors.fill: parent
+                        onClicked: {
                             countdownTimer.stop()
                             GlobalState.countRejection = true
                             validationScreenPopup.close()

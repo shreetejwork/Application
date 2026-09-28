@@ -45,6 +45,14 @@ Item {
     property string currentProductSno: ""
     property int currentProductGroupNo: 0
 
+    Connections {
+        target: GlobalState
+
+        function onDdusterEnabledChanged() {
+            if (ddBtn.toggled !== GlobalState.ddusterEnabled)
+                ddBtn.toggled = GlobalState.ddusterEnabled
+        }
+    }
 
     property string currentBatchId: "General Batch"
 
@@ -1158,6 +1166,7 @@ Item {
 
                                 onToggleRequested: {
 
+                                    GlobalState.ddusterEnabled = toggled
                                     SerialManager.setDDuster(toggled)
 
 

@@ -156,6 +156,11 @@ ApplicationWindow {
                 "MCU requested parameters"
             )
 
+            if (GlobalState.ddusterEnabled) {
+                GlobalState.ddusterEnabled = false
+                SerialManager.setDDuster(false)
+            }
+
             startupTimer.restart()
         }
     }

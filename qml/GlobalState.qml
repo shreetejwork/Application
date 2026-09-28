@@ -50,6 +50,7 @@ QtObject {
     // =========================================================
     //  PERSISTED UI STATE
     // =========================================================
+    property bool ddusterEnabled: false
     property bool showDDuster: settings.showDDuster
     property bool showNetworkScreen: settings.showNetworkScreen
     property bool showAuditTrail: settings.showAuditTrail
