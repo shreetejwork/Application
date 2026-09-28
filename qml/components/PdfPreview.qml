@@ -9,7 +9,9 @@ Popup {
         id: componentTypography
         scale: root.scale || 1.0
     }
+
     id: root
+
     modal: true
     focus: true
 
@@ -17,8 +19,13 @@ Popup {
     height: parent.height * 0.9
     anchors.centerIn: parent
 
-    background: Rectangle { color: "transparent" }
-    Overlay.modal: Rectangle { color: "#80000000" }
+    background: Rectangle {
+        color: "transparent"
+    }
+
+    Overlay.modal: Rectangle {
+        color: "#80000000"
+    }
 
     closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
@@ -34,8 +41,11 @@ Popup {
     function computeRenderScale() {
         if (pdfDoc.status === PdfDocument.Ready && pdfDoc.pageCount > 0) {
             var pageSize = pdfDoc.pagePointSize(0)
-            var scale = pdfContainer.width / pageSize.width
-            pdfView.renderScale = scale
+
+            if (pageSize.width > 0) {
+                var newScale = pdfContainer.width / pageSize.width
+                pdfView.renderScale = newScale
+            }
         }
     }
 
@@ -55,6 +65,7 @@ Popup {
                 height: 54
                 color: "#1A4DB5"
                 radius: 12
+
                 Rectangle {
                     anchors.bottom: parent.bottom
                     width: parent.width
@@ -74,14 +85,19 @@ Popup {
                         Layout.alignment: Qt.AlignVCenter
                     }
 
-                    Item { Layout.fillWidth: true }
+                    Item {
+                        Layout.fillWidth: true
+                    }
 
                     // UP BUTTON
                     Rectangle {
                         width: 40
                         height: 36
                         radius: 6
-                        color: upArea.pressed ? "#0D3A8A" : "#2D6AD4"
+                        color: upArea.pressed
+                               ? "#0D3A8A"
+                               : "#2D6AD4"
+
                         Layout.alignment: Qt.AlignVCenter
 
                         Text {
@@ -94,9 +110,11 @@ Popup {
                         MouseArea {
                             id: upArea
                             anchors.fill: parent
+
                             onClicked: {
                                 if (pdfView.currentPage > 0)
-                                    pdfView.currentPage = pdfView.currentPage - 1
+                                    pdfView.currentPage =
+                                            pdfView.currentPage - 1
                             }
                         }
                     }
@@ -106,7 +124,10 @@ Popup {
                         width: 40
                         height: 36
                         radius: 6
-                        color: downArea.pressed ? "#0D3A8A" : "#2D6AD4"
+                        color: downArea.pressed
+                               ? "#0D3A8A"
+                               : "#2D6AD4"
+
                         Layout.alignment: Qt.AlignVCenter
 
                         Text {
@@ -119,9 +140,13 @@ Popup {
                         MouseArea {
                             id: downArea
                             anchors.fill: parent
+
                             onClicked: {
-                                if (pdfView.currentPage < pdfDoc.pageCount - 1)
-                                    pdfView.currentPage = pdfView.currentPage + 1
+                                if (pdfView.currentPage <
+                                        pdfDoc.pageCount - 1) {
+                                    pdfView.currentPage =
+                                            pdfView.currentPage + 1
+                                }
                             }
                         }
                     }
@@ -129,17 +154,22 @@ Popup {
             }
 
             // ===== PDF VIEWER =====
+            // ===== PDF VIEWER =====
             Rectangle {
                 id: pdfContainer
+
                 Layout.fillWidth: true
                 Layout.fillHeight: true
+
                 color: "#ffffff"
                 clip: true
 
                 PdfDocument {
                     id: pdfDoc
+
                     source: root.pdfSource
-                    onStatusChanged: function() {
+
+                    onStatusChanged: {
                         if (pdfDoc.status === PdfDocument.Ready) {
                             Qt.callLater(root.computeRenderScale)
                         }
@@ -148,45 +178,60 @@ Popup {
 
                 PdfMultiPageView {
                     id: pdfView
+
                     anchors.fill: parent
+
                     document: pdfDoc
+
                     focus: true
                     activeFocusOnTab: true
+
                     renderScale: 1.0
                 }
 
-                onWidthChanged: Qt.callLater(root.computeRenderScale)
+                onWidthChanged: {
+                    Qt.callLater(root.computeRenderScale)
+                }
             }
 
             // ===== FOOTER =====
             Rectangle {
                 Layout.fillWidth: true
                 height: 50
+
                 color: "#FFFFFF"
                 radius: 12
+
                 Rectangle {
                     anchors.top: parent.top
                     width: parent.width
                     height: 12
                     color: "#FFFFFF"
                 }
+
                 RowLayout {
                     anchors.centerIn: parent
                     spacing: 16
+
                     Rectangle {
                         width: 120
                         height: 40
                         radius: 6
                         color: "#1A4DB5"
+
                         Text {
                             anchors.centerIn: parent
                             text: "Close"
                             color: "white"
                             font.pixelSize: pdfTypography.caption
                         }
+
                         MouseArea {
                             anchors.fill: parent
-                            onClicked: root.close()
+
+                            onClicked: {
+                                root.close()
+                            }
                         }
                     }
                 }
