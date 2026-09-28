@@ -23,6 +23,65 @@ ApplicationWindow {
     // flags: Qt.FramelessWindowHint
     // visibility: Window.FullScreen
 
+    Timer {
+        id: ramRefreshTimer
+
+        interval: 60 * 1000
+        repeat: true
+        running: true
+
+        onTriggered: SystemDiag.update()
+    }
+
+    Rectangle {
+        id: ramBubble
+
+        property real edgePadding: 12
+
+        width: 156
+        height: 42
+        radius: 12
+        x: edgePadding
+        y: root.height - height - edgePadding
+        z: 9999
+        color: "#CC202B35"
+        border.color: "#66FFFFFF"
+        opacity: 0.78
+
+        Text {
+            anchors.centerIn: parent
+            text: "RAM  " + SystemDiag.ramUsage
+            color: "white"
+            font.pixelSize: 14
+        }
+
+        MouseArea {
+            anchors.fill: parent
+            drag.target: ramBubble
+            drag.minimumX: 0
+            drag.maximumX: root.width - ramBubble.width
+            drag.minimumY: 0
+            drag.maximumY: root.height - ramBubble.height
+
+            onReleased: {
+                var leftDistance = ramBubble.x
+                var rightDistance = root.width - ramBubble.width - ramBubble.x
+                var topDistance = ramBubble.y
+                var bottomDistance = root.height - ramBubble.height - ramBubble.y
+                var nearest = Math.min(leftDistance, rightDistance,
+                                       topDistance, bottomDistance)
+
+                if (nearest === leftDistance)
+                    ramBubble.x = 0
+                else if (nearest === rightDistance)
+                    ramBubble.x = root.width - ramBubble.width
+                else if (nearest === topDistance)
+                    ramBubble.y = 0
+                else
+                    ramBubble.y = root.height - ramBubble.height
+            }
+        }
+    }
 
     // =========================================================
     // NAVIGATE HOME TIMER
@@ -364,6 +423,8 @@ ApplicationWindow {
     // =========================================================
 
     Component.onCompleted: {
+
+        SystemDiag.update()
 
         SerialManager.setBaudRate(GlobalState.baudRate)
 
