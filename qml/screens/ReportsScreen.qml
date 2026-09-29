@@ -151,7 +151,7 @@ Item {
 
                     MenuTile {
                         iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
-                        label: "Reports\nFolder"
+                        label: "Generated\nReports"
                         iconSize: 100 * root.scale
                         onTileClicked: navigateTo("ReportsFolder")
                     }
