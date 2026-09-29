@@ -5,7 +5,7 @@ Rectangle {
 
     property Item boundary
     property real edgePadding: 12
-    property int refreshInterval: 60 * 1000
+    property int refreshInterval: 1000
     property real nearestEdge: 0
 
     width: 130
