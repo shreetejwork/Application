@@ -2194,9 +2194,17 @@ bool DatabaseManager::addAuditTrailRecord(
 }
 
 
-QVariantList DatabaseManager::getAuditTrailReport()
+QVariantList DatabaseManager::getAuditTrailReport(
+    const QString &fromDate,
+    const QString &toDate)
 {
     QVariantList list;
+
+    QDate from = QDate::fromString(fromDate, "dd/MM/yyyy");
+    QDate to = QDate::fromString(toDate, "dd/MM/yyyy");
+
+    if (!from.isValid() || !to.isValid() || from > to)
+        return list;
 
     QSqlQuery query;
 
@@ -2210,8 +2218,15 @@ QVariantList DatabaseManager::getAuditTrailReport()
         "new_value, "
         "remark "
         "FROM audittrailreport "
+        "WHERE date(substr(date, 7, 4) || '-' || "
+        "substr(date, 4, 2) || '-' || substr(date, 1, 2)) >= ? "
+        "AND date(substr(date, 7, 4) || '-' || "
+        "substr(date, 4, 2) || '-' || substr(date, 1, 2)) < ? "
         "ORDER BY rowid DESC"
     );
+
+    query.addBindValue(from.toString(Qt::ISODate));
+    query.addBindValue(to.addDays(1).toString(Qt::ISODate));
 
     if (!query.exec())
     {

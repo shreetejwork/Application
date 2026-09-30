@@ -40,6 +40,7 @@ Item {
 
         openAnimation.start()
 
+        setRecentDateRange()
         loadAuditTrail()
     }
 
@@ -224,12 +225,21 @@ Item {
     }
 
     function resetFilters() {
-        root.fromDate = ""
-        root.toDate = ""
+        setRecentDateRange()
         root.selectedUser = "All Users"
         userFilter.currentText = "All Users"
         root.searchText = ""
         root.activeRemarkFilters = []
+        root.todayFilterActive = false
+    }
+
+    function setRecentDateRange() {
+        var today = new Date()
+        var yesterday = new Date(today)
+        yesterday.setDate(yesterday.getDate() - 1)
+
+        root.fromDate = Qt.formatDate(yesterday, "dd/MM/yyyy")
+        root.toDate = Qt.formatDate(today, "dd/MM/yyyy")
     }
 
     function userMatchesFilter(userValue)
@@ -252,9 +262,14 @@ Item {
 
     function loadAuditTrail()
     {
+        if (root.fromDate === "" || root.toDate === "")
+            return
+
         auditModel.clear()
 
-        var data = databaseManager.getAuditTrailReport()
+        var data = databaseManager.getAuditTrailReport(
+                    root.fromDate,
+                    root.toDate)
 
         for (var i = 0; i < data.length; i++)
             auditModel.append(data[i])
@@ -699,6 +714,7 @@ Item {
 
                                             // Call your EXISTING reset function
                                             root.resetFilters()
+                                            root.loadAuditTrail()
 
                                             // Button goes back to TODAY
                                             root.todayFilterActive = false
@@ -718,6 +734,7 @@ Item {
 
                                             root.fromDate = today
                                             root.toDate = today
+                                            root.loadAuditTrail()
 
                                             // Button changes to RESET
                                             root.todayFilterActive = true
@@ -1009,6 +1026,7 @@ Item {
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             root.resetFilters()
+                                            root.loadAuditTrail()
                                             filterRepeater.resetAll()
                                         }
                                     }
@@ -1326,6 +1344,7 @@ Item {
                                 root.fromDate = formatted
                             else
                                 root.toDate = formatted
+                            root.loadAuditTrail()
                             datePickerPopup.close()
                         }
                     }

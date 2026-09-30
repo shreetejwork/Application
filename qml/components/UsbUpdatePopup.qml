@@ -231,7 +231,7 @@ Popup {
                     color: popupRoot.primaryColor
 
                     font.pixelSize: 30
-                    font.weight: Font.DemiBold
+
 
                     horizontalAlignment:
                         Text.AlignHCenter
@@ -248,7 +248,7 @@ Popup {
                         popupRoot.secondaryColor
 
                     font.pixelSize: 15
-                    font.weight: Font.Medium
+
 
                     horizontalAlignment:
                         Text.AlignHCenter
@@ -448,7 +448,7 @@ Popup {
                             popupRoot.textColor
 
                         font.pixelSize: 16
-                        font.weight: Font.Medium
+
 
                         horizontalAlignment:
                             Text.AlignHCenter
@@ -769,7 +769,7 @@ Popup {
                         popupRoot.textColor
 
                     font.pixelSize: 16
-                    font.weight: Font.Medium
+
 
                     horizontalAlignment:
                         Text.AlignHCenter
@@ -808,7 +808,7 @@ Popup {
                 popupRoot.textColor
 
             font.pixelSize: 17
-            font.weight: Font.Medium
+
 
             horizontalAlignment:
                 Text.AlignHCenter
@@ -867,7 +867,7 @@ Popup {
                         popupRoot.secondaryColor
 
                     font.pixelSize: 18
-                    font.weight: Font.Medium
+
                 }
 
                 MouseArea {
@@ -920,7 +920,7 @@ Popup {
                     color: "#FFFFFF"
 
                     font.pixelSize: 18
-                    font.weight: Font.Medium
+
                 }
 
                 MouseArea {
@@ -970,7 +970,7 @@ Popup {
                         popupRoot.secondaryColor
 
                     font.pixelSize: 18
-                    font.weight: Font.Medium
+
                 }
 
                 MouseArea {
@@ -1017,7 +1017,7 @@ Popup {
                     color: "#FFFFFF"
 
                     font.pixelSize: 18
-                    font.weight: Font.Medium
+
                 }
 
                 MouseArea {

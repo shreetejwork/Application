@@ -117,7 +117,9 @@ public:
         const QString &newValue,
         const QString &remark);
 
-    Q_INVOKABLE QVariantList getAuditTrailReport();
+    Q_INVOKABLE QVariantList getAuditTrailReport(
+        const QString &fromDate,
+        const QString &toDate);
 
     Q_INVOKABLE bool clearAuditTrail();
 
