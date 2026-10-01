@@ -1286,15 +1286,15 @@ Item {
 
                         color: homeScreen.batchRunning
                                ? (homeScreen.batchPaused
-                                  ? "#E57373"
-                                  : "#A5D6A7")
-                               : "#E5E7EB"
+                                  ? "#F7EAEA"
+                                  : "#E8F3EB")
+                               : "#EDF1F8"
 
                         border.color: homeScreen.batchRunning
                                       ? (homeScreen.batchPaused
-                                         ? "#D66565"
-                                         : "#81C784")
-                                      : "#D1D5DB"
+                                         ? "#D8B0B0"
+                                         : "#A9C9B0")
+                                      : "#D0D8EC"
                         border.width: 1
 
                         Column {
@@ -1324,8 +1324,8 @@ Item {
                                 color: !homeScreen.batchRunning
                                        ? "#6B7280"
                                        : homeScreen.batchPaused
-                                         ? "#5D1717"
-                                         : "#1B5E20"
+                                         ? "#815252"
+                                         : "#2F5D3A"
                                 wrapMode: Text.Wrap
                             }
                         }
@@ -1360,17 +1360,17 @@ Item {
                                 target: batchStatusButton
                                 property: "scale"
                                 from: 1
-                                to: 1.025
-                                duration: 900
+                                to: 1.05
+                                duration: 850
                                 easing.type: Easing.InOutSine
                             }
 
                             NumberAnimation {
                                 target: batchStatusButton
                                 property: "scale"
-                                from: 1.025
+                                from: 1.05
                                 to: 1
-                                duration: 900
+                                duration: 850
                                 easing.type: Easing.InOutSine
                             }
 
