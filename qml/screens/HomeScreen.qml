@@ -1317,8 +1317,8 @@ Item {
                                 text: !homeScreen.batchRunning
                                       ? "No Batch Running"
                                       : homeScreen.batchPaused
-                                        ? "Batch is Paused"
-                                        : "Batch is Running"
+                                        ? "Batch Paused"
+                                        : "Batch Running"
 
                                 font.pixelSize: 15
                                 color: !homeScreen.batchRunning
