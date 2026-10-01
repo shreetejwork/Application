@@ -393,10 +393,11 @@ Item {
                                         color: "#1A4DB5"
 
                                         property bool isPasswordField: false
+                                        property bool batchNameEditing: false
 
                                         focus: false
                                         activeFocusOnPress: true
-                                        readOnly: root.batchRunning
+                                        readOnly: root.batchRunning || !batchNameEditing
                                         inputMethodHints: Qt.ImhNone
 
                                         background: null
@@ -422,7 +423,7 @@ Item {
                                                 root.notify("✓ Batch Updated")
                                             }
 
-                                            readOnly = true
+                                            batchNameEditing = false
                                             focus = false
                                         }
 
@@ -461,6 +462,10 @@ Item {
                                                     return
                                                 }
 
+                                                if (root.batchRunning)
+                                                    return
+
+                                                inputField.batchNameEditing = true
                                                 inputField.forceActiveFocus()
                                             }
                                         }
@@ -522,7 +527,7 @@ Item {
                                                 return
                                             }
 
-                                            inputField.readOnly = false
+                                            inputField.batchNameEditing = true
                                             inputField.forceActiveFocus()
 
                                             Qt.callLater(function() {
