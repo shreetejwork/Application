@@ -1429,6 +1429,14 @@ ApplicationWindow {
                 validationPopup:
                     validationScreenPopup
 
+                batchPage:
+                    batchOrDDusterPageWithTracking.item
+
+                navigateToBatch:
+                    function() {
+                        trackingSwipeView.currentIndex = 1
+                    }
+
 
                 layer.enabled:
                     true
@@ -1619,6 +1627,14 @@ ApplicationWindow {
 
                 validationPopup:
                     validationScreenPopup
+
+                batchPage:
+                    batchOrDDusterPageWithoutTracking.item
+
+                navigateToBatch:
+                    function() {
+                        normalSwipeView.currentIndex = 1
+                    }
 
 
                 layer.enabled:

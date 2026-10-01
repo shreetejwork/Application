@@ -13,6 +13,14 @@ Item {
     property bool showTopBar: true
     property var globalTopBar: null
     property var navigateTo
+    property var batchPage: null
+    property var navigateToBatch
+
+    readonly property bool batchRunning:
+        batchPage ? batchPage.batchRunning : false
+
+    readonly property bool batchPaused:
+        batchPage ? batchPage.batchPaused : false
 
     property real digitalGain: 1.0
 
@@ -700,6 +708,8 @@ Item {
 
         // ================= CONTENT =================
         Item {
+            id: homeContent
+
             anchors.top: topBar.bottom
             anchors.left: parent.left
             anchors.right: parent.right
@@ -807,11 +817,17 @@ Item {
                     // ACTIVE PRODUCT CARD
                     // =====================================================
 
-                    Rectangle {
-                        width: parent.width * 0.50
+                    Item {
+                        width: 1
                         height: 65
+                    }
 
-                        anchors.horizontalCenter: parent.horizontalCenter
+                    Rectangle {
+                        parent: homeContent
+                        x: centerCol.x + (centerCol.width - width) / 2
+                        y: 10
+                        width: centerCol.width * 0.50
+                        height: 65
 
                         radius: 14
 
@@ -1250,14 +1266,144 @@ Item {
                     spacing: 40
 
                     // =====================================================
+                    // BATCH STATUS BUTTON
+                    // =====================================================
+
+                    Rectangle {
+                        id: batchStatusButton
+
+                        parent: homeContent
+                        x: (centerCol.x + centerCol.width / 2
+                            + centerCol.width * 0.25
+                            + rightCol.x + rightCol.width / 2
+                            - rightCol.width * 0.85 * 0.25
+                            - width) / 2
+                        y: 10
+                        width: rightCol.width * 0.85 * 0.50
+                        height: 65
+
+                        radius: 14
+
+                        color: homeScreen.batchRunning
+                               ? (homeScreen.batchPaused
+                                  ? "#E57373"
+                                  : "#A5D6A7")
+                               : "#E5E7EB"
+
+                        border.color: homeScreen.batchRunning
+                                      ? (homeScreen.batchPaused
+                                         ? "#D66565"
+                                         : "#81C784")
+                                      : "#D1D5DB"
+                        border.width: 1
+
+                        Column {
+                            anchors.centerIn: parent
+                            width: parent.width - 12
+                            spacing: 2
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                text: "Batch Status"
+                                font.pixelSize: 13
+                                color: "#5E5C64"
+                            }
+
+                            Text {
+                                width: parent.width
+                                horizontalAlignment: Text.AlignHCenter
+
+                                text: !homeScreen.batchRunning
+                                      ? "No Batch Running"
+                                      : homeScreen.batchPaused
+                                        ? "Batch is Paused"
+                                        : "Batch is Running"
+
+                                font.pixelSize: 15
+                                color: !homeScreen.batchRunning
+                                       ? "#6B7280"
+                                       : homeScreen.batchPaused
+                                         ? "#5D1717"
+                                         : "#1B5E20"
+                                wrapMode: Text.Wrap
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+
+                            onClicked: {
+                                if (homeScreen.navigateToBatch)
+                                    homeScreen.navigateToBatch()
+                            }
+                        }
+
+                        Behavior on color {
+                            ColorAnimation { duration: 180 }
+                        }
+
+                        SequentialAnimation {
+                            id: batchStatusPulse
+
+                            running: homeScreen.batchRunning
+                            loops: Animation.Infinite
+
+                            onRunningChanged: {
+                                if (!running)
+                                    batchStatusButton.scale = 1
+                            }
+
+                            NumberAnimation {
+                                target: batchStatusButton
+                                property: "scale"
+                                from: 1
+                                to: 1.025
+                                duration: 900
+                                easing.type: Easing.InOutSine
+                            }
+
+                            NumberAnimation {
+                                target: batchStatusButton
+                                property: "scale"
+                                from: 1.025
+                                to: 1
+                                duration: 900
+                                easing.type: Easing.InOutSine
+                            }
+
+                            PauseAnimation {
+                                duration: 450
+                            }
+                        }
+
+                        Connections {
+                            target: homeScreen
+
+                            function onBatchRunningChanged() {
+                                if (homeScreen.batchRunning)
+                                    batchStatusPulse.restart()
+                            }
+
+                            function onBatchPausedChanged() {
+                                if (homeScreen.batchRunning)
+                                    batchStatusPulse.restart()
+                            }
+                        }
+                    }
+
+                    // =====================================================
                     // MANUAL VALIDATION BUTTON
                     // =====================================================
 
                     Rectangle {
-                        width: parent.width * 0.50
+                        parent: homeContent
+                        x: rightCol.x + (rightCol.width - width) / 2
+                        y: 10
+                        width: rightCol.width * 0.85 * 0.50
                         height: 65
-
-                        anchors.horizontalCenter: parent.horizontalCenter
 
                         radius: 14
 
@@ -1360,6 +1506,11 @@ Item {
                     // =====================================================
                     // CIRCULAR GAUGE
                     // =====================================================
+
+                    Item {
+                        width: 1
+                        height: 65
+                    }
 
                     CircularGauge {
 
@@ -1479,10 +1630,10 @@ Item {
                                 console.log("Rejected count reset")
                             }
                         }
+
                     }
                 }
             }
         }
     }
 }
-
