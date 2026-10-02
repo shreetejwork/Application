@@ -175,12 +175,7 @@ Item {
             var userOk = root.userMatchesFilter(m.user)
             var searchOk = m.remark.toLowerCase().includes(root.searchText.toLowerCase())
 
-            var remarkOk =
-                    root.activeRemarkFilters.length === 0 ||
-                    root.activeRemarkFilters.some(function(f) {
-                        return m.remark.toLowerCase().includes(
-                                    f.toLowerCase().replace(/\n/g, " "))
-                    })
+            var remarkOk = root.remarkInFilter(m.remark)
 
             if (userOk && searchOk && remarkOk)
                 count++
@@ -217,9 +212,11 @@ Item {
 
     function remarkInFilter(remark) {
         if (root.activeRemarkFilters.length === 0) return true
+        var normalizedRemark = String(remark).replace(/\n/g, " ").trim().toLowerCase()
         for (var i = 0; i < root.activeRemarkFilters.length; i++) {
-            var f = root.activeRemarkFilters[i].replace(/\n/g, " ").toLowerCase()
-            if (remark.toLowerCase().includes(f)) return true
+            var filter = String(root.activeRemarkFilters[i])
+                    .replace(/\n/g, " ").trim().toLowerCase()
+            if (normalizedRemark === filter) return true
         }
         return false
     }
@@ -1434,20 +1431,22 @@ Item {
                     property real cellWidth: (width / columns) - columnSpacing
 
                     property var filterList: [
-                        "M/C Switch ON","M/C Switched OFF","RC/Total RC","User Added",
-                        "User PW Changed","User Deleted","Loged-in_FP","User Logged In",
-                        "User Logged Out","THR-S Changed",
-
-                        "Customer Name\nChanged","Customer Location\nChanged","Machine-ID\nChanged",
-                        "THR-A Changed","MPHS Changed","Product Loaded",
-                        "Product Added","Product Deleted","DD Power\nChanged","DD Frequency\nChanged",
-
-                        "Auto Val-1\nEnabled","Auto Val-1\nDisable","Auto Val-2\nEnabled","Auto Val-2 Disable",
-                        "Auto Val-3\nEnabled","Auto Val-3\nDisable","Auto Val-4 Enabled","Auto Val-4\nDisable",
-                        "Last Active\nProduct Loaded",
-
-                        "Auto Val-1\nTime Change","Auto Val-2\nTime Change",
-                        "Auto Val-3\nTime Change","Auto Val-4\nTime Change"
+                        "M/C Switch ON", "M/C Switched OFF", "M/C OFF (Power Failure)",
+                        "Auto Logout", "User Added", "User PW Changed", "User Deleted",
+                        "User Logged In", "User Logged Out",
+                        "LCF Changed", "HCF Changed", "Operate Delay Changed",
+                        "Hold Delay Changed", "Relay Delay Changed", "Digital Gain Changed",
+                        "Analog Gain Changed", "Time Changed", "Date Changed",
+                        "Validation Timer Set", "No Validation Timer", "Validation Started",
+                        "Validation Passed", "Validation Failed", "Validation Skipped",
+                        "Remainder for validation",
+                        "Supplier Name Changed", "Machine ID Changed", "Machine User Changed",
+                        "Location Changed", "Serial Number Changed",
+                        "M/C Phase Changed", "Threshold-S Changed", "Threshold-A Changed",
+                        "Tracking Enabled", "Tracking Disabled", "Tracking Count Changed",
+                        "Tracking Threshold Changed", "Tracking Tolerance Changed",
+                        "DD ON", "DD OFF", "DD Power Changed", "DD Frequency Changed",
+                        "New Product Added", "Product Deleted", "Product Loaded"
                     ]
 
                     Repeater {
