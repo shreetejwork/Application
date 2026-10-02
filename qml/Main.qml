@@ -590,37 +590,14 @@ ApplicationWindow {
                     databaseManager.getS1Settings()
 
 
-            if (
-                s1Settings.lpf
-                !== undefined
-            )
-            {
-
+            if (s1Settings.lpf !== undefined
+                    && s1Settings.hpf !== undefined
+                    && Number(s1Settings.lpf) < Number(s1Settings.hpf)) {
                 parameterQueue.push(
                     function() {
 
-                        SerialManager.setLPF(
-                            s1Settings.lpf
-                        )
-                    }
-                )
-            }
-
-
-            if (
-                s1Settings.hpf
-                !== undefined
-            )
-            {
-
-                parameterQueue.push(
-                    function() {
-
-                        SerialManager.setHPF(
-                            Math.round(
-                                s1Settings.hpf
-                            )
-                        )
+                        SerialManager.setLPF(s1Settings.lpf)
+                        SerialManager.setHPF(Math.round(s1Settings.hpf))
                     }
                 )
             }

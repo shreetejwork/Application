@@ -105,7 +105,7 @@ Item {
         id: fieldModel
 
         ListElement { fieldId: "lpf1"; label: "LCF"; title: "LCF"; value: "10"; unit: "Hz"; min: 2; max: 45 }
-        ListElement { fieldId: "hpf1"; label: "HCF"; title: "HCF"; value: "2.0"; unit: "Hz"; min: 5; max: 50 }
+        ListElement { fieldId: "hpf1"; label: "HCF"; title: "HCF"; value: "30"; unit: "Hz"; min: 5; max: 50 }
 
         ListElement { fieldId: "od"; label: "O/D"; title: "Operate Delay"; value: "0"; unit: "mSec"; min: 0; max: 20000 }
         ListElement { fieldId: "hd"; label: "H/D"; title: "Hold Delay"; value: "250"; unit: "mSec"; min: 250; max: 2000 }
@@ -160,6 +160,21 @@ Item {
                     function(newVal)
                     {
                         var oldValue = displayValue(fieldId)
+                        var nextLcf = fieldId === "lpf1"
+                                ? Number(newVal)
+                                : Number(displayValue("lpf1"))
+                        var nextHcf = fieldId === "hpf1"
+                                ? Number(newVal)
+                                : Number(displayValue("hpf1"))
+
+                        if (nextHcf - nextLcf < 5) {
+                            numberPopup.showError(
+                                fieldId === "lpf1"
+                                ? "LCF must be at least 5 Hz below the current HCF."
+                                : "HCF must be at least 5 Hz above the current LCF."
+                            )
+                            return false
+                        }
 
                         updateValue(fieldId,newVal)
 

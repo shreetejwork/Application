@@ -1989,6 +1989,11 @@ bool DatabaseManager::saveS1Settings(
     double digitalGain,
     double analogGain)
 {
+    if (lpf >= hpf) {
+        qWarning() << "Filter settings rejected: LCF must be less than HCF.";
+        return false;
+    }
+
     QSqlQuery query;
 
     query.prepare(

@@ -71,6 +71,11 @@ Item {
             animOpacity = 0.0
         }
 
+        function showError(message) {
+            errorText = message
+            hasError = true
+        }
+
         // =====================================================
 
         Rectangle {
@@ -375,7 +380,8 @@ Item {
                             }
 
                             if (popup.onSaveCallback) {
-                                popup.onSaveCallback(val)
+                                if (popup.onSaveCallback(val) === false)
+                                    return
                             }
 
                             if (popupRoot.globalTopBar) {
@@ -420,5 +426,9 @@ Item {
 
     function open(title, value, callback, minVal = 0, maxVal = 100) {
         popup.open(title, value, callback, minVal, maxVal)
+    }
+
+    function showError(message) {
+        popup.showError(message)
     }
 }
