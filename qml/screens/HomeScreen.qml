@@ -49,6 +49,40 @@ Item {
             GlobalState.amplitudeThreshold = settings.ampThr
     }
 
+    function updateRejectionCycle()
+    {
+        var thresholdExceeded =
+                SerialManager.signal > GlobalState.signalThreshold ||
+                SerialManager.amplitude > GlobalState.amplitudeThreshold
+
+        if (thresholdExceeded) {
+            homeScreen.rejectCycleStarted = true
+            return
+        }
+
+        if (!homeScreen.rejectCycleStarted)
+            return
+
+        if (GlobalState.countRejection) {
+            GlobalState.rejectedCount++
+
+            if (GlobalState.batchRunning && !GlobalState.batchPaused)
+                GlobalState.activeBatchRejectCount++
+
+            console.log("Rejected Count :", GlobalState.rejectedCount)
+
+            if (homeScreen.batchBufferActive) {
+                homeScreen.batchRejectionBuffer++
+                console.log(
+                    "Batch Buffer Rejection :",
+                    homeScreen.batchRejectionBuffer
+                )
+            }
+        }
+
+        homeScreen.rejectCycleStarted = false
+    }
+
 
 
     Component.onCompleted: {
@@ -116,55 +150,8 @@ Item {
             defectCardTimer.restart()
         }
 
-        function onSignalChanged() {
-
-            // =====================================================
-            // EXISTING REJECTION DETECTION
-            // DO NOT CHANGE THIS LOGIC
-            // =====================================================
-
-            // Signal crossed threshold -> Reject cycle started
-            if (SerialManager.signal > GlobalState.signalThreshold) {
-
-                if (!homeScreen.rejectCycleStarted) {
-                    homeScreen.rejectCycleStarted = true
-                }
-
-            }
-
-            // Signal came back below threshold -> Reject cycle completed
-            else {
-
-                if (homeScreen.rejectCycleStarted) {
-
-                    if (GlobalState.countRejection) {
-
-                        GlobalState.rejectedCount++
-
-                        if (GlobalState.batchRunning && !GlobalState.batchPaused) {
-                            GlobalState.activeBatchRejectCount++
-                        }
-
-                        console.log(
-                            "Rejected Count :",
-                            GlobalState.rejectedCount
-                        )
-
-                        if (homeScreen.batchBufferActive) {
-
-                            homeScreen.batchRejectionBuffer++
-
-                            console.log(
-                                "Batch Buffer Rejection :",
-                                homeScreen.batchRejectionBuffer
-                            )
-                        }
-                    }
-
-                    homeScreen.rejectCycleStarted = false
-                }
-            }
-        }
+        function onSignalChanged() { homeScreen.updateRejectionCycle() }
+        function onAmplitudeChanged() { homeScreen.updateRejectionCycle() }
     }
 
     // =====================================================
