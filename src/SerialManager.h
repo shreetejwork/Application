@@ -137,6 +137,7 @@ public slots:
     // Machine setting parameters
     void setLPF(int value);
     void setHPF(int value);
+    void setFilterOption(int value);
 
 
     void setOperateDelay(int value);

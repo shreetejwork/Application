@@ -501,6 +501,7 @@ void DatabaseManager::createTables()
 
             lpf INTEGER,
             hpf INTEGER,
+            filterOption INTEGER DEFAULT 3,
 
             operateDelay INTEGER,
             holdDelay INTEGER,
@@ -511,12 +512,35 @@ void DatabaseManager::createTables()
         );
     )");
 
+    QSqlQuery filterOptionColumnCheck;
+    filterOptionColumnCheck.prepare(R"(
+        SELECT COUNT(*)
+        FROM pragma_table_info('filtersettings')
+        WHERE name = 'filterOption'
+    )");
+
+    if (filterOptionColumnCheck.exec()
+        && filterOptionColumnCheck.next()
+        && filterOptionColumnCheck.value(0).toInt() == 0)
+    {
+        QSqlQuery alterQuery;
+        if (!alterQuery.exec(R"(
+            ALTER TABLE filtersettings
+            ADD COLUMN filterOption INTEGER DEFAULT 3
+        )"))
+        {
+            qWarning() << "Failed to add Filter Option setting:"
+                       << alterQuery.lastError().text();
+        }
+    }
+
     query.exec(R"(
         INSERT OR IGNORE INTO filtersettings
         (
             id,
             lpf,
             hpf,
+            filterOption,
             operateDelay,
             holdDelay,
             relayDelay,
@@ -528,6 +552,7 @@ void DatabaseManager::createTables()
             1,
             10,
             30,
+            3,
             0,
             250,
             250,
@@ -1983,12 +2008,18 @@ QVariantMap DatabaseManager::getTrackingSettings()
 bool DatabaseManager::saveS1Settings(
     double lpf,
     double hpf,
+    int filterOption,
     int operateDelay,
     int holdDelay,
     int relayDelay,
     double digitalGain,
     double analogGain)
 {
+    if (filterOption < 3 || filterOption > 101 || filterOption % 2 == 0) {
+        qWarning() << "Filter Option must be an odd value from 3 to 101.";
+        return false;
+    }
+
     if (lpf >= hpf) {
         qWarning() << "Filter settings rejected: LCF must be less than HCF.";
         return false;
@@ -2000,6 +2031,7 @@ bool DatabaseManager::saveS1Settings(
         "UPDATE filtersettings SET "
         "lpf = ?, "
         "hpf = ?, "
+        "filterOption = ?, "
         "operateDelay = ?, "
         "holdDelay = ?, "
         "relayDelay = ?, "
@@ -2011,6 +2043,7 @@ bool DatabaseManager::saveS1Settings(
 
     query.addBindValue(lpf);
     query.addBindValue(hpf);
+    query.addBindValue(filterOption);
     query.addBindValue(operateDelay);
     query.addBindValue(holdDelay);
     query.addBindValue(relayDelay);
@@ -2107,6 +2140,7 @@ QVariantMap DatabaseManager::getS1Settings()
         "SELECT "
         "lpf,"
         "hpf,"
+        "filterOption,"
         "operateDelay,"
         "holdDelay,"
         "relayDelay,"
@@ -2121,6 +2155,7 @@ QVariantMap DatabaseManager::getS1Settings()
     {
         data["lpf"] = query.value("lpf");
         data["hpf"] = query.value("hpf");
+        data["filterOption"] = query.value("filterOption");
         data["operateDelay"] = query.value("operateDelay");
         data["holdDelay"] = query.value("holdDelay");
         data["relayDelay"] = query.value("relayDelay");

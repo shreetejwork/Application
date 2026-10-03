@@ -223,6 +223,21 @@ void SerialManager::setHPF(int value)
     sendCommand(QString("{F%1}").arg(v));
 }
 
+void SerialManager::setFilterOption(int value)
+{
+    if (value < 3 || value > 101 || value % 2 == 0)
+    {
+        qWarning() << "Filter Option must be an odd value from 3 to 101.";
+        return;
+    }
+
+    QString v =
+        QString("%1")
+            .arg(value,5,10,QChar('0'));
+
+    sendCommand(QString("{S%1}").arg(v));
+}
+
 
 void SerialManager::setOperateDelay(int value)
 {

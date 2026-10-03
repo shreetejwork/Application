@@ -99,6 +99,7 @@ public:
     Q_INVOKABLE bool saveS1Settings(
         double lpf,
         double hpf,
+        int filterOption,
         int operateDelay,
         int holdDelay,
         int relayDelay,

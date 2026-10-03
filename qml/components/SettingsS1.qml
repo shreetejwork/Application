@@ -33,6 +33,9 @@ Item {
         if(settings.hpf !== undefined)
             updateValue("hpf1", settings.hpf)
 
+        if(settings.filterOption !== undefined)
+            updateValue("filterOption", settings.filterOption)
+
         if(settings.operateDelay !== undefined)
             updateValue("od", settings.operateDelay)
 
@@ -106,6 +109,7 @@ Item {
 
         ListElement { fieldId: "lpf1"; label: "LCF"; title: "LCF"; value: "10"; unit: "Hz"; min: 2; max: 45 }
         ListElement { fieldId: "hpf1"; label: "HCF"; title: "HCF"; value: "30"; unit: "Hz"; min: 5; max: 50 }
+        ListElement { fieldId: "filterOption"; label: "Filter Option"; title: "Filter Option"; value: "3"; unit: ""; min: 3; max: 101 }
 
         ListElement { fieldId: "od"; label: "O/D"; title: "Operate Delay"; value: "0"; unit: "mSec"; min: 0; max: 20000 }
         ListElement { fieldId: "hd"; label: "H/D"; title: "Hold Delay"; value: "250"; unit: "mSec"; min: 250; max: 2000 }
@@ -176,6 +180,19 @@ Item {
                             return false
                         }
 
+                        if (fieldId === "filterOption") {
+                            var optionValue = Number(newVal)
+                            if (!Number.isInteger(optionValue)
+                                    || optionValue < 3
+                                    || optionValue > 101
+                                    || optionValue % 2 === 0) {
+                                numberPopup.showError(
+                                    "Filter Option must be an odd value from 3 to 101."
+                                )
+                                return false
+                            }
+                        }
+
                         updateValue(fieldId,newVal)
 
 
@@ -190,6 +207,10 @@ Item {
                             SerialManager.setHPF(
                                         Math.round(newVal))
 
+                            break
+
+                        case "filterOption":
+                            SerialManager.setFilterOption(Number(newVal))
                             break
 
 
@@ -228,6 +249,8 @@ Item {
                             Number(displayValue("lpf1")),
 
                             Number(displayValue("hpf1")),
+
+                            Number(displayValue("filterOption")),
 
                             Number(displayValue("od")),
 
@@ -317,6 +340,7 @@ Item {
 
                             FilterTile { fieldId: "lpf1" }
                             FilterTile { fieldId: "hpf1" }
+                            FilterTile { fieldId: "filterOption" }
                         }
                     }
                 }
