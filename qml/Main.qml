@@ -596,16 +596,6 @@ ApplicationWindow {
                 )
             }
 
-            if (s1Settings.filterOption !== undefined) {
-                parameterQueue.push(
-                    function() {
-                        SerialManager.setFilterOption(
-                            Number(s1Settings.filterOption)
-                        )
-                    }
-                )
-            }
-
 
             if (
                 s1Settings.holdDelay
@@ -796,6 +786,16 @@ ApplicationWindow {
                                 trackingSettings.trackingTolerance
                                 * 10
                             )
+                        )
+                    }
+                )
+            }
+
+            if (s1Settings.filterOption !== undefined) {
+                parameterQueue.push(
+                    function() {
+                        SerialManager.setFilterOption(
+                            Number(s1Settings.filterOption)
                         )
                     }
                 )
