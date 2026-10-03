@@ -23,12 +23,6 @@ ApplicationWindow {
     // flags: Qt.FramelessWindowHint
     // visibility: Window.FullScreen
 
-    RamUsageBubble {
-        boundary: root.contentItem
-        x: edgePadding
-        y: root.contentItem.height - height - edgePadding
-    }
-
     // =========================================================
     // NAVIGATE HOME TIMER
     // =========================================================

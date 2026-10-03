@@ -260,7 +260,7 @@ Rectangle {
                 anchors.verticalCenter: parent.verticalCenter
                 anchors.left: parent.left
                 anchors.leftMargin: root.width * 0.01
-                spacing: Math.max(10 * root.scale, root.width * 0.015)
+                spacing: Math.max(4 * root.scale, root.width * 0.005)
 
                 // ── TIME ──
                 Column {
@@ -282,72 +282,85 @@ Rectangle {
                     }
                 }
 
-                // ── MENU BUTTON (opacity-hidden, space always reserved) ──
+                // ── MENU/BACK BUTTON SLOT ──
                 Item {
-                    id: menuButton
-                    width: Math.max(36 * root.scale, root.height * 0.45)
-                    height: width
+                    id: menuBackSlot
+                    width: Math.max(menuButton.width, backButton.width)
+                    height: backButton.height
                     anchors.verticalCenter: parent.verticalCenter
-                    opacity: root.showBackButton ? 0.0 : 1.0
-                    enabled: !root.showBackButton
 
-                    scale: menuMouseArea.pressed ? 0.88 : 1.0
+                    Item {
+                        id: menuButton
+                        width: Math.max(36 * root.scale, root.height * 0.45)
+                        height: width
+                        x: -12 * root.scale
+                        anchors.verticalCenter: parent.verticalCenter
+                        opacity: root.showBackButton ? 0.0 : 1.0
+                        enabled: !root.showBackButton
 
-                    Behavior on scale {
-                        NumberAnimation { duration: 120; easing.type: Easing.OutBack }
+                        scale: menuMouseArea.pressed ? 0.88 : 1.0
+
+                        Behavior on scale {
+                            NumberAnimation { duration: 120; easing.type: Easing.OutBack }
+                        }
+
+                        Image {
+                            anchors.centerIn: parent
+                            source: "qrc:/qt/qml/Application/assets/images/Menu.png"
+                            width: parent.width
+                            height: parent.height
+                            fillMode: Image.PreserveAspectFit
+                            smooth: true
+                        }
+
+                        MouseArea {
+                            id: menuMouseArea
+                            anchors.fill: parent
+                            onClicked: root.menuClicked()
+                        }
                     }
 
-                    Image {
-                        anchors.centerIn: parent
-                        source: "qrc:/qt/qml/Application/assets/images/Menu.png"
-                        width: parent.width
-                        height: parent.height
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
-                    }
+                    Item {
+                        id: backButton
+                        width: Math.max(36 * root.scale, root.height * 0.95)
+                        height: width
+                        x: menuButton.x + (menuButton.width - width) / 2
+                        anchors.verticalCenter: parent.verticalCenter
+                        opacity: root.showBackButton ? 1.0 : 0.0
+                        enabled: root.showBackButton
 
-                    MouseArea {
-                        id: menuMouseArea
-                        anchors.fill: parent
-                        onClicked: root.menuClicked()
+                        scale: backMouseArea.pressed ? 0.88 : 1.0
+
+                        Behavior on scale {
+                            NumberAnimation { duration: 120; easing.type: Easing.OutBack }
+                        }
+
+                        Image {
+                            id: backIcon
+                            anchors.fill: parent
+                            anchors.margins: width * 0.20
+                            source: "qrc:/qt/qml/Application/assets/images/Back.png"
+                            fillMode: Image.PreserveAspectFit
+                            smooth: true
+                            visible: status === Image.Ready
+                        }
+
+                        MouseArea {
+                            id: backMouseArea
+                            anchors.fill: parent
+                            onClicked: {
+                                if (GlobalState.loginKeyboardRequest) {
+                                    GlobalState.loginKeyboardRequest = false
+                                }
+                                root.backClicked()
+                            }
+                        }
                     }
                 }
 
-                // ── BACK BUTTON (opacity-hidden, space always reserved) ──
-                Item {
-                    id: backButton
-                    width: Math.max(36 * root.scale, root.height * 0.95)
-                    height: width
+                RamUsageBubble {
+                    id: ramUsageBubble
                     anchors.verticalCenter: parent.verticalCenter
-                    opacity: root.showBackButton ? 1.0 : 0.0
-                    enabled: root.showBackButton
-
-                    scale: backMouseArea.pressed ? 0.88 : 1.0
-
-                    Behavior on scale {
-                        NumberAnimation { duration: 120; easing.type: Easing.OutBack }
-                    }
-
-                    Image {
-                        id: backIcon
-                        anchors.fill: parent
-                        anchors.margins: width * 0.20
-                        source: "qrc:/qt/qml/Application/assets/images/Back.png"
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
-                        visible: status === Image.Ready
-                    }
-
-                    MouseArea {
-                        id: backMouseArea
-                        anchors.fill: parent
-                        onClicked: {
-                            if (GlobalState.loginKeyboardRequest) {
-                                GlobalState.loginKeyboardRequest = false
-                            }
-                            root.backClicked()
-                        }
-                    }
                 }
             }
         }
@@ -358,9 +371,10 @@ Rectangle {
             Layout.fillHeight: true
 
             Item {
-                anchors.centerIn: parent
                 width: parent.width * 0.75
                 height: parent.height * 0.75
+                x: root.width / 2 - parent.x - width / 2
+                anchors.verticalCenter: parent.verticalCenter
 
                 Rectangle {
                     id: notificationBanner
