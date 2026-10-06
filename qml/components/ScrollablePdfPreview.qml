@@ -199,6 +199,34 @@ Popup {
                                                   : 1
                         height: pageHeight + 24
 
+                        DragHandler {
+                            target: null
+                            acceptedDevices: PointerDevice.AllDevices
+                            grabPermissions: PointerHandler.CanTakeOverFromItems
+                                            | PointerHandler.CanTakeOverFromHandlersOfDifferentType
+                                            | PointerHandler.ApprovesTakeOverByAnything
+                            yAxis.enabled: true
+                            xAxis.enabled: false
+
+                            onActiveChanged: {
+                                if (active)
+                                    root.touchStartContentY = pagesList.contentY
+                            }
+
+                            onTranslationChanged: {
+                                if (active) {
+                                    var maxContentY = Math.max(
+                                                0, pagesList.contentHeight
+                                                   - pagesList.height)
+                                    pagesList.contentY = Math.max(
+                                                0, Math.min(
+                                                    root.touchStartContentY
+                                                    - activeTranslation.y,
+                                                    maxContentY))
+                                }
+                            }
+                        }
+
                         Rectangle {
                             anchors.centerIn: parent
                             width: pageRow.pageWidth
@@ -232,29 +260,6 @@ Popup {
                         var index = indexAt(width / 2, contentY + height / 2)
                         if (index >= 0)
                             root.currentPage = index
-                    }
-                }
-
-                DragHandler {
-                    id: touchScrollHandler
-                    target: null
-                    acceptedDevices: PointerDevice.TouchScreen
-                                     | PointerDevice.TouchPad
-
-                    onActiveChanged: {
-                        if (active)
-                            root.touchStartContentY = pagesList.contentY
-                    }
-
-                    onTranslationChanged: {
-                        if (active) {
-                            pagesList.contentY = Math.max(
-                                        0, Math.min(
-                                            root.touchStartContentY
-                                                    - activeTranslation.y,
-                                            pagesList.contentHeight
-                                                    - pagesList.height))
-                        }
                     }
                 }
 
