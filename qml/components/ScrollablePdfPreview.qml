@@ -92,7 +92,7 @@ Popup {
                         text: "PDF Preview"
                         color: "white"
                         font.pixelSize: pdfTypography.body
-                        font.weight: Font.DemiBold
+
                         Layout.alignment: Qt.AlignVCenter
                     }
 
