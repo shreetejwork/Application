@@ -22,20 +22,23 @@ Popup {
 
     property url pdfSource: ""
     property int currentPage: 0
+    property real touchStartContentY: 0
 
     function navigatePage(offset) {
         if (pdfDocument.status !== PdfDocument.Ready
                 || pdfDocument.pageCount <= 0)
             return
 
-        var target = Math.max(0, Math.min(Math.max(0, pdfView.currentPage) + offset,
+        var target = Math.max(0, Math.min(currentPage + offset,
                                          pdfDocument.pageCount - 1))
-        pdfView.goToPage(target)
+        currentPage = target
+        pagesList.positionViewAtIndex(target, ListView.Beginning)
     }
 
     function resetPreview() {
+        currentPage = 0
         if (pdfDocument.pageCount > 0)
-            pdfView.goToPage(0)
+            pagesList.positionViewAtBeginning()
     }
 
     onOpened: Qt.callLater(resetPreview)
@@ -169,12 +172,90 @@ Popup {
                     }
                 }
 
-                PdfMultiPageView {
-                    id: pdfView
+                ListView {
+                    id: pagesList
                     anchors.fill: parent
                     clip: true
-                    document: pdfDocument
-                    onCurrentPageChanged: root.currentPage = pdfView.currentPage
+                    interactive: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    flickableDirection: Flickable.VerticalFlick
+                    spacing: 12
+                    cacheBuffer: height
+                    model: pdfDocument.status === PdfDocument.Ready
+                           ? pdfDocument.pageCount : 0
+
+                    delegate: Item {
+                        id: pageRow
+                        required property int index
+                        width: pagesList.width
+
+                        property size pagePointSize: pdfDocument.pagePointSize(index)
+                        property real pageWidth: Math.max(1, width - 40)
+                        property real pageScale: pagePointSize.width > 0
+                                                 ? pageWidth / pagePointSize.width
+                                                 : 1
+                        property real pageHeight: pagePointSize.width > 0
+                                                  ? pagePointSize.height * pageScale
+                                                  : 1
+                        height: pageHeight + 24
+
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: pageRow.pageWidth
+                            height: pageRow.pageHeight
+                            color: "white"
+                            border.color: "#D5DCE8"
+                            border.width: 1
+
+                            PdfPageView {
+                                anchors.fill: parent
+                                document: pdfDocument
+                                renderScale: pageRow.pageScale
+                                zoomEnabled: false
+
+                                Component.onCompleted: goToPage(pageRow.index)
+                            }
+                        }
+                    }
+
+                    ScrollBar.vertical: ScrollBar {
+                        policy: ScrollBar.AsNeeded
+                    }
+
+                    onMovementEnded: {
+                        var index = indexAt(width / 2, contentY + height / 2)
+                        if (index >= 0)
+                            root.currentPage = index
+                    }
+
+                    onContentYChanged: {
+                        var index = indexAt(width / 2, contentY + height / 2)
+                        if (index >= 0)
+                            root.currentPage = index
+                    }
+                }
+
+                DragHandler {
+                    id: touchScrollHandler
+                    target: null
+                    acceptedDevices: PointerDevice.TouchScreen
+                                     | PointerDevice.TouchPad
+
+                    onActiveChanged: {
+                        if (active)
+                            root.touchStartContentY = pagesList.contentY
+                    }
+
+                    onTranslationChanged: {
+                        if (active) {
+                            pagesList.contentY = Math.max(
+                                        0, Math.min(
+                                            root.touchStartContentY
+                                                    - activeTranslation.y,
+                                            pagesList.contentHeight
+                                                    - pagesList.height))
+                        }
+                    }
                 }
 
                 Rectangle {
