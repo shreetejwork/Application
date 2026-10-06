@@ -142,7 +142,7 @@ Item {
 
     property real colSpacing: 15 * root.scale
 
-    property real colSelect: 22 * root.scale
+    property real colSelect: 32 * root.scale
     property real colActive: 22 * root.scale
     property real colSr: 100 * root.scale
     property real colCode: 170 * root.scale
@@ -201,6 +201,15 @@ Item {
     function refreshSelectionCount() {
 
         selectedCount = getSelectedCount()
+    }
+
+    function toggleProductSelection(index) {
+        var model = currentModel()
+        if (index < 0 || index >= model.count)
+            return
+
+        model.setProperty(index, "selected", !model.get(index).selected)
+        refreshSelectionCount()
     }
 
     function getSingleSelectedSr() {
@@ -750,7 +759,7 @@ Item {
 
                 Rectangle {
                     Layout.fillWidth: true
-                    height: 60 * root.scale
+                    height: 64 * root.scale
                     color: "#FFFFFF"
                     radius: 12 * root.scale
                     border.color: "#C8D4EE"
@@ -769,8 +778,8 @@ Item {
                         anchors.fill: parent
                         anchors.leftMargin: 14 * root.scale
                         anchors.rightMargin: 14 * root.scale
-                        anchors.topMargin: 10 * root.scale
-                        anchors.bottomMargin: 10 * root.scale
+                        anchors.topMargin: 8 * root.scale
+                        anchors.bottomMargin: 8 * root.scale
                         spacing: 10 * root.scale
 
                         // ================= GROUP COMBO =================
@@ -779,7 +788,7 @@ Item {
                             id: groupCombo
 
                             Layout.preferredWidth: 210 * root.scale
-                            Layout.preferredHeight: 38 * root.scale
+                            Layout.preferredHeight: Math.max(38, 44 * root.scale)
                             Layout.alignment: Qt.AlignVCenter
 
                             model: [
@@ -800,10 +809,20 @@ Item {
 
                             delegate: ItemDelegate {
                                 width: groupCombo.width
-                                height: 40 * root.scale
+                                height: Math.max(42, 44 * root.scale)
 
                                 background: Rectangle {
                                     color: highlighted ? "#E3EDFF" : "#FFFFFF"
+
+                                    Rectangle {
+                                        anchors.left: parent.left
+                                        anchors.right: parent.right
+                                        anchors.bottom: parent.bottom
+                                        anchors.leftMargin: 10 * root.scale
+                                        anchors.rightMargin: 10 * root.scale
+                                        height: 1
+                                        color: "#E4EAF5"
+                                    }
                                 }
 
                                 contentItem: Text {
@@ -812,7 +831,8 @@ Item {
                                     font.pixelSize: 15
                                     font.weight: highlighted ? Font.Medium : Font.Normal
                                     verticalAlignment: Text.AlignVCenter
-                                    leftPadding: 14 * root.scale
+                                    leftPadding: 16 * root.scale
+                                    rightPadding: 12 * root.scale
                                 }
                             }
 
@@ -845,7 +865,7 @@ Item {
                             popup: Popup {
                                 y: groupCombo.height + 4 * root.scale
                                 width: groupCombo.width
-                                padding: 0
+                                padding: 2 * root.scale
 
                                 background: Rectangle {
                                     radius: 10 * root.scale
@@ -856,9 +876,17 @@ Item {
 
                                 contentItem: ListView {
                                     clip: true
-                                    implicitHeight: contentHeight
+                                    implicitHeight: Math.min(
+                                                        contentHeight,
+                                                        8 * Math.max(42, 44 * root.scale))
                                     model: groupCombo.popup.visible ? groupCombo.delegateModel : null
                                     currentIndex: groupCombo.highlightedIndex
+                                    spacing: 0
+
+                                    ScrollBar.vertical: ScrollBar {
+                                        policy: ScrollBar.AsNeeded
+                                        width: 6 * root.scale
+                                    }
                                 }
                             }
                         }
@@ -1233,13 +1261,17 @@ Item {
                                     id: rowRect
 
                                     width: productList.width
-                                    height: visible ? 42 * root.scale : 0
+                                    height: visible ? Math.max(46, 50 * root.scale) : 0
 
                                     property bool isSelected: selected === true
 
                                     color: isSelected
                                            ? "#E3EDFF"
                                            : (index % 2 === 0 ? "#FFFFFF" : "#F4F7FF")
+
+                                    TapHandler {
+                                        onTapped: root.toggleProductSelection(index)
+                                    }
 
                                     Rectangle {
                                         anchors.bottom: parent.bottom
@@ -1260,9 +1292,11 @@ Item {
 
                                         Rectangle {
                                             Layout.preferredWidth: root.colSelect
-                                            Layout.preferredHeight: root.colSelect
+                                            Layout.preferredHeight: Math.min(
+                                                                       parent.height - 8 * root.scale,
+                                                                       26 * root.scale)
 
-                                            radius: 4 * root.scale
+                                            radius: 5 * root.scale
 
                                             color: isSelected ? "#1A4DB5" : "#FFFFFF"
 
@@ -1281,19 +1315,6 @@ Item {
                                                 font.pixelSize: 12
                                             }
 
-                                            MouseArea {
-                                                anchors.fill: parent
-
-                                                onClicked: {
-
-                                                    currentModel().setProperty(
-                                                                index,
-                                                                "selected",
-                                                                !selected)
-
-                                                    refreshSelectionCount()
-                                                }
-                                            }
                                         }
 
                                         // STATUS

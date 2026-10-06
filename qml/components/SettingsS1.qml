@@ -109,7 +109,7 @@ Item {
 
         ListElement { fieldId: "lpf1"; label: "LCF"; title: "LCF"; value: "10"; unit: "Hz"; min: 2; max: 45 }
         ListElement { fieldId: "hpf1"; label: "HCF"; title: "HCF"; value: "30"; unit: "Hz"; min: 5; max: 50 }
-        ListElement { fieldId: "filterOption"; label: "Filter Option"; title: "Filter Option"; value: "3"; unit: ""; min: 3; max: 101 }
+        ListElement { fieldId: "filterOption"; label: "Filter Taps"; title: "Filter Option"; value: "3"; unit: ""; min: 3; max: 151 }
 
         ListElement { fieldId: "od"; label: "O/D"; title: "Operate Delay"; value: "0"; unit: "mSec"; min: 0; max: 20000 }
         ListElement { fieldId: "hd"; label: "H/D"; title: "Hold Delay"; value: "250"; unit: "mSec"; min: 250; max: 2000 }
