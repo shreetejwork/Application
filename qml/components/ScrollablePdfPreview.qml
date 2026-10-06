@@ -24,15 +24,17 @@ Popup {
     property int currentPage: 0
     property real touchStartContentY: 0
 
-    function navigatePage(offset) {
+    function scrollPdf(direction) {
         if (pdfDocument.status !== PdfDocument.Ready
-                || pdfDocument.pageCount <= 0)
+                || pagesList.contentHeight <= pagesList.height)
             return
 
-        var target = Math.max(0, Math.min(currentPage + offset,
-                                         pdfDocument.pageCount - 1))
-        currentPage = target
-        pagesList.positionViewAtIndex(target, ListView.Beginning)
+        pagesList.cancelFlick()
+        var maxContentY = pagesList.contentHeight - pagesList.height
+        var step = Math.max(80, pagesList.height * 0.8)
+        pagesList.contentY = Math.max(
+                    0, Math.min(pagesList.contentY + direction * step,
+                                maxContentY))
     }
 
     function resetPreview() {
@@ -67,7 +69,7 @@ Popup {
 
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 54
+                Layout.preferredHeight: 64
                 color: "#1A4DB5"
                 radius: 12
 
@@ -80,13 +82,17 @@ Popup {
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: 12
-                    spacing: 8
+                    anchors.leftMargin: 16
+                    anchors.rightMargin: 16
+                    anchors.topMargin: 8
+                    anchors.bottomMargin: 8
+                    spacing: 10
 
                     Text {
                         text: "PDF Preview"
                         color: "white"
                         font.pixelSize: pdfTypography.body
+                        font.weight: Font.DemiBold
                         Layout.alignment: Qt.AlignVCenter
                     }
 
@@ -94,63 +100,141 @@ Popup {
                         Layout.fillWidth: true
                     }
 
-                    Text {
-                        text: pdfDocument.status === PdfDocument.Ready
-                              && pdfDocument.pageCount > 0
-                              ? "Page " + (root.currentPage + 1)
-                                + " of " + pdfDocument.pageCount
-                              : ""
-                        color: "white"
-                        font.pixelSize: pdfTypography.caption
-                        Layout.alignment: Qt.AlignVCenter
-                    }
-
-                    Rectangle {
+                    Button {
+                        id: previousButton
+                        property bool repeatedWhileHeld: false
                         Layout.preferredWidth: 40
-                        Layout.preferredHeight: 36
-                        radius: 6
-                        color: previousArea.pressed ? "#0D3A8A" : "#2D6AD4"
+                        Layout.preferredHeight: 40
                         Layout.alignment: Qt.AlignVCenter
-                        opacity: root.currentPage > 0 ? 1 : 0.55
+                        enabled: pdfDocument.status === PdfDocument.Ready
+                                 && pagesList.contentY > 0
+                        font.pixelSize: 17
+                        onPressedChanged: {
+                            if (pressed) {
+                                repeatedWhileHeld = false
+                                previousHoldDelay.start()
+                            } else {
+                                previousHoldDelay.stop()
+                                previousRepeatTimer.stop()
+                            }
+                        }
+                        onClicked: {
+                            if (!repeatedWhileHeld)
+                                root.scrollPdf(-1)
+                        }
 
-                        Text {
-                            anchors.centerIn: parent
+                        Timer {
+                            id: previousHoldDelay
+                            interval: 350
+                            onTriggered: {
+                                previousButton.repeatedWhileHeld = true
+                                root.scrollPdf(-1)
+                                previousRepeatTimer.start()
+                            }
+                        }
+
+                        Timer {
+                            id: previousRepeatTimer
+                            interval: 100
+                            repeat: true
+                            onTriggered: root.scrollPdf(-1)
+                        }
+
+                        background: Rectangle {
+                            radius: 7
+                            color: previousButton.down ? "#0D3A8A"
+                                   : previousButton.enabled ? "#2D6AD4"
+                                                             : "#5378B7"
+                            border.color: "#75A0E8"
+                            border.width: 1
+                        }
+
+                        contentItem: Text {
                             text: "▲"
+                            font: previousButton.font
                             color: "white"
-                            font.pixelSize: 16
-                        }
-
-                        MouseArea {
-                            id: previousArea
-                            anchors.fill: parent
-                            enabled: pdfDocument.status === PdfDocument.Ready
-                                     && pdfDocument.pageCount > 0
-                            onClicked: root.navigatePage(-1)
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
                     }
 
                     Rectangle {
-                        Layout.preferredWidth: 40
+                        Layout.preferredWidth: 112
                         Layout.preferredHeight: 36
-                        radius: 6
-                        color: nextArea.pressed ? "#0D3A8A" : "#2D6AD4"
                         Layout.alignment: Qt.AlignVCenter
-                        opacity: root.currentPage < pdfDocument.pageCount - 1
-                                 ? 1 : 0.55
+                        radius: 7
+                        color: "#16479F"
+                        border.color: "#4778CE"
+                        border.width: 1
 
                         Text {
                             anchors.centerIn: parent
-                            text: "▼"
+                            text: pdfDocument.status === PdfDocument.Ready
+                                  && pdfDocument.pageCount > 0
+                                  ? "Page " + (root.currentPage + 1)
+                                    + " of " + pdfDocument.pageCount
+                                  : ""
                             color: "white"
-                            font.pixelSize: 16
+                            font.pixelSize: pdfTypography.caption
+                        }
+                    }
+
+                    Button {
+                        id: nextButton
+                        property bool repeatedWhileHeld: false
+                        Layout.preferredWidth: 40
+                        Layout.preferredHeight: 40
+                        Layout.alignment: Qt.AlignVCenter
+                        enabled: pdfDocument.status === PdfDocument.Ready
+                                 && pagesList.contentY
+                                    < pagesList.contentHeight - pagesList.height
+                        font.pixelSize: 17
+                        onPressedChanged: {
+                            if (pressed) {
+                                repeatedWhileHeld = false
+                                nextHoldDelay.start()
+                            } else {
+                                nextHoldDelay.stop()
+                                nextRepeatTimer.stop()
+                            }
+                        }
+                        onClicked: {
+                            if (!repeatedWhileHeld)
+                                root.scrollPdf(1)
                         }
 
-                        MouseArea {
-                            id: nextArea
-                            anchors.fill: parent
-                            enabled: pdfDocument.status === PdfDocument.Ready
-                                     && pdfDocument.pageCount > 0
-                            onClicked: root.navigatePage(1)
+                        Timer {
+                            id: nextHoldDelay
+                            interval: 350
+                            onTriggered: {
+                                nextButton.repeatedWhileHeld = true
+                                root.scrollPdf(1)
+                                nextRepeatTimer.start()
+                            }
+                        }
+
+                        Timer {
+                            id: nextRepeatTimer
+                            interval: 100
+                            repeat: true
+                            onTriggered: root.scrollPdf(1)
+                        }
+
+                        background: Rectangle {
+                            radius: 7
+                            color: nextButton.down ? "#0D3A8A"
+                                   : nextButton.enabled ? "#2D6AD4"
+                                                         : "#5378B7"
+                            border.color: "#75A0E8"
+                            border.width: 1
+                        }
+
+                        contentItem: Text {
+                            text: "▼"
+                            font: nextButton.font
+                            color: "white"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
                     }
                 }
