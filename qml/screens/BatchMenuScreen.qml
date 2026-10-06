@@ -30,14 +30,247 @@ Item {
 
     property string lastValidBatch: "General Batch"
     property string lastValidProduct: "Default Product"
+    property string currentBatchId: "General Batch"
+    property int activeBatchReportId: -1
+    property int batchRejectionCount: 0
+    property int rejectionCountAtLastBuffer: 0
+    property var batchStartDateTime: null
+    property var batchPauseStartTime: null
+    property int batchRunSeconds: 0
+    property int batchPauseSeconds: 0
 
+    function isAuthorized() {
+        if (GlobalState.loggedInUserRole !== ""
+                || GlobalState.developerLogin
+                || GlobalState.engineerLogin)
+            return true
 
+        accessDeniedPopup.popupTitle = "Access Denied !"
+        accessDeniedPopup.popupMessage = "Please login first"
+        accessDeniedPopup.open()
+        return false
+    }
 
     function notify(msg) {
         if (root.globalTopBar && root.globalTopBar.showNotification) {
             root.globalTopBar.showNotification(msg)
         } else {
             console.log(msg) // fallback
+        }
+    }
+
+    function getAuditUser() {
+        if (GlobalState.loggedInUserRole === ""
+                || GlobalState.loggedInUserName === "")
+            return "---"
+
+        var initial = "U"
+        if (GlobalState.loggedInUserRole === "Admin")
+            initial = "A"
+        else if (GlobalState.loggedInUserRole === "Supervisor")
+            initial = "S"
+        else if (GlobalState.loggedInUserRole === "Operator")
+            initial = "O"
+        return initial + "/" + GlobalState.loggedInUserName
+    }
+
+    function flushPendingBatchRejections(eventTime, auditUser) {
+        if (root.activeBatchReportId <= 0)
+            return false
+
+        var count = Number(GlobalState.activeBatchRejectCount)
+        var delta = count - root.rejectionCountAtLastBuffer
+        if (delta <= 0)
+            return true
+
+        if (databaseManager.addBatchReportEvent(
+                    root.activeBatchReportId,
+                    "REJECT",
+                    Qt.formatDateTime(eventTime, "dd/MM/yyyy HH:mm:ss"),
+                    auditUser,
+                    delta)) {
+            root.batchRejectionCount += delta
+            root.rejectionCountAtLastBuffer = count
+            return true
+        } else {
+            return false
+        }
+    }
+
+    function startBatch() {
+        if (!root.isAuthorized())
+            return
+
+        var loadedProduct = databaseManager.getActiveProduct()
+        if (!loadedProduct || loadedProduct.name === undefined) {
+            root.notify("⚠ No product loaded")
+            return
+        }
+
+        var startTime = new Date()
+        var user = root.getAuditUser()
+        var batchId = root.lastValidBatch
+        var productName = String(loadedProduct.name)
+        var productCode = String(loadedProduct.code)
+        var groupNo = Number(loadedProduct.groupNo)
+        var productSno = "G" + String(groupNo).padStart(2, "0")
+                           + "/" + String(loadedProduct.sr)
+        var reportId = databaseManager.createBatchReport(
+                    batchId,
+                    productName,
+                    productCode,
+                    productSno,
+                    Qt.formatDateTime(startTime, "dd/MM/yyyy HH:mm:ss"),
+                    user)
+
+        if (reportId <= 0) {
+            root.notify("⚠ Unable to create batch report")
+            return
+        }
+
+        root.currentBatchId = batchId
+        root.activeBatchReportId = reportId
+        root.batchStartDateTime = startTime
+        root.batchRunSeconds = 0
+        root.batchPauseSeconds = 0
+        root.batchPauseStartTime = null
+        root.batchRejectionCount = 0
+        GlobalState.activeBatchRejectCount = 0
+        root.rejectionCountAtLastBuffer = 0
+        root.batchRunning = true
+        root.batchPaused = false
+        GlobalState.batchRunning = true
+        GlobalState.batchPaused = false
+
+        var startEventSaved = databaseManager.addBatchReportEvent(
+                    reportId,
+                    "START",
+                    Qt.formatDateTime(startTime, "dd/MM/yyyy HH:mm:ss"),
+                    user,
+                    0)
+
+        SerialManager.setBatch(1)
+        batchTimer.start()
+        rejectionBufferTimer.start()
+        root.notify(startEventSaved
+                    ? "✓ Batch Start"
+                    : "⚠ Batch started, but the start event could not be saved")
+    }
+
+    function toggleBatchPause() {
+        if (!root.isAuthorized())
+            return
+
+        var eventTime = new Date()
+        var user = root.getAuditUser()
+        if (!root.batchPaused) {
+            var rejectionsSaved = root.flushPendingBatchRejections(eventTime, user)
+            root.batchPaused = true
+            GlobalState.batchPaused = true
+            root.batchPauseStartTime = eventTime
+            var pauseSaved = databaseManager.addBatchReportEvent(
+                        root.activeBatchReportId,
+                        "PAUSE",
+                        Qt.formatDateTime(eventTime, "dd/MM/yyyy HH:mm:ss"),
+                        user)
+            SerialManager.setBatch(2)
+            root.notify(rejectionsSaved && pauseSaved
+                        ? "⏸ Batch Paused"
+                        : "⚠ Batch paused, but report data could not be fully saved")
+            return
+        }
+
+        if (root.batchPauseStartTime !== null) {
+            root.batchPauseSeconds += Math.floor(
+                        (eventTime.getTime()
+                         - root.batchPauseStartTime.getTime()) / 1000)
+        }
+        root.batchPauseStartTime = null
+        root.batchPaused = false
+        GlobalState.batchPaused = false
+        root.rejectionCountAtLastBuffer = Math.max(
+                    root.rejectionCountAtLastBuffer,
+                    Number(GlobalState.activeBatchRejectCount))
+        var resumeSaved = databaseManager.addBatchReportEvent(
+                    root.activeBatchReportId,
+                    "RESUME",
+                    Qt.formatDateTime(eventTime, "dd/MM/yyyy HH:mm:ss"),
+                    user)
+        SerialManager.setBatch(1)
+        root.notify(resumeSaved
+                    ? "▶ Batch Resumed"
+                    : "⚠ Batch resumed, but the resume event could not be saved")
+    }
+
+    function endBatch() {
+        if (!root.isAuthorized())
+            return
+
+        var endTime = new Date()
+        var user = root.getAuditUser()
+        if (root.batchPaused && root.batchPauseStartTime !== null) {
+            root.batchPauseSeconds += Math.floor(
+                        (endTime.getTime()
+                         - root.batchPauseStartTime.getTime()) / 1000)
+        }
+
+        var rejectionsSaved = root.flushPendingBatchRejections(endTime, user)
+        var endText = Qt.formatDateTime(endTime, "dd/MM/yyyy HH:mm:ss")
+        var totalSeconds = root.batchStartDateTime
+                           ? Math.floor((endTime.getTime()
+                                         - root.batchStartDateTime.getTime()) / 1000)
+                           : root.batchRunSeconds
+        var eventSaved = databaseManager.addBatchReportEvent(
+                    root.activeBatchReportId, "END", endText, user)
+        var reportSaved = databaseManager.finishBatchReport(
+                    root.activeBatchReportId,
+                    endText,
+                    root.batchRunSeconds,
+                    root.batchPauseSeconds,
+                    totalSeconds,
+                    user,
+                    root.batchRejectionCount)
+
+        batchTimer.stop()
+        rejectionBufferTimer.stop()
+        root.batchRunning = false
+        root.batchPaused = false
+        GlobalState.batchRunning = false
+        GlobalState.batchPaused = false
+        GlobalState.activeBatchRejectCount = 0
+        root.batchPauseStartTime = null
+        root.batchRejectionCount = 0
+        root.rejectionCountAtLastBuffer = 0
+        root.activeBatchReportId = -1
+        root.batchStartDateTime = null
+        root.lastValidBatch = "General Batch"
+        root.currentBatchId = "General Batch"
+        inputField.text = "General Batch"
+        SerialManager.setBatch(0)
+        root.notify(eventSaved && reportSaved && rejectionsSaved
+                    ? "■ Batch End"
+                    : "⚠ Batch ended, but report data could not be fully saved")
+    }
+
+    Timer {
+        id: batchTimer
+        interval: 1000
+        repeat: true
+        onTriggered: {
+            if (root.batchRunning && !root.batchPaused)
+                root.batchRunSeconds++
+        }
+    }
+
+    Timer {
+        id: rejectionBufferTimer
+        interval: 60 * 1000
+        repeat: true
+        onTriggered: {
+            if (root.batchRunning && !root.batchPaused
+                    && !root.flushPendingBatchRejections(
+                        new Date(), root.getAuditUser()))
+                root.notify("⚠ Unable to save batch rejection event")
         }
     }
 
@@ -49,8 +282,8 @@ Item {
                                       ? -130 * root.scale
                                       : 0
 
-        width: Math.min(parent.width * 0.75, 900)
-        spacing: 20 * root.scale
+        width: Math.min(parent.width * 0.82, 900)
+        spacing: 18 * root.scale
 
         Behavior on anchors.verticalCenterOffset {
             NumberAnimation {
@@ -82,7 +315,7 @@ Item {
         // ===== CARD =====
         Rectangle {
             Layout.fillWidth: true
-            Layout.preferredHeight: Math.min(root.height * 0.65, 480)
+            Layout.preferredHeight: Math.min(root.height * 0.68, 480)
 
             radius: 22
             color: "#FFFFFF"
@@ -90,8 +323,8 @@ Item {
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 30 * root.scale
-                spacing: 24 * root.scale
+                anchors.margins: 26 * root.scale
+                spacing: 20 * root.scale
 
                 // ===== INPUTS =====
                 ColumnLayout {
@@ -133,10 +366,11 @@ Item {
                                     color: "#1A4DB5"
 
                                     property bool isPasswordField: false
+                                    property bool batchNameEditing: false
 
                                     focus: false
                                     activeFocusOnPress: true
-                                    readOnly: root.batchRunning
+                                    readOnly: root.batchRunning || !batchNameEditing
                                     inputMethodHints: Qt.ImhNone
 
                                     background: null
@@ -162,7 +396,7 @@ Item {
                                             root.notify("✓ Batch Updated")
                                         }
 
-                                        readOnly = true
+                                        batchNameEditing = false
                                         focus = false
                                     }
 
@@ -187,18 +421,13 @@ Item {
                                         anchors.fill: parent
 
                                         onPressed: {
-
-                                            if (GlobalState.loggedInUserRole === "")
-                                            {
-                                                accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                                accessDeniedPopup.popupMessage =
-                                                        "Please login first"
-
-                                                accessDeniedPopup.open()
+                                            if (!root.isAuthorized())
                                                 return
-                                            }
 
+                                            if (root.batchRunning)
+                                                return
+
+                                            inputField.batchNameEditing = true
                                             inputField.forceActiveFocus()
                                         }
                                     }
@@ -246,19 +475,10 @@ Item {
                                     enabled: !root.batchRunning
 
                                     onClicked: {
-
-                                        if (GlobalState.loggedInUserRole === "")
-                                        {
-                                            accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                            accessDeniedPopup.popupMessage =
-                                                    "Please login first"
-
-                                            accessDeniedPopup.open()
+                                        if (!root.isAuthorized())
                                             return
-                                        }
 
-                                        inputField.readOnly = false
+                                        inputField.batchNameEditing = true
                                         inputField.forceActiveFocus()
 
                                         Qt.callLater(function() {
@@ -364,17 +584,8 @@ Item {
                                         anchors.fill: parent
 
                                         onPressed: {
-
-                                            if (GlobalState.loggedInUserRole === "")
-                                            {
-                                                accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                                accessDeniedPopup.popupMessage =
-                                                        "Please login first"
-
-                                                accessDeniedPopup.open()
+                                            if (!root.isAuthorized())
                                                 return
-                                            }
 
                                             productField.forceActiveFocus()
                                         }
@@ -421,17 +632,8 @@ Item {
                                     enabled: !root.batchRunning
 
                                     onClicked: {
-
-                                        if (GlobalState.loggedInUserRole === "")
-                                        {
-                                            accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                            accessDeniedPopup.popupMessage =
-                                                    "Please login first"
-
-                                            accessDeniedPopup.open()
+                                        if (!root.isAuthorized())
                                             return
-                                        }
 
                                         productField.readOnly = false
                                         productField.forceActiveFocus()
@@ -449,61 +651,55 @@ Item {
                 // ===== BUTTONS =====
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 20
-
-                    Item { Layout.fillWidth: true }
+                    spacing: 14 * root.scale
 
                     ActionButton {
                         text: "Batch Start"
-                        width: 100
-                        height: 50
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: 150 * root.scale
+                        Layout.minimumWidth: 130 * root.scale
+                        Layout.preferredHeight: 56 * root.scale
+                        font.pixelSize: Math.max(14, 16 * root.scale)
+                        bgColor: "#1A4DB5"
+                        hoverColor: "#123A8A"
                         enabled: !root.batchRunning
 
                         onClicked: {
-                            root.batchRunning = true
-                            root.batchPaused = false
-
-                            SerialManager.setBatch(1)
-
-                            root.notify("✓ Batch Start")
+                            root.startBatch()
                         }
                     }
 
                     ActionButton {
                         text: root.batchPaused ? "Batch Resume" : "Batch Pause"
-                        width: 110
-                        height: 50
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: 180 * root.scale
+                        Layout.minimumWidth: 160 * root.scale
+                        Layout.preferredHeight: 56 * root.scale
+                        font.pixelSize: Math.max(14, 16 * root.scale)
+                        bgColor: root.batchPaused ? "#22A447" : "#1A4DB5"
+                        hoverColor: root.batchPaused ? "#188638" : "#123A8A"
                         enabled: root.batchRunning
 
                         onClicked: {
-                            root.batchPaused = !root.batchPaused
-
-                            if (root.batchPaused)
-                                SerialManager.setBatch(2)
-                            else
-                                SerialManager.setBatch(1)
-
-                            root.notify(root.batchPaused ? "⏸ Paused" : "▶ Resumed")
+                            root.toggleBatchPause()
                         }
                     }
 
                     ActionButton {
                         text: "Batch End"
-                        width: 100
-                        height: 50
+                        Layout.fillWidth: true
+                        Layout.preferredWidth: 150 * root.scale
+                        Layout.minimumWidth: 130 * root.scale
+                        Layout.preferredHeight: 56 * root.scale
+                        font.pixelSize: Math.max(14, 16 * root.scale)
+                        bgColor: "#1A4DB5"
+                        hoverColor: "#123A8A"
                         enabled: root.batchRunning
 
                         onClicked: {
-                            root.batchRunning = false
-                            root.batchPaused = false
-
-                            SerialManager.setBatch(0)
-
-                            root.notify("■ Batch End")
+                            root.endBatch()
                         }
                     }
-
-                    Item { Layout.fillWidth: true }
                 }
             }
         }
