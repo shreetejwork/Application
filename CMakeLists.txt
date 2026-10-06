@@ -60,7 +60,7 @@ qt_add_qml_module(appApplication
         qml/screens/BatchReportScreen.qml
         qml/screens/ProductLibraryScreen.qml
         qml/components/PowerOffPopup.qml
-        qml/components/PdfPreview.qml
+        qml/components/ScrollablePdfPreview.qml
         qml/components/UsbUpdatePopup.qml
         qml/screens/BatchMenuScreen.qml
 

@@ -937,7 +937,7 @@ Item {
     }
     }
 
-    PdfPreview {
+    ScrollablePdfPreview {
         id: pdfPreview
     }
 }

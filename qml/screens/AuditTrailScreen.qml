@@ -1583,7 +1583,7 @@ Item {
         }
     }
 
-    PdfPreview {
+    ScrollablePdfPreview {
         id: pdfPreview
         anchors.centerIn: parent
         width: parent.width * 0.9
