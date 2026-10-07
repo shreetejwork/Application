@@ -132,6 +132,9 @@ qt_add_qml_module(appApplication
         SOURCES src/SerialManager.cpp
         QML_FILES qml/screens/SysDiagnosisScreen.qml
         QML_FILES qml/screens/XyPlotScreen.qml
+        QML_FILES qml/screens/WaveformScreen.qml
+        QML_FILES qml/components/WaveformChart.qml
+        QML_FILES qml/components/WaveformControlButton.qml
         QML_FILES qml/components/ValidationAlarmPopup.qml
         QML_FILES qml/components/ValidationPopup.qml
         QML_FILES qml/components/ValidationScreenPopup.qml

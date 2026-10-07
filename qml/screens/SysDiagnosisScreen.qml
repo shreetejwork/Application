@@ -55,6 +55,14 @@ Item {
 
                 onTileClicked: navigateTo("Diagnosis")
             }
+
+            MenuTile {
+                iconSource: "qrc:/qt/qml/Application/assets/images/axis.png"
+                label: "Waveform"
+                iconSize: 100 * root.scale
+
+                onTileClicked: navigateTo("Waveform")
+            }
         }
     }
 }
