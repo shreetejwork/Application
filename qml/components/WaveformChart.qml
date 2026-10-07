@@ -48,6 +48,25 @@ Rectangle {
         windowStart = Math.max(0, samples.length - visibleSamples)
     }
 
+    function currentAxisLimit() {
+        var maxMagnitude = 0
+        var end = Math.min(samples.length, windowStart + visibleSamples)
+        for (var i = windowStart; i < end; ++i)
+            maxMagnitude = Math.max(maxMagnitude,
+                                    Math.abs(Number(samples[i][valueKey])))
+
+        if (maxMagnitude === 0)
+            return 1000
+
+        maxMagnitude = Math.min(valueLimit, maxMagnitude)
+        var power = Math.pow(10, Math.floor(Math.log(maxMagnitude) / Math.LN10))
+        var normalized = maxMagnitude / power
+        var rounded = normalized <= 1 ? 1
+                    : normalized <= 2 ? 2
+                    : normalized <= 5 ? 5 : 10
+        return Math.min(valueLimit, rounded * power)
+    }
+
     Layout.minimumWidth: 0
     radius: 8 * scale
     color: "#FFFFFF"
@@ -169,15 +188,15 @@ Rectangle {
                 var count = Math.min(chartCard.visibleSamples,
                                      Math.max(0, samples.length - chartCard.windowStart))
                 var end = chartCard.windowStart + count
+                var axisLimit = chartCard.currentAxisLimit()
 
                 ctx.font = Math.max(10, 12 * chartCard.scale) + "px sans-serif"
                 ctx.strokeStyle = "#E6ECF5"
                 ctx.lineWidth = 1
 
-                var tickFractions = [0, 0.5, 1]
-                var tickValues = [chartCard.valueLimit, 0, -chartCard.valueLimit]
-                for (var tick = 0; tick < tickFractions.length; ++tick) {
-                    var y = top + plotHeight * tickFractions[tick]
+                for (var tick = 0; tick <= 4; ++tick) {
+                    var fraction = tick / 4
+                    var y = top + plotHeight * fraction
                     ctx.beginPath()
                     ctx.moveTo(left, y)
                     ctx.lineTo(left + plotWidth, y)
@@ -185,7 +204,7 @@ Rectangle {
                     ctx.fillStyle = "#526174"
                     ctx.textAlign = "right"
                     ctx.textBaseline = "middle"
-                    var value = tickValues[tick]
+                    var value = Math.round(axisLimit - 2 * axisLimit * fraction)
                     ctx.fillText(value > 0 ? "+" + value : String(value),
                                  left - 8 * chartCard.scale, y)
                 }
@@ -250,15 +269,15 @@ Rectangle {
 
                 for (var i = chartCard.windowStart; i < end; ++i) {
                     var sampleValue = Math.max(
-                                -chartCard.valueLimit,
-                                Math.min(chartCard.valueLimit,
+                                -axisLimit,
+                                Math.min(axisLimit,
                                          Number(samples[i][chartCard.valueKey])))
                     var x = left + (count === 1
                                     ? plotWidth
                                     : plotWidth * (i - chartCard.windowStart)
                                       / (count - 1))
-                    var sampleY = top + (chartCard.valueLimit - sampleValue)
-                              * plotHeight / (2 * chartCard.valueLimit)
+                    var sampleY = top + (axisLimit - sampleValue)
+                              * plotHeight / (2 * axisLimit)
                     if (i === chartCard.windowStart)
                         ctx.moveTo(x, sampleY)
                     else
@@ -284,4 +303,5 @@ Rectangle {
 
     onWindowStartChanged: plot.requestPaint()
     onVisibleSamplesChanged: plot.requestPaint()
+    onValueKeyChanged: plot.requestPaint()
 }

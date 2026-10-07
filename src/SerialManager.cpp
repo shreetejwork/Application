@@ -630,6 +630,16 @@ void SerialManager::updateWaveformData(const QVariantList &data)
     emit waveformDataChanged();
 }
 
+void SerialManager::setWaveformCaptureEnabled(bool enabled)
+{
+    if (m_waveformCaptureEnabled == enabled)
+        return;
+
+    m_waveformCaptureEnabled = enabled;
+    waveformRxBuffer.clear();
+    emit waveformCaptureEnabledChanged();
+}
+
 void SerialManager::processWaveformAsciiBuffer()
 {
     while (true)
@@ -864,7 +874,8 @@ void SerialManager::onReadyRead()
         // Existing buffers
         rxBuffer.append(data);
         xyRxBuffer.append(data);
-        waveformRxBuffer.append(data);
+        if (m_waveformCaptureEnabled)
+            waveformRxBuffer.append(data);
     }
 
 
@@ -890,7 +901,7 @@ void SerialManager::onReadyRead()
         xyRxBuffer.clear();
     }
 
-    if (waveformRxBuffer.size() > 4096)
+    if (m_waveformCaptureEnabled && waveformRxBuffer.size() > 4096)
     {
         qWarning() << "Waveform RX buffer overflow. Clearing.";
         waveformRxBuffer.clear();
@@ -961,7 +972,8 @@ void SerialManager::onReadyRead()
         processXyAsciiBuffer();
     }
 
-    processWaveformBuffer();
+    if (m_waveformCaptureEnabled)
+        processWaveformBuffer();
 
 
     // =====================================================

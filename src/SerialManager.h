@@ -62,6 +62,10 @@ class SerialManager : public QObject
                    READ waveformData
                        NOTIFY waveformDataChanged)
 
+    Q_PROPERTY(bool waveformCaptureEnabled
+                   READ waveformCaptureEnabled
+                       NOTIFY waveformCaptureEnabledChanged)
+
 public:
     explicit SerialManager(QObject *parent = nullptr);
 
@@ -123,6 +127,13 @@ public:
     {
         return m_waveformData;
     }
+
+    bool waveformCaptureEnabled() const
+    {
+        return m_waveformCaptureEnabled;
+    }
+
+    Q_INVOKABLE void setWaveformCaptureEnabled(bool enabled);
 
     Q_INVOKABLE bool isConnected() const
     {
@@ -198,6 +209,8 @@ signals:
 
     void waveformDataChanged();
 
+    void waveformCaptureEnabledChanged();
+
 private slots:
     void onReadyRead();
 
@@ -264,5 +277,5 @@ private:
 
     QVariantList m_xyPlotData;
     QVariantList m_waveformData;
+    bool m_waveformCaptureEnabled = true;
 };
-

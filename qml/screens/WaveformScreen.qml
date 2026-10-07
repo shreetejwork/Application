@@ -62,11 +62,23 @@ Item {
             Item { Layout.fillWidth: true }
 
             Text {
-                text: root.samples.length > 0
-                      ? root.samples.length + " samples"
-                      : "Waiting for serial data..."
+                text: Backend.SerialManager.waveformCaptureEnabled
+                      ? (root.samples.length > 0
+                         ? "Capturing · " + root.samples.length + " samples"
+                         : "Waiting for serial data...")
+                      : "Capture paused"
                 color: "#64748B"
                 font.pixelSize: 12 * root.scale
+            }
+
+            WaveformControlButton {
+                text: Backend.SerialManager.waveformCaptureEnabled
+                      ? "Stop capture" : "Start capture"
+                Layout.preferredWidth: 112 * root.scale
+                accent: Backend.SerialManager.waveformCaptureEnabled
+                        ? "#B42318" : "#16804A"
+                onClicked: Backend.SerialManager.setWaveformCaptureEnabled(
+                               !Backend.SerialManager.waveformCaptureEnabled)
             }
         }
 
