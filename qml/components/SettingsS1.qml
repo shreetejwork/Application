@@ -184,10 +184,10 @@ Item {
                             var optionValue = Number(newVal)
                             if (!Number.isInteger(optionValue)
                                     || optionValue < 3
-                                    || optionValue > 101
+                                    || optionValue > 151
                                     || optionValue % 2 === 0) {
                                 numberPopup.showError(
-                                    "Filter Option must be an odd value from 3 to 101."
+                                    "Filter Option must be an odd value from 3 to 151."
                                 )
                                 return false
                             }
