@@ -58,14 +58,6 @@ class SerialManager : public QObject
                    READ xyPlotData
                        NOTIFY xyPlotDataChanged)
 
-    Q_PROPERTY(QVariantList waveformData
-                   READ waveformData
-                       NOTIFY waveformDataChanged)
-
-    Q_PROPERTY(bool waveformCaptureEnabled
-                   READ waveformCaptureEnabled
-                       NOTIFY waveformCaptureEnabledChanged)
-
 public:
     explicit SerialManager(QObject *parent = nullptr);
 
@@ -122,18 +114,6 @@ public:
     {
         return m_xyPlotData;
     }
-
-    QVariantList waveformData() const
-    {
-        return m_waveformData;
-    }
-
-    bool waveformCaptureEnabled() const
-    {
-        return m_waveformCaptureEnabled;
-    }
-
-    Q_INVOKABLE void setWaveformCaptureEnabled(bool enabled);
 
     Q_INVOKABLE bool isConnected() const
     {
@@ -207,10 +187,6 @@ signals:
 
     void xyPlotDataChanged();
 
-    void waveformDataChanged();
-
-    void waveformCaptureEnabledChanged();
-
 private slots:
     void onReadyRead();
 
@@ -230,12 +206,6 @@ private:
                                      const QVariantList &data);
     void updateXyPlotData(const QVariantList &data);
 
-    bool parseWaveformFrame(const QByteArray &frame, QVariantList &outData);
-    bool decodeWaveformPayload(const QByteArray &payload, QVariantList &outData);
-    void processWaveformBuffer();
-    void processWaveformAsciiBuffer();
-    void updateWaveformData(const QVariantList &data);
-
     bool m_coilBalancingOn = false;
 
 private:
@@ -253,7 +223,6 @@ private:
 
     QByteArray rxBuffer;
     QByteArray xyRxBuffer;
-    QByteArray waveformRxBuffer;
 
     double m_productPhase = 0.0;   // 0 - 180
 
@@ -276,6 +245,4 @@ private:
     QString m_rawTxLog;
 
     QVariantList m_xyPlotData;
-    QVariantList m_waveformData;
-    bool m_waveformCaptureEnabled = true;
 };

@@ -17,7 +17,7 @@ Rectangle {
 
     readonly property int minVisibleSamples: 20
     readonly property int maxVisibleSamples: 2000
-    readonly property real valueLimit: 10000
+    readonly property real valueLimit: 32768
 
     function moveWindow(amount) {
         windowStart = Math.max(0,

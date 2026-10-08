@@ -9,32 +9,30 @@ Item {
     anchors.fill: parent
     property real scale: Math.min(width / 1024, height / 600)
     property var samples: []
+    property bool captureEnabled: true
 
-    readonly property int maxSamples: 2000
-
-    function appendPacket(points) {
+    function showPacket(points) {
         if (!points || points.length === 0)
             return
 
-        var updatedSamples = samples.slice()
+        var packetSamples = []
         for (var i = 0; i < points.length; ++i) {
-            updatedSamples.push({
-                                    x: Number(points[i].rawX),
-                                    y: Number(points[i].rawY)
-                                })
+            packetSamples.push({
+                                   x: Number(points[i].rawX),
+                                   y: Number(points[i].rawY)
+                               })
         }
-        if (updatedSamples.length > maxSamples)
-            updatedSamples.splice(0, updatedSamples.length - maxSamples)
-        samples = updatedSamples
+        samples = packetSamples
     }
 
-    Component.onCompleted: root.appendPacket(Backend.SerialManager.waveformData)
+    Component.onCompleted: root.showPacket(Backend.SerialManager.xyPlotData)
 
     Connections {
         target: Backend.SerialManager
 
-        function onWaveformDataChanged() {
-            root.appendPacket(Backend.SerialManager.waveformData)
+        function onXyPlotDataChanged() {
+            if (root.captureEnabled)
+                root.showPacket(Backend.SerialManager.xyPlotData)
         }
     }
 
@@ -62,7 +60,7 @@ Item {
             Item { Layout.fillWidth: true }
 
             Text {
-                text: Backend.SerialManager.waveformCaptureEnabled
+                text: root.captureEnabled
                       ? (root.samples.length > 0
                          ? "Capturing · " + root.samples.length + " samples"
                          : "Waiting for serial data...")
@@ -72,13 +70,16 @@ Item {
             }
 
             WaveformControlButton {
-                text: Backend.SerialManager.waveformCaptureEnabled
+                text: root.captureEnabled
                       ? "Stop capture" : "Start capture"
                 Layout.preferredWidth: 112 * root.scale
-                accent: Backend.SerialManager.waveformCaptureEnabled
+                accent: root.captureEnabled
                         ? "#B42318" : "#16804A"
-                onClicked: Backend.SerialManager.setWaveformCaptureEnabled(
-                               !Backend.SerialManager.waveformCaptureEnabled)
+                onClicked: {
+                    root.captureEnabled = !root.captureEnabled
+                    if (root.captureEnabled)
+                        root.showPacket(Backend.SerialManager.xyPlotData)
+                }
             }
         }
 

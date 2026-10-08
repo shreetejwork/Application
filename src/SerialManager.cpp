@@ -563,196 +563,6 @@ void SerialManager::updateXyPlotData(const QVariantList &data)
     qDebug() << "XY plot data updated with" << m_xyPlotData.size() << "points";
 }
 
-bool SerialManager::parseWaveformFrame(const QByteArray &frame,
-                                      QVariantList &outData)
-{
-    if (frame.size() != XY_PACKET_SIZE ||
-        static_cast<uint8_t>(frame.at(0)) != XY_SYNC1 ||
-        static_cast<uint8_t>(frame.at(1)) != XY_SYNC2)
-    {
-        qWarning() << "Waveform frame rejected: invalid size or synchronization";
-        return false;
-    }
-
-    const QByteArray payload = frame.mid(XY_PAYLOAD_OFFSET, XY_DATA_SIZE);
-    const uint16_t calculatedCrc = crc16Ccitt(payload);
-    const uint16_t receivedCrc =
-        (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(XY_CRC_OFFSET))) << 8) |
-        static_cast<uint16_t>(static_cast<uint8_t>(frame.at(XY_CRC_OFFSET + 1)));
-
-    if (calculatedCrc != receivedCrc)
-    {
-        qWarning() << "Waveform frame rejected: CRC mismatch";
-        return false;
-    }
-
-    return decodeWaveformPayload(payload, outData);
-}
-
-bool SerialManager::decodeWaveformPayload(const QByteArray &payload,
-                                          QVariantList &outData)
-{
-    if (payload.size() != XY_DATA_SIZE)
-    {
-        qWarning() << "Waveform payload rejected: invalid size" << payload.size();
-        return false;
-    }
-
-    outData.clear();
-
-    for (int i = 0; i < XY_SAMPLES; ++i)
-    {
-        const int offset = i * 4;
-        const auto readSignedValue = [&payload](int valueOffset) {
-            const uint16_t raw =
-                (static_cast<uint16_t>(static_cast<uint8_t>(payload.at(valueOffset))) << 8) |
-                static_cast<uint16_t>(static_cast<uint8_t>(payload.at(valueOffset + 1)));
-            const int signedValue = raw <= 0x7FFFU
-                                        ? static_cast<int>(raw)
-                                        : static_cast<int>(raw) - 0x10000;
-            return static_cast<int16_t>(signedValue);
-        };
-
-        QVariantMap point;
-        point[QStringLiteral("rawX")] =
-            static_cast<int>(readSignedValue(offset));
-        point[QStringLiteral("rawY")] =
-            static_cast<int>(readSignedValue(offset + 2));
-        outData.append(point);
-    }
-
-    return outData.size() == XY_SAMPLES;
-}
-
-void SerialManager::updateWaveformData(const QVariantList &data)
-{
-    m_waveformData = data;
-    emit waveformDataChanged();
-}
-
-void SerialManager::setWaveformCaptureEnabled(bool enabled)
-{
-    if (m_waveformCaptureEnabled == enabled)
-        return;
-
-    m_waveformCaptureEnabled = enabled;
-    waveformRxBuffer.clear();
-    emit waveformCaptureEnabledChanged();
-}
-
-void SerialManager::processWaveformAsciiBuffer()
-{
-    while (true)
-    {
-        const QString text = QString::fromLatin1(waveformRxBuffer);
-        QRegularExpressionMatchIterator matches =
-            QRegularExpression(QStringLiteral("\\S+")).globalMatch(text);
-        QList<QRegularExpressionMatch> tokens;
-
-        while (matches.hasNext())
-            tokens.append(matches.next());
-
-        if (tokens.size() < 2)
-            return;
-
-        int startToken = -1;
-        for (int i = 0; i + 1 < tokens.size(); ++i)
-        {
-            if (tokens[i].captured().compare(QStringLiteral("A5"), Qt::CaseInsensitive) == 0 &&
-                tokens[i + 1].captured().compare(QStringLiteral("5A"), Qt::CaseInsensitive) == 0)
-            {
-                startToken = i;
-                break;
-            }
-        }
-
-        if (startToken < 0)
-        {
-            const auto lastToken = tokens.constLast();
-            if (lastToken.capturedStart() > 0)
-                waveformRxBuffer = waveformRxBuffer.mid(lastToken.capturedStart());
-            return;
-        }
-
-        if (tokens.constLast().capturedEnd() == text.size())
-            return;
-
-        const int availableTokens = tokens.size() - startToken;
-        if (availableTokens < XY_PACKET_SIZE)
-        {
-            waveformRxBuffer = waveformRxBuffer.mid(tokens[startToken].capturedStart());
-            return;
-        }
-
-        QByteArray frame;
-        for (int i = 0; i < XY_PACKET_SIZE; ++i)
-        {
-            const QByteArray byte = QByteArray::fromHex(
-                tokens[startToken + i].captured().toLatin1());
-            if (byte.size() != 1)
-            {
-                waveformRxBuffer.remove(0, tokens[startToken].capturedEnd());
-                frame.clear();
-                break;
-            }
-            frame.append(byte);
-        }
-
-        if (frame.isEmpty())
-            continue;
-
-        QVariantList decodedData;
-        if (parseWaveformFrame(frame, decodedData))
-        {
-            waveformRxBuffer.remove(0, tokens[startToken + XY_PACKET_SIZE - 1].capturedEnd());
-            updateWaveformData(decodedData);
-        }
-        else
-        {
-            waveformRxBuffer.remove(0, tokens[startToken].capturedStart() + 2);
-        }
-    }
-}
-
-void SerialManager::processWaveformBuffer()
-{
-    const QByteArray sync =
-        QByteArray(1, static_cast<char>(XY_SYNC1)) +
-        QByteArray(1, static_cast<char>(XY_SYNC2));
-
-    if (waveformRxBuffer.indexOf(sync) < 0)
-    {
-        processWaveformAsciiBuffer();
-        return;
-    }
-
-    while (true)
-    {
-        const qsizetype startIndex = waveformRxBuffer.indexOf(sync);
-        if (startIndex < 0)
-            break;
-
-        if (startIndex > 0)
-            waveformRxBuffer.remove(0, startIndex);
-
-        if (waveformRxBuffer.size() < XY_PACKET_SIZE)
-            break;
-
-        const QByteArray frame = waveformRxBuffer.left(XY_PACKET_SIZE);
-        QVariantList decodedData;
-
-        if (parseWaveformFrame(frame, decodedData))
-        {
-            waveformRxBuffer.remove(0, XY_PACKET_SIZE);
-            updateWaveformData(decodedData);
-        }
-        else
-        {
-            waveformRxBuffer.remove(0, 1);
-        }
-    }
-}
-
 void SerialManager::logXyPacketBeforePlotUpdate(const QByteArray &frame,
                                                  const QVariantList &data)
 {
@@ -874,8 +684,6 @@ void SerialManager::onReadyRead()
         // Existing buffers
         rxBuffer.append(data);
         xyRxBuffer.append(data);
-        if (m_waveformCaptureEnabled)
-            waveformRxBuffer.append(data);
     }
 
 
@@ -900,13 +708,6 @@ void SerialManager::onReadyRead()
         qDebug() << "XY RX buffer overflow. Clearing.";
         xyRxBuffer.clear();
     }
-
-    if (m_waveformCaptureEnabled && waveformRxBuffer.size() > 4096)
-    {
-        qWarning() << "Waveform RX buffer overflow. Clearing.";
-        waveformRxBuffer.clear();
-    }
-
 
     // =====================================================
     // XY PLOT PROCESSING
@@ -971,10 +772,6 @@ void SerialManager::onReadyRead()
     {
         processXyAsciiBuffer();
     }
-
-    if (m_waveformCaptureEnabled)
-        processWaveformBuffer();
-
 
     // =====================================================
     // MCU REQUESTING MACHINE PARAMETERS
