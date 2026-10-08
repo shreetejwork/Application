@@ -688,18 +688,6 @@ void SerialManager::onReadyRead()
 
 
     // =====================================================
-    // Safety protection - Main RX buffer
-    // =====================================================
-
-    if (rxBuffer.size() > 4096)
-    {
-        qDebug() << "RX buffer overflow. Clearing.";
-        rxBuffer.clear();
-        return;
-    }
-
-
-    // =====================================================
     // Safety protection - XY RX buffer
     // =====================================================
 
@@ -830,8 +818,8 @@ void SerialManager::onReadyRead()
 
         if (start < 0)
         {
-            // Keep a small amount of data in case the
-            // packet is fragmented across serial reads.
+            // Discard old non-packet bytes but retain a tail for a
+            // marker fragmented across serial reads.
             if (rxBuffer.size() > 10)
             {
                 rxBuffer.remove(
@@ -864,6 +852,24 @@ void SerialManager::onReadyRead()
                 endMarker,
                 start);
 
+        const int nextNormalStart = rxBuffer.indexOf('N', start + 1);
+        const int nextDefectStart = rxBuffer.indexOf('D', start + 1);
+        int nextStart = nextNormalStart;
+        if (nextStart < 0 ||
+            (nextDefectStart >= 0 && nextDefectStart < nextStart))
+        {
+            nextStart = nextDefectStart;
+        }
+
+        // A newer packet start before this packet's terminator means the
+        // current start came from corrupt/noisy bytes; resynchronize.
+        if (nextStart >= 0 && (end < 0 || nextStart < end))
+        {
+            qWarning() << "Incomplete serial packet; resynchronizing at byte"
+                       << nextStart;
+            rxBuffer.remove(0, nextStart);
+            continue;
+        }
 
         // -------------------------------------------------
         // Packet not complete yet
@@ -871,7 +877,15 @@ void SerialManager::onReadyRead()
         // -------------------------------------------------
 
         if (end < 0)
+        {
+            if (rxBuffer.size() > 4096)
+            {
+                qWarning() << "Incomplete serial packet exceeded buffer limit;"
+                              " dropping stale bytes";
+                rxBuffer.remove(0, rxBuffer.size() - 10);
+            }
             return;
+        }
 
 
         // -------------------------------------------------
