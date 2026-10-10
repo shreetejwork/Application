@@ -137,6 +137,8 @@ Item {
         xyLineHistory = updatedHistory
     }
 
+    Component.onDestruction: SerialManager.setPlotMode(false)
+
     Connections {
         target: SerialManager
 
@@ -164,6 +166,7 @@ Item {
     }
 
     Component.onCompleted: {
+        SerialManager.setPlotMode(true)
         console.log("XY QML initial data: points=" + root.magneticFieldData.length)
     }
 

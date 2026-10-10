@@ -16,13 +16,14 @@ namespace
 {
 constexpr uint8_t XY_SYNC1 = 0xA5;
 constexpr uint8_t XY_SYNC2 = 0x5A;
+constexpr uint8_t XY_END1 = 0xB5;
+constexpr uint8_t XY_END2 = 0x5B;
 constexpr int XY_SAMPLES = 20;
 constexpr int XY_SYNC_SIZE = 2;
 constexpr int XY_DATA_SIZE = 80;
 constexpr int XY_CRC_SIZE = 2;
+constexpr int XY_END_SIZE = 2;
 constexpr int XY_PAYLOAD_OFFSET = XY_SYNC_SIZE;
-constexpr int XY_CRC_OFFSET = XY_PAYLOAD_OFFSET + XY_DATA_SIZE;
-constexpr int XY_PACKET_SIZE = XY_SYNC_SIZE + XY_DATA_SIZE + XY_CRC_SIZE;
 constexpr qreal XY_PLOT_LIMIT = 100.0;
 constexpr qreal XY_SIGNED_SCALE = XY_PLOT_LIMIT / 32768.0;
 
@@ -324,6 +325,11 @@ void SerialManager::setTrackingTolerance(int value)
     sendCommand(QString("{R%1}").arg(v));
 }
 
+void SerialManager::setPlotMode(bool enabled)
+{
+    sendCommand(enabled ? "{T11111}" : "{T00000}");
+}
+
 // =============== D-duster ======================
 
 void SerialManager::setDDuster(bool enabled)
@@ -472,7 +478,7 @@ void SerialManager::setAmplitudeThreshold(int value)
 
 bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outData)
 {
-    if (frame.size() != XY_PACKET_SIZE)
+    if (frame.size() < XY_SYNC_SIZE + XY_CRC_SIZE + XY_END_SIZE)
     {
         qDebug() << "XY frame rejected: size=" << frame.size();
         return false;
@@ -485,11 +491,21 @@ bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outD
         return false;
     }
 
-    const QByteArray payload = frame.mid(XY_PAYLOAD_OFFSET, XY_DATA_SIZE);
+    if (static_cast<uint8_t>(frame.at(frame.size() - 2)) != XY_END1 ||
+        static_cast<uint8_t>(frame.at(frame.size() - 1)) != XY_END2)
+    {
+        qDebug() << "XY frame rejected: invalid termination";
+        return false;
+    }
+
+    const int payloadSize = frame.size() - XY_SYNC_SIZE -
+                            XY_CRC_SIZE - XY_END_SIZE;
+    const QByteArray payload = frame.mid(XY_PAYLOAD_OFFSET, payloadSize);
     const uint16_t calculatedCrc = crc16Ccitt(payload);
+    const int crcOffset = XY_SYNC_SIZE + payloadSize;
     const uint16_t receivedCrc =
-        (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(XY_CRC_OFFSET))) << 8) |
-        static_cast<uint16_t>(static_cast<uint8_t>(frame.at(XY_CRC_OFFSET + 1)));
+        (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset))) << 8) |
+        static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset + 1)));
 
     qDebug() << "XY CRC calculated:" << Qt::hex << calculatedCrc
              << "received:" << receivedCrc << Qt::dec;
@@ -619,27 +635,33 @@ void SerialManager::processXyAsciiBuffer()
             return;
         }
 
-        if (tokens.constLast().capturedEnd() == text.size())
-            return;
+        int endToken = -1;
+        for (int i = startToken + 2; i + 1 < tokens.size(); ++i)
+        {
+            if (tokens[i].captured().compare(QStringLiteral("B5"), Qt::CaseInsensitive) == 0 &&
+                tokens[i + 1].captured().compare(QStringLiteral("5B"), Qt::CaseInsensitive) == 0)
+            {
+                endToken = i + 1;
+                break;
+            }
+        }
 
-        const int availableTokens = tokens.size() - startToken;
-        if (availableTokens < XY_PACKET_SIZE)
+        if (endToken < 0 || tokens[endToken].capturedEnd() == text.size())
         {
             xyRxBuffer = xyRxBuffer.mid(tokens[startToken].capturedStart());
-            qDebug() << "XY ASCII sync found; waiting for total packet bytes:"
-                     << availableTokens << "/" << XY_PACKET_SIZE;
+            qDebug() << "XY ASCII sync found; waiting for packet terminator";
             return;
         }
 
         QByteArray frame;
-        for (int i = 0; i < XY_PACKET_SIZE; ++i)
+        for (int i = startToken; i <= endToken; ++i)
         {
             const QByteArray byte = QByteArray::fromHex(
-                tokens[startToken + i].captured().toLatin1());
+                tokens[i].captured().toLatin1());
             if (byte.size() != 1)
             {
                 qDebug() << "XY ASCII token rejected:"
-                         << tokens[startToken + i].captured();
+                         << tokens[i].captured();
                 xyRxBuffer.remove(0, tokens[startToken].capturedEnd());
                 frame.clear();
                 break;
@@ -653,7 +675,7 @@ void SerialManager::processXyAsciiBuffer()
         QVariantList decodedData;
         if (parseXyPlotFrame(frame, decodedData))
         {
-            xyRxBuffer.remove(0, tokens[startToken + XY_PACKET_SIZE - 1].capturedEnd());
+            xyRxBuffer.remove(0, tokens[endToken].capturedEnd());
             logXyPacketBeforePlotUpdate(frame, decodedData);
             updateXyPlotData(decodedData);
         }
@@ -688,22 +710,15 @@ void SerialManager::onReadyRead()
 
 
     // =====================================================
-    // Safety protection - XY RX buffer
-    // =====================================================
-
-    if (xyRxBuffer.size() > 4096)
-    {
-        qDebug() << "XY RX buffer overflow. Clearing.";
-        xyRxBuffer.clear();
-    }
-
-    // =====================================================
     // XY PLOT PROCESSING
     // =====================================================
 
     const QByteArray sync =
         QByteArray(1, static_cast<char>(XY_SYNC1)) +
         QByteArray(1, static_cast<char>(XY_SYNC2));
+    const QByteArray terminator =
+        QByteArray(1, static_cast<char>(XY_END1)) +
+        QByteArray(1, static_cast<char>(XY_END2));
 
 
     if (xyRxBuffer.indexOf(sync) >= 0)
@@ -720,21 +735,18 @@ void SerialManager::onReadyRead()
             if (startIndex > 0)
                 xyRxBuffer.remove(0, startIndex);
 
+            const qsizetype endIndex =
+                xyRxBuffer.indexOf(terminator, XY_SYNC_SIZE);
 
-            if (xyRxBuffer.size() < XY_PACKET_SIZE)
+            if (endIndex < 0)
             {
-                qDebug()
-                << "XY sync found; waiting for total packet bytes:"
-                << xyRxBuffer.size()
-                << "/"
-                << XY_PACKET_SIZE;
-
+                qDebug() << "XY sync found; waiting for packet terminator";
                 break;
             }
 
 
             const QByteArray frame =
-                xyRxBuffer.left(XY_PACKET_SIZE);
+                xyRxBuffer.left(endIndex + XY_END_SIZE);
 
 
             QVariantList decodedData;
@@ -742,13 +754,18 @@ void SerialManager::onReadyRead()
 
             if (parseXyPlotFrame(frame, decodedData))
             {
-                xyRxBuffer.remove(0, XY_PACKET_SIZE);
+                xyRxBuffer.remove(0, endIndex + XY_END_SIZE);
 
                 logXyPacketBeforePlotUpdate(
                     frame,
                     decodedData);
 
                 updateXyPlotData(decodedData);
+            }
+            else if (!xyRxBuffer.isEmpty() &&
+                     static_cast<uint8_t>(xyRxBuffer.at(xyRxBuffer.size() - 1)) == XY_SYNC1)
+            {
+                return;
             }
             else
             {

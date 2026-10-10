@@ -159,6 +159,7 @@ public slots:
     void setCoilBalancingStatus(bool status);
 
     void setBaudRate(int baudRate);
+    void setPlotMode(bool enabled);
 
 signals:
     void productPhaseChanged();

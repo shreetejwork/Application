@@ -11,6 +11,8 @@ Item {
     property var samples: []
     property bool captureEnabled: true
 
+    Component.onDestruction: Backend.SerialManager.setPlotMode(false)
+
     function showPacket(points) {
         if (!points || points.length === 0)
             return
@@ -25,7 +27,10 @@ Item {
         samples = packetSamples
     }
 
-    Component.onCompleted: root.showPacket(Backend.SerialManager.xyPlotData)
+    Component.onCompleted: {
+        Backend.SerialManager.setPlotMode(true)
+        root.showPacket(Backend.SerialManager.xyPlotData)
+    }
 
     Connections {
         target: Backend.SerialManager
