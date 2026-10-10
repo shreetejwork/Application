@@ -14,6 +14,7 @@ Rectangle {
     property int visibleSamples: 10000
     property int windowStart: Math.max(0, samples.length - visibleSamples)
     property int previousSampleCount: samples.length
+    property real highestAxisLimit: 0
 
     readonly property int minVisibleSamples: 20
     readonly property int maxVisibleSamples: 10000
@@ -55,16 +56,19 @@ Rectangle {
             maxMagnitude = Math.max(maxMagnitude,
                                     Math.abs(Number(samples[i][valueKey])))
 
-        if (maxMagnitude === 0)
-            return 1000
+        if (maxMagnitude > 0) {
+            maxMagnitude = Math.min(valueLimit, maxMagnitude)
+            var power = Math.pow(10, Math.floor(Math.log(maxMagnitude) / Math.LN10))
+            var normalized = maxMagnitude / power
+            var rounded = normalized <= 1 ? 1
+                        : normalized <= 2 ? 2
+                        : normalized <= 5 ? 5 : 10
+            var requiredLimit = Math.min(valueLimit, rounded * power)
+            if (requiredLimit > highestAxisLimit)
+                highestAxisLimit = requiredLimit
+        }
 
-        maxMagnitude = Math.min(valueLimit, maxMagnitude)
-        var power = Math.pow(10, Math.floor(Math.log(maxMagnitude) / Math.LN10))
-        var normalized = maxMagnitude / power
-        var rounded = normalized <= 1 ? 1
-                    : normalized <= 2 ? 2
-                    : normalized <= 5 ? 5 : 10
-        return Math.min(valueLimit, rounded * power)
+        return highestAxisLimit > 0 ? highestAxisLimit : 1000
     }
 
     Layout.minimumWidth: 0
