@@ -9,6 +9,7 @@ Rectangle {
     property string title: "X"
     property string valueKey: "x"
     property color traceColor: "#1A4DB5"
+    property string displayMode: "Both"
     property var samples: []
 
     property int visibleSamples: 10000
@@ -52,9 +53,12 @@ Rectangle {
     function currentAxisLimit() {
         var maxMagnitude = 0
         var end = Math.min(samples.length, windowStart + visibleSamples)
-        for (var i = windowStart; i < end; ++i)
-            maxMagnitude = Math.max(maxMagnitude,
-                                    Math.abs(Number(samples[i][valueKey])))
+        var keys = displayMode === "Both" ? ["x", "y"] : [displayMode.toLowerCase()]
+        for (var i = windowStart; i < end; ++i) {
+            for (var keyIndex = 0; keyIndex < keys.length; ++keyIndex)
+                maxMagnitude = Math.max(maxMagnitude,
+                                        Math.abs(Number(samples[i][keys[keyIndex]])))
+        }
 
         if (maxMagnitude > 0) {
             maxMagnitude = Math.min(valueLimit, maxMagnitude)
@@ -77,103 +81,13 @@ Rectangle {
     border.width: 1
     border.color: "#DCE5F5"
 
-    ColumnLayout {
+    Canvas {
+        id: plot
+
         anchors.fill: parent
         anchors.margins: 7 * chartCard.scale
-        spacing: 2 * chartCard.scale
 
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 24 * chartCard.scale
-            spacing: 6 * chartCard.scale
-
-            Text {
-                text: chartCard.title + " value"
-                color: chartCard.traceColor
-                font.pixelSize: 15 * chartCard.scale
-                font.weight: Font.DemiBold
-            }
-
-            Item { Layout.fillWidth: true }
-
-            Text {
-                text: chartCard.samples.length > 0
-                      ? "Current: "
-                        + chartCard.samples[Math.min(
-                                                chartCard.samples.length - 1,
-                                                chartCard.windowStart
-                                                + chartCard.visibleSamples - 1)]
-                              [chartCard.valueKey]
-                      : ""
-                color: "#526174"
-                font.pixelSize: 12 * chartCard.scale
-            }
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 32 * chartCard.scale
-            spacing: 6 * chartCard.scale
-
-            Item { Layout.fillWidth: true }
-
-            WaveformControlButton {
-                text: "‹ Older"
-                Layout.preferredWidth: 76 * chartCard.scale
-                Layout.preferredHeight: 30 * chartCard.scale
-                accent: chartCard.traceColor
-                enabled: chartCard.windowStart > 0
-                onClicked: chartCard.moveWindow(-Math.max(
-                                                    1,
-                                                    Math.floor(chartCard.visibleSamples * 0.8)))
-            }
-
-            WaveformControlButton {
-                text: "Newer ›"
-                Layout.preferredWidth: 76 * chartCard.scale
-                Layout.preferredHeight: 30 * chartCard.scale
-                accent: chartCard.traceColor
-                enabled: chartCard.windowStart + chartCard.visibleSamples
-                         < chartCard.samples.length
-                onClicked: chartCard.moveWindow(Math.max(
-                                                    1,
-                                                    Math.floor(chartCard.visibleSamples * 0.8)))
-            }
-
-            WaveformControlButton {
-                text: "Zoom −"
-                Layout.preferredWidth: 72 * chartCard.scale
-                Layout.preferredHeight: 30 * chartCard.scale
-                accent: chartCard.traceColor
-                enabled: chartCard.visibleSamples < chartCard.maxVisibleSamples
-                onClicked: chartCard.zoomOut()
-            }
-
-            WaveformControlButton {
-                text: "Zoom +"
-                Layout.preferredWidth: 72 * chartCard.scale
-                Layout.preferredHeight: 30 * chartCard.scale
-                accent: chartCard.traceColor
-                enabled: chartCard.visibleSamples > chartCard.minVisibleSamples
-                onClicked: chartCard.zoomIn()
-            }
-
-            WaveformControlButton {
-                text: "Reset"
-                Layout.preferredWidth: 62 * chartCard.scale
-                Layout.preferredHeight: 30 * chartCard.scale
-                accent: chartCard.traceColor
-                onClicked: chartCard.resetView()
-            }
-        }
-
-        Canvas {
-            id: plot
-
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-
-            onPaint: {
+        onPaint: {
                 var ctx = getContext("2d")
                 var w = width
                 var h = height
@@ -239,10 +153,9 @@ Rectangle {
                 ctx.stroke()
 
                 ctx.font = "bold " + Math.max(10, 13 * chartCard.scale) + "px sans-serif"
-                ctx.fillStyle = chartCard.traceColor
+                ctx.fillStyle = "#1A4DB5"
                 ctx.textAlign = "center"
                 ctx.textBaseline = "bottom"
-                ctx.fillText(chartCard.title, left, top - 3 * chartCard.scale)
                 ctx.fillStyle = "#526174"
                 ctx.textAlign = "right"
                 ctx.textBaseline = "middle"
@@ -265,35 +178,43 @@ Rectangle {
                 ctx.beginPath()
                 ctx.rect(left, top, plotWidth, plotHeight)
                 ctx.clip()
-                ctx.strokeStyle = chartCard.traceColor
                 ctx.lineWidth = Math.max(1.5, 2 * chartCard.scale)
                 ctx.lineJoin = "round"
                 ctx.lineCap = "round"
-                ctx.beginPath()
+                var series = []
+                if (chartCard.displayMode === "X" || chartCard.displayMode === "Both")
+                    series.push({ key: "x", color: "#1A4DB5" })
+                if (chartCard.displayMode === "Y" || chartCard.displayMode === "Both")
+                    series.push({ key: "y", color: "#D64545" })
 
-                for (var i = chartCard.windowStart; i < end; ++i) {
-                    var sampleValue = Math.max(
-                                -axisLimit,
-                                Math.min(axisLimit,
-                                         Number(samples[i][chartCard.valueKey])))
-                    var x = left + (count === 1
-                                    ? plotWidth
-                                    : plotWidth * (i - chartCard.windowStart)
-                                      / (count - 1))
-                    var sampleY = top + (axisLimit - sampleValue)
-                              * plotHeight / (2 * axisLimit)
-                    if (i === chartCard.windowStart)
-                        ctx.moveTo(x, sampleY)
-                    else
-                        ctx.lineTo(x, sampleY)
+                for (var seriesIndex = 0; seriesIndex < series.length; ++seriesIndex) {
+                    ctx.strokeStyle = series[seriesIndex].color
+                    ctx.beginPath()
+
+                    for (var i = chartCard.windowStart; i < end; ++i) {
+                        var sampleValue = Math.max(
+                                    -axisLimit,
+                                    Math.min(axisLimit,
+                                             Number(samples[i][series[seriesIndex].key])))
+                        var x = left + (count === 1
+                                        ? plotWidth
+                                        : plotWidth * (i - chartCard.windowStart)
+                                          / (count - 1))
+                        var sampleY = top + (axisLimit - sampleValue)
+                                  * plotHeight / (2 * axisLimit)
+                        if (i === chartCard.windowStart)
+                            ctx.moveTo(x, sampleY)
+                        else
+                            ctx.lineTo(x, sampleY)
+                    }
+
+                    ctx.stroke()
                 }
 
-                ctx.stroke()
                 ctx.restore()
-            }
-
-            Component.onCompleted: requestPaint()
         }
+
+        Component.onCompleted: requestPaint()
     }
 
     onSamplesChanged: {
@@ -308,4 +229,5 @@ Rectangle {
     onWindowStartChanged: plot.requestPaint()
     onVisibleSamplesChanged: plot.requestPaint()
     onValueKeyChanged: plot.requestPaint()
+    onDisplayModeChanged: plot.requestPaint()
 }

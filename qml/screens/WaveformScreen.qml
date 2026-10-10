@@ -10,6 +10,7 @@ Item {
     property real scale: Math.min(width / 1024, height / 600)
     property var samples: []
     property bool captureEnabled: true
+    property string displayMode: "Both"
     readonly property int maxHistorySamples: 10000
 
     Component.onDestruction: Backend.SerialManager.setPlotMode(false)
@@ -57,13 +58,12 @@ Item {
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 30 * root.scale
+            Layout.preferredHeight: 34 * root.scale
 
             Text {
                 text: "Waveform"
                 color: "#1A4DB5"
-                font.pixelSize: 20 * root.scale
-                font.weight: Font.DemiBold
+                font.pixelSize: 30 * root.scale
             }
 
             Item { Layout.fillWidth: true }
@@ -79,6 +79,82 @@ Item {
             }
 
             WaveformControlButton {
+                text: "‹ Older"
+                Layout.preferredWidth: 68 * root.scale
+                Layout.preferredHeight: 30 * root.scale
+                accent: "#1A4DB5"
+                enabled: waveformChart.windowStart > 0
+                onClicked: waveformChart.moveWindow(-Math.max(
+                                                          1,
+                                                          Math.floor(waveformChart.visibleSamples * 0.8)))
+            }
+
+            WaveformControlButton {
+                text: "Newer ›"
+                Layout.preferredWidth: 68 * root.scale
+                Layout.preferredHeight: 30 * root.scale
+                accent: "#1A4DB5"
+                enabled: waveformChart.windowStart + waveformChart.visibleSamples
+                         < waveformChart.samples.length
+                onClicked: waveformChart.moveWindow(Math.max(
+                                                        1,
+                                                        Math.floor(waveformChart.visibleSamples * 0.8)))
+            }
+
+            WaveformControlButton {
+                text: "Zoom −"
+                Layout.preferredWidth: 62 * root.scale
+                Layout.preferredHeight: 30 * root.scale
+                accent: "#1A4DB5"
+                enabled: waveformChart.visibleSamples < waveformChart.maxVisibleSamples
+                onClicked: waveformChart.zoomOut()
+            }
+
+            WaveformControlButton {
+                text: "Zoom +"
+                Layout.preferredWidth: 62 * root.scale
+                Layout.preferredHeight: 30 * root.scale
+                accent: "#1A4DB5"
+                enabled: waveformChart.visibleSamples > waveformChart.minVisibleSamples
+                onClicked: waveformChart.zoomIn()
+            }
+
+            WaveformControlButton {
+                text: "Reset"
+                Layout.preferredWidth: 52 * root.scale
+                Layout.preferredHeight: 30 * root.scale
+                accent: "#1A4DB5"
+                onClicked: waveformChart.resetView()
+            }
+
+            WaveformControlButton {
+                text: "X"
+                Layout.preferredWidth: 42 * root.scale
+                Layout.preferredHeight: 30 * root.scale
+                accent: "#1A4DB5"
+                selected: root.displayMode === "X"
+                onClicked: root.displayMode = "X"
+            }
+
+            WaveformControlButton {
+                text: "Y"
+                Layout.preferredWidth: 42 * root.scale
+                Layout.preferredHeight: 30 * root.scale
+                accent: "#D64545"
+                selected: root.displayMode === "Y"
+                onClicked: root.displayMode = "Y"
+            }
+
+            WaveformControlButton {
+                text: "Both"
+                Layout.preferredWidth: 52 * root.scale
+                Layout.preferredHeight: 30 * root.scale
+                accent: "#334155"
+                selected: root.displayMode === "Both"
+                onClicked: root.displayMode = "Both"
+            }
+
+            WaveformControlButton {
                 text: root.captureEnabled
                       ? "Stop capture" : "Start capture"
                 Layout.preferredWidth: 112 * root.scale
@@ -91,26 +167,14 @@ Item {
         }
 
         WaveformChart {
+            id: waveformChart
             Layout.fillWidth: true
             Layout.fillHeight: true
             Layout.minimumHeight: 0
             scale: root.scale
             visibleSamples: root.maxHistorySamples
-            title: "X"
-            valueKey: "x"
-            traceColor: "#1A4DB5"
-            samples: root.samples
-        }
-
-        WaveformChart {
-            Layout.fillWidth: true
-            Layout.fillHeight: true
-            Layout.minimumHeight: 0
-            scale: root.scale
-            visibleSamples: root.maxHistorySamples
-            title: "Y"
-            valueKey: "y"
-            traceColor: "#D64545"
+            title: "Waveform"
+            displayMode: root.displayMode
             samples: root.samples
         }
     }
