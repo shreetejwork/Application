@@ -118,7 +118,7 @@ Item {
     property var xyLineHistory: []
 
     function addXYTrace(points) {
-        if (!points || points.length !== 20)
+        if (!points || points.length === 0)
             return
 
         var trace = []

@@ -18,9 +18,8 @@ constexpr uint8_t XY_SYNC1 = 0xA5;
 constexpr uint8_t XY_SYNC2 = 0x5A;
 constexpr uint8_t XY_END1 = 0xB5;
 constexpr uint8_t XY_END2 = 0x5B;
-constexpr int XY_SAMPLES = 20;
 constexpr int XY_SYNC_SIZE = 2;
-constexpr int XY_DATA_SIZE = 80;
+constexpr int XY_PAIR_SIZE = 4;
 constexpr int XY_CRC_SIZE = 2;
 constexpr int XY_END_SIZE = 2;
 constexpr int XY_PAYLOAD_OFFSET = XY_SYNC_SIZE;
@@ -522,18 +521,20 @@ bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outD
 
 bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList &outData)
 {
-    if (payload.size() != XY_DATA_SIZE)
+    if (payload.isEmpty() || payload.size() % XY_PAIR_SIZE != 0)
     {
-        qDebug() << "XY payload rejected: size=" << payload.size();
+        qDebug() << "XY payload rejected: invalid pair data size="
+                 << payload.size();
         return false;
     }
 
     outData.clear();
     QStringList decimalPairs;
 
-    for (int i = 0; i < XY_SAMPLES; ++i)
+    const int sampleCount = payload.size() / XY_PAIR_SIZE;
+    for (int i = 0; i < sampleCount; ++i)
     {
-        const int offset = i * 4;
+        const int offset = i * XY_PAIR_SIZE;
         const auto readSignedValue = [&payload](int valueOffset) {
             const uint16_t raw =
                 (static_cast<uint16_t>(static_cast<uint8_t>(payload.at(valueOffset))) << 8) |
@@ -568,7 +569,7 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
 
     qDebug() << "Decoded XY payload: points=" << outData.size()
              << "signed decimal XY pairs:" << decimalPairs.join(" | ");
-    return outData.size() == XY_SAMPLES;
+    return !outData.isEmpty();
 }
 
 void SerialManager::updateXyPlotData(const QVariantList &data)
