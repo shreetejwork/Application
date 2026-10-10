@@ -11,12 +11,12 @@ Rectangle {
     property color traceColor: "#1A4DB5"
     property var samples: []
 
-    property int visibleSamples: 250
+    property int visibleSamples: 10000
     property int windowStart: Math.max(0, samples.length - visibleSamples)
     property int previousSampleCount: samples.length
 
     readonly property int minVisibleSamples: 20
-    readonly property int maxVisibleSamples: 2000
+    readonly property int maxVisibleSamples: 10000
     readonly property real valueLimit: 32768
 
     function moveWindow(amount) {
@@ -44,7 +44,7 @@ Rectangle {
     }
 
     function resetView() {
-        visibleSamples = 250
+        visibleSamples = maxVisibleSamples
         windowStart = Math.max(0, samples.length - visibleSamples)
     }
 

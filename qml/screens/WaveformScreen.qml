@@ -95,6 +95,7 @@ Item {
             Layout.fillHeight: true
             Layout.minimumHeight: 0
             scale: root.scale
+            visibleSamples: root.maxHistorySamples
             title: "X"
             valueKey: "x"
             traceColor: "#1A4DB5"
@@ -106,6 +107,7 @@ Item {
             Layout.fillHeight: true
             Layout.minimumHeight: 0
             scale: root.scale
+            visibleSamples: root.maxHistorySamples
             title: "Y"
             valueKey: "y"
             traceColor: "#D64545"
