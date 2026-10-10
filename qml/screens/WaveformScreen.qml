@@ -10,6 +10,7 @@ Item {
     property real scale: Math.min(width / 1024, height / 600)
     property var samples: []
     property bool captureEnabled: true
+    readonly property int maxHistorySamples: 10000
 
     Component.onDestruction: Backend.SerialManager.setPlotMode(false)
 
@@ -24,7 +25,10 @@ Item {
                                    y: Number(points[i].rawY)
                                })
         }
-        samples = packetSamples
+        var history = samples.concat(packetSamples)
+        if (history.length > maxHistorySamples)
+            history = history.slice(history.length - maxHistorySamples)
+        samples = history
     }
 
     Component.onCompleted: {
@@ -82,8 +86,6 @@ Item {
                         ? "#B42318" : "#16804A"
                 onClicked: {
                     root.captureEnabled = !root.captureEnabled
-                    if (root.captureEnabled)
-                        root.showPacket(Backend.SerialManager.xyPlotData)
                 }
             }
         }
