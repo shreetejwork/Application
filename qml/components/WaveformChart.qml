@@ -15,7 +15,6 @@ Rectangle {
     property int visibleSamples: 10000
     property int windowStart: Math.max(0, samples.length - visibleSamples)
     property int previousSampleCount: samples.length
-    property real highestAxisLimit: 0
 
     readonly property int minVisibleSamples: 20
     readonly property int maxVisibleSamples: 10000
@@ -52,27 +51,23 @@ Rectangle {
 
     function currentAxisLimit() {
         var maxMagnitude = 0
-        var end = Math.min(samples.length, windowStart + visibleSamples)
         var keys = displayMode === "Both" ? ["x", "y"] : [displayMode.toLowerCase()]
-        for (var i = windowStart; i < end; ++i) {
+        for (var i = 0; i < samples.length; ++i) {
             for (var keyIndex = 0; keyIndex < keys.length; ++keyIndex)
                 maxMagnitude = Math.max(maxMagnitude,
                                         Math.abs(Number(samples[i][keys[keyIndex]])))
         }
 
-        if (maxMagnitude > 0) {
-            maxMagnitude = Math.min(valueLimit, maxMagnitude)
-            var power = Math.pow(10, Math.floor(Math.log(maxMagnitude) / Math.LN10))
-            var normalized = maxMagnitude / power
-            var rounded = normalized <= 1 ? 1
-                        : normalized <= 2 ? 2
-                        : normalized <= 5 ? 5 : 10
-            var requiredLimit = Math.min(valueLimit, rounded * power)
-            if (requiredLimit > highestAxisLimit)
-                highestAxisLimit = requiredLimit
-        }
+        if (maxMagnitude === 0)
+            return 1000
 
-        return highestAxisLimit > 0 ? highestAxisLimit : 1000
+        maxMagnitude = Math.min(valueLimit, maxMagnitude)
+        var power = Math.pow(10, Math.floor(Math.log(maxMagnitude) / Math.LN10))
+        var normalized = maxMagnitude / power
+        var rounded = normalized <= 1 ? 1
+                    : normalized <= 2 ? 2
+                    : normalized <= 5 ? 5 : 10
+        return Math.min(valueLimit, rounded * power)
     }
 
     Layout.minimumWidth: 0
