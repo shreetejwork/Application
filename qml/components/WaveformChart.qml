@@ -438,20 +438,23 @@ Rectangle {
         anchors.top: parent.top
         anchors.left: parent.left
         anchors.margins: 14 * chartCard.scale
-        width: 360 * chartCard.scale
-        height: (chartCard.displayMode === "Both" ? 112 : 62) * chartCard.scale
+        width: Math.min(peakInfo.implicitWidth + 24 * chartCard.scale,
+                        chartCard.width * 0.48)
+        height: peakInfo.implicitHeight + 20 * chartCard.scale
         radius: 6 * chartCard.scale
         color: "#FFFFFF"
         border.width: 1
         border.color: "#DCE5F5"
 
         Text {
+            id: peakInfo
             anchors.fill: parent
             anchors.margins: 10 * chartCard.scale
             color: "#334155"
-            font.pixelSize: Math.max(14, 16 * chartCard.scale)
+            font.pixelSize: Math.max(17, 19 * chartCard.scale)
             font.weight: Font.Medium
             verticalAlignment: Text.AlignVCenter
+            wrapMode: Text.Wrap
             text: chartCard.peakInfoText()
         }
     }
@@ -461,19 +464,20 @@ Rectangle {
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: 14 * chartCard.scale
-        width: 400 * chartCard.scale
-        height: chartCard.secondCursorIndex >= 0
-                ? 144 * chartCard.scale : 64 * chartCard.scale
+        width: Math.min(cursorInfo.implicitWidth + 24 * chartCard.scale,
+                        chartCard.width * 0.48)
+        height: cursorInfo.implicitHeight + 20 * chartCard.scale
         radius: 5 * chartCard.scale
         color: "#FFFFFF"
         border.width: 1
         border.color: "#DCE5F5"
 
         Text {
+            id: cursorInfo
             anchors.fill: parent
             anchors.margins: 10 * chartCard.scale
             color: "#334155"
-            font.pixelSize: Math.max(14, 16 * chartCard.scale)
+            font.pixelSize: Math.max(17, 19 * chartCard.scale)
             verticalAlignment: Text.AlignVCenter
             wrapMode: Text.Wrap
             text: "P1: " + chartCard.pointDescription(
