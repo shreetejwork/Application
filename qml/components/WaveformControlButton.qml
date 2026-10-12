@@ -6,6 +6,7 @@ Button {
 
     property color accent: "#1A4DB5"
     property bool selected: false
+    property real labelPixelSize: 12
 
     implicitWidth: label.implicitWidth + 20
     implicitHeight: 30
@@ -17,7 +18,7 @@ Button {
         text: control.text
         color: control.down || control.selected
                ? "#FFFFFF" : control.enabled ? "#334155" : "#9AA5B5"
-        font.pixelSize: 12
+        font.pixelSize: control.labelPixelSize
         font.weight: Font.Medium
         horizontalAlignment: Text.AlignHCenter
         verticalAlignment: Text.AlignVCenter

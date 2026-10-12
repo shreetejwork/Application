@@ -169,6 +169,7 @@ Rectangle {
                 var samples = chartCard.samples
                 var count = Math.min(chartCard.visibleSamples,
                                      Math.max(0, samples.length - chartCard.windowStart))
+                var showSamplePoints = count <= plotWidth / 6
                 var end = chartCard.windowStart + count
                 var axisLimit = chartCard.currentAxisLimit()
 
@@ -273,6 +274,28 @@ Rectangle {
                     }
 
                     ctx.stroke()
+
+                    if (showSamplePoints) {
+                        ctx.fillStyle = series[seriesIndex].color
+                        for (var pointIndex = chartCard.windowStart;
+                             pointIndex < end; ++pointIndex) {
+                            var pointValue = Math.max(
+                                        -axisLimit,
+                                        Math.min(axisLimit,
+                                                 Number(samples[pointIndex][series[seriesIndex].key])))
+                            var pointX = left + (count === 1
+                                                 ? plotWidth
+                                                 : plotWidth * (pointIndex - chartCard.windowStart)
+                                                   / (count - 1))
+                            var pointY = top + (axisLimit - pointValue)
+                                       * plotHeight / (2 * axisLimit)
+                            ctx.beginPath()
+                            ctx.arc(pointX, pointY,
+                                    Math.max(2, 2.5 * chartCard.scale),
+                                    0, 2 * Math.PI)
+                            ctx.fill()
+                        }
+                    }
                 }
 
                 var cursorIndices = []

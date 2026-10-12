@@ -58,7 +58,7 @@ Item {
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 34 * root.scale
+            Layout.preferredHeight: 40 * root.scale
 
             Text {
                 text: "Waveform"
@@ -79,9 +79,10 @@ Item {
             }
 
             WaveformControlButton {
-                text: "‹ Older"
-                Layout.preferredWidth: 68 * root.scale
-                Layout.preferredHeight: 30 * root.scale
+                text: "←"
+                Layout.preferredWidth: 42 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: 20 * root.scale
                 accent: "#1A4DB5"
                 enabled: waveformChart.windowStart > 0
                 onClicked: waveformChart.moveWindow(-Math.max(
@@ -90,9 +91,10 @@ Item {
             }
 
             WaveformControlButton {
-                text: "Newer ›"
-                Layout.preferredWidth: 68 * root.scale
-                Layout.preferredHeight: 30 * root.scale
+                text: "→"
+                Layout.preferredWidth: 42 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: 20 * root.scale
                 accent: "#1A4DB5"
                 enabled: waveformChart.windowStart + waveformChart.visibleSamples
                          < waveformChart.samples.length
@@ -103,8 +105,9 @@ Item {
 
             WaveformControlButton {
                 text: "Zoom −"
-                Layout.preferredWidth: 62 * root.scale
-                Layout.preferredHeight: 30 * root.scale
+                Layout.preferredWidth: 68 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: 13 * root.scale
                 accent: "#1A4DB5"
                 enabled: waveformChart.visibleSamples < waveformChart.maxVisibleSamples
                 onClicked: waveformChart.zoomOut()
@@ -112,8 +115,9 @@ Item {
 
             WaveformControlButton {
                 text: "Zoom +"
-                Layout.preferredWidth: 62 * root.scale
-                Layout.preferredHeight: 30 * root.scale
+                Layout.preferredWidth: 68 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: 13 * root.scale
                 accent: "#1A4DB5"
                 enabled: waveformChart.visibleSamples > waveformChart.minVisibleSamples
                 onClicked: waveformChart.zoomIn()
@@ -121,16 +125,18 @@ Item {
 
             WaveformControlButton {
                 text: "Reset"
-                Layout.preferredWidth: 52 * root.scale
-                Layout.preferredHeight: 30 * root.scale
+                Layout.preferredWidth: 60 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: 13 * root.scale
                 accent: "#1A4DB5"
                 onClicked: waveformChart.resetView()
             }
 
             WaveformControlButton {
                 text: "X"
-                Layout.preferredWidth: 42 * root.scale
-                Layout.preferredHeight: 30 * root.scale
+                Layout.preferredWidth: 44 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: 14 * root.scale
                 accent: "#1A4DB5"
                 selected: root.displayMode === "X"
                 onClicked: root.displayMode = "X"
@@ -138,8 +144,9 @@ Item {
 
             WaveformControlButton {
                 text: "Y"
-                Layout.preferredWidth: 42 * root.scale
-                Layout.preferredHeight: 30 * root.scale
+                Layout.preferredWidth: 44 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: 14 * root.scale
                 accent: "#D64545"
                 selected: root.displayMode === "Y"
                 onClicked: root.displayMode = "Y"
@@ -147,8 +154,9 @@ Item {
 
             WaveformControlButton {
                 text: "Both"
-                Layout.preferredWidth: 52 * root.scale
-                Layout.preferredHeight: 30 * root.scale
+                Layout.preferredWidth: 56 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: 13 * root.scale
                 accent: "#334155"
                 selected: root.displayMode === "Both"
                 onClicked: root.displayMode = "Both"
@@ -157,8 +165,9 @@ Item {
             WaveformControlButton {
                 text: "Cursor"
                 visible: !root.captureEnabled
-                Layout.preferredWidth: 60 * root.scale
-                Layout.preferredHeight: 30 * root.scale
+                Layout.preferredWidth: 68 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: 13 * root.scale
                 accent: "#16804A"
                 selected: waveformChart.cursorEnabled
                 enabled: root.samples.length > 0
@@ -173,6 +182,8 @@ Item {
                 text: root.captureEnabled
                       ? "Stop capture" : "Start capture"
                 Layout.preferredWidth: 112 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: 13 * root.scale
                 accent: root.captureEnabled
                         ? "#B42318" : "#16804A"
                 onClicked: {
