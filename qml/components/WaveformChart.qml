@@ -19,6 +19,7 @@ Rectangle {
     property int visibleSamples: 10000
     property int windowStart: Math.max(0, samples.length - visibleSamples)
     property int previousSampleCount: samples.length
+    property int zoomInLevel: 0
 
     readonly property int minVisibleSamples: 20
     readonly property int maxVisibleSamples: 10000
@@ -55,6 +56,7 @@ Rectangle {
         if (newVisibleSamples === visibleSamples)
             return
         visibleSamples = newVisibleSamples
+        zoomInLevel += 1
         windowStart = Math.max(0,
                                Math.min(samples.length - visibleSamples,
                                         Math.round(peakIndex - visibleSamples / 2)))
@@ -64,6 +66,7 @@ Rectangle {
         var center = windowStart + visibleSamples / 2
         visibleSamples = Math.min(maxVisibleSamples,
                                   Math.ceil(visibleSamples * 1.5))
+        zoomInLevel = Math.max(0, zoomInLevel - 1)
         windowStart = Math.max(0,
                                Math.min(samples.length - visibleSamples,
                                         Math.round(center - visibleSamples / 2)))
@@ -72,6 +75,7 @@ Rectangle {
     function resetView() {
         visibleSamples = maxVisibleSamples
         windowStart = Math.max(0, samples.length - visibleSamples)
+        zoomInLevel = 0
     }
 
     function clearCursorSelection() {
@@ -100,9 +104,9 @@ Rectangle {
         return windowStart + Math.round((x - left) * (count - 1) / plotWidth)
     }
 
-    function pointDescription(label, index) {
+    function pointDescription(index) {
         var point = samples[index]
-        return label + " (" + Number(point.x).toFixed(2)
+        return "(" + Number(point.x).toFixed(2)
                 + ", " + Number(point.y).toFixed(2) + ")"
     }
 
@@ -115,6 +119,43 @@ Rectangle {
     function formatSampleTime(milliseconds) {
         return (milliseconds / 1000).toFixed(3) + " s ("
                 + milliseconds.toFixed(0) + " ms)"
+    }
+
+    function peakInfoForChannel(key, label) {
+        var start = Math.max(0, windowStart)
+        var end = Math.min(samples.length, windowStart + visibleSamples)
+        if (start >= end)
+            return ""
+
+        var positivePeak = Number(samples[start][key])
+        var negativePeak = positivePeak
+        var positiveIndex = start
+        var negativeIndex = start
+        for (var i = start + 1; i < end; ++i) {
+            var value = Number(samples[i][key])
+            if (value > positivePeak) {
+                positivePeak = value
+                positiveIndex = i
+            }
+            if (value < negativePeak) {
+                negativePeak = value
+                negativeIndex = i
+            }
+        }
+
+        return label + "  +Peak: " + positivePeak.toFixed(2)
+                + " @ " + formatSampleTime(sampleTimeMilliseconds(positiveIndex))
+                + "\n" + label + "  −Peak: " + negativePeak.toFixed(2)
+                + " @ " + formatSampleTime(sampleTimeMilliseconds(negativeIndex))
+    }
+
+    function peakInfoText() {
+        if (displayMode === "X")
+            return peakInfoForChannel("x", "X")
+        if (displayMode === "Y")
+            return peakInfoForChannel("y", "Y")
+        return peakInfoForChannel("x", "X") + "\n"
+                + peakInfoForChannel("y", "Y")
     }
 
     function currentAxisLimit() {
@@ -393,13 +434,36 @@ Rectangle {
     }
 
     Rectangle {
+        visible: chartCard.zoomInLevel >= 2 && chartCard.samples.length > 0
+        anchors.top: parent.top
+        anchors.left: parent.left
+        anchors.margins: 14 * chartCard.scale
+        width: 360 * chartCard.scale
+        height: (chartCard.displayMode === "Both" ? 112 : 62) * chartCard.scale
+        radius: 6 * chartCard.scale
+        color: "#FFFFFF"
+        border.width: 1
+        border.color: "#DCE5F5"
+
+        Text {
+            anchors.fill: parent
+            anchors.margins: 10 * chartCard.scale
+            color: "#334155"
+            font.pixelSize: Math.max(14, 16 * chartCard.scale)
+            font.weight: Font.Medium
+            verticalAlignment: Text.AlignVCenter
+            text: chartCard.peakInfoText()
+        }
+    }
+
+    Rectangle {
         visible: chartCard.cursorEnabled && chartCard.firstCursorIndex >= 0
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: 14 * chartCard.scale
-        width: 340 * chartCard.scale
+        width: 400 * chartCard.scale
         height: chartCard.secondCursorIndex >= 0
-                ? 118 * chartCard.scale : 60 * chartCard.scale
+                ? 144 * chartCard.scale : 64 * chartCard.scale
         radius: 5 * chartCard.scale
         color: "#FFFFFF"
         border.width: 1
@@ -409,20 +473,21 @@ Rectangle {
             anchors.fill: parent
             anchors.margins: 10 * chartCard.scale
             color: "#334155"
-            font.pixelSize: Math.max(13, 15 * chartCard.scale)
+            font.pixelSize: Math.max(14, 16 * chartCard.scale)
             verticalAlignment: Text.AlignVCenter
-            text: chartCard.pointDescription("P1", chartCard.firstCursorIndex)
+            wrapMode: Text.Wrap
+            text: "P1: " + chartCard.pointDescription(
+                      chartCard.firstCursorIndex)
                   + "    t: "
                   + chartCard.formatSampleTime(
                       chartCard.sampleTimeMilliseconds(chartCard.firstCursorIndex))
                   + (chartCard.secondCursorIndex >= 0
-                     ? "\n" + chartCard.pointDescription(
-                           "P2", chartCard.secondCursorIndex)
+                     ? "\nP2: " + chartCard.pointDescription(
+                           chartCard.secondCursorIndex)
                        + "    t: "
                        + chartCard.formatSampleTime(
                            chartCard.sampleTimeMilliseconds(chartCard.secondCursorIndex))
-                       + "\nP1 - P2 Data"
-                       + "\nTime Difference: "
+                       + "\nΔ: "
                        + chartCard.formatSampleTime(
                            Math.abs(chartCard.secondCursorIndex
                                     - chartCard.firstCursorIndex)
@@ -432,6 +497,8 @@ Rectangle {
     }
 
     onSamplesChanged: {
+        if (samples.length === 0)
+            zoomInLevel = 0
         var wasFollowingLatest =
                 windowStart + visibleSamples >= previousSampleCount
         if (wasFollowingLatest)
