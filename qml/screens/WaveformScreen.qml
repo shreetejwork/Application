@@ -32,6 +32,12 @@ Item {
         samples = history
     }
 
+    function clearBuffer() {
+        samples = []
+        waveformChart.resetView()
+        waveformChart.clearCursorSelection()
+    }
+
     Component.onCompleted: {
         Backend.SerialManager.setPlotMode(true)
         root.showPacket(Backend.SerialManager.xyPlotData)
@@ -76,6 +82,16 @@ Item {
                       : "Capture paused"
                 color: "#64748B"
                 font.pixelSize: Math.max(12, 14 * root.scale)
+            }
+
+            WaveformControlButton {
+                text: "Clear Buffer"
+                Layout.preferredWidth: 100 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: Math.max(12, 14 * root.scale)
+                accent: "#B42318"
+                enabled: root.samples.length > 0
+                onClicked: root.clearBuffer()
             }
 
             WaveformControlButton {
