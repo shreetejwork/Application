@@ -100,15 +100,45 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
             );
     }
 
-    for (int i = 0; i <= 8; ++i) {
+    for (int i = 0; i <= 10; ++i) {
 
-        qreal y = r.top() + (r.height() / 8.0) * i;
+        qreal y = r.top() + (r.height() / 10.0) * i;
 
         painter->drawLine(
             QPointF(r.left(), y),
             QPointF(r.right(), y)
             );
     }
+
+    const QVariantList traces = m_fieldHistory.isEmpty()
+                                    ? QVariantList{m_fieldData}
+                                    : m_fieldHistory;
+    qreal minX = 0;
+    qreal maxX = 0;
+    qreal minY = 0;
+    qreal maxY = 0;
+    bool hasPoint = false;
+    for (const QVariant &traceValue : traces) {
+        for (const QVariant &pointValue : traceValue.toList()) {
+            const QVariantMap point = pointValue.toMap();
+            const qreal x = point.value(QStringLiteral("x")).toReal();
+            const qreal y = point.value(QStringLiteral("y")).toReal();
+            if (!hasPoint) {
+                minX = maxX = x;
+                minY = maxY = y;
+                hasPoint = true;
+            } else {
+                minX = qMin(minX, x);
+                maxX = qMax(maxX, x);
+                minY = qMin(minY, y);
+                maxY = qMax(maxY, y);
+            }
+        }
+    }
+    const qreal xLimit = hasPoint
+            ? qMax(qMax(qAbs(minX), qAbs(maxX)) * 1.08, qreal(0.001)) : 100.0;
+    const qreal yLimit = hasPoint
+            ? qMax(qMax(qAbs(minY), qAbs(maxY)) * 1.08, qreal(0.001)) : 100.0;
 
     // =====================================================
     // AXIS
@@ -120,10 +150,10 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
         );
 
     qreal axisX = r.width() * 0.42;
-    qreal axisY = r.height() * 0.40;
+    qreal axisY = r.height() * 0.42;
 
-    QPen axisPen(QColor("#111111"));
-    axisPen.setWidthF(3);
+    QPen axisPen(QColor("#334155"));
+    axisPen.setWidthF(qMax(1.8, r.width() * 0.003));
 
     painter->setPen(axisPen);
 
@@ -137,47 +167,31 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
         QPointF(center.x(), center.y() + axisY)
         );
 
-    // =====================================================
-    // LABELS
-    // =====================================================
+    QFont tickFont;
+    tickFont.setPixelSize(qBound(12, qRound(r.width() * 0.024), 17));
+    painter->setFont(tickFont);
+    painter->setPen(QColor("#526174"));
+    for (int tick = 0; tick <= 4; ++tick) {
+        const qreal fraction = (tick - 2) / 2.0;
+        const qreal x = center.x() + fraction * axisX;
+        const qreal y = center.y() - fraction * axisY;
+        const QString xLabel = QString::number(fraction * xLimit, 'g', 2);
+        const QString yLabel = QString::number(fraction * yLimit, 'g', 2);
+        painter->drawText(QRectF(x - 34, center.y() + 7, 68, 20),
+                          Qt::AlignHCenter | Qt::AlignTop, xLabel);
+        painter->drawText(QRectF(center.x() - 48, y - 10, 40, 20),
+                          Qt::AlignRight | Qt::AlignVCenter, yLabel);
+    }
 
     QFont labelFont;
-    labelFont.setPixelSize(20);
+    labelFont.setPixelSize(qBound(14, qRound(r.width() * 0.03), 20));
     labelFont.setBold(true);
-
     painter->setFont(labelFont);
-    painter->setPen(QColor("#111111"));
-
-    painter->drawText(
-        QPointF(center.x() + axisX + 12,
-                center.y() + 8),
-        "X"
-        );
-
-    painter->drawText(
-        QPointF(center.x() - axisX - 42,
-                center.y() + 8),
-        "-X"
-        );
-
-    painter->drawText(
-        QPointF(center.x() + 10,
-                center.y() - axisY - 14),
-        "Y"
-        );
-
-    painter->drawText(
-        QPointF(center.x() + 10,
-                center.y() + axisY + 28),
-        "-Y"
-        );
-
-    const QVariantList traces = m_fieldHistory.isEmpty()
-                                    ? QVariantList{m_fieldData}
-                                    : m_fieldHistory;
-
-    if (traces.isEmpty() || traces.first().toList().isEmpty())
-        return;
+    painter->setPen(QColor("#1A4DB5"));
+    painter->drawText(QPointF(center.x() + axisX + 8, center.y() + 5), "X");
+    painter->drawText(QPointF(center.x() - axisX - 22, center.y() + 5), "-X");
+    painter->drawText(QPointF(center.x() + 6, center.y() - axisY - 8), "Y");
+    painter->drawText(QPointF(center.x() + 6, center.y() + axisY + 20), "-Y");
 
     // =====================================================
     // CURVE
@@ -205,8 +219,8 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
             const qreal xValue = pointMap["x"].toReal();
             const qreal yValue = pointMap["y"].toReal();
             const QPointF point(
-                center.x() + (xValue / 100.0) * axisX,
-                center.y() - (yValue / 100.0) * axisY);
+                center.x() + (xValue / xLimit) * axisX,
+                center.y() - (yValue / yLimit) * axisY);
 
             points.append(point);
             if (points.size() == 1)
@@ -232,14 +246,14 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
     for (int traceIndex = 0; traceIndex < tracePoints.size(); ++traceIndex) {
         const QVariantList trace = traces[traceIndex].toList();
         const QVector<QPointF> &points = tracePoints[traceIndex];
+        const int markerStride = qMax(1, (points.size() + 99) / 100);
 
         for (int i = 0; i < points.size(); ++i) {
             const QPointF p = points[i];
             const QVariantMap pointMap = trace[i].toMap();
 
-        // =============================================
-        // OPTIONAL LABELS
-        // =============================================
+            if (i % markerStride != 0)
+                continue;
 
             if (m_showPointLabels) {
 

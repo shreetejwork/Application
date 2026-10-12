@@ -100,41 +100,45 @@ Item {
     property real bodyFont:  13 * scale
     property real smallFont: 11 * scale
 
-    property var magneticFieldData: (SerialManager && SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0)
-                                    ? SerialManager.xyPlotData
-                                    : [
-                                          { x: -90, y: -55 },
-                                          { x: -70, y: -32 },
-                                          { x: -50, y:  -8 },
-                                          { x: -30, y:  18 },
-                                          { x: -10, y:  36 },
-                                          { x:  10, y:  44 },
-                                          { x:  30, y:  28 },
-                                          { x:  50, y:   6 },
-                                          { x:  70, y: -18 },
-                                          { x:  90, y: -42 }
-                                      ]
-
     property var xyLineHistory: []
 
     function addXYTrace(points) {
         if (!points || points.length === 0)
             return
 
-        var trace = []
+        var trace = xyLineHistory.length > 0
+                ? xyLineHistory[0].slice() : []
+        var receivedAt = Date.now()
         for (var i = 0; i < points.length; ++i) {
             trace.push({
-                           x: points[i].x,
-                           y: points[i].y
+                           x: Number(points[i].x),
+                           y: Number(points[i].y),
+                           timestamp: receivedAt
                        })
         }
 
-        var updatedHistory = xyLineHistory.slice()
-        updatedHistory.push(trace)
-        while (updatedHistory.length > 5)
-            updatedHistory.shift()
+        xyLineHistory = [trace]
+        pruneXYBuffer(receivedAt)
+    }
 
-        xyLineHistory = updatedHistory
+    function pruneXYBuffer(now) {
+        if (xyLineHistory.length === 0 || xyLineHistory[0].length === 0)
+            return
+
+        var trace = xyLineHistory[0]
+        var cutoff = now - 5000
+        var firstCurrentSample = 0
+        while (firstCurrentSample < trace.length
+               && trace[firstCurrentSample].timestamp < cutoff)
+            ++firstCurrentSample
+
+        if (firstCurrentSample > 0)
+            xyLineHistory = firstCurrentSample === trace.length
+                    ? [] : [trace.slice(firstCurrentSample)]
+    }
+
+    function clearPlotBuffer() {
+        xyLineHistory = []
     }
 
     Component.onDestruction: SerialManager.setPlotMode(false)
@@ -144,30 +148,21 @@ Item {
 
         function onXyPlotDataChanged() {
             if (SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0) {
-                root.magneticFieldData = SerialManager.xyPlotData.slice()
                 root.addXYTrace(SerialManager.xyPlotData)
-
-                var pairs = []
-                for (var i = 0; i < root.magneticFieldData.length; ++i)
-                    pairs.push("P" + (i + 1) + " raw=("
-                               + root.magneticFieldData[i].rawX + ","
-                               + root.magneticFieldData[i].rawY + ") plot=("
-                               + root.magneticFieldData[i].x + ","
-                               + root.magneticFieldData[i].y + ")")
-
-                console.log("XY QML array updated: points=" + root.magneticFieldData.length,
-                            pairs.join(" | "))
             }
-
-            console.log("XY QML data received: points=" + SerialManager.xyPlotData.length,
-                        "first=" + (SerialManager.xyPlotData.length > 0 ? SerialManager.xyPlotData[0].y : "none"),
-                        "last=" + (SerialManager.xyPlotData.length > 0 ? SerialManager.xyPlotData[SerialManager.xyPlotData.length - 1].y : "none"))
         }
     }
 
     Component.onCompleted: {
         SerialManager.setPlotMode(true)
-        console.log("XY QML initial data: points=" + root.magneticFieldData.length)
+        root.addXYTrace(SerialManager.xyPlotData)
+    }
+
+    Timer {
+        interval: 100
+        repeat: true
+        running: root.xyLineHistory.length > 0
+        onTriggered: root.pruneXYBuffer(Date.now())
     }
 
     Rectangle {
@@ -183,163 +178,156 @@ Item {
         anchors.bottomMargin: 10 * root.scale
         spacing: 8 * root.scale
 
-        // =========================================================
-        // TOP BAR
-        // =========================================================
-
-        RowLayout {
+        // ── MAIN ROW ──────────────────────────────────────────────────────────
+        Item {
+            id: mainRow
             Layout.fillWidth: true
+            Layout.fillHeight: true
 
-            Item {
-                Layout.fillWidth: true
-            }
+            ColumnLayout {
+                id: parameterColumn
+                width: 280 * root.scale
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                anchors.right: parent.right
+                spacing: 10 * root.scale
 
-            Button {
-                id: savePdfButton
+                RowLayout {
+                    Layout.fillWidth: true
+                    spacing: 8 * root.scale
 
-                text: "Save PDF"
-
-                Layout.preferredWidth: 140 * root.scale
-                Layout.preferredHeight: 40 * root.scale
-
-                onClicked: {
-                    var path = exportPdf()
-
-                    if (path !== "") {
-                        if (globalTopBar && globalTopBar.showNotification) {
-                            globalTopBar.showNotification("✓ PDF saved successfully")
+                    WaveformControlButton {
+                        id: savePdfButton
+                        text: "Save PDF"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 40 * root.scale
+                        labelPixelSize: plotTypography.body
+                        accent: "#1A4DB5"
+                        onClicked: {
+                            var path = exportPdf()
+                            if (path !== "" && globalTopBar
+                                    && globalTopBar.showNotification) {
+                                globalTopBar.showNotification(
+                                            "✓ PDF saved successfully")
+                            }
                         }
+                    }
+
+                    WaveformControlButton {
+                        text: "Clear Buffer"
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 40 * root.scale
+                        labelPixelSize: plotTypography.body
+                        accent: "#B42318"
+                        enabled: root.xyLineHistory.length > 0
+                        onClicked: root.clearPlotBuffer()
                     }
                 }
 
-                contentItem: Text {
-                    text: savePdfButton.text
-                    font.pixelSize: plotTypography.body
-                    color: "#FFFFFF"
-                    horizontalAlignment: Text.AlignHCenter
-                    verticalAlignment: Text.AlignVCenter
-                }
+                // ── PARAMETERS ────────────────────────────────────────────────
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
 
-                background: Rectangle {
-                    radius: 10 * root.scale
-                    color: savePdfButton.pressed ? "#153F94" : "#1A4DB5"
+                    radius:       16 * root.scale
+                    color:        "#FFFFFF"
                     border.width: 1
                     border.color: "#DCE5F5"
-                }
-            }
-        }
 
-        // ── MAIN ROW ──────────────────────────────────────────────────────────
-        RowLayout {
-            Layout.fillWidth:  true
-            Layout.fillHeight: true
-            spacing: 10 * root.scale
+                    ColumnLayout {
+                        anchors.fill:    parent
+                        anchors.margins: 12 * root.scale
+                        spacing: 10 * root.scale
 
-            // ── LEFT PANEL ────────────────────────────────────────────────────
-            Rectangle {
-                Layout.preferredWidth: 180 * root.scale
-                Layout.fillHeight:     true
+                        // ── Product Phase card ─────────────────────────────────
+                        Rectangle {
+                            Layout.fillWidth:  true
+                            Layout.fillHeight: true
 
-                radius:       16 * root.scale
-                color:        "#FFFFFF"
-                border.width: 1
-                border.color: "#DCE5F5"
+                            radius:       12 * root.scale
+                            color:        "#F7F9FD"
+                            border.width: 1
+                            border.color: "#DCE5F5"
 
-                ColumnLayout {
-                    anchors.fill:    parent
-                    anchors.margins: 12 * root.scale
-                    spacing: 10 * root.scale
+                            ColumnLayout {
+                                anchors.fill:    parent
+                                anchors.margins: 14 * root.scale
+                                spacing: 8 * root.scale
 
-                    // ── Product Phase card ─────────────────────────────────────
-                    Rectangle {
-                        Layout.fillWidth:  true
-                        Layout.fillHeight: true
+                                Text {
+                                    text: "Product\nPhase"
+                                    font.pixelSize: plotTypography.subHeading
+                                    color: "#1A4DB5"
+                                    elide: Text.ElideRight
+                                    Layout.fillWidth: true
+                                }
 
-                        radius:       12 * root.scale
-                        color:        "#F7F9FD"
-                        border.width: 1
-                        border.color: "#DCE5F5"
-
-                        ColumnLayout {
-                            anchors.fill:    parent
-                            anchors.margins: 14 * root.scale
-                            spacing: 8 * root.scale
-
-                            Text {
-                                text: "Product\nPhase"
-                                font.pixelSize: plotTypography.subHeading
-                                color: "#1A4DB5"
-                                elide: Text.ElideRight
-                                Layout.fillWidth: true
-                            }
-
-                            Text {
-                                id: productPhaseText
-                                text:                     Number(
-                                                              SerialManager.productPhase
-                                                              ).toFixed(1)
-                                font.pixelSize: plotTypography.body
-                                color: "#1A4DB5"
+                                Text {
+                                    id: productPhaseText
+                                    text: Number(SerialManager.productPhase).toFixed(1)
+                                    font.pixelSize: plotTypography.body
+                                    color: "#1A4DB5"
+                                }
                             }
                         }
-                    }
 
-                    // ── Signal card ────────────────────────────────────────────
-                    Rectangle {
-                        Layout.fillWidth:  true
-                        Layout.fillHeight: true
+                        // ── Signal card ────────────────────────────────────────
+                        Rectangle {
+                            Layout.fillWidth:  true
+                            Layout.fillHeight: true
 
-                        radius:       12 * root.scale
-                        color:        "#F7F9FD"
-                        border.width: 1
-                        border.color: "#DCE5F5"
+                            radius:       12 * root.scale
+                            color:        "#F7F9FD"
+                            border.width: 1
+                            border.color: "#DCE5F5"
 
-                        ColumnLayout {
-                            anchors.fill:    parent
-                            anchors.margins: 14 * root.scale
-                            spacing: 8 * root.scale
+                            ColumnLayout {
+                                anchors.fill:    parent
+                                anchors.margins: 14 * root.scale
+                                spacing: 8 * root.scale
 
-                            Text {
-                                text: "Signal"
-                                font.pixelSize: plotTypography.subHeading
-                                color: "#1A4DB5"
-                            }
+                                Text {
+                                    text: "Signal"
+                                    font.pixelSize: plotTypography.subHeading
+                                    color: "#1A4DB5"
+                                }
 
-                            Text {
-                                id: signalText
-                                text: SerialManager.signal
-                                font.pixelSize: plotTypography.body
-                                color: "#0F8A60"
+                                Text {
+                                    id: signalText
+                                    text: SerialManager.signal
+                                    font.pixelSize: plotTypography.body
+                                    color: "#0F8A60"
+                                }
                             }
                         }
-                    }
 
-                    // ── Amplitude card ─────────────────────────────────────────
-                    Rectangle {
-                        Layout.fillWidth:  true
-                        Layout.fillHeight: true
+                        // ── Amplitude card ─────────────────────────────────────
+                        Rectangle {
+                            Layout.fillWidth:  true
+                            Layout.fillHeight: true
 
-                        radius:       12 * root.scale
-                        color:        "#F7F9FD"
-                        border.width: 1
-                        border.color: "#DCE5F5"
+                            radius:       12 * root.scale
+                            color:        "#F7F9FD"
+                            border.width: 1
+                            border.color: "#DCE5F5"
 
-                        ColumnLayout {
-                            anchors.fill:    parent
-                            anchors.margins: 14 * root.scale
-                            spacing: 8 * root.scale
+                            ColumnLayout {
+                                anchors.fill:    parent
+                                anchors.margins: 14 * root.scale
+                                spacing: 8 * root.scale
 
-                            Text {
-                                text: "Amplitude"
-                                font.pixelSize: plotTypography.subHeading
-                                color: "#1A4DB5"
-                            }
+                                Text {
+                                    text: "Amplitude"
+                                    font.pixelSize: plotTypography.subHeading
+                                    color: "#1A4DB5"
+                                }
 
-                            Text {
-                                id: amplitudeText
-                                text: SerialManager.amplitude
-                                font.pixelSize: plotTypography.body
-                                color: "#D64545"
+                                Text {
+                                    id: amplitudeText
+                                    text: SerialManager.amplitude
+                                    font.pixelSize: plotTypography.body
+                                    color: "#D64545"
+                                }
                             }
                         }
                     }
@@ -347,28 +335,37 @@ Item {
             }
 
             // ── GRAPH CARD ────────────────────────────────────────────────────
-            Rectangle {
+            Item {
+                id: plotArea
+                anchors.left: parent.left
+                anchors.right: parameterColumn.left
+                anchors.rightMargin: 10 * root.scale
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
 
-                id: graphCard
+                Rectangle {
+                    id: graphCard
 
-                Layout.fillWidth:  true
-                Layout.fillHeight: true
+                    width: Math.max(0, Math.min(plotArea.width, plotArea.height))
+                    height: width
+                    anchors.centerIn: parent
 
-                radius:       16 * root.scale
-                color:        "#FFFFFF"
-                border.width: 1
-                border.color: "#DCE5F5"
+                    radius:       16 * root.scale
+                    color:        "#FFFFFF"
+                    border.width: 1
+                    border.color: "#DCE5F5"
 
-                MagneticFieldPlotItem {
-                    id: plot
-                    anchors.fill:         parent
-                    anchors.leftMargin:   8 * root.scale
-                    anchors.rightMargin:  8 * root.scale
-                    anchors.topMargin:    8 * root.scale
-                    anchors.bottomMargin: 8 * root.scale
+                    MagneticFieldPlotItem {
+                        id: plot
+                        anchors.fill:         parent
+                        anchors.leftMargin:   8 * root.scale
+                        anchors.rightMargin:  8 * root.scale
+                        anchors.topMargin:    8 * root.scale
+                        anchors.bottomMargin: 8 * root.scale
 
-                    fieldHistory:    root.xyLineHistory
-                    showPointLabels: false
+                        fieldHistory:    root.xyLineHistory
+                        showPointLabels: false
+                    }
                 }
             }
         }
