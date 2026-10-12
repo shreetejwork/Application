@@ -63,7 +63,7 @@ Item {
             Text {
                 text: "Waveform"
                 color: "#1A4DB5"
-                font.pixelSize: 30 * root.scale
+                font.pixelSize: Math.max(24, 30 * root.scale)
             }
 
             Item { Layout.fillWidth: true }
@@ -75,14 +75,14 @@ Item {
                          : "Waiting for serial data...")
                       : "Capture paused"
                 color: "#64748B"
-                font.pixelSize: 12 * root.scale
+                font.pixelSize: Math.max(12, 14 * root.scale)
             }
 
             WaveformControlButton {
                 text: "←"
                 Layout.preferredWidth: 42 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: 20 * root.scale
+                labelPixelSize: Math.max(18, 20 * root.scale)
                 accent: "#1A4DB5"
                 enabled: waveformChart.windowStart > 0
                 onClicked: waveformChart.moveWindow(-Math.max(
@@ -94,7 +94,7 @@ Item {
                 text: "→"
                 Layout.preferredWidth: 42 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: 20 * root.scale
+                labelPixelSize: Math.max(18, 20 * root.scale)
                 accent: "#1A4DB5"
                 enabled: waveformChart.windowStart + waveformChart.visibleSamples
                          < waveformChart.samples.length
@@ -107,7 +107,7 @@ Item {
                 text: "Zoom −"
                 Layout.preferredWidth: 68 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: 13 * root.scale
+                labelPixelSize: Math.max(12, 14 * root.scale)
                 accent: "#1A4DB5"
                 enabled: waveformChart.visibleSamples < waveformChart.maxVisibleSamples
                 onClicked: waveformChart.zoomOut()
@@ -117,7 +117,7 @@ Item {
                 text: "Zoom +"
                 Layout.preferredWidth: 68 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: 13 * root.scale
+                labelPixelSize: Math.max(12, 14 * root.scale)
                 accent: "#1A4DB5"
                 enabled: waveformChart.visibleSamples > waveformChart.minVisibleSamples
                 onClicked: waveformChart.zoomIn()
@@ -127,7 +127,7 @@ Item {
                 text: "Reset"
                 Layout.preferredWidth: 60 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: 13 * root.scale
+                labelPixelSize: Math.max(12, 14 * root.scale)
                 accent: "#1A4DB5"
                 onClicked: waveformChart.resetView()
             }
@@ -136,7 +136,7 @@ Item {
                 text: "X"
                 Layout.preferredWidth: 44 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: 14 * root.scale
+                labelPixelSize: Math.max(13, 15 * root.scale)
                 accent: "#1A4DB5"
                 selected: root.displayMode === "X"
                 onClicked: root.displayMode = "X"
@@ -146,7 +146,7 @@ Item {
                 text: "Y"
                 Layout.preferredWidth: 44 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: 14 * root.scale
+                labelPixelSize: Math.max(13, 15 * root.scale)
                 accent: "#D64545"
                 selected: root.displayMode === "Y"
                 onClicked: root.displayMode = "Y"
@@ -156,7 +156,7 @@ Item {
                 text: "Both"
                 Layout.preferredWidth: 56 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: 13 * root.scale
+                labelPixelSize: Math.max(12, 14 * root.scale)
                 accent: "#334155"
                 selected: root.displayMode === "Both"
                 onClicked: root.displayMode = "Both"
@@ -167,7 +167,7 @@ Item {
                 visible: !root.captureEnabled
                 Layout.preferredWidth: 68 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: 13 * root.scale
+                labelPixelSize: Math.max(12, 14 * root.scale)
                 accent: "#16804A"
                 selected: waveformChart.cursorEnabled
                 enabled: root.samples.length > 0
@@ -183,7 +183,7 @@ Item {
                       ? "Stop capture" : "Start capture"
                 Layout.preferredWidth: 112 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: 13 * root.scale
+                labelPixelSize: Math.max(12, 14 * root.scale)
                 accent: root.captureEnabled
                         ? "#B42318" : "#16804A"
                 onClicked: {

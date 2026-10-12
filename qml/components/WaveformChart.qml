@@ -100,11 +100,10 @@ Rectangle {
         return windowStart + Math.round((x - left) * (count - 1) / plotWidth)
     }
 
-    function pointDescription(index) {
+    function pointDescription(label, index) {
         var point = samples[index]
-        return "#" + (index + 1)
-                + "  X: " + Number(point.x).toFixed(2)
-                + "  Y: " + Number(point.y).toFixed(2)
+        return label + " (" + Number(point.x).toFixed(2)
+                + ", " + Number(point.y).toFixed(2) + ")"
     }
 
     function sampleTimeMilliseconds(index) {
@@ -173,7 +172,7 @@ Rectangle {
                 var end = chartCard.windowStart + count
                 var axisLimit = chartCard.currentAxisLimit()
 
-                ctx.font = Math.max(10, 12 * chartCard.scale) + "px sans-serif"
+                ctx.font = Math.max(12, 14 * chartCard.scale) + "px sans-serif"
                 ctx.strokeStyle = "#E6ECF5"
                 ctx.lineWidth = 1
 
@@ -217,7 +216,7 @@ Rectangle {
                            centerY + 4 * chartCard.scale)
                 ctx.stroke()
 
-                ctx.font = "bold " + Math.max(10, 13 * chartCard.scale) + "px sans-serif"
+                ctx.font = "bold " + Math.max(12, 14 * chartCard.scale) + "px sans-serif"
                 ctx.fillStyle = "#1A4DB5"
                 ctx.textAlign = "center"
                 ctx.textBaseline = "bottom"
@@ -229,7 +228,7 @@ Rectangle {
                              centerY - 5 * chartCard.scale)
 
                 if (count === 0) {
-                    ctx.font = Math.max(12, 14 * chartCard.scale) + "px sans-serif"
+                    ctx.font = Math.max(13, 15 * chartCard.scale) + "px sans-serif"
                     ctx.fillStyle = "#94A3B8"
                     ctx.textAlign = "center"
                     ctx.textBaseline = "middle"
@@ -398,9 +397,9 @@ Rectangle {
         anchors.top: parent.top
         anchors.right: parent.right
         anchors.margins: 14 * chartCard.scale
-        width: 260 * chartCard.scale
+        width: 340 * chartCard.scale
         height: chartCard.secondCursorIndex >= 0
-                ? 96 * chartCard.scale : 56 * chartCard.scale
+                ? 118 * chartCard.scale : 60 * chartCard.scale
         radius: 5 * chartCard.scale
         color: "#FFFFFF"
         border.width: 1
@@ -408,20 +407,22 @@ Rectangle {
 
         Text {
             anchors.fill: parent
-            anchors.margins: 6 * chartCard.scale
+            anchors.margins: 10 * chartCard.scale
             color: "#334155"
-            font.pixelSize: 11 * chartCard.scale
+            font.pixelSize: Math.max(13, 15 * chartCard.scale)
             verticalAlignment: Text.AlignVCenter
-            text: chartCard.pointDescription(chartCard.firstCursorIndex)
-                  + "\nt: "
+            text: chartCard.pointDescription("P1", chartCard.firstCursorIndex)
+                  + "    t: "
                   + chartCard.formatSampleTime(
                       chartCard.sampleTimeMilliseconds(chartCard.firstCursorIndex))
                   + (chartCard.secondCursorIndex >= 0
-                     ? "\n" + chartCard.pointDescription(chartCard.secondCursorIndex)
-                       + "\nt: "
+                     ? "\n" + chartCard.pointDescription(
+                           "P2", chartCard.secondCursorIndex)
+                       + "    t: "
                        + chartCard.formatSampleTime(
                            chartCard.sampleTimeMilliseconds(chartCard.secondCursorIndex))
-                       + "\nΔt: "
+                       + "\nP1 - P2 Data"
+                       + "\nTime Difference: "
                        + chartCard.formatSampleTime(
                            Math.abs(chartCard.secondCursorIndex
                                     - chartCard.firstCursorIndex)
