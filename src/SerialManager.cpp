@@ -225,9 +225,9 @@ void SerialManager::setHPF(int value)
 
 void SerialManager::setFilterOption(int value)
 {
-    if (value < 3 || value > 101 || value % 2 == 0)
+    if (value < 3 || value > 151 || value % 2 == 0)
     {
-        qWarning() << "Filter Option must be an odd value from 3 to 101.";
+        qWarning() << "Filter Taps must be an odd value from 3 to 151.";
         return;
     }
 

@@ -529,7 +529,7 @@ void DatabaseManager::createTables()
             ADD COLUMN filterOption INTEGER DEFAULT 3
         )"))
         {
-            qWarning() << "Failed to add Filter Option setting:"
+            qWarning() << "Failed to add Filter Taps setting:"
                        << alterQuery.lastError().text();
         }
     }
@@ -2015,8 +2015,8 @@ bool DatabaseManager::saveS1Settings(
     double digitalGain,
     double analogGain)
 {
-    if (filterOption < 3 || filterOption > 101 || filterOption % 2 == 0) {
-        qWarning() << "Filter Option must be an odd value from 3 to 101.";
+    if (filterOption < 3 || filterOption > 151 || filterOption % 2 == 0) {
+        qWarning() << "Filter Taps must be an odd value from 3 to 151.";
         return false;
     }
 

@@ -1435,7 +1435,7 @@ Item {
                         "Auto Logout", "User Added", "User PW Changed", "User Deleted",
                         "User Logged In", "User Logged Out",
                         "LCF Changed", "HCF Changed", "Operate Delay Changed",
-                        "Filter Option Changed", "Hold Delay Changed", "Relay Delay Changed",
+                        "Filter Taps Changed", "Hold Delay Changed", "Relay Delay Changed",
                         "Digital Gain Changed",
                         "Analog Gain Changed", "Time Changed", "Date Changed",
                         "Validation Timer Set", "No Validation Timer", "Validation Started",
