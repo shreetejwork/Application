@@ -86,7 +86,7 @@ Item {
                 enabled: waveformChart.windowStart > 0
                 onClicked: waveformChart.moveWindow(-Math.max(
                                                           1,
-                                                          Math.floor(waveformChart.visibleSamples * 0.8)))
+                                                          Math.floor(waveformChart.visibleSamples * 0.1)))
             }
 
             WaveformControlButton {
@@ -98,7 +98,7 @@ Item {
                          < waveformChart.samples.length
                 onClicked: waveformChart.moveWindow(Math.max(
                                                         1,
-                                                        Math.floor(waveformChart.visibleSamples * 0.8)))
+                                                        Math.floor(waveformChart.visibleSamples * 0.1)))
             }
 
             WaveformControlButton {

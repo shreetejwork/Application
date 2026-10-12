@@ -31,12 +31,33 @@ Rectangle {
     }
 
     function zoomIn() {
-        var center = windowStart + visibleSamples / 2
-        visibleSamples = Math.max(minVisibleSamples,
-                                  Math.floor(visibleSamples / 1.5))
+        var count = Math.min(visibleSamples,
+                             Math.max(0, samples.length - windowStart))
+        if (count === 0)
+            return
+
+        var keys = displayMode === "Both"
+                ? ["x", "y"] : [displayMode.toLowerCase()]
+        var peakIndex = windowStart
+        var peakMagnitude = -1
+        for (var i = windowStart; i < windowStart + count; ++i) {
+            for (var keyIndex = 0; keyIndex < keys.length; ++keyIndex) {
+                var magnitude = Math.abs(Number(samples[i][keys[keyIndex]]))
+                if (magnitude > peakMagnitude) {
+                    peakMagnitude = magnitude
+                    peakIndex = i
+                }
+            }
+        }
+
+        var newVisibleSamples = Math.max(minVisibleSamples,
+                                         Math.floor(visibleSamples / 1.5))
+        if (newVisibleSamples === visibleSamples)
+            return
+        visibleSamples = newVisibleSamples
         windowStart = Math.max(0,
                                Math.min(samples.length - visibleSamples,
-                                        Math.round(center - visibleSamples / 2)))
+                                        Math.round(peakIndex - visibleSamples / 2)))
     }
 
     function zoomOut() {
