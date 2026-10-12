@@ -11,6 +11,10 @@ Rectangle {
     property color traceColor: "#1A4DB5"
     property string displayMode: "Both"
     property var samples: []
+    property bool cursorEnabled: false
+    property int hoverSampleIndex: -1
+    property int firstCursorIndex: -1
+    property int secondCursorIndex: -1
 
     property int visibleSamples: 10000
     property int windowStart: Math.max(0, samples.length - visibleSamples)
@@ -47,6 +51,50 @@ Rectangle {
     function resetView() {
         visibleSamples = maxVisibleSamples
         windowStart = Math.max(0, samples.length - visibleSamples)
+    }
+
+    function clearCursorSelection() {
+        hoverSampleIndex = -1
+        firstCursorIndex = -1
+        secondCursorIndex = -1
+    }
+
+    function sampleIndexAt(x, y) {
+        var left = 76 * scale
+        var right = 26 * scale
+        var top = 18 * scale
+        var bottom = 8 * scale
+        var plotWidth = Math.max(1, plot.width - left - right)
+        var plotHeight = Math.max(1, plot.height - top - bottom)
+        var count = Math.min(visibleSamples,
+                             Math.max(0, samples.length - windowStart))
+
+        if (count === 0 || x < left || x > left + plotWidth
+                || y < top || y > top + plotHeight)
+            return -1
+
+        if (count === 1)
+            return windowStart
+
+        return windowStart + Math.round((x - left) * (count - 1) / plotWidth)
+    }
+
+    function pointDescription(index) {
+        var point = samples[index]
+        return "#" + (index + 1)
+                + "  X: " + Number(point.x).toFixed(2)
+                + "  Y: " + Number(point.y).toFixed(2)
+    }
+
+    function sampleTimeMilliseconds(index) {
+        if (samples.length <= 1)
+            return 0
+        return index * 10000 / (samples.length - 1)
+    }
+
+    function formatSampleTime(milliseconds) {
+        return (milliseconds / 1000).toFixed(3) + " s ("
+                + milliseconds.toFixed(0) + " ms)"
     }
 
     function currentAxisLimit() {
@@ -206,10 +254,136 @@ Rectangle {
                     ctx.stroke()
                 }
 
+                var cursorIndices = []
+                var cursorColors = []
+                if (chartCard.cursorEnabled && chartCard.hoverSampleIndex >= 0) {
+                    cursorIndices.push(chartCard.hoverSampleIndex)
+                    cursorColors.push("#F59E0B")
+                }
+                if (chartCard.firstCursorIndex >= 0) {
+                    cursorIndices.push(chartCard.firstCursorIndex)
+                    cursorColors.push("#16804A")
+                }
+                if (chartCard.secondCursorIndex >= 0) {
+                    cursorIndices.push(chartCard.secondCursorIndex)
+                    cursorColors.push("#B42318")
+                }
+
+                for (var cursor = 0; cursor < cursorIndices.length; ++cursor) {
+                    var cursorIndex = cursorIndices[cursor]
+                    if (cursorIndex < chartCard.windowStart || cursorIndex >= end)
+                        continue
+
+                    var cursorX = left + (count === 1
+                                          ? plotWidth
+                                          : plotWidth * (cursorIndex - chartCard.windowStart)
+                                            / (count - 1))
+                    var dashStep = Math.max(1, 10 * chartCard.scale)
+                    var dashLength = Math.max(1, 5 * chartCard.scale)
+                    ctx.strokeStyle = cursorColors[cursor]
+                    ctx.lineWidth = Math.max(1, chartCard.scale)
+                    for (var dashY = top; dashY < top + plotHeight;
+                         dashY += dashStep) {
+                        ctx.beginPath()
+                        ctx.moveTo(cursorX, dashY)
+                        ctx.lineTo(cursorX,
+                                   Math.min(top + plotHeight,
+                                            dashY + dashLength))
+                        ctx.stroke()
+                    }
+
+                    if (cursorIndex === chartCard.firstCursorIndex
+                            || cursorIndex === chartCard.secondCursorIndex) {
+                        var selectedKeys = ["x", "y"]
+                        var selectedColors = ["#1A4DB5", "#D64545"]
+                        for (var keyIndex = 0; keyIndex < selectedKeys.length; ++keyIndex) {
+                            var selectedValue = Math.max(
+                                        -axisLimit,
+                                        Math.min(axisLimit,
+                                                 Number(samples[cursorIndex][selectedKeys[keyIndex]])))
+                            var selectedY = top + (axisLimit - selectedValue)
+                                       * plotHeight / (2 * axisLimit)
+                            ctx.beginPath()
+                            ctx.arc(cursorX, selectedY,
+                                    Math.max(2, 4 * chartCard.scale),
+                                    0, 2 * Math.PI)
+                            ctx.fillStyle = "#FFFFFF"
+                            ctx.fill()
+                            ctx.lineWidth = 2 * chartCard.scale
+                            ctx.strokeStyle = selectedColors[keyIndex]
+                            ctx.stroke()
+                        }
+                    }
+                }
+
                 ctx.restore()
         }
 
         Component.onCompleted: requestPaint()
+    }
+
+    MouseArea {
+        anchors.fill: plot
+        enabled: chartCard.cursorEnabled && chartCard.samples.length > 0
+        hoverEnabled: true
+        acceptedButtons: Qt.LeftButton
+
+        onPositionChanged: function(mouse) {
+            chartCard.hoverSampleIndex = chartCard.sampleIndexAt(mouse.x, mouse.y)
+        }
+
+        onExited: chartCard.hoverSampleIndex = -1
+
+        onClicked: function(mouse) {
+            var index = chartCard.sampleIndexAt(mouse.x, mouse.y)
+            if (index < 0)
+                return
+
+            if (chartCard.firstCursorIndex < 0 || chartCard.secondCursorIndex >= 0) {
+                chartCard.firstCursorIndex = index
+                chartCard.secondCursorIndex = -1
+            } else {
+                chartCard.secondCursorIndex = index
+            }
+            chartCard.hoverSampleIndex = index
+        }
+    }
+
+    Rectangle {
+        visible: chartCard.cursorEnabled && chartCard.firstCursorIndex >= 0
+        anchors.top: parent.top
+        anchors.right: parent.right
+        anchors.margins: 14 * chartCard.scale
+        width: 260 * chartCard.scale
+        height: chartCard.secondCursorIndex >= 0
+                ? 96 * chartCard.scale : 56 * chartCard.scale
+        radius: 5 * chartCard.scale
+        color: "#FFFFFF"
+        border.width: 1
+        border.color: "#DCE5F5"
+
+        Text {
+            anchors.fill: parent
+            anchors.margins: 6 * chartCard.scale
+            color: "#334155"
+            font.pixelSize: 11 * chartCard.scale
+            verticalAlignment: Text.AlignVCenter
+            text: chartCard.pointDescription(chartCard.firstCursorIndex)
+                  + "\nt: "
+                  + chartCard.formatSampleTime(
+                      chartCard.sampleTimeMilliseconds(chartCard.firstCursorIndex))
+                  + (chartCard.secondCursorIndex >= 0
+                     ? "\n" + chartCard.pointDescription(chartCard.secondCursorIndex)
+                       + "\nt: "
+                       + chartCard.formatSampleTime(
+                           chartCard.sampleTimeMilliseconds(chartCard.secondCursorIndex))
+                       + "\nΔt: "
+                       + chartCard.formatSampleTime(
+                           Math.abs(chartCard.secondCursorIndex
+                                    - chartCard.firstCursorIndex)
+                           * 10000 / Math.max(1, chartCard.samples.length - 1))
+                     : "")
+        }
     }
 
     onSamplesChanged: {
@@ -225,4 +399,8 @@ Rectangle {
     onVisibleSamplesChanged: plot.requestPaint()
     onValueKeyChanged: plot.requestPaint()
     onDisplayModeChanged: plot.requestPaint()
+    onCursorEnabledChanged: plot.requestPaint()
+    onHoverSampleIndexChanged: plot.requestPaint()
+    onFirstCursorIndexChanged: plot.requestPaint()
+    onSecondCursorIndexChanged: plot.requestPaint()
 }

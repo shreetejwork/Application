@@ -155,13 +155,34 @@ Item {
             }
 
             WaveformControlButton {
+                text: "Cursor"
+                visible: !root.captureEnabled
+                Layout.preferredWidth: 60 * root.scale
+                Layout.preferredHeight: 30 * root.scale
+                accent: "#16804A"
+                selected: waveformChart.cursorEnabled
+                enabled: root.samples.length > 0
+                onClicked: {
+                    waveformChart.cursorEnabled = !waveformChart.cursorEnabled
+                    if (!waveformChart.cursorEnabled)
+                        waveformChart.clearCursorSelection()
+                }
+            }
+
+            WaveformControlButton {
                 text: root.captureEnabled
                       ? "Stop capture" : "Start capture"
                 Layout.preferredWidth: 112 * root.scale
                 accent: root.captureEnabled
                         ? "#B42318" : "#16804A"
                 onClicked: {
-                    root.captureEnabled = !root.captureEnabled
+                    if (root.captureEnabled) {
+                        root.captureEnabled = false
+                    } else {
+                        waveformChart.cursorEnabled = false
+                        waveformChart.clearCursorSelection()
+                        root.captureEnabled = true
+                    }
                 }
             }
         }
