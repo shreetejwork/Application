@@ -18,6 +18,8 @@ double SystemDiagnosis::memTotal()         const { return m_memTotal;  }
 double SystemDiagnosis::temperatureValue() const { return m_tempValue; }
 double SystemDiagnosis::inputVoltageValue() const { return m_inputVoltageValue; }
 bool SystemDiagnosis::undervoltageDetected() const { return m_undervoltageDetected; }
+bool SystemDiagnosis::undervoltageOccurred() const { return m_undervoltageOccurred; }
+bool SystemDiagnosis::voltageStatusAvailable() const { return m_voltageStatusAvailable; }
 
 // ===== HELPER: run a bash command and return trimmed stdout =====
 static QString runCommand(const QString &cmd)
@@ -105,7 +107,9 @@ void SystemDiagnosis::update()
     const uint throttleFlags = throttleMatch.hasMatch()
                                    ? throttleMatch.captured(1).toUInt(&throttleOk, 16)
                                    : 0;
+    m_voltageStatusAvailable = throttleOk;
     m_undervoltageDetected = throttleOk && (throttleFlags & 0x1);
+    m_undervoltageOccurred = throttleOk && (throttleFlags & 0x10000);
 
     // =========================================================
     // TEMPERATURE
@@ -182,6 +186,8 @@ void SystemDiagnosis::update()
     m_inputVoltageValue = -1.0;
     m_inputVoltage = "Not available";
     m_undervoltageDetected = false;
+    m_undervoltageOccurred = false;
+    m_voltageStatusAvailable = false;
 
 #endif
 

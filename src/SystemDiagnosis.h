@@ -19,6 +19,8 @@ class SystemDiagnosis : public QObject
     Q_PROPERTY(double  temperatureValue READ temperatureValue NOTIFY dataChanged)
     Q_PROPERTY(double  inputVoltageValue READ inputVoltageValue NOTIFY dataChanged)
     Q_PROPERTY(bool    undervoltageDetected READ undervoltageDetected NOTIFY dataChanged)
+    Q_PROPERTY(bool    undervoltageOccurred READ undervoltageOccurred NOTIFY dataChanged)
+    Q_PROPERTY(bool    voltageStatusAvailable READ voltageStatusAvailable NOTIFY dataChanged)
 
 public:
     explicit SystemDiagnosis(QObject *parent = nullptr);
@@ -35,6 +37,8 @@ public:
     double  temperatureValue() const;
     double  inputVoltageValue() const;
     bool    undervoltageDetected() const;
+    bool    undervoltageOccurred() const;
+    bool    voltageStatusAvailable() const;
 
     Q_INVOKABLE void update();
 
@@ -56,6 +60,8 @@ private:
     double  m_tempValue = 0.0;
     double  m_inputVoltageValue = -1.0;
     bool    m_undervoltageDetected = false;
+    bool    m_undervoltageOccurred = false;
+    bool    m_voltageStatusAvailable = false;
 };
 
 #endif

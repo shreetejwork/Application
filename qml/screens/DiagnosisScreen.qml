@@ -309,27 +309,33 @@ Item {
 
                         property real voltage: SystemDiag.inputVoltageValue
                         property bool undervoltage: SystemDiag.undervoltageDetected
+                        property bool undervoltageOccurred: SystemDiag.undervoltageOccurred
+                        property bool voltageStatusAvailable: SystemDiag.voltageStatusAvailable
 
                         progress: -1
 
                         status: isLoading ? "Checking..."
-                              : voltage < 0 ? (undervoltage ? "Critical" : "Unknown")
-                              : undervoltage || voltage < 4.63 || voltage > 5.25 ? "Critical"
-                              : voltage < 4.75 ? "Warning"
-                              : "OK"
+                              : undervoltage || (voltage >= 0 && (voltage < 4.63 || voltage > 5.25)) ? "Critical"
+                              : (voltage >= 0 && voltage < 4.75) || undervoltageOccurred ? "Warning"
+                              : voltage >= 0 || voltageStatusAvailable ? "OK"
+                              : "Unknown"
 
                         detail: isLoading ? "Checking..."
-                              : voltage < 0 && undervoltage ? "Low voltage detected"
-                              : SystemDiag.inputVoltage
+                              : voltage >= 0 ? SystemDiag.inputVoltage
+                              : !voltageStatusAvailable ? "Status unavailable"
+                              : undervoltage ? "Low voltage detected"
+                              : undervoltageOccurred ? "Low voltage recorded"
+                              : "No low voltage detected"
 
                         subtitle: isLoading ? ""
-                                : voltage < 0 && undervoltage ? "Raspberry Pi reports below 4.63 V"
-                                : voltage < 0 ? "Input-voltage sensor unavailable"
-                                : undervoltage ? "Raspberry Pi reports undervoltage"
-                                : voltage < 4.63 ? "Critical: below 4.63 V"
-                                : voltage < 4.75 ? "Low: below 4.75 V"
-                                : voltage > 5.25 ? "High: above 5.25 V"
-                                : "Input voltage within range (4.75-5.25 V)"
+                                : undervoltage ? "Raspberry Pi firmware reports undervoltage now"
+                                : voltage >= 0 && voltage < 4.63 ? "Critical: below 4.63 V"
+                                : voltage >= 0 && voltage < 4.75 ? "Low: below 4.75 V"
+                                : voltage >= 0 && voltage > 5.25 ? "High: above 5.25 V"
+                                : undervoltageOccurred ? "Raspberry Pi recorded undervoltage since boot"
+                                : !voltageStatusAvailable ? "Raspberry Pi firmware status unavailable"
+                                : voltage >= 0 ? "Input voltage within range (4.75-5.25 V)"
+                                : "Raspberry Pi firmware reports no undervoltage"
 
                         cardColor: status === "Critical" ? "#FFF5F5"
                                  : status === "Warning"  ? "#FFFBF0"
