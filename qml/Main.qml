@@ -592,6 +592,7 @@ ApplicationWindow {
 
                         SerialManager.setLPF(s1Settings.lpf)
                         SerialManager.setHPF(Math.round(s1Settings.hpf))
+                        SerialManager.setHPF(Math.round(s1Settings.hpf))
                     }
                 )
             }
@@ -797,6 +798,16 @@ ApplicationWindow {
                         SerialManager.setFilterOption(
                             Number(s1Settings.filterOption)
                         )
+                    }
+                )
+            }
+
+            if (s1Settings.lpf !== undefined
+                    && s1Settings.hpf !== undefined
+                    && Number(s1Settings.lpf) < Number(s1Settings.hpf)) {
+                parameterQueue.push(
+                    function() {
+                        SerialManager.setHPF(Math.round(s1Settings.hpf))
                     }
                 )
             }
