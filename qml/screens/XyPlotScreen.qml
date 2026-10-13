@@ -101,40 +101,42 @@ Item {
     property real smallFont: 11 * scale
 
     property var xyLineHistory: []
+    property var latestXYTrace: []
+    property int lastObservedRejectCount: 0
+    readonly property var rejectedTraceColors: [
+        "#1A4DB5", "#D64545", "#0F8A60", "#8B5CF6", "#E58A00"
+    ]
 
-    function addXYTrace(points) {
+    function updateLatestXYTrace(points) {
         if (!points || points.length === 0)
             return
 
-        var trace = xyLineHistory.length > 0
-                ? xyLineHistory[0].slice() : []
-        var receivedAt = Date.now()
+        var trace = []
         for (var i = 0; i < points.length; ++i) {
+            var rawX = points[i].rawX
+            var rawY = points[i].rawY
             trace.push({
-                           x: Number(points[i].x),
-                           y: Number(points[i].y),
-                           timestamp: receivedAt
+                           x: Number(rawX !== undefined ? rawX : points[i].x),
+                           y: Number(rawY !== undefined ? rawY : points[i].y)
                        })
         }
 
-        xyLineHistory = [trace]
-        pruneXYBuffer(receivedAt)
+        latestXYTrace = trace
     }
 
-    function pruneXYBuffer(now) {
-        if (xyLineHistory.length === 0 || xyLineHistory[0].length === 0)
+    function captureRejectedTrace() {
+        if (latestXYTrace.length === 0)
             return
 
-        var trace = xyLineHistory[0]
-        var cutoff = now - 5000
-        var firstCurrentSample = 0
-        while (firstCurrentSample < trace.length
-               && trace[firstCurrentSample].timestamp < cutoff)
-            ++firstCurrentSample
-
-        if (firstCurrentSample > 0)
-            xyLineHistory = firstCurrentSample === trace.length
-                    ? [] : [trace.slice(firstCurrentSample)]
+        var traces = xyLineHistory.slice()
+        var colorIndex = lastObservedRejectCount % rejectedTraceColors.length
+        traces.push({
+                        points: latestXYTrace.slice(),
+                        color: rejectedTraceColors[colorIndex]
+                    })
+        if (traces.length > 5)
+            traces = traces.slice(traces.length - 5)
+        xyLineHistory = traces
     }
 
     function clearPlotBuffer() {
@@ -147,22 +149,26 @@ Item {
         target: SerialManager
 
         function onXyPlotDataChanged() {
-            if (SerialManager.xyPlotData && SerialManager.xyPlotData.length > 0) {
-                root.addXYTrace(SerialManager.xyPlotData)
-            }
+            root.updateLatestXYTrace(SerialManager.xyPlotData)
+        }
+    }
+
+    Connections {
+        target: GlobalState
+
+        function onRejectedCountChanged() {
+            var rejectCount = Number(GlobalState.rejectedCount)
+            if (rejectCount > root.lastObservedRejectCount
+                    && GlobalState.countRejection)
+                root.captureRejectedTrace()
+            root.lastObservedRejectCount = rejectCount
         }
     }
 
     Component.onCompleted: {
+        root.lastObservedRejectCount = Number(GlobalState.rejectedCount)
         SerialManager.setPlotMode(true)
-        root.addXYTrace(SerialManager.xyPlotData)
-    }
-
-    Timer {
-        interval: 100
-        repeat: true
-        running: root.xyLineHistory.length > 0
-        onTriggered: root.pruneXYBuffer(Date.now())
+        root.updateLatestXYTrace(SerialManager.xyPlotData)
     }
 
     Rectangle {
@@ -364,6 +370,7 @@ Item {
                         anchors.bottomMargin: 8 * root.scale
 
                         fieldHistory:    root.xyLineHistory
+                        axisData:        root.latestXYTrace
                         showPointLabels: false
                     }
                 }
