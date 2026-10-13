@@ -7,10 +7,15 @@ Item {
     id: root
     anchors.fill: parent
 
-    // ── Scale: never go below 0.72 so text stays readable ──────
+    // ── Scale: keep diagnosis text readable on smaller displays ──────
     property real baseWidth:  1024
     property real baseHeight: 600
-    property real scale: Math.max(0.72, Math.min(width / baseWidth, height / baseHeight))
+    property real scale: Math.max(0.8, Math.min(width / baseWidth, height / baseHeight))
+
+    Typography {
+        id: diagnosisTypography
+        scale: root.scale
+    }
 
     // =====================================================
     // STATIC BACKDROP
@@ -123,8 +128,8 @@ Item {
 
             ColumnLayout {
                 anchors.fill:    parent
-                anchors.margins: 24
-                spacing:         16
+                anchors.margins: 20 * root.scale
+                spacing:         12 * root.scale
 
                 // ── HEADER ────────────────────────────────────────────
                 RowLayout {
@@ -132,17 +137,18 @@ Item {
                     spacing: 12
 
                     Column {
-                        spacing: 6 * root.scale
+                        spacing: 5 * root.scale
 
                         Text {
                             text: "System Diagnosis"
-                            font.pixelSize: 26
+                            font.pixelSize: diagnosisTypography.title
+
 
                             color: "#1A4DB5"
                         }
 
                         Rectangle {
-                            width: 80 * root.scale
+                            width: 84 * root.scale
                             height: 4 * root.scale
                             radius: 2 * root.scale
                             color: "#1A4DB5"
@@ -154,15 +160,15 @@ Item {
                     Text {
                         id:             lastUpdated
                         text:           ""
-                        font.pixelSize: 12
+                        font.pixelSize: diagnosisTypography.caption
                         color:          "#9E9E9E"
                         Layout.alignment: Qt.AlignVCenter
                     }
 
                     Rectangle {
-                        width:  110
-                        height: 36
-                        radius: 8
+                        width:  120 * root.scale
+                        height: 40 * root.scale
+                        radius: 8 * root.scale
                         color:  isLoading ? "#1A4DB5" : "#1A4DB5"
                         Layout.alignment: Qt.AlignVCenter
 
@@ -170,19 +176,19 @@ Item {
 
                         Row {
                             anchors.centerIn: parent
-                            spacing: 6
+                            spacing: 6 * root.scale
 
                             Text {
                                 text:           isLoading ? "..." : "▶"
                                 color:          "#FFFFFF"
-                                font.pixelSize: 13
+                                font.pixelSize: diagnosisTypography.caption
                             }
 
                             Text {
                                 text:           isLoading ? "Running..." : "Run All"
                                 color:          "#FFFFFF"
-                                font.pixelSize: 14
-                                font.weight:    Font.Medium
+                                font.pixelSize: diagnosisTypography.bodySmall
+
                             }
                         }
 
@@ -210,8 +216,8 @@ Item {
                     Layout.fillWidth:  true
                     Layout.fillHeight: true
                     columns:       2
-                    rowSpacing:    12
-                    columnSpacing: 12
+                    rowSpacing:    12 * root.scale
+                    columnSpacing: 12 * root.scale
 
                     // RAM ─────────────────────────────────────────────
                     DiagCard {
@@ -292,29 +298,42 @@ Item {
                                  : "#F7FBF7"
                     }
 
-                    // CPU USAGE ─────────────────────────────────────
+                    // INPUT VOLTAGE ─────────────────────────────────
                     DiagCard {
-                        id: cpuCard
+                        id: voltageCard
                         Layout.fillWidth:  true
                         Layout.fillHeight: true
 
-                        title:   "CPU Usage"
+                        title:   "Input Voltage"
                         uiScale: root.scale
 
-                        property real cpu: SystemDiag.cpuUsageValue
-                        property real cpuProgress: cpu > 0 ? Math.min(cpu / 100.0, 1.0) : 0
+                        property real voltage: SystemDiag.inputVoltageValue
+                        property bool undervoltage: SystemDiag.undervoltageDetected
 
-                        progress: isLoading ? -1 : cpuProgress
+                        progress: -1
 
                         status: isLoading ? "Checking..."
-                              : cpu > 90 ? "Critical"
-                              : cpu > 70 ? "Warning"
+                              : voltage < 0 ? (undervoltage ? "Critical" : "Unknown")
+                              : undervoltage || voltage < 4.63 || voltage > 5.25 ? "Critical"
+                              : voltage < 4.75 ? "Warning"
                               : "OK"
 
-                        detail: isLoading ? "— %" : SystemDiag.cpuUsage
+                        detail: isLoading ? "Checking..."
+                              : voltage < 0 && undervoltage ? "Low voltage detected"
+                              : SystemDiag.inputVoltage
+
+                        subtitle: isLoading ? ""
+                                : voltage < 0 && undervoltage ? "Raspberry Pi reports below 4.63 V"
+                                : voltage < 0 ? "Input-voltage sensor unavailable"
+                                : undervoltage ? "Raspberry Pi reports undervoltage"
+                                : voltage < 4.63 ? "Critical: below 4.63 V"
+                                : voltage < 4.75 ? "Low: below 4.75 V"
+                                : voltage > 5.25 ? "High: above 5.25 V"
+                                : "Input voltage within range (4.75-5.25 V)"
 
                         cardColor: status === "Critical" ? "#FFF5F5"
                                  : status === "Warning"  ? "#FFFBF0"
+                                 : status === "Unknown"  ? "#F4F6F8"
                                  : "#F7FBF7"
                     }
                 }

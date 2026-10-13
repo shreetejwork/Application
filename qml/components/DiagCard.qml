@@ -37,24 +37,28 @@ Rectangle {
         if (status === "OK")          return "#43A047"
         if (status === "Warning")     return "#FB8C00"
         if (status === "Checking...") return "#1E88E5"
+        if (status === "Unknown")     return "#78909C"
         return "#E53935"
     }
     function statusBadgeBg() {
         if (status === "OK")          return "#E3F2FD"
         if (status === "Warning")     return "#FFF3E0"
         if (status === "Checking...") return "#E3F2FD"
+        if (status === "Unknown")     return "#ECEFF1"
         return "#E3F2FD"
     }
     function statusTextColor() {
         if (status === "OK")          return "#2E7D32"
         if (status === "Warning")     return "#E65100"
         if (status === "Checking...") return "#1565C0"
+        if (status === "Unknown")     return "#546E7A"
         return "#B71C1C"
     }
     function statusIcon() {
         if (status === "OK")          return "✔"
         if (status === "Warning")     return "⚠"
         if (status === "Checking...") return "..."
+        if (status === "Unknown")     return "?"
         return "✖"
     }
 
@@ -121,6 +125,16 @@ Rectangle {
             Layout.fillWidth:    true
         }
 
+        Text {
+            visible:             card.subtitle !== ""
+            text:                card.subtitle
+            font.pixelSize:      cardTypography.caption
+            color:               card.statusTextColor()
+            horizontalAlignment: Text.AlignHCenter
+            wrapMode:            Text.WordWrap
+            Layout.fillWidth:    true
+        }
+
         // ── progress bar ────────────────────────────────────────
         ColumnLayout {
             visible:          card.progress >= 0
@@ -149,7 +163,7 @@ Rectangle {
 
                 Text {
                     text:           "0"
-                    font.pixelSize: cardTypography.tiny
+                    font.pixelSize: cardTypography.small
                     color:          "#9E9E9E"
                 }
                 Item { Layout.fillWidth: true }
@@ -168,9 +182,9 @@ Rectangle {
         // ── status badge ────────────────────────────────────────
         Rectangle {
             Layout.alignment: Qt.AlignHCenter
-            width:  statusLbl.implicitWidth + 24
-            height: 26
-            radius: 13
+            width:  statusLbl.implicitWidth + 28 * card.uiScale
+            height: Math.max(32 * card.uiScale, statusLbl.implicitHeight + 10 * card.uiScale)
+            radius: height / 2
             color:  card.statusBadgeBg()
 
             Behavior on color { ColorAnimation { duration: 300 } }
@@ -179,8 +193,7 @@ Rectangle {
                 id:              statusLbl
                 anchors.centerIn: parent
                 text:             card.status
-                font.pixelSize:   cardTypography.caption
-                font.weight:      Font.Medium
+                font.pixelSize:   cardTypography.body
                 color:            card.statusTextColor()
             }
         }
