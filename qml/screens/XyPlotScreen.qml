@@ -102,10 +102,7 @@ Item {
 
     property var xyLineHistory: []
     property var latestXYTrace: []
-    property int lastObservedRejectCount: 0
-    readonly property var rejectedTraceColors: [
-        "#1A4DB5", "#D64545", "#0F8A60", "#8B5CF6", "#E58A00"
-    ]
+    readonly property int maxPlotSamples: 1000
 
     function updateLatestXYTrace(points) {
         if (!points || points.length === 0)
@@ -121,26 +118,17 @@ Item {
                        })
         }
 
+        var history = root.xyLineHistory.concat(trace)
+        if (history.length > root.maxPlotSamples)
+            history = history.slice(history.length - root.maxPlotSamples)
+
+        xyLineHistory = history
         latestXYTrace = trace
-    }
-
-    function captureRejectedTrace() {
-        if (latestXYTrace.length === 0)
-            return
-
-        var traces = xyLineHistory.slice()
-        var colorIndex = lastObservedRejectCount % rejectedTraceColors.length
-        traces.push({
-                        points: latestXYTrace.slice(),
-                        color: rejectedTraceColors[colorIndex]
-                    })
-        if (traces.length > 5)
-            traces = traces.slice(traces.length - 5)
-        xyLineHistory = traces
     }
 
     function clearPlotBuffer() {
         xyLineHistory = []
+        latestXYTrace = []
     }
 
     Component.onDestruction: SerialManager.setPlotMode(false)
@@ -153,20 +141,7 @@ Item {
         }
     }
 
-    Connections {
-        target: GlobalState
-
-        function onRejectedCountChanged() {
-            var rejectCount = Number(GlobalState.rejectedCount)
-            if (rejectCount > root.lastObservedRejectCount
-                    && GlobalState.countRejection)
-                root.captureRejectedTrace()
-            root.lastObservedRejectCount = rejectCount
-        }
-    }
-
     Component.onCompleted: {
-        root.lastObservedRejectCount = Number(GlobalState.rejectedCount)
         SerialManager.setPlotMode(true)
         root.updateLatestXYTrace(SerialManager.xyPlotData)
     }
@@ -369,8 +344,11 @@ Item {
                         anchors.topMargin:    8 * root.scale
                         anchors.bottomMargin: 8 * root.scale
 
-                        fieldHistory:    root.xyLineHistory
                         axisData:        root.latestXYTrace
+                        fieldHistory:    root.xyLineHistory.length > 0
+                                         ? [{ points: root.xyLineHistory,
+                                              color: "#1A4DB5" }]
+                                         : []
                         showPointLabels: false
                     }
                 }
