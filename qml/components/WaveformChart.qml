@@ -121,43 +121,83 @@ Rectangle {
                 + milliseconds.toFixed(0) + " ms)"
     }
 
-    function peakInfoText(positive) {
+    function peakPoints(positive) {
         var start = Math.max(0, windowStart)
         var end = Math.min(samples.length, windowStart + visibleSamples)
         if (start >= end)
-            return ""
+            return []
 
         var keys = displayMode === "Both"
                 ? ["x", "y"] : [displayMode.toLowerCase()]
-        var details = []
+        var peaks = []
         for (var keyIndex = 0; keyIndex < keys.length; ++keyIndex) {
             var key = keys[keyIndex]
+            var risingCrossings = []
+            for (var i = start + 1; i < end; ++i) {
+                if (Number(samples[i - 1][key]) <= 0
+                        && Number(samples[i][key]) > 0)
+                    risingCrossings.push(i)
+            }
+
             var peakNumber = 0
-            for (var i = start; i < end; ++i) {
-                var value = Number(samples[i][key])
-                var isPeak = true
-                if (i > start) {
-                    var previousValue = Number(samples[i - 1][key])
-                    isPeak = positive ? value >= previousValue
-                                      : value <= previousValue
+            for (var cycle = 0; cycle + 1 < risingCrossings.length; ++cycle) {
+                var cycleStart = risingCrossings[cycle]
+                var cycleEnd = risingCrossings[cycle + 1]
+                var peakIndex = cycleStart
+                var peakValue = Number(samples[cycleStart][key])
+                for (var pointIndex = cycleStart + 1;
+                     pointIndex < cycleEnd;
+                     ++pointIndex) {
+                    var pointValue = Number(samples[pointIndex][key])
+                    if ((positive && pointValue > peakValue)
+                            || (!positive && pointValue < peakValue)) {
+                        peakValue = pointValue
+                        peakIndex = pointIndex
+                    }
                 }
-                if (isPeak && i + 1 < end) {
-                    var nextValue = Number(samples[i + 1][key])
-                    isPeak = positive ? value > nextValue
-                                      : value < nextValue
-                }
-                if (!isPeak)
-                    continue
 
                 ++peakNumber
-                details.push((positive ? "+" : "-") + key.toUpperCase()
-                             + peakNumber
-                             + ": " + value.toFixed(2)
-                             + " @ " + formatSampleTime(
-                                 sampleTimeMilliseconds(i)))
+                peaks.push({
+                    key: key,
+                    number: peakNumber,
+                    index: peakIndex,
+                    value: peakValue
+                })
+            }
+
+            if (peakNumber === 0) {
+                var framePeakIndex = start
+                var framePeakValue = Number(samples[start][key])
+                for (var frameIndex = start + 1; frameIndex < end; ++frameIndex) {
+                    var frameValue = Number(samples[frameIndex][key])
+                    if ((positive && frameValue > framePeakValue)
+                            || (!positive && frameValue < framePeakValue)) {
+                        framePeakValue = frameValue
+                        framePeakIndex = frameIndex
+                    }
+                }
+                peaks.push({
+                    key: key,
+                    number: 1,
+                    index: framePeakIndex,
+                    value: framePeakValue
+                })
             }
         }
 
+        return peaks
+    }
+
+    function peakInfoText(positive) {
+        var peaks = peakPoints(positive)
+        var details = []
+        for (var i = 0; i < peaks.length; ++i) {
+            var peak = peaks[i]
+            details.push((positive ? "+" : "-") + peak.key.toUpperCase()
+                         + peak.number + ": " + peak.value.toFixed(2)
+                         + " @ " + formatSampleTime(
+                             sampleTimeMilliseconds(peak.index)))
+        }
         return details.join("\n")
     }
 
@@ -338,6 +378,43 @@ Rectangle {
                                     0, 2 * Math.PI)
                             ctx.fill()
                         }
+                    }
+                }
+
+                if (chartCard.zoomInLevel >= 2) {
+                    var allPeaks = chartCard.peakPoints(true)
+                                .concat(chartCard.peakPoints(false))
+                    for (var peakIndex = 0;
+                         peakIndex < allPeaks.length;
+                         ++peakIndex) {
+                        var peak = allPeaks[peakIndex]
+                        var peakX = left + (count === 1
+                                            ? plotWidth
+                                            : plotWidth * (peak.index
+                                                           - chartCard.windowStart)
+                                              / (count - 1))
+                        var peakValue = Math.max(-axisLimit,
+                                                 Math.min(axisLimit, peak.value))
+                        var peakY = top + (axisLimit - peakValue)
+                                    * plotHeight / (2 * axisLimit)
+                        var peakColor = peak.key === "x" ? "#1A4DB5" : "#D64545"
+
+                        ctx.beginPath()
+                        ctx.arc(peakX, peakY,
+                                Math.max(5, 6 * chartCard.scale),
+                                0, 2 * Math.PI)
+                        ctx.fillStyle = "#FFFFFF"
+                        ctx.fill()
+                        ctx.lineWidth = Math.max(1.5, 2 * chartCard.scale)
+                        ctx.strokeStyle = "#111827"
+                        ctx.stroke()
+
+                        ctx.beginPath()
+                        ctx.arc(peakX, peakY,
+                                Math.max(2.5, 3 * chartCard.scale),
+                                0, 2 * Math.PI)
+                        ctx.fillStyle = peakColor
+                        ctx.fill()
                     }
                 }
 
