@@ -591,6 +591,17 @@ ApplicationWindow {
                     function() {
 
                         SerialManager.setLPF(s1Settings.lpf)
+
+                    }
+                )
+            }
+
+            if (s1Settings.lpf !== undefined
+                    && s1Settings.hpf !== undefined
+                    && Number(s1Settings.lpf) < Number(s1Settings.hpf)) {
+                parameterQueue.push(
+                    function() {
+
                         SerialManager.setHPF(s1Settings.hpf)
 
                     }
