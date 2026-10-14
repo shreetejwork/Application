@@ -121,6 +121,36 @@ Rectangle {
                 + milliseconds.toFixed(0) + " ms)"
     }
 
+    function peakInfoText(positive) {
+        var start = Math.max(0, windowStart)
+        var end = Math.min(samples.length, windowStart + visibleSamples)
+        if (start >= end)
+            return ""
+
+        var keys = displayMode === "Both"
+                ? ["x", "y"] : [displayMode.toLowerCase()]
+        var details = []
+        for (var keyIndex = 0; keyIndex < keys.length; ++keyIndex) {
+            var key = keys[keyIndex]
+            var peakIndex = start
+            var peakValue = Number(samples[start][key])
+            for (var i = start + 1; i < end; ++i) {
+                var value = Number(samples[i][key])
+                if ((positive && value > peakValue)
+                        || (!positive && value < peakValue)) {
+                    peakValue = value
+                    peakIndex = i
+                }
+            }
+            details.push(key.toUpperCase() + ": " + peakValue.toFixed(2)
+                         + " @ " + formatSampleTime(
+                             sampleTimeMilliseconds(peakIndex)))
+        }
+
+        return (positive ? "Positive peaks\n" : "Negative peaks\n")
+                + details.join("     ")
+    }
+
     function currentAxisLimit() {
         var maxMagnitude = 0
         var keys = displayMode === "Both" ? ["x", "y"] : [displayMode.toLowerCase()]
@@ -336,22 +366,10 @@ Rectangle {
                         })
                     }
 
-                    var peakFontSize = Math.max(15,
-                                                Math.min(18, 16 * chartCard.scale))
-                    var peakBoxHeight = peakFontSize + 12 * chartCard.scale
-                    var peakPadding = 8 * chartCard.scale
-                    var peakGap = 5 * chartCard.scale
-                    var placedPeakBoxes = []
-                    ctx.font = "600 " + peakFontSize + "px sans-serif"
-                    ctx.textBaseline = "middle"
-
                     for (var peakIndex = 0;
                          peakIndex < peakMarkers.length;
                          ++peakIndex) {
                         var peak = peakMarkers[peakIndex]
-                        peak.text = peak.label + ": " + peak.value.toFixed(2)
-                        peak.boxWidth = ctx.measureText(peak.text).width
-                                        + 2 * peakPadding
                         peak.x = left + (count === 1
                                          ? plotWidth
                                          : plotWidth * (peak.index - chartCard.windowStart)
@@ -360,73 +378,17 @@ Rectangle {
                                               Math.min(axisLimit, peak.value))
                         peak.y = top + (axisLimit - peak.value)
                                  * plotHeight / (2 * axisLimit)
-                        peak.boxX = Math.max(left,
-                                             Math.min(left + plotWidth - peak.boxWidth,
-                                                      peak.x - peak.boxWidth / 2))
-
-                        var aboveY = peak.y - peakBoxHeight - peakGap
-                        var belowY = peak.y + peakGap
-                        var candidates = []
-                        for (var above = aboveY;
-                             above >= top;
-                             above -= peakBoxHeight + peakGap)
-                            candidates.push(above)
-                        for (var below = belowY;
-                             below + peakBoxHeight <= top + plotHeight;
-                             below += peakBoxHeight + peakGap)
-                            candidates.push(below)
-
-                        for (var candidateIndex = 0;
-                             candidateIndex < candidates.length;
-                             ++candidateIndex) {
-                            var candidateY = candidates[candidateIndex]
-                            var overlaps = false
-                            for (var placedIndex = 0;
-                                 placedIndex < placedPeakBoxes.length;
-                                 ++placedIndex) {
-                                var placed = placedPeakBoxes[placedIndex]
-                                if (peak.boxX < placed.x + placed.width
-                                        && peak.boxX + peak.boxWidth > placed.x
-                                        && candidateY < placed.y + placed.height
-                                        && candidateY + peakBoxHeight > placed.y) {
-                                    overlaps = true
-                                    break
-                                }
-                            }
-                            if (!overlaps) {
-                                peak.boxY = candidateY
-                                break
-                            }
-                        }
-                        if (peak.boxY === undefined)
-                            peak.boxY = Math.max(top,
-                                                 Math.min(top + plotHeight - peakBoxHeight,
-                                                          aboveY))
-
-                        placedPeakBoxes.push({
-                            x: peak.boxX,
-                            y: peak.boxY,
-                            width: peak.boxWidth,
-                            height: peakBoxHeight
-                        })
-
-                        var guideEndY = peak.boxY < peak.y
-                                ? peak.boxY + peakBoxHeight : peak.boxY
                         ctx.strokeStyle = "#000000"
                         ctx.lineWidth = Math.max(1.5, 1.5 * chartCard.scale)
                         var dashLength = Math.max(3, 4 * chartCard.scale)
                         var dashGap = Math.max(2, 3 * chartCard.scale)
-                        var guideDirection = guideEndY < peak.y ? -1 : 1
-                        for (var guideY = peak.y;
-                             guideDirection < 0 ? guideY > guideEndY
-                                                : guideY < guideEndY;
-                             guideY += guideDirection * (dashLength + dashGap)) {
+                        for (var guideY = top;
+                             guideY < top + plotHeight;
+                             guideY += dashLength + dashGap) {
                             ctx.beginPath()
                             ctx.moveTo(peak.x, guideY)
-                            ctx.lineTo(peak.x,
-                                       guideDirection < 0
-                                       ? Math.max(guideEndY, guideY - dashLength)
-                                       : Math.min(guideEndY, guideY + dashLength))
+                            ctx.lineTo(peak.x, Math.min(top + plotHeight,
+                                                       guideY + dashLength))
                             ctx.stroke()
                         }
 
@@ -439,20 +401,6 @@ Rectangle {
                         ctx.strokeStyle = "#000000"
                         ctx.lineWidth = Math.max(1.5, 1.5 * chartCard.scale)
                         ctx.stroke()
-
-                        ctx.fillStyle = "#FFFFFF"
-                        ctx.fillRect(peak.boxX, peak.boxY,
-                                     peak.boxWidth, peakBoxHeight)
-                        ctx.strokeStyle = "#111827"
-                        ctx.lineWidth = Math.max(1, chartCard.scale)
-                        ctx.strokeRect(peak.boxX, peak.boxY,
-                                       peak.boxWidth, peakBoxHeight)
-                        ctx.fillStyle = "#111827"
-                        ctx.textAlign = "left"
-                        ctx.textBaseline = "middle"
-                        ctx.fillText(peak.text,
-                                     peak.boxX + peakPadding,
-                                     peak.boxY + peakBoxHeight / 2)
                     }
                 }
 
@@ -548,6 +496,60 @@ Rectangle {
                 chartCard.secondCursorIndex = index
             }
             chartCard.hoverSampleIndex = index
+        }
+    }
+
+    Rectangle {
+        id: positivePeakPopup
+        visible: chartCard.zoomInLevel >= 2 && chartCard.samples.length > 0
+        z: 2
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.leftMargin: 95 * chartCard.scale
+        anchors.topMargin: 10 * chartCard.scale
+        width: Math.max(0, chartCard.width - 109 * chartCard.scale)
+        height: positivePeakInfo.implicitHeight + 20 * chartCard.scale
+        radius: 5 * chartCard.scale
+        color: "#FFFFFF"
+        border.width: 1
+        border.color: "#DCE5F5"
+
+        Text {
+            id: positivePeakInfo
+            anchors.fill: parent
+            anchors.margins: 10 * chartCard.scale
+            color: "#334155"
+            font.pixelSize: Math.max(17, 19 * chartCard.scale)
+            font.weight: Font.Medium
+            wrapMode: Text.Wrap
+            text: chartCard.peakInfoText(true)
+        }
+    }
+
+    Rectangle {
+        id: negativePeakPopup
+        visible: chartCard.zoomInLevel >= 2 && chartCard.samples.length > 0
+        z: 2
+        anchors.left: parent.left
+        anchors.bottom: parent.bottom
+        anchors.leftMargin: 95 * chartCard.scale
+        anchors.bottomMargin: 10 * chartCard.scale
+        width: Math.max(0, chartCard.width - 109 * chartCard.scale)
+        height: negativePeakInfo.implicitHeight + 20 * chartCard.scale
+        radius: 5 * chartCard.scale
+        color: "#FFFFFF"
+        border.width: 1
+        border.color: "#DCE5F5"
+
+        Text {
+            id: negativePeakInfo
+            anchors.fill: parent
+            anchors.margins: 10 * chartCard.scale
+            color: "#334155"
+            font.pixelSize: Math.max(17, 19 * chartCard.scale)
+            font.weight: Font.Medium
+            wrapMode: Text.Wrap
+            text: chartCard.peakInfoText(false)
         }
     }
 
