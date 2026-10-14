@@ -132,6 +132,7 @@ Rectangle {
         var peaks = []
         for (var keyIndex = 0; keyIndex < keys.length; ++keyIndex) {
             var key = keys[keyIndex]
+            var channelPeaks = []
             var risingCrossings = []
             for (var i = start + 1; i < end; ++i) {
                 if (Number(samples[i - 1][key]) <= 0
@@ -139,7 +140,6 @@ Rectangle {
                     risingCrossings.push(i)
             }
 
-            var peakNumber = 0
             for (var cycle = 0; cycle + 1 < risingCrossings.length; ++cycle) {
                 var cycleStart = risingCrossings[cycle]
                 var cycleEnd = risingCrossings[cycle + 1]
@@ -156,16 +156,13 @@ Rectangle {
                     }
                 }
 
-                ++peakNumber
-                peaks.push({
-                    key: key,
-                    number: peakNumber,
+                channelPeaks.push({
                     index: peakIndex,
                     value: peakValue
                 })
             }
 
-            if (peakNumber === 0) {
+            if (channelPeaks.length === 0) {
                 var framePeakIndex = start
                 var framePeakValue = Number(samples[start][key])
                 for (var frameIndex = start + 1; frameIndex < end; ++frameIndex) {
@@ -176,11 +173,38 @@ Rectangle {
                         framePeakIndex = frameIndex
                     }
                 }
-                peaks.push({
-                    key: key,
-                    number: 1,
+                channelPeaks.push({
                     index: framePeakIndex,
                     value: framePeakValue
+                })
+            }
+
+            var highestAmplitude = 0
+            for (var peakIndex = 0; peakIndex < channelPeaks.length; ++peakIndex) {
+                var amplitude = positive
+                        ? Math.max(0, channelPeaks[peakIndex].value)
+                        : Math.max(0, -channelPeaks[peakIndex].value)
+                highestAmplitude = Math.max(highestAmplitude, amplitude)
+            }
+
+            var peakNumber = 0
+            var minimumAmplitude = highestAmplitude * 0.25
+            for (var filteredIndex = 0;
+                 filteredIndex < channelPeaks.length;
+                 ++filteredIndex) {
+                var candidate = channelPeaks[filteredIndex]
+                var candidateAmplitude = positive
+                        ? Math.max(0, candidate.value)
+                        : Math.max(0, -candidate.value)
+                if (candidateAmplitude < minimumAmplitude)
+                    continue
+
+                ++peakNumber
+                peaks.push({
+                    key: key,
+                    number: peakNumber,
+                    index: candidate.index,
+                    value: candidate.value
                 })
             }
         }
