@@ -132,23 +132,33 @@ Rectangle {
         var details = []
         for (var keyIndex = 0; keyIndex < keys.length; ++keyIndex) {
             var key = keys[keyIndex]
-            var peakIndex = start
-            var peakValue = Number(samples[start][key])
-            for (var i = start + 1; i < end; ++i) {
+            var peakNumber = 0
+            for (var i = start; i < end; ++i) {
                 var value = Number(samples[i][key])
-                if ((positive && value > peakValue)
-                        || (!positive && value < peakValue)) {
-                    peakValue = value
-                    peakIndex = i
+                var isPeak = true
+                if (i > start) {
+                    var previousValue = Number(samples[i - 1][key])
+                    isPeak = positive ? value >= previousValue
+                                      : value <= previousValue
                 }
+                if (isPeak && i + 1 < end) {
+                    var nextValue = Number(samples[i + 1][key])
+                    isPeak = positive ? value > nextValue
+                                      : value < nextValue
+                }
+                if (!isPeak)
+                    continue
+
+                ++peakNumber
+                details.push((positive ? "+" : "-") + key.toUpperCase()
+                             + peakNumber
+                             + ": " + value.toFixed(2)
+                             + " @ " + formatSampleTime(
+                                 sampleTimeMilliseconds(i)))
             }
-            details.push(key.toUpperCase() + ": " + peakValue.toFixed(2)
-                         + " @ " + formatSampleTime(
-                             sampleTimeMilliseconds(peakIndex)))
         }
 
-        return (positive ? "Positive peaks\n" : "Negative peaks\n")
-                + details.join("     ")
+        return details.join("\n")
     }
 
     function currentAxisLimit() {
@@ -331,79 +341,6 @@ Rectangle {
                     }
                 }
 
-                if (chartCard.zoomInLevel >= 2) {
-                    var peakMarkers = []
-                    for (var peakSeriesIndex = 0;
-                         peakSeriesIndex < series.length;
-                         ++peakSeriesIndex) {
-                        var peakSeries = series[peakSeriesIndex]
-                        var positiveIndex = chartCard.windowStart
-                        var negativeIndex = chartCard.windowStart
-                        var positiveValue = Number(samples[positiveIndex][peakSeries.key])
-                        var negativeValue = positiveValue
-                        for (var sampleIndex = chartCard.windowStart + 1;
-                             sampleIndex < end;
-                             ++sampleIndex) {
-                            var value = Number(samples[sampleIndex][peakSeries.key])
-                            if (value > positiveValue) {
-                                positiveValue = value
-                                positiveIndex = sampleIndex
-                            }
-                            if (value < negativeValue) {
-                                negativeValue = value
-                                negativeIndex = sampleIndex
-                            }
-                        }
-                        peakMarkers.push({
-                            label: peakSeries.key.toUpperCase() + " +Peak",
-                            value: positiveValue,
-                            index: positiveIndex
-                        })
-                        peakMarkers.push({
-                            label: peakSeries.key.toUpperCase() + " -Peak",
-                            value: negativeValue,
-                            index: negativeIndex
-                        })
-                    }
-
-                    for (var peakIndex = 0;
-                         peakIndex < peakMarkers.length;
-                         ++peakIndex) {
-                        var peak = peakMarkers[peakIndex]
-                        peak.x = left + (count === 1
-                                         ? plotWidth
-                                         : plotWidth * (peak.index - chartCard.windowStart)
-                                           / (count - 1))
-                        peak.value = Math.max(-axisLimit,
-                                              Math.min(axisLimit, peak.value))
-                        peak.y = top + (axisLimit - peak.value)
-                                 * plotHeight / (2 * axisLimit)
-                        ctx.strokeStyle = "#000000"
-                        ctx.lineWidth = Math.max(1.5, 1.5 * chartCard.scale)
-                        var dashLength = Math.max(3, 4 * chartCard.scale)
-                        var dashGap = Math.max(2, 3 * chartCard.scale)
-                        for (var guideY = top;
-                             guideY < top + plotHeight;
-                             guideY += dashLength + dashGap) {
-                            ctx.beginPath()
-                            ctx.moveTo(peak.x, guideY)
-                            ctx.lineTo(peak.x, Math.min(top + plotHeight,
-                                                       guideY + dashLength))
-                            ctx.stroke()
-                        }
-
-                        ctx.beginPath()
-                        ctx.arc(peak.x, peak.y,
-                                Math.max(3, 3.5 * chartCard.scale),
-                                0, 2 * Math.PI)
-                        ctx.fillStyle = "#FFFFFF"
-                        ctx.fill()
-                        ctx.strokeStyle = "#000000"
-                        ctx.lineWidth = Math.max(1.5, 1.5 * chartCard.scale)
-                        ctx.stroke()
-                    }
-                }
-
                 var cursorIndices = []
                 var cursorColors = []
                 if (chartCard.cursorEnabled && chartCard.hoverSampleIndex >= 0) {
@@ -507,7 +444,8 @@ Rectangle {
         anchors.top: parent.top
         anchors.leftMargin: 95 * chartCard.scale
         anchors.topMargin: 10 * chartCard.scale
-        width: Math.max(0, chartCard.width - 109 * chartCard.scale)
+        width: Math.min(positivePeakInfo.implicitWidth + 24 * chartCard.scale,
+                        chartCard.width * 0.48)
         height: positivePeakInfo.implicitHeight + 20 * chartCard.scale
         radius: 5 * chartCard.scale
         color: "#FFFFFF"
@@ -521,6 +459,7 @@ Rectangle {
             color: "#334155"
             font.pixelSize: Math.max(17, 19 * chartCard.scale)
             font.weight: Font.Medium
+            verticalAlignment: Text.AlignVCenter
             wrapMode: Text.Wrap
             text: chartCard.peakInfoText(true)
         }
@@ -534,7 +473,8 @@ Rectangle {
         anchors.bottom: parent.bottom
         anchors.leftMargin: 95 * chartCard.scale
         anchors.bottomMargin: 10 * chartCard.scale
-        width: Math.max(0, chartCard.width - 109 * chartCard.scale)
+        width: Math.min(negativePeakInfo.implicitWidth + 24 * chartCard.scale,
+                        chartCard.width * 0.48)
         height: negativePeakInfo.implicitHeight + 20 * chartCard.scale
         radius: 5 * chartCard.scale
         color: "#FFFFFF"
@@ -548,6 +488,7 @@ Rectangle {
             color: "#334155"
             font.pixelSize: Math.max(17, 19 * chartCard.scale)
             font.weight: Font.Medium
+            verticalAlignment: Text.AlignVCenter
             wrapMode: Text.Wrap
             text: chartCard.peakInfoText(false)
         }
