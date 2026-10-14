@@ -591,7 +591,7 @@ ApplicationWindow {
                     function() {
 
                         SerialManager.setLPF(s1Settings.lpf)
-                        SerialManager.setHPF(Math.round(s1Settings.hpf))
+                        SerialManager.setHPF(s1Settings.hpf)
 
                     }
                 )
