@@ -1445,7 +1445,8 @@ Item {
                         "Supplier Name Changed", "Machine ID Changed", "Machine User Changed",
                         "Location Changed", "Serial Number Changed",
                         "M/C Phase Changed", "Threshold-S Changed", "Threshold-A Changed",
-                        "Tracking Enabled", "Tracking Disabled", "Tracking Count Changed",
+                        "Tracking On", "Tracking Off", "Tracking Enabled", "Tracking Disabled",
+                        "Tracking Count Changed",
                         "Tracking Threshold Changed", "Tracking Tolerance Changed",
                         "DD ON", "DD OFF", "DD Power Changed", "DD Frequency Changed",
                         "New Product Added", "Product Deleted", "Product Loaded"

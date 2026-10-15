@@ -92,12 +92,13 @@ Item {
             auditUser = initial + "/" + username
         }
 
-        databaseManager.addAuditTrailRecord(
+        if (!databaseManager.addAuditTrailRecord(
                     auditUser,
                     oldValue.toString(),
                     newValue.toString(),
-                    action
-                    )
+                    action)) {
+            console.error("Failed to save tracking audit record:", action)
+        }
     }
 
     // ============================================================
@@ -704,7 +705,7 @@ Item {
                             // ----------------------------------------
 
                             saveTrackingSettingAudit(
-                                        "Tracking " + (newState ? "Enabled" : "Disabled"),
+                                        "Tracking " + (newState ? "On" : "Off"),
                                         oldState ? "ON" : "OFF",
                                         newState ? "ON" : "OFF"
                                         )
