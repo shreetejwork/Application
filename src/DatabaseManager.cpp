@@ -360,6 +360,11 @@ void DatabaseManager::createTables()
     )");
 
     query.exec(R"(
+        CREATE INDEX IF NOT EXISTS idx_CoilOutputHistory_date_time_id
+        ON CoilOutputHistory(created_date, reading_time, id);
+    )");
+
+    query.exec(R"(
     CREATE TABLE IF NOT EXISTS machineparameters (
         id INTEGER PRIMARY KEY,
 
@@ -1133,10 +1138,11 @@ QVariantList DatabaseManager::getCoilOutputHistory()
     QVariantList list;
 
     QSqlQuery query;
+    query.setForwardOnly(true);
     query.prepare(
         "SELECT average, reading_date, reading_time, created_date "
         "FROM CoilOutputHistory "
-        "ORDER BY created_date ASC, id ASC"
+        "ORDER BY created_date ASC, reading_time ASC, id ASC"
         );
 
     if(!query.exec())

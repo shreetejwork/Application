@@ -282,14 +282,6 @@ Item {
 
 
 
-        arr.sort(function(a, b) {
-            if (a.dayKey === b.dayKey)
-                return a.hhmm < b.hhmm ? -1 : (a.hhmm > b.hhmm ? 1 : 0)
-            return a.dayKey < b.dayKey ? -1 : 1
-        })
-
-
-
         var boundaries = []
         var lastDayKey = null
 
