@@ -328,14 +328,14 @@ Item {
                               : "No low voltage detected"
 
                         subtitle: isLoading ? ""
-                                : undervoltage ? "Raspberry Pi firmware reports undervoltage now"
+                                : undervoltage ? "System firmware reports undervoltage now"
                                 : voltage >= 0 && voltage < 4.63 ? "Critical: below 4.63 V"
                                 : voltage >= 0 && voltage < 4.75 ? "Low: below 4.75 V"
                                 : voltage >= 0 && voltage > 5.25 ? "High: above 5.25 V"
-                                : undervoltageOccurred ? "Raspberry Pi recorded undervoltage since boot"
-                                : !voltageStatusAvailable ? "Raspberry Pi firmware status unavailable"
+                                : undervoltageOccurred ? "System recorded undervoltage since boot"
+                                : !voltageStatusAvailable ? "System firmware status unavailable"
                                 : voltage >= 0 ? "Input voltage within range (4.75-5.25 V)"
-                                : "Raspberry Pi firmware reports no undervoltage"
+                                : "System firmware reports no undervoltage"
 
                         cardColor: status === "Critical" ? "#FFF5F5"
                                  : status === "Warning"  ? "#FFFBF0"
