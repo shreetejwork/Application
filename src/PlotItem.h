@@ -82,6 +82,9 @@ private:
 
     QVariantList m_axisData;
 
+    qreal m_xAxisLimit = 200;
+    qreal m_yAxisLimit = 200;
+
     // =====================================================
     // LABEL VISIBILITY
     // =====================================================

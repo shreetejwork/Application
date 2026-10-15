@@ -142,8 +142,8 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
                                          : m_fieldHistory;
     QVector<PlotTrace> traces;
     traces.reserve(traceValues.size());
-    qreal xLimit = 200;
-    qreal yLimit = 200;
+    qreal xLimit = m_xAxisLimit;
+    qreal yLimit = m_yAxisLimit;
     for (int traceIndex = 0; traceIndex < traceValues.size(); ++traceIndex) {
         const QVariant traceValue = traceValues.at(traceIndex);
         const QVariantMap traceMap = traceValue.toMap();
@@ -169,6 +169,8 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
         xLimit = qMax(xLimit, qAbs(point.value(QStringLiteral("x")).toReal()));
         yLimit = qMax(yLimit, qAbs(point.value(QStringLiteral("y")).toReal()));
     }
+    m_xAxisLimit = xLimit;
+    m_yAxisLimit = yLimit;
     // =====================================================
     // AXIS
     // =====================================================
