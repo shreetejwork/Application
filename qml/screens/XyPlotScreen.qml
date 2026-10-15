@@ -177,13 +177,31 @@ Item {
                     Layout.fillWidth: true
                     spacing: 8 * root.scale
 
-                    WaveformControlButton {
+                    Button {
                         id: savePdfButton
                         text: "Save PDF"
                         Layout.fillWidth: true
                         Layout.preferredHeight: 40 * root.scale
-                        labelPixelSize: plotTypography.body
-                        accent: "#1A4DB5"
+                        padding: 0
+                        hoverEnabled: true
+
+                        contentItem: Text {
+                            text: savePdfButton.text
+                            font.pixelSize: plotTypography.body
+                            font.weight: Font.Medium
+                            color: "#FFFFFF"
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
+                        }
+
+                        background: Rectangle {
+                            radius: 10 * root.scale
+                            color: savePdfButton.down || savePdfButton.hovered
+                                   ? "#153F94" : "#1A4DB5"
+                            border.width: 1
+                            border.color: "#DCE5F5"
+                        }
+
                         onClicked: {
                             var path = exportPdf()
                             if (path !== "" && globalTopBar
@@ -217,97 +235,111 @@ Item {
 
                     ColumnLayout {
                         anchors.fill:    parent
-                        anchors.margins: 12 * root.scale
-                        spacing: 10 * root.scale
+                        anchors.margins: 16 * root.scale
+                        spacing: 12 * root.scale
 
-                        // ── Product Phase card ─────────────────────────────────
                         Rectangle {
-                            Layout.fillWidth:  true
+                            Layout.fillWidth: true
                             Layout.fillHeight: true
-
-                            radius:       12 * root.scale
-                            color:        "#F7F9FD"
+                            Layout.minimumHeight: 56 * root.scale
+                            radius: 10 * root.scale
+                            color: "#F7F9FD"
                             border.width: 1
-                            border.color: "#DCE5F5"
+                            border.color: "#E5EAF2"
 
-                            ColumnLayout {
-                                anchors.fill:    parent
-                                anchors.margins: 14 * root.scale
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 16 * root.scale
+                                anchors.rightMargin: 14 * root.scale
                                 spacing: 8 * root.scale
 
                                 Text {
-                                    text: "Product\nPhase"
-                                    font.pixelSize: plotTypography.subHeading
-                                    color: "#1A4DB5"
-                                    elide: Text.ElideRight
+                                    text: "Product phase"
+                                    font.pixelSize: plotTypography.body
+                                    color: "#526174"
                                     Layout.fillWidth: true
                                 }
 
                                 Text {
                                     id: productPhaseText
                                     text: Number(SerialManager.productPhase).toFixed(1)
-                                    font.pixelSize: plotTypography.body
+                                    font.pixelSize: plotTypography.subHeading
+
                                     color: "#1A4DB5"
+                                    horizontalAlignment: Text.AlignRight
+                                    elide: Text.ElideRight
+                                    Layout.maximumWidth: 120 * root.scale
                                 }
                             }
                         }
 
-                        // ── Signal card ────────────────────────────────────────
                         Rectangle {
-                            Layout.fillWidth:  true
+                            Layout.fillWidth: true
                             Layout.fillHeight: true
-
-                            radius:       12 * root.scale
-                            color:        "#F7F9FD"
+                            Layout.minimumHeight: 56 * root.scale
+                            radius: 10 * root.scale
+                            color: "#F7F9FD"
                             border.width: 1
-                            border.color: "#DCE5F5"
+                            border.color: "#E5EAF2"
 
-                            ColumnLayout {
-                                anchors.fill:    parent
-                                anchors.margins: 14 * root.scale
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 16 * root.scale
+                                anchors.rightMargin: 14 * root.scale
                                 spacing: 8 * root.scale
 
                                 Text {
                                     text: "Signal"
-                                    font.pixelSize: plotTypography.subHeading
-                                    color: "#1A4DB5"
+                                    font.pixelSize: plotTypography.body
+                                    color: "#526174"
+                                    Layout.fillWidth: true
                                 }
 
                                 Text {
                                     id: signalText
                                     text: SerialManager.signal
-                                    font.pixelSize: plotTypography.body
+                                    font.pixelSize: plotTypography.subHeading
+
                                     color: "#0F8A60"
+                                    horizontalAlignment: Text.AlignRight
+                                    elide: Text.ElideRight
+                                    Layout.maximumWidth: 120 * root.scale
                                 }
                             }
                         }
 
-                        // ── Amplitude card ─────────────────────────────────────
                         Rectangle {
-                            Layout.fillWidth:  true
+                            Layout.fillWidth: true
                             Layout.fillHeight: true
-
-                            radius:       12 * root.scale
-                            color:        "#F7F9FD"
+                            Layout.minimumHeight: 56 * root.scale
+                            radius: 10 * root.scale
+                            color: "#F7F9FD"
                             border.width: 1
-                            border.color: "#DCE5F5"
+                            border.color: "#E5EAF2"
 
-                            ColumnLayout {
-                                anchors.fill:    parent
-                                anchors.margins: 14 * root.scale
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.leftMargin: 16 * root.scale
+                                anchors.rightMargin: 14 * root.scale
                                 spacing: 8 * root.scale
 
                                 Text {
                                     text: "Amplitude"
-                                    font.pixelSize: plotTypography.subHeading
-                                    color: "#1A4DB5"
+                                    font.pixelSize: plotTypography.body
+                                    color: "#526174"
+                                    Layout.fillWidth: true
                                 }
 
                                 Text {
                                     id: amplitudeText
                                     text: SerialManager.amplitude
-                                    font.pixelSize: plotTypography.body
+                                    font.pixelSize: plotTypography.subHeading
                                     color: "#D64545"
+                                    horizontalAlignment: Text.AlignRight
+                                    elide: Text.ElideRight
+                                    Layout.maximumWidth: 120 * root.scale
                                 }
                             }
                         }
