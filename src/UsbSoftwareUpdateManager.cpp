@@ -6,9 +6,11 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QProcess>
+#include <QSaveFile>
 #include <QStorageInfo>
 #include <QThread>
 #include <QTimer>
+#include <QDebug>
 #include <functional>
 
 namespace {
@@ -579,6 +581,54 @@ bool UsbSoftwareUpdateManager::confirmationRequired() const
 QString UsbSoftwareUpdateManager::updateError() const
 {
     return m_updateError;
+}
+
+int UsbSoftwareUpdateManager::successfulUpdateStatus() const
+{
+    QFile stateFile(QString::fromUtf8(kUpdateStatePath));
+    if (!stateFile.exists())
+        return 0;
+    if (!stateFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Unable to read software update state:"
+                   << stateFile.errorString();
+        return -1;
+    }
+
+    const QByteArray state = stateFile.readAll().trimmed();
+    if (stateFile.error() != QFileDevice::NoError) {
+        qWarning() << "Unable to read software update state:"
+                   << stateFile.errorString();
+        return -1;
+    }
+    return state == QByteArrayLiteral("SUCCESS") ? 1 : 0;
+}
+
+bool UsbSoftwareUpdateManager::acknowledgeSuccessfulUpdate()
+{
+    QFile stateFile(QString::fromUtf8(kUpdateStatePath));
+    if (!stateFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "Unable to acknowledge software update:"
+                   << stateFile.errorString();
+        return false;
+    }
+
+    const QByteArray state = stateFile.readAll().trimmed();
+    stateFile.close();
+    if (state != QByteArrayLiteral("SUCCESS"))
+        return false;
+
+    QSaveFile acknowledgedState(QString::fromUtf8(kUpdateStatePath));
+    if (!acknowledgedState.open(QIODevice::WriteOnly)) {
+        qWarning() << "Unable to acknowledge software update:"
+                   << acknowledgedState.errorString();
+        return false;
+    }
+    if (acknowledgedState.write("NONE") != 4 || !acknowledgedState.commit()) {
+        qWarning() << "Unable to acknowledge software update:"
+                   << acknowledgedState.errorString();
+        return false;
+    }
+    return true;
 }
 
 void UsbSoftwareUpdateManager::startUsbUpdate()

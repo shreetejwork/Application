@@ -27,6 +27,9 @@ public:
     bool confirmationRequired() const;
     QString updateError() const;
 
+    Q_INVOKABLE int successfulUpdateStatus() const;
+    Q_INVOKABLE bool acknowledgeSuccessfulUpdate();
+
 public slots:
     void startUsbUpdate();
     void cancelUpdate();

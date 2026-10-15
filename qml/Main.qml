@@ -388,13 +388,27 @@ ApplicationWindow {
 
         // ================= APPLICATION START AUDIT =================
 
+        var updateStatus =
+                UsbSoftwareUpdateManager.successfulUpdateStatus()
+
+        if (updateStatus === 1) {
+            if (databaseManager.addAuditTrailRecord(
+                        "---", "", "", "Application Updated")) {
+                if (!UsbSoftwareUpdateManager.acknowledgeSuccessfulUpdate())
+                    console.error("Application Updated audit was saved, but its update marker could not be cleared.")
+            } else {
+                console.error("Failed to save Application Updated audit; the update marker will be retried on next startup.")
+            }
+        } else if (updateStatus < 0) {
+            console.error("Could not check the software update marker; suppressing power-failure audit for this startup.")
+        }
+
         if (
             GlobalState.machinePowerState
             === "Running"
+            && updateStatus === 0
         )
         {
-            // power failure happened
-
             GlobalState.savePowerFailureTime()
 
 

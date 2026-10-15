@@ -1432,6 +1432,7 @@ Item {
 
                     property var filterList: [
                         "M/C Switch ON", "M/C Switched OFF", "M/C OFF (Power Failure)",
+                        "Application Updated",
                         "Auto Logout", "User Added", "User PW Changed", "User Deleted",
                         "User Logged In", "User Logged Out",
                         "LCF Changed", "HCF Changed", "Operate Delay Changed",
