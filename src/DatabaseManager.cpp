@@ -364,6 +364,18 @@ void DatabaseManager::createTables()
         ON CoilOutputHistory(created_date, reading_time, id);
     )");
 
+    QSqlQuery deleteOldCoilHistory;
+    deleteOldCoilHistory.prepare(
+        "DELETE FROM CoilOutputHistory "
+        "WHERE created_date < ?");
+    deleteOldCoilHistory.addBindValue(
+        QDate::currentDate().addDays(-14).toString("yyyy-MM-dd"));
+    if (!deleteOldCoilHistory.exec())
+    {
+        qDebug() << "Old coil data cleanup failed:"
+                 << deleteOldCoilHistory.lastError().text();
+    }
+
     query.exec(R"(
     CREATE TABLE IF NOT EXISTS machineparameters (
         id INTEGER PRIMARY KEY,
@@ -1083,7 +1095,7 @@ bool DatabaseManager::saveCoilOutputAverage(int average)
         displayDate
         );
 
-    // reading_time — used for display in QML (e.g. "00:05")
+    // reading_time — used for display in QML (e.g. "00:15")
     query.addBindValue(
         currentTime
         );
@@ -1103,7 +1115,7 @@ bool DatabaseManager::saveCoilOutputAverage(int average)
 
 
     QDate deleteLimit =
-        today.addDays(-29);
+        today.addDays(-14);
 
     QString deleteDate =
         deleteLimit.toString("yyyy-MM-dd");

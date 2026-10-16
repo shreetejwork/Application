@@ -23,6 +23,8 @@ Item {
     property int visualMax: 100
 
     property int totalDays: 0
+    readonly property int historyDays: 15
+    readonly property int sampleIntervalMinutes: 15
 
     // Full dataset — never mutated after loadData()
     property var rawValues: []
@@ -457,7 +459,7 @@ Item {
 
 
 
-            var daysToShow = 15
+            var daysToShow = root.historyDays
 
             var totalBarsForRange
 
@@ -710,12 +712,26 @@ Item {
                 Item {
                     Layout.fillWidth: true
                     Layout.fillHeight: true
-                    Text {
+                    Column {
                         anchors.centerIn: parent
-                        text: "Coil Output"
-                        font.pixelSize: 30
+                        spacing: 3 * root.scale
 
-                        color: "#0E4AB8"
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: "Coil Output"
+                            font.pixelSize: 30
+                            color: "#0E4AB8"
+                        }
+
+                        Text {
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            text: root.sampleIntervalMinutes
+                                  + "-min averages | last "
+                                  + root.historyDays
+                                  + " days"
+                            font.pixelSize: 12 * root.scale
+                            color: "#8EA2C8"
+                        }
                     }
                 }
 

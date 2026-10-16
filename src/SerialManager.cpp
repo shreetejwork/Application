@@ -60,7 +60,7 @@ SerialManager::SerialManager(QObject *parent)
             this,
             &SerialManager::processCoilBuffer);
 
-    m_coilAverageTimer.start(5 * 60 * 1000);    // 5 minutes
+    m_coilAverageTimer.start(15 * 60 * 1000);    // 15 minutes
 
 
 #ifdef Q_OS_MACOS
@@ -1450,7 +1450,7 @@ void SerialManager::processCoilBuffer()
 {
     if (m_coilBuffer.isEmpty())
     {
-        qDebug() << "No coil samples received in last 5 minutes.";
+        qDebug() << "No coil samples received in last 15 minutes.";
         return;
     }
 
@@ -1468,13 +1468,13 @@ void SerialManager::processCoilBuffer()
 
 
     qDebug() << "--------------------------------";
-    qDebug() << "5 Minute Coil Statistics";
+    qDebug() << "15 Minute Coil Statistics";
     qDebug() << "Samples :" << m_coilBuffer.size();
     qDebug() << "Average :" << average;
     qDebug() << "--------------------------------";
 
 
-    // Save 5 minute average into database
+    // Save 15 minute average into database
     if (m_databaseManager)
     {
         bool saved =
@@ -1495,6 +1495,6 @@ void SerialManager::processCoilBuffer()
     }
 
 
-    // Clear buffer for next 5 minute cycle
+    // Clear buffer for next 15 minute cycle
     m_coilBuffer.clear();
 }
