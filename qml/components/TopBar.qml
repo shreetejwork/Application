@@ -14,6 +14,9 @@ Rectangle {
 
     property string notificationText: ""
     property bool notificationVisible: false
+    property var notificationQueue: []
+    property bool notificationProcessing: false
+    property bool notificationPersistent: false
 
     property bool usbConnected: PdfExporter.usbMounted
 
@@ -59,6 +62,23 @@ Rectangle {
             GlobalState.loggedInUserRole = ""
 
             countdownCircle.resetCountdown()
+        }
+    }
+
+    Connections {
+        target: PdfExporter
+
+        function onUsbCopyFinished(success, filePaths) {
+            if (success) {
+                for (var i = 0; i < filePaths.length; i++) {
+                    var name = filePaths[i].split("/").pop()
+                    GlobalState.addCopiedFileLog(name, "System")
+                }
+                GlobalState.saveLogs()
+                root.showNotification("✓ File(s) copied to USB")
+            } else {
+                root.showNotification("⚠ Failed to copy file(s) to USB")
+            }
         }
     }
 
@@ -221,13 +241,65 @@ Rectangle {
         id: notificationTimer
         interval: 5000
         repeat: false
-        onTriggered: root.notificationVisible = false
+        onTriggered: {
+            root.notificationVisible = false
+            notificationAdvanceTimer.start()
+        }
     }
 
-    function showNotification(msg) {
-        root.notificationText = (msg || "").toString()
-        root.notificationVisible = root.notificationText.length > 0
-        notificationTimer.restart()
+    Timer {
+        id: notificationAdvanceTimer
+        interval: 250
+        repeat: false
+        onTriggered: {
+            root.notificationProcessing = false
+            root.showNextNotification()
+        }
+    }
+
+    function showNotification(msg, persistent) {
+        var text = (msg || "").toString()
+        if (text.length === 0)
+            return
+
+        if (persistent) {
+            notificationQueue.unshift({ text: text, persistent: true })
+            if (notificationProcessing && !notificationPersistent) {
+                notificationTimer.stop()
+                notificationVisible = false
+                notificationProcessing = false
+                notificationAdvanceTimer.restart()
+                return
+            }
+        } else {
+            notificationQueue.push({ text: text, persistent: false })
+        }
+
+        if (notificationProcessing && notificationPersistent && !persistent) {
+            notificationPersistent = false
+            notificationVisible = false
+            notificationAdvanceTimer.restart()
+        } else {
+            showNextNotification()
+        }
+    }
+
+    function showNextNotification() {
+        if (notificationProcessing || notificationQueue.length === 0)
+            return
+
+        notificationAdvanceTimer.stop()
+        var next = notificationQueue.shift()
+        notificationQueue = notificationQueue
+        notificationProcessing = true
+        notificationPersistent = next.persistent
+        notificationText = next.text
+        notificationVisible = true
+
+        if (next.persistent)
+            notificationTimer.stop()
+        else
+            notificationTimer.restart()
     }
 
     function resetSessionTimer() {

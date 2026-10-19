@@ -4,7 +4,7 @@ project(Application VERSION 0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(Qt6 REQUIRED COMPONENTS Quick Sql Svg PrintSupport SerialPort)
+find_package(Qt6 REQUIRED COMPONENTS Quick Sql Svg PrintSupport SerialPort Concurrent)
 
 qt_standard_project_setup(REQUIRES 6.5)
 
@@ -156,6 +156,7 @@ target_link_libraries(appApplication
     PRIVATE Qt6::Svg
     PRIVATE Qt6::PrintSupport
     PRIVATE Qt6::SerialPort
+    PRIVATE Qt6::Concurrent
 )
 
 include(GNUInstallDirs)

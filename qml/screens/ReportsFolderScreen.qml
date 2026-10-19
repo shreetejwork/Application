@@ -235,6 +235,9 @@ Item {
     }
 
     function copySelected() {
+        if (PdfExporter.usbCopyRunning)
+            return
+
         var paths = []
 
         for (var i = 0; i < filteredModel.count; i++) {
@@ -245,30 +248,23 @@ Item {
         if (paths.length === 0)
             return
 
-        if (PdfExporter.isUsbMounted()) {
-            notify("✓ USB Connected")
-        } else {
+        if (!PdfExporter.isUsbMounted()) {
             notify("⚠ USB not connected")
             return
         }
 
-        var ok = PdfExporter.moveFilesToUsb(paths, GlobalState.machineId)
-
-        if (ok) {
-
-            for (var i = 0; i < paths.length; i++) {
-
-                var name = paths[i].split("/").pop()
-
-                GlobalState.addCopiedFileLog(name, "System")
-            }
-
-            GlobalState.saveLogs()
-
-            notify("✓ File(s) copied to USB")
-            loadFiles()
+        if (PdfExporter.startMoveFilesToUsb(paths, GlobalState.machineId)) {
+            if (root.globalTopBar && root.globalTopBar.showNotification)
+                root.globalTopBar.showNotification("Copying...", true)
         } else {
             notify("⚠ Failed to copy file(s) to USB")
+        }
+    }
+
+    Connections {
+        target: PdfExporter
+        function onUsbCopyFinished() {
+            root.loadFiles()
         }
     }
 

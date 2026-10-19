@@ -9,6 +9,7 @@
 #include <QVariantMap>
 #include <QString>
 #include <QStringList>
+#include <QFutureWatcher>
 
 
 
@@ -51,9 +52,13 @@ public:
     Q_INVOKABLE QString getUsbPath();
     Q_INVOKABLE bool moveFilesToUsb(const QStringList &filePaths,
                                     const QString &serialNumber);
+    Q_INVOKABLE bool startMoveFilesToUsb(const QStringList &filePaths,
+                                         const QString &serialNumber);
+    Q_PROPERTY(bool usbCopyRunning READ usbCopyRunning NOTIFY usbCopyRunningChanged)
 
     bool usbMounted() const;
     QString usbPath() const;
+    bool usbCopyRunning() const;
 
     Q_INVOKABLE QString exportXYPlotToPdf(
         const QString &imagePath,
@@ -73,6 +78,8 @@ public:
 signals:
     void usbMountedChanged();
     void usbPathChanged();
+    void usbCopyRunningChanged();
+    void usbCopyFinished(bool success, const QStringList &filePaths);
 
 
 private:
@@ -82,6 +89,9 @@ private:
 
     bool m_usbMounted = false;
     QString m_usbPath;
+    bool m_usbCopyRunning = false;
+    QStringList m_usbCopyPaths;
+    QFutureWatcher<bool> m_usbCopyWatcher;
 };
 
 

@@ -29,6 +29,7 @@
 #include <QStorageInfo>
 #include <QTimer>
 #include <QProcess>
+#include <QtConcurrent/QtConcurrentRun>
 
 #ifdef Q_OS_UNIX
 #include <unistd.h>
@@ -38,6 +39,13 @@
 PdfExporter::PdfExporter(QObject *parent)
     : QObject(parent)
 {
+    connect(&m_usbCopyWatcher, &QFutureWatcher<bool>::finished, this, [this]() {
+        m_usbCopyRunning = false;
+        emit usbCopyRunningChanged();
+        emit usbCopyFinished(m_usbCopyWatcher.result(), m_usbCopyPaths);
+        m_usbCopyPaths.clear();
+    });
+
     refreshUsbState();
 
     auto *usbTimer = new QTimer(this);
@@ -54,6 +62,11 @@ bool PdfExporter::usbMounted() const
 QString PdfExporter::usbPath() const
 {
     return m_usbPath;
+}
+
+bool PdfExporter::usbCopyRunning() const
+{
+    return m_usbCopyRunning;
 }
 
 QString PdfExporter::detectUsbPath() const
@@ -2635,16 +2648,15 @@ QString PdfExporter::getUsbPath()
 }
 
 // ============ Move selected files to USB ===========
-bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
-                                 const QString &serialNumber)
+static bool copyFilesToUsb(const QStringList &filePaths,
+                           const QString &serialNumber,
+                           const QString &usbPath)
 {
-    refreshUsbState();
-    const QString usbPath = m_usbPath.trimmed();
     qDebug() << "USB destination path:" << usbPath;
 
     QFileInfo usbInfo(usbPath);
-    if (!m_usbMounted || usbPath.isEmpty() || !usbInfo.isDir()
-        || !usbInfo.isReadable() || !usbInfo.isWritable()) {
+    if (usbPath.isEmpty() || !usbInfo.isDir() || !usbInfo.isReadable()
+        || !usbInfo.isWritable()) {
         qWarning() << "USB destination is not a writable mounted storage device";
         return false;
     }
@@ -2660,9 +2672,7 @@ bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
 
     const auto usbIsStillMounted = [&]() {
         usbStorage.refresh();
-        refreshUsbState();
-        return m_usbMounted && m_usbPath == usbPath
-               && usbStorage.isValid() && usbStorage.isReady()
+        return usbStorage.isValid() && usbStorage.isReady()
                && !usbStorage.isReadOnly()
                && usbStorage.rootPath() == usbRootPath
                && usbStorage.device() == usbDevice;
@@ -2800,6 +2810,32 @@ bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
                  << "bytes=" << expectedSize;
     }
     return allOk;
+}
+
+bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
+                                 const QString &serialNumber)
+{
+    refreshUsbState();
+    return m_usbMounted
+           && copyFilesToUsb(filePaths, serialNumber, m_usbPath.trimmed());
+}
+
+bool PdfExporter::startMoveFilesToUsb(const QStringList &filePaths,
+                                      const QString &serialNumber)
+{
+    refreshUsbState();
+    if (m_usbCopyRunning || !m_usbMounted || filePaths.isEmpty())
+        return false;
+
+    const QString usbPath = m_usbPath.trimmed();
+    m_usbCopyPaths = filePaths;
+    m_usbCopyRunning = true;
+    emit usbCopyRunningChanged();
+    m_usbCopyWatcher.setFuture(QtConcurrent::run(
+        [filePaths, serialNumber, usbPath]() {
+            return copyFilesToUsb(filePaths, serialNumber, usbPath);
+        }));
+    return true;
 }
 
 //====================== X-Y PLOT PDF ============================
