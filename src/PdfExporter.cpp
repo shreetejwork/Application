@@ -4,6 +4,7 @@
 #include <QDesktopServices>
 #include <QUrl>
 #include <QFile>
+#include <QSaveFile>
 
 #include <QApplication>
 #include <QPdfWriter>
@@ -28,6 +29,10 @@
 #include <QStorageInfo>
 #include <QTimer>
 #include <QProcess>
+
+#ifdef Q_OS_UNIX
+#include <unistd.h>
+#endif
 
 
 PdfExporter::PdfExporter(QObject *parent)
@@ -2644,6 +2649,25 @@ bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
         return false;
     }
 
+    QStorageInfo usbStorage(usbPath);
+    usbStorage.refresh();
+    if (!usbStorage.isValid() || !usbStorage.isReady() || usbStorage.isReadOnly()) {
+        qWarning() << "USB storage is not ready for writing:" << usbPath;
+        return false;
+    }
+    const QString usbRootPath = usbStorage.rootPath();
+    const QByteArray usbDevice = usbStorage.device();
+
+    const auto usbIsStillMounted = [&]() {
+        usbStorage.refresh();
+        refreshUsbState();
+        return m_usbMounted && m_usbPath == usbPath
+               && usbStorage.isValid() && usbStorage.isReady()
+               && !usbStorage.isReadOnly()
+               && usbStorage.rootPath() == usbRootPath
+               && usbStorage.device() == usbDevice;
+    };
+
     QString folderName = serialNumber.trimmed().isEmpty()
                              ? "Reports_MD"
                              : QString("Reports_MD_%1").arg(serialNumber.trimmed());
@@ -2659,6 +2683,11 @@ bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
 
     bool allOk = true;
     for (const QString &srcFile : filePaths) {
+        if (!usbIsStillMounted()) {
+            qWarning() << "USB was disconnected during report transfer:" << usbPath;
+            return false;
+        }
+
         QFileInfo fi(srcFile);
         qDebug() << "PDF source:" << srcFile
                  << "exists=" << fi.exists()
@@ -2672,19 +2701,103 @@ bool PdfExporter::moveFilesToUsb(const QStringList &filePaths,
         QString dstFile = QDir(destDir).filePath(fi.fileName());
         qDebug() << "PDF destination:" << dstFile;
 
-        if (QFile::exists(dstFile) && !QFile::remove(dstFile)) {
-            qWarning() << "Unable to replace existing PDF:" << dstFile;
+        QFile sourceFile(srcFile);
+        if (!sourceFile.open(QIODevice::ReadOnly)) {
+            qWarning() << "PDF source open failed:" << srcFile
+                       << sourceFile.errorString();
             allOk = false;
             continue;
         }
 
-        QFile sourceFile(srcFile);
-        if (!sourceFile.copy(dstFile)) {
-            qWarning() << "PDF copy failed:" << sourceFile.errorString();
+        const qint64 expectedSize = sourceFile.size();
+        QSaveFile destinationFile(dstFile);
+        destinationFile.setDirectWriteFallback(false);
+        if (!destinationFile.open(QIODevice::WriteOnly)) {
+            qWarning() << "PDF destination open failed:" << dstFile
+                       << destinationFile.errorString();
             allOk = false;
-        } else {
-            qDebug() << "PDF copy success:" << dstFile;
+            continue;
         }
+
+        qint64 copiedBytes = 0;
+        bool copyOk = true;
+        QByteArray buffer(1024 * 1024, '\0');
+        while (copyOk) {
+            const qint64 bytesRead = sourceFile.read(buffer.data(), buffer.size());
+            if (bytesRead < 0) {
+                qWarning() << "PDF source read failed:" << srcFile
+                           << sourceFile.errorString();
+                copyOk = false;
+                break;
+            }
+            if (bytesRead == 0)
+                break;
+
+            qint64 bytesWritten = 0;
+            while (bytesWritten < bytesRead) {
+                const qint64 written = destinationFile.write(
+                    buffer.constData() + bytesWritten, bytesRead - bytesWritten);
+                if (written <= 0) {
+                    qWarning() << "PDF destination write failed:" << dstFile
+                               << destinationFile.errorString();
+                    copyOk = false;
+                    break;
+                }
+                bytesWritten += written;
+            }
+            copiedBytes += bytesWritten;
+        }
+
+        if (copiedBytes != expectedSize) {
+            qWarning() << "PDF transfer size mismatch:" << srcFile
+                       << "expected=" << expectedSize << "copied=" << copiedBytes;
+            copyOk = false;
+        }
+
+        if (copyOk && !destinationFile.flush()) {
+            qWarning() << "PDF destination flush failed:" << dstFile
+                       << destinationFile.errorString();
+            copyOk = false;
+        }
+
+#ifdef Q_OS_UNIX
+        if (copyOk && fsync(destinationFile.handle()) != 0) {
+            qWarning() << "PDF destination sync failed:" << dstFile;
+            copyOk = false;
+        }
+#endif
+
+        if (copyOk && !usbIsStillMounted()) {
+            qWarning() << "USB was disconnected before report transfer completed:"
+                       << usbPath;
+            copyOk = false;
+        }
+
+        if (!copyOk) {
+            destinationFile.cancelWriting();
+            allOk = false;
+            continue;
+        }
+
+        if (!destinationFile.commit()) {
+            qWarning() << "PDF destination commit failed:" << dstFile
+                       << destinationFile.errorString();
+            allOk = false;
+            continue;
+        }
+
+        const QFileInfo destinationInfo(dstFile);
+        if (!destinationInfo.isFile() || destinationInfo.size() != expectedSize
+            || !usbIsStillMounted()) {
+            qWarning() << "PDF destination verification failed:" << dstFile
+                       << "expected size=" << expectedSize
+                       << "actual size=" << destinationInfo.size();
+            allOk = false;
+            continue;
+        }
+
+        qDebug() << "PDF copy verified:" << dstFile
+                 << "bytes=" << expectedSize;
     }
     return allOk;
 }

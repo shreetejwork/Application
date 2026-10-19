@@ -265,8 +265,10 @@ Item {
 
             GlobalState.saveLogs()
 
-            notify("✓ File(s) moved to USB")
+            notify("✓ File(s) copied to USB")
             loadFiles()
+        } else {
+            notify("⚠ Failed to copy file(s) to USB")
         }
     }
 
