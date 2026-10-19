@@ -2187,12 +2187,20 @@ QVariantMap DatabaseManager::getS1Settings()
 
 //======================== Audit Trail Report ===============
 
+void DatabaseManager::setAuditTrailSuppressed(bool suppressed)
+{
+    m_auditTrailSuppressed = suppressed;
+}
+
 bool DatabaseManager::addAuditTrailRecord(
     const QString &user,
     const QString &oldValue,
     const QString &newValue,
     const QString &remark)
 {
+    if (m_auditTrailSuppressed)
+        return true;
+
     QDate currentDate = QDate::currentDate();
     QTime currentTime = QTime::currentTime();
 

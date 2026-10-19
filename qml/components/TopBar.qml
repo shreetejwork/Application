@@ -262,6 +262,14 @@ Rectangle {
         if (text.length === 0)
             return
 
+        if (notificationProcessing && notificationText === text)
+            return
+
+        for (var i = 0; i < notificationQueue.length; i++) {
+            if (notificationQueue[i].text === text)
+                return
+        }
+
         if (persistent) {
             notificationQueue.unshift({ text: text, persistent: true })
             if (notificationProcessing && !notificationPersistent) {

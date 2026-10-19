@@ -131,6 +131,14 @@ QtObject {
     property bool developerLogin: false
     property bool engineerLogin: false
 
+    function updateAuditTrailSuppression() {
+        if (typeof databaseManager !== "undefined")
+            databaseManager.setAuditTrailSuppressed(developerLogin || engineerLogin)
+    }
+
+    onDeveloperLoginChanged: updateAuditTrailSuppression()
+    onEngineerLoginChanged: updateAuditTrailSuppression()
+
     property bool coilBalancingOn: false
 
     property bool loginKeyboardRequest: false

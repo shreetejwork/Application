@@ -117,6 +117,7 @@ public:
         const QString &oldValue,
         const QString &newValue,
         const QString &remark);
+    Q_INVOKABLE void setAuditTrailSuppressed(bool suppressed);
 
     Q_INVOKABLE QVariantList getAuditTrailReport(
         const QString &fromDate,
@@ -213,6 +214,7 @@ public:
 private:
 
     void createTables();
+    bool m_auditTrailSuppressed = false;
 
 signals:
     void machineParametersChanged();
