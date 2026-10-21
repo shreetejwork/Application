@@ -12,6 +12,7 @@ constexpr uint8_t SYNC2 = 0x5A;
 constexpr uint8_t END1 = 0xB5;
 constexpr uint8_t END2 = 0x5B;
 constexpr int FRAME_OVERHEAD = 6;
+constexpr int WAVEFORM_PAYLOAD_UNIT = 4;
 constexpr int CHANNEL_COUNT = 4;
 constexpr int CHANNEL_SIZE = 2;
 constexpr int SAMPLE_SIZE = CHANNEL_COUNT * CHANNEL_SIZE;
@@ -41,7 +42,7 @@ WaveformManager::WaveformManager(QObject *parent)
 
 void WaveformManager::processPacket(const QByteArray &frame)
 {
-    if (frame.size() < FRAME_OVERHEAD + SAMPLE_SIZE ||
+    if (frame.size() < FRAME_OVERHEAD + WAVEFORM_PAYLOAD_UNIT ||
         static_cast<uint8_t>(frame.at(0)) != SYNC1 ||
         static_cast<uint8_t>(frame.at(1)) != SYNC2 ||
         static_cast<uint8_t>(frame.at(frame.size() - 2)) != END1 ||
@@ -52,9 +53,15 @@ void WaveformManager::processPacket(const QByteArray &frame)
     }
 
     const int payloadSize = frame.size() - FRAME_OVERHEAD;
+    if (payloadSize % WAVEFORM_PAYLOAD_UNIT != 0)
+    {
+        qDebug() << "Waveform packet ignored: payload size is not divisible by four:"
+                 << payloadSize;
+        return;
+    }
     if (payloadSize % SAMPLE_SIZE != 0)
     {
-        qWarning() << "Waveform packet rejected: expected four-channel samples,"
+        qDebug() << "Waveform packet ignored: incomplete four-channel sample,"
                    << "payload bytes:" << payloadSize;
         return;
     }

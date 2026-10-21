@@ -189,7 +189,7 @@ signals:
 
     void xyPlotDataChanged();
 
-    void plotPacketReceived(const QByteArray &frame);
+    void waveformPacketReceived(const QByteArray &frame);
 
 private slots:
     void onReadyRead();

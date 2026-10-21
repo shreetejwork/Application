@@ -680,12 +680,12 @@ void SerialManager::processXyAsciiBuffer()
             continue;
 
         QVariantList decodedData;
+        emit waveformPacketReceived(frame);
         if (parseXyPlotFrame(frame, decodedData))
         {
             xyRxBuffer.remove(0, tokens[endToken].capturedEnd());
             logXyPacketBeforePlotUpdate(frame, decodedData);
             updateXyPlotData(decodedData);
-            emit plotPacketReceived(frame);
         }
         else
         {
@@ -759,6 +759,7 @@ void SerialManager::onReadyRead()
 
             QVariantList decodedData;
 
+            emit waveformPacketReceived(frame);
 
             if (parseXyPlotFrame(frame, decodedData))
             {
@@ -767,9 +768,7 @@ void SerialManager::onReadyRead()
                 logXyPacketBeforePlotUpdate(
                     frame,
                     decodedData);
-
                 updateXyPlotData(decodedData);
-                emit plotPacketReceived(frame);
             }
             else if (!xyRxBuffer.isEmpty() &&
                      static_cast<uint8_t>(xyRxBuffer.at(xyRxBuffer.size() - 1)) == XY_SYNC1)

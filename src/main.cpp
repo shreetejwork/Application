@@ -77,7 +77,7 @@ int main(int argc, char *argv[])
         &waveformManager);
 
     QObject::connect(&serialManager,
-                     &SerialManager::plotPacketReceived,
+                     &SerialManager::waveformPacketReceived,
                      &waveformManager,
                      &WaveformManager::processPacket);
 
