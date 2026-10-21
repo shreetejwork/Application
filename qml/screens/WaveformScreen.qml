@@ -197,7 +197,7 @@ Item {
                     Layout.preferredHeight: 40 * root.scale
                     labelPixelSize: Math.max(15, 17 * root.scale)
                     accent: modelData.color
-                    selectedFill: "#F8FAFC"
+                    selectedFill: Qt.rgba(accent.r, accent.g, accent.b, 0.12)
                     selectedLabelColor: modelData.color
                     selected: text === "All"
                               ? root.selectedChannels.length === 4
