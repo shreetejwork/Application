@@ -19,7 +19,8 @@ constexpr uint8_t XY_SYNC2 = 0x5A;
 constexpr uint8_t XY_END1 = 0xB5;
 constexpr uint8_t XY_END2 = 0x5B;
 constexpr int XY_SYNC_SIZE = 2;
-constexpr int XY_PAIR_SIZE = 4;
+constexpr int XY_CHANNEL_SIZE = 2;
+constexpr int XY_SAMPLE_SIZE = 4 * XY_CHANNEL_SIZE;
 constexpr int XY_CRC_SIZE = 2;
 constexpr int XY_END_SIZE = 2;
 constexpr int XY_PAYLOAD_OFFSET = XY_SYNC_SIZE;
@@ -521,9 +522,9 @@ bool SerialManager::parseXyPlotFrame(const QByteArray &frame, QVariantList &outD
 
 bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList &outData)
 {
-    if (payload.isEmpty() || payload.size() % XY_PAIR_SIZE != 0)
+    if (payload.isEmpty() || payload.size() % XY_SAMPLE_SIZE != 0)
     {
-        qDebug() << "XY payload rejected: invalid pair data size="
+        qDebug() << "XY payload rejected: invalid four-channel sample data size="
                  << payload.size();
         return false;
     }
@@ -531,10 +532,10 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
     outData.clear();
     QStringList decimalPairs;
 
-    const int sampleCount = payload.size() / XY_PAIR_SIZE;
+    const int sampleCount = payload.size() / XY_SAMPLE_SIZE;
     for (int i = 0; i < sampleCount; ++i)
     {
-        const int offset = i * XY_PAIR_SIZE;
+        const int offset = i * XY_SAMPLE_SIZE;
         const auto readSignedValue = [&payload](int valueOffset) {
             const uint16_t raw =
                 (static_cast<uint16_t>(static_cast<uint8_t>(payload.at(valueOffset))) << 8) |
@@ -543,7 +544,7 @@ bool SerialManager::decodeXyPlotPayload(const QByteArray &payload, QVariantList 
         };
 
         const int16_t xValue = readSignedValue(offset);
-        const int16_t yValue = readSignedValue(offset + 2);
+        const int16_t yValue = readSignedValue(offset + XY_CHANNEL_SIZE);
 
         const qreal plotX = qBound(-XY_PLOT_LIMIT,
                                    static_cast<qreal>(xValue) * XY_SIGNED_SCALE,
@@ -679,6 +680,7 @@ void SerialManager::processXyAsciiBuffer()
             xyRxBuffer.remove(0, tokens[endToken].capturedEnd());
             logXyPacketBeforePlotUpdate(frame, decodedData);
             updateXyPlotData(decodedData);
+            emit plotPacketReceived(frame);
         }
         else
         {
@@ -762,6 +764,7 @@ void SerialManager::onReadyRead()
                     decodedData);
 
                 updateXyPlotData(decodedData);
+                emit plotPacketReceived(frame);
             }
             else if (!xyRxBuffer.isEmpty() &&
                      static_cast<uint8_t>(xyRxBuffer.at(xyRxBuffer.size() - 1)) == XY_SYNC1)

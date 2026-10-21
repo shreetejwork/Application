@@ -130,6 +130,8 @@ qt_add_qml_module(appApplication
         QML_FILES qml/components/AccessDeniedPopup.qml
         SOURCES src/SerialManager.h
         SOURCES src/SerialManager.cpp
+        SOURCES src/WaveformManager.h
+        SOURCES src/WaveformManager.cpp
         QML_FILES qml/screens/SysDiagnosisScreen.qml
         QML_FILES qml/screens/XyPlotScreen.qml
         QML_FILES qml/screens/WaveformScreen.qml

@@ -10,7 +10,7 @@ Item {
     property real scale: Math.min(width / 1024, height / 600)
     property var samples: []
     property bool captureEnabled: true
-    property string displayMode: "Both"
+    property string displayMode: "All"
     readonly property int maxHistorySamples: 10000
 
     Component.onDestruction: Backend.SerialManager.setPlotMode(false)
@@ -22,8 +22,10 @@ Item {
         var packetSamples = []
         for (var i = 0; i < points.length; ++i) {
             packetSamples.push({
-                                   x: Number(points[i].rawX),
-                                   y: Number(points[i].rawY)
+                                   x: Number(points[i].x),
+                                   y: Number(points[i].y),
+                                   z1: Number(points[i].z1),
+                                   z2: Number(points[i].z2)
                                })
         }
         var history = samples.concat(packetSamples)
@@ -40,15 +42,15 @@ Item {
 
     Component.onCompleted: {
         Backend.SerialManager.setPlotMode(true)
-        root.showPacket(Backend.SerialManager.xyPlotData)
+        root.showPacket(Backend.WaveformManager.waveformData)
     }
 
     Connections {
-        target: Backend.SerialManager
+        target: Backend.WaveformManager
 
-        function onXyPlotDataChanged() {
+        function onWaveformDataChanged() {
             if (root.captureEnabled)
-                root.showPacket(Backend.SerialManager.xyPlotData)
+                root.showPacket(Backend.WaveformManager.waveformData)
         }
     }
 
@@ -148,41 +150,42 @@ Item {
                 onClicked: waveformChart.resetView()
             }
 
-            WaveformControlButton {
-                text: "X"
-                Layout.preferredWidth: 44 * root.scale
-                Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: Math.max(13, 15 * root.scale)
-                accent: "#1A4DB5"
-                selected: root.displayMode === "X"
-                onClicked: root.displayMode = "X"
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 38 * root.scale
+            spacing: 6 * root.scale
+
+            Repeater {
+                model: [
+                    { label: "X", color: "#1A4DB5" },
+                    { label: "Y", color: "#D64545" },
+                    { label: "Z1", color: "#16804A" },
+                    { label: "Z2", color: "#8B5CF6" },
+                    { label: "All", color: "#334155" }
+                ]
+
+                delegate: WaveformControlButton {
+                    required property var modelData
+                    text: modelData.label
+                    Layout.preferredWidth: text === "All" ? 54 * root.scale
+                                                               : 48 * root.scale
+                    Layout.preferredHeight: 34 * root.scale
+                    labelPixelSize: Math.max(12, 14 * root.scale)
+                    accent: modelData.color
+                    selected: root.displayMode === modelData.label
+                    onClicked: root.displayMode = modelData.label
+                }
             }
 
-            WaveformControlButton {
-                text: "Y"
-                Layout.preferredWidth: 44 * root.scale
-                Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: Math.max(13, 15 * root.scale)
-                accent: "#D64545"
-                selected: root.displayMode === "Y"
-                onClicked: root.displayMode = "Y"
-            }
-
-            WaveformControlButton {
-                text: "Both"
-                Layout.preferredWidth: 56 * root.scale
-                Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: Math.max(12, 14 * root.scale)
-                accent: "#334155"
-                selected: root.displayMode === "Both"
-                onClicked: root.displayMode = "Both"
-            }
+            Item { Layout.fillWidth: true }
 
             WaveformControlButton {
                 text: "Cursor"
                 visible: !root.captureEnabled
                 Layout.preferredWidth: 68 * root.scale
-                Layout.preferredHeight: 38 * root.scale
+                Layout.preferredHeight: 34 * root.scale
                 labelPixelSize: Math.max(12, 14 * root.scale)
                 accent: "#16804A"
                 selected: waveformChart.cursorEnabled
@@ -198,7 +201,7 @@ Item {
                 text: root.captureEnabled
                       ? "Stop capture" : "Start capture"
                 Layout.preferredWidth: 112 * root.scale
-                Layout.preferredHeight: 38 * root.scale
+                Layout.preferredHeight: 34 * root.scale
                 labelPixelSize: Math.max(12, 14 * root.scale)
                 accent: root.captureEnabled
                         ? "#B42318" : "#16804A"

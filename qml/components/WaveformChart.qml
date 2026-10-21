@@ -9,7 +9,7 @@ Rectangle {
     property string title: "X"
     property string valueKey: "x"
     property color traceColor: "#1A4DB5"
-    property string displayMode: "Both"
+    property string displayMode: "All"
     property var samples: []
     property bool cursorEnabled: false
     property int hoverSampleIndex: -1
@@ -25,6 +25,21 @@ Rectangle {
     readonly property int maxVisibleSamples: 10000
     readonly property real valueLimit: 32768
 
+    function channelKeys() {
+        return displayMode === "All"
+                ? ["x", "y", "z1", "z2"] : [displayMode.toLowerCase()]
+    }
+
+    function channelColor(key) {
+        if (key === "x")
+            return "#1A4DB5"
+        if (key === "y")
+            return "#D64545"
+        if (key === "z1")
+            return "#16804A"
+        return "#8B5CF6"
+    }
+
     function moveWindow(amount) {
         windowStart = Math.max(0,
                                Math.min(samples.length - visibleSamples,
@@ -37,8 +52,7 @@ Rectangle {
         if (count === 0)
             return
 
-        var keys = displayMode === "Both"
-                ? ["x", "y"] : [displayMode.toLowerCase()]
+        var keys = channelKeys()
         var peakIndex = windowStart
         var peakMagnitude = -1
         for (var i = windowStart; i < windowStart + count; ++i) {
@@ -106,8 +120,12 @@ Rectangle {
 
     function pointDescription(index) {
         var point = samples[index]
-        return "(" + Number(point.x).toFixed(2)
-                + ", " + Number(point.y).toFixed(2) + ")"
+        var keys = channelKeys()
+        var values = []
+        for (var i = 0; i < keys.length; ++i)
+            values.push(keys[i].toUpperCase() + ": "
+                        + Number(point[keys[i]]).toFixed(2))
+        return values.join(", ")
     }
 
     function sampleTimeMilliseconds(index) {
@@ -127,8 +145,7 @@ Rectangle {
         if (start >= end)
             return []
 
-        var keys = displayMode === "Both"
-                ? ["x", "y"] : [displayMode.toLowerCase()]
+        var keys = channelKeys()
         var peaks = []
         for (var keyIndex = 0; keyIndex < keys.length; ++keyIndex) {
             var key = keys[keyIndex]
@@ -227,7 +244,7 @@ Rectangle {
 
     function currentAxisLimit() {
         var maxMagnitude = 0
-        var keys = displayMode === "Both" ? ["x", "y"] : [displayMode.toLowerCase()]
+        var keys = channelKeys()
         for (var i = 0; i < samples.length; ++i) {
             for (var keyIndex = 0; keyIndex < keys.length; ++keyIndex)
                 maxMagnitude = Math.max(maxMagnitude,
@@ -354,10 +371,15 @@ Rectangle {
                 ctx.lineJoin = "round"
                 ctx.lineCap = "round"
                 var series = []
-                if (chartCard.displayMode === "X" || chartCard.displayMode === "Both")
-                    series.push({ key: "x", color: "#1A4DB5" })
-                if (chartCard.displayMode === "Y" || chartCard.displayMode === "Both")
-                    series.push({ key: "y", color: "#D64545" })
+                var channelKeys = chartCard.channelKeys()
+                for (var channelIndex = 0;
+                     channelIndex < channelKeys.length;
+                     ++channelIndex) {
+                    series.push({
+                        key: channelKeys[channelIndex],
+                        color: chartCard.channelColor(channelKeys[channelIndex])
+                    })
+                }
 
                 for (var seriesIndex = 0; seriesIndex < series.length; ++seriesIndex) {
                     ctx.strokeStyle = series[seriesIndex].color
@@ -421,7 +443,7 @@ Rectangle {
                                                  Math.min(axisLimit, peak.value))
                         var peakY = top + (axisLimit - peakValue)
                                     * plotHeight / (2 * axisLimit)
-                        var peakColor = peak.key === "x" ? "#1A4DB5" : "#D64545"
+                        var peakColor = chartCard.channelColor(peak.key)
 
                         ctx.beginPath()
                         ctx.arc(peakX, peakY,
@@ -482,8 +504,7 @@ Rectangle {
 
                     if (cursorIndex === chartCard.firstCursorIndex
                             || cursorIndex === chartCard.secondCursorIndex) {
-                        var selectedKeys = ["x", "y"]
-                        var selectedColors = ["#1A4DB5", "#D64545"]
+                        var selectedKeys = chartCard.channelKeys()
                         for (var keyIndex = 0; keyIndex < selectedKeys.length; ++keyIndex) {
                             var selectedValue = Math.max(
                                         -axisLimit,
@@ -498,7 +519,8 @@ Rectangle {
                             ctx.fillStyle = "#FFFFFF"
                             ctx.fill()
                             ctx.lineWidth = 2 * chartCard.scale
-                            ctx.strokeStyle = selectedColors[keyIndex]
+                            ctx.strokeStyle =
+                                    chartCard.channelColor(selectedKeys[keyIndex])
                             ctx.stroke()
                         }
                     }

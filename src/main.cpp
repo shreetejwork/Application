@@ -12,6 +12,7 @@
 #include "SystemDiagnosis.h"
 #include "PlotItem.h"
 #include "SerialManager.h"
+#include "WaveformManager.h"
 #include "LanManager.h"
 #include "UsbSoftwareUpdateManager.h"
 
@@ -31,6 +32,7 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     SerialManager serialManager;
+    WaveformManager waveformManager;
 
     int id = QFontDatabase::addApplicationFont(":/qt/qml/Application/assets/images/RobotoCondensed-Regular.ttf");
 
@@ -66,6 +68,18 @@ int main(int argc, char *argv[])
         0,
         "SerialManager",
         &serialManager);
+
+    qmlRegisterSingletonInstance(
+        "Backend",
+        1,
+        0,
+        "WaveformManager",
+        &waveformManager);
+
+    QObject::connect(&serialManager,
+                     &SerialManager::plotPacketReceived,
+                     &waveformManager,
+                     &WaveformManager::processPacket);
 
     // =========================================================
     // CUSTOM COMPONENTS

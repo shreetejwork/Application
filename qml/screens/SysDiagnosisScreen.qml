@@ -58,7 +58,7 @@ Item {
 
             MenuTile {
                 iconSource: "qrc:/qt/qml/Application/assets/images/axis.png"
-                label: "2 Channel DSO"
+                label: "4 Channel DSO"
                 iconSize: 100 * root.scale
 
                 onTileClicked: navigateTo("Waveform")
