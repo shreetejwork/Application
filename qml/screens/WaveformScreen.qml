@@ -10,10 +10,24 @@ Item {
     property real scale: Math.min(width / 1024, height / 600)
     property var samples: []
     property bool captureEnabled: true
-    property string displayMode: "All"
+    property var selectedChannels: ["x", "y", "z1", "z2"]
     readonly property int maxHistorySamples: 10000
 
     Component.onDestruction: Backend.SerialManager.setWaveformMode(false)
+
+    function isChannelSelected(channel) {
+        return selectedChannels.indexOf(channel.toLowerCase()) >= 0
+    }
+
+    function toggleChannel(channel) {
+        var updatedChannels = selectedChannels.slice()
+        var index = updatedChannels.indexOf(channel.toLowerCase())
+        if (index >= 0 && updatedChannels.length > 1)
+            updatedChannels.splice(index, 1)
+        else if (index < 0)
+            updatedChannels.push(channel.toLowerCase())
+        selectedChannels = updatedChannels
+    }
 
     function showPacket(points) {
         if (!points || points.length === 0)
@@ -76,135 +90,22 @@ Item {
 
             Item { Layout.fillWidth: true }
 
-            Text {
-                text: root.captureEnabled
-                      ? (root.samples.length > 0
-                         ? "Capturing · " + root.samples.length + " samples"
-                         : "Waiting for serial data...")
-                      : "Capture paused"
-                color: "#64748B"
-                font.pixelSize: Math.max(12, 14 * root.scale)
-            }
-
             WaveformControlButton {
                 text: "Clear Buffer"
                 Layout.preferredWidth: 100 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: Math.max(12, 14 * root.scale)
+                labelPixelSize: Math.max(15, 17 * root.scale)
                 accent: "#B42318"
                 enabled: root.samples.length > 0
                 onClicked: root.clearBuffer()
             }
 
             WaveformControlButton {
-                text: "←"
-                Layout.preferredWidth: 42 * root.scale
+                text: root.captureEnabled ? "Stop capture" : "Start capture"
+                Layout.preferredWidth: 126 * root.scale
                 Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: Math.max(18, 20 * root.scale)
-                accent: "#1A4DB5"
-                enabled: waveformChart.windowStart > 0
-                onClicked: waveformChart.moveWindow(-Math.max(
-                                                          1,
-                                                          Math.floor(waveformChart.visibleSamples * 0.1)))
-            }
-
-            WaveformControlButton {
-                text: "→"
-                Layout.preferredWidth: 42 * root.scale
-                Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: Math.max(18, 20 * root.scale)
-                accent: "#1A4DB5"
-                enabled: waveformChart.windowStart + waveformChart.visibleSamples
-                         < waveformChart.samples.length
-                onClicked: waveformChart.moveWindow(Math.max(
-                                                        1,
-                                                        Math.floor(waveformChart.visibleSamples * 0.1)))
-            }
-
-            WaveformControlButton {
-                text: "Zoom −"
-                Layout.preferredWidth: 68 * root.scale
-                Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: Math.max(12, 14 * root.scale)
-                accent: "#1A4DB5"
-                enabled: waveformChart.visibleSamples < waveformChart.maxVisibleSamples
-                onClicked: waveformChart.zoomOut()
-            }
-
-            WaveformControlButton {
-                text: "Zoom +"
-                Layout.preferredWidth: 68 * root.scale
-                Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: Math.max(12, 14 * root.scale)
-                accent: "#1A4DB5"
-                enabled: waveformChart.visibleSamples > waveformChart.minVisibleSamples
-                onClicked: waveformChart.zoomIn()
-            }
-
-            WaveformControlButton {
-                text: "Reset"
-                Layout.preferredWidth: 60 * root.scale
-                Layout.preferredHeight: 38 * root.scale
-                labelPixelSize: Math.max(12, 14 * root.scale)
-                accent: "#1A4DB5"
-                onClicked: waveformChart.resetView()
-            }
-
-        }
-
-        RowLayout {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 38 * root.scale
-            spacing: 6 * root.scale
-
-            Repeater {
-                model: [
-                    { label: "X", color: "#1A4DB5" },
-                    { label: "Y", color: "#D64545" },
-                    { label: "Z1", color: "#16804A" },
-                    { label: "Z2", color: "#8B5CF6" },
-                    { label: "All", color: "#334155" }
-                ]
-
-                delegate: WaveformControlButton {
-                    required property var modelData
-                    text: modelData.label
-                    Layout.preferredWidth: text === "All" ? 54 * root.scale
-                                                               : 48 * root.scale
-                    Layout.preferredHeight: 34 * root.scale
-                    labelPixelSize: Math.max(12, 14 * root.scale)
-                    accent: modelData.color
-                    selected: root.displayMode === modelData.label
-                    onClicked: root.displayMode = modelData.label
-                }
-            }
-
-            Item { Layout.fillWidth: true }
-
-            WaveformControlButton {
-                text: "Cursor"
-                visible: !root.captureEnabled
-                Layout.preferredWidth: 68 * root.scale
-                Layout.preferredHeight: 34 * root.scale
-                labelPixelSize: Math.max(12, 14 * root.scale)
-                accent: "#16804A"
-                selected: waveformChart.cursorEnabled
-                enabled: root.samples.length > 0
-                onClicked: {
-                    waveformChart.cursorEnabled = !waveformChart.cursorEnabled
-                    if (!waveformChart.cursorEnabled)
-                        waveformChart.clearCursorSelection()
-                }
-            }
-
-            WaveformControlButton {
-                text: root.captureEnabled
-                      ? "Stop capture" : "Start capture"
-                Layout.preferredWidth: 112 * root.scale
-                Layout.preferredHeight: 34 * root.scale
-                labelPixelSize: Math.max(12, 14 * root.scale)
-                accent: root.captureEnabled
-                        ? "#B42318" : "#16804A"
+                labelPixelSize: Math.max(15, 17 * root.scale)
+                accent: root.captureEnabled ? "#B42318" : "#16804A"
                 onClicked: {
                     if (root.captureEnabled) {
                         root.captureEnabled = false
@@ -215,6 +116,119 @@ Item {
                     }
                 }
             }
+
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.preferredHeight: 42 * root.scale
+            spacing: 6 * root.scale
+
+            Item { Layout.fillWidth: true }
+
+            WaveformControlButton {
+                text: "←"
+                Layout.preferredWidth: 44 * root.scale
+                Layout.preferredHeight: 40 * root.scale
+                labelPixelSize: Math.max(20, 22 * root.scale)
+                accent: "#1A4DB5"
+                enabled: waveformChart.windowStart > 0
+                onClicked: waveformChart.moveWindow(-Math.max(
+                                                          1,
+                                                          Math.floor(waveformChart.visibleSamples * 0.1)))
+            }
+
+            WaveformControlButton {
+                text: "→"
+                Layout.preferredWidth: 44 * root.scale
+                Layout.preferredHeight: 40 * root.scale
+                labelPixelSize: Math.max(20, 22 * root.scale)
+                accent: "#1A4DB5"
+                enabled: waveformChart.windowStart + waveformChart.visibleSamples
+                         < waveformChart.samples.length
+                onClicked: waveformChart.moveWindow(Math.max(
+                                                        1,
+                                                        Math.floor(waveformChart.visibleSamples * 0.1)))
+            }
+
+            WaveformControlButton {
+                text: "Zoom −"
+                Layout.preferredWidth: 78 * root.scale
+                Layout.preferredHeight: 40 * root.scale
+                labelPixelSize: Math.max(15, 17 * root.scale)
+                accent: "#1A4DB5"
+                enabled: waveformChart.visibleSamples < waveformChart.maxVisibleSamples
+                onClicked: waveformChart.zoomOut()
+            }
+
+            WaveformControlButton {
+                text: "Zoom +"
+                Layout.preferredWidth: 78 * root.scale
+                Layout.preferredHeight: 40 * root.scale
+                labelPixelSize: Math.max(15, 17 * root.scale)
+                accent: "#1A4DB5"
+                enabled: waveformChart.visibleSamples > waveformChart.minVisibleSamples
+                onClicked: waveformChart.zoomIn()
+            }
+
+            WaveformControlButton {
+                text: "Reset"
+                Layout.preferredWidth: 68 * root.scale
+                Layout.preferredHeight: 40 * root.scale
+                labelPixelSize: Math.max(15, 17 * root.scale)
+                accent: "#1A4DB5"
+                onClicked: waveformChart.resetView()
+            }
+
+            Repeater {
+                model: [
+                    { label: "A", key: "x", color: "#1A4DB5" },
+                    { label: "B", key: "y", color: "#D64545" },
+                    { label: "C", key: "z1", color: "#16804A" },
+                    { label: "D", key: "z2", color: "#8B5CF6" },
+                    { label: "All", key: "", color: "#334155" }
+                ]
+
+                delegate: WaveformControlButton {
+                    required property var modelData
+                    text: modelData.label
+                    Layout.preferredWidth: text === "All" ? 58 * root.scale
+                                                               : 52 * root.scale
+                    Layout.preferredHeight: 40 * root.scale
+                    labelPixelSize: Math.max(15, 17 * root.scale)
+                    accent: modelData.color
+                    selectedFill: "#F8FAFC"
+                    selectedLabelColor: modelData.color
+                    selected: text === "All"
+                              ? root.selectedChannels.length === 4
+                              : root.isChannelSelected(modelData.key)
+                    onClicked: {
+                        if (text === "All")
+                            root.selectedChannels = ["x", "y", "z1", "z2"]
+                        else
+                            root.toggleChannel(modelData.key)
+                    }
+                }
+            }
+
+            Item { Layout.fillWidth: true }
+
+            WaveformControlButton {
+                text: "Cursor"
+                visible: !root.captureEnabled
+                Layout.preferredWidth: 68 * root.scale
+                Layout.preferredHeight: 40 * root.scale
+                labelPixelSize: Math.max(15, 17 * root.scale)
+                accent: "#16804A"
+                selected: waveformChart.cursorEnabled
+                enabled: root.samples.length > 0
+                onClicked: {
+                    waveformChart.cursorEnabled = !waveformChart.cursorEnabled
+                    if (!waveformChart.cursorEnabled)
+                        waveformChart.clearCursorSelection()
+                }
+            }
+
         }
 
         WaveformChart {
@@ -225,7 +239,7 @@ Item {
             scale: root.scale
             visibleSamples: root.maxHistorySamples
             title: "Waveform"
-            displayMode: root.displayMode
+            selectedChannels: root.selectedChannels
             samples: root.samples
         }
     }

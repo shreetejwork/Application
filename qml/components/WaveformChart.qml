@@ -9,7 +9,7 @@ Rectangle {
     property string title: "X"
     property string valueKey: "x"
     property color traceColor: "#1A4DB5"
-    property string displayMode: "All"
+    property var selectedChannels: ["x", "y", "z1", "z2"]
     property var samples: []
     property bool cursorEnabled: false
     property int hoverSampleIndex: -1
@@ -26,8 +26,7 @@ Rectangle {
     readonly property real valueLimit: 32768
 
     function channelKeys() {
-        return displayMode === "All"
-                ? ["x", "y", "z1", "z2"] : [displayMode.toLowerCase()]
+        return selectedChannels.slice()
     }
 
     function channelColor(key) {
@@ -672,7 +671,7 @@ Rectangle {
     onWindowStartChanged: plot.requestPaint()
     onVisibleSamplesChanged: plot.requestPaint()
     onValueKeyChanged: plot.requestPaint()
-    onDisplayModeChanged: plot.requestPaint()
+    onSelectedChannelsChanged: plot.requestPaint()
     onCursorEnabledChanged: plot.requestPaint()
     onHoverSampleIndexChanged: plot.requestPaint()
     onFirstCursorIndexChanged: plot.requestPaint()

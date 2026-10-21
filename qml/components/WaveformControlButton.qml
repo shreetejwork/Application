@@ -5,6 +5,8 @@ Button {
     id: control
 
     property color accent: "#1A4DB5"
+    property color selectedFill: accent
+    property color selectedLabelColor: "#FFFFFF"
     property bool selected: false
     property real labelPixelSize: 12
 
@@ -16,8 +18,9 @@ Button {
     contentItem: Text {
         id: label
         text: control.text
-        color: control.down || control.selected
-               ? "#FFFFFF" : control.enabled ? "#334155" : "#9AA5B5"
+        color: control.selected ? control.selectedLabelColor
+              : control.down ? "#FFFFFF"
+              : control.enabled ? "#334155" : "#9AA5B5"
         font.pixelSize: control.labelPixelSize
         font.weight: Font.Medium
         horizontalAlignment: Text.AlignHCenter
@@ -27,7 +30,7 @@ Button {
     background: Rectangle {
         radius: 6
         color: !control.enabled ? "#F1F3F7"
-              : control.selected ? control.accent
+              : control.selected ? control.selectedFill
               : control.down ? control.accent
               : control.hovered ? "#EEF4FF" : "#FFFFFF"
         border.width: 1
