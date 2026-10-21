@@ -13,7 +13,7 @@ Item {
     property string displayMode: "All"
     readonly property int maxHistorySamples: 10000
 
-    Component.onDestruction: Backend.SerialManager.setPlotMode(false)
+    Component.onDestruction: Backend.SerialManager.setWaveformMode(false)
 
     function showPacket(points) {
         if (!points || points.length === 0)
@@ -41,7 +41,7 @@ Item {
     }
 
     Component.onCompleted: {
-        Backend.SerialManager.setPlotMode(true)
+        Backend.SerialManager.setWaveformMode(true)
         root.showPacket(Backend.WaveformManager.waveformData)
     }
 

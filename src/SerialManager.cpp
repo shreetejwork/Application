@@ -330,6 +330,11 @@ void SerialManager::setPlotMode(bool enabled)
     sendCommand(enabled ? "{T11111}" : "{T00000}");
 }
 
+void SerialManager::setWaveformMode(bool enabled)
+{
+    sendCommand(enabled ? "{U11111}" : "{U00000}");
+}
+
 // =============== D-duster ======================
 
 void SerialManager::setDDuster(bool enabled)
