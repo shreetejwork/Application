@@ -158,8 +158,8 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
                                          : m_fieldHistory;
     QVector<PlotTrace> traces;
     traces.reserve(traceValues.size());
-    qreal xLimit = m_axisLimit;
-    qreal yLimit = m_axisLimit;
+    qreal maxAbsValue = 0;
+    bool hasPoints = false;
     for (int traceIndex = 0; traceIndex < traceValues.size(); ++traceIndex) {
         const QVariant traceValue = traceValues.at(traceIndex);
         const QVariantMap traceMap = traceValue.toMap();
@@ -176,15 +176,20 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
             const QVariantMap point = pointValue.toMap();
             const qreal x = point.value(QStringLiteral("x")).toReal();
             const qreal y = point.value(QStringLiteral("y")).toReal();
-            xLimit = qMax(xLimit, qAbs(x));
-            yLimit = qMax(yLimit, qAbs(y));
+            maxAbsValue = qMax(maxAbsValue, qMax(qAbs(x), qAbs(y)));
+            hasPoints = true;
         }
     }
     for (const QVariant &pointValue : m_axisData) {
         const QVariantMap point = pointValue.toMap();
-        xLimit = qMax(xLimit, qAbs(point.value(QStringLiteral("x")).toReal()));
-        yLimit = qMax(yLimit, qAbs(point.value(QStringLiteral("y")).toReal()));
+        const qreal x = point.value(QStringLiteral("x")).toReal();
+        const qreal y = point.value(QStringLiteral("y")).toReal();
+        maxAbsValue = qMax(maxAbsValue, qMax(qAbs(x), qAbs(y)));
+        hasPoints = true;
     }
+    const qreal axisRange = hasPoints ? maxAbsValue + 100 : m_axisLimit;
+    const qreal xLimit = axisRange;
+    const qreal yLimit = axisRange;
     // =====================================================
     // AXIS
     // =====================================================

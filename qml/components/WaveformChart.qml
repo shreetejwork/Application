@@ -25,8 +25,33 @@ Rectangle {
     readonly property int maxVisibleSamples: 10000
     readonly property real valueLimit: 32768
 
+    function shouldShowPeakInfo() {
+        var count = Math.min(visibleSamples,
+                             Math.max(0, samples.length - windowStart))
+        if (count === 0)
+            return false
+
+        var pointThreshold = plot.width / 6
+        for (var zoom = 0; zoom < 5 && count > pointThreshold; ++zoom)
+            count = Math.max(minVisibleSamples, Math.floor(count / 1.5))
+
+        return count <= pointThreshold
+    }
+
     function channelKeys() {
         return selectedChannels.slice()
+    }
+
+    function channelLabel(key) {
+        if (key === "x")
+            return "A"
+        if (key === "y")
+            return "B"
+        if (key === "z1")
+            return "C"
+        if (key === "z2")
+            return "D"
+        return key.toUpperCase()
     }
 
     function channelColor(key) {
@@ -122,7 +147,7 @@ Rectangle {
         var keys = channelKeys()
         var values = []
         for (var i = 0; i < keys.length; ++i)
-            values.push(keys[i].toUpperCase() + ": "
+            values.push(channelLabel(keys[i]) + ": "
                         + Number(point[keys[i]]).toFixed(2))
         return values.join(", ")
     }
@@ -134,8 +159,11 @@ Rectangle {
     }
 
     function formatSampleTime(milliseconds) {
-        return (milliseconds / 1000).toFixed(3) + " s ("
-                + milliseconds.toFixed(0) + " ms)"
+        return (milliseconds / 1000).toFixed(3) + " s"
+    }
+
+    function formatPeakTime(milliseconds) {
+        return (milliseconds / 1000).toFixed(3) + " s"
     }
 
     function peakPoints(positive) {
@@ -233,9 +261,9 @@ Rectangle {
         var details = []
         for (var i = 0; i < peaks.length; ++i) {
             var peak = peaks[i]
-            details.push((positive ? "+" : "-") + peak.key.toUpperCase()
+            details.push((positive ? "+" : "-") + channelLabel(peak.key)
                          + peak.number + ": " + peak.value.toFixed(2)
-                         + " @ " + formatSampleTime(
+                         + " @ " + formatPeakTime(
                              sampleTimeMilliseconds(peak.index)))
         }
         return details.join("\n")
@@ -426,7 +454,7 @@ Rectangle {
                     }
                 }
 
-                if (chartCard.zoomInLevel >= 2) {
+                if (chartCard.shouldShowPeakInfo()) {
                     var allPeaks = chartCard.peakPoints(true)
                                 .concat(chartCard.peakPoints(false))
                     for (var peakIndex = 0;
@@ -560,7 +588,7 @@ Rectangle {
 
     Rectangle {
         id: positivePeakPopup
-        visible: chartCard.zoomInLevel >= 2 && chartCard.samples.length > 0
+        visible: chartCard.shouldShowPeakInfo()
         z: 2
         anchors.left: parent.left
         anchors.top: parent.top
@@ -589,7 +617,7 @@ Rectangle {
 
     Rectangle {
         id: negativePeakPopup
-        visible: chartCard.zoomInLevel >= 2 && chartCard.samples.length > 0
+        visible: chartCard.shouldShowPeakInfo()
         z: 2
         anchors.left: parent.left
         anchors.bottom: parent.bottom
