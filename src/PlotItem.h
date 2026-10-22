@@ -28,6 +28,11 @@ class MagneticFieldPlotItem : public QQuickPaintedItem
                        WRITE setAxisData
                            NOTIFY axisDataChanged)
 
+    Q_PROPERTY(qreal axisLimit
+                   READ axisLimit
+                       WRITE setAxisLimit
+                           NOTIFY axisLimitChanged)
+
     // =====================================================
     // SHOW / HIDE POINT LABELS
     // =====================================================
@@ -55,6 +60,9 @@ public:
     QVariantList axisData() const;
     void setAxisData(const QVariantList &data);
 
+    qreal axisLimit() const;
+    void setAxisLimit(qreal limit);
+
     // =====================================================
     // POINT LABELS
     // =====================================================
@@ -69,6 +77,8 @@ signals:
 
     void axisDataChanged();
 
+    void axisLimitChanged();
+
     void showPointLabelsChanged();
 
 private:
@@ -82,8 +92,7 @@ private:
 
     QVariantList m_axisData;
 
-    qreal m_xAxisLimit = 200;
-    qreal m_yAxisLimit = 200;
+    qreal m_axisLimit = 1;
 
     // =====================================================
     // LABEL VISIBILITY

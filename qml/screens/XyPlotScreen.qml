@@ -359,9 +359,7 @@ Item {
                 Rectangle {
                     id: graphCard
 
-                    width: Math.max(0, Math.min(plotArea.width, plotArea.height))
-                    height: width
-                    anchors.centerIn: parent
+                    anchors.fill: parent
 
                     radius:       16 * root.scale
                     color:        "#FFFFFF"
@@ -377,6 +375,7 @@ Item {
                         anchors.bottomMargin: 8 * root.scale
 
                         axisData:        root.latestXYTrace
+                        axisLimit:       GlobalState.signalThreshold
                         fieldHistory:    root.xyLineHistory.length > 0
                                          ? [{ points: root.xyLineHistory,
                                               color: "#1A4DB5" }]
