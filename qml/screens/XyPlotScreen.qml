@@ -110,11 +110,9 @@ Item {
 
         var trace = []
         for (var i = 0; i < points.length; ++i) {
-            var rawX = points[i].rawX
-            var rawY = points[i].rawY
             trace.push({
-                           x: Number(rawX !== undefined ? rawX : points[i].x),
-                           y: Number(rawY !== undefined ? rawY : points[i].y)
+                           x: Number(points[i].x),
+                           y: Number(points[i].y)
                        })
         }
 
