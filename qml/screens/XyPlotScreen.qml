@@ -110,9 +110,11 @@ Item {
 
         var trace = []
         for (var i = 0; i < points.length; ++i) {
+            var rawX = points[i].rawX
+            var rawY = points[i].rawY
             trace.push({
-                           x: Number(points[i].x),
-                           y: Number(points[i].y)
+                           x: Number(rawX !== undefined ? rawX : points[i].x),
+                           y: Number(rawY !== undefined ? rawY : points[i].y)
                        })
         }
 
@@ -357,7 +359,9 @@ Item {
                 Rectangle {
                     id: graphCard
 
-                    anchors.fill: parent
+                    width: Math.max(0, Math.min(plotArea.width, plotArea.height))
+                    height: width
+                    anchors.centerIn: parent
 
                     radius:       16 * root.scale
                     color:        "#FFFFFF"
@@ -371,9 +375,7 @@ Item {
                         anchors.rightMargin:  8 * root.scale
                         anchors.topMargin:    8 * root.scale
                         anchors.bottomMargin: 8 * root.scale
-
                         axisData:        root.latestXYTrace
-                        axisLimit:       GlobalState.signalThreshold
                         fieldHistory:    root.xyLineHistory.length > 0
                                          ? [{ points: root.xyLineHistory,
                                               color: "#1A4DB5" }]
