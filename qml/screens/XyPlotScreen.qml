@@ -105,9 +105,7 @@ Item {
     property real highestXYValue: 0
     readonly property real xyAxisPeak: Math.max(
                                            GlobalState.signalThreshold,
-                                           highestXYValue > GlobalState.signalThreshold
-                                           ? highestXYValue + 100
-                                           : GlobalState.signalThreshold)
+                                           Math.ceil(highestXYValue / 100) * 100)
     readonly property int maxPlotSamples: 1000
 
     function updateLatestXYTrace(points) {

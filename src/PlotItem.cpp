@@ -8,6 +8,11 @@
 #include <QPainterPath>
 #include <QColor>
 
+namespace
+{
+constexpr int GRID_DIVISIONS = 10;
+}
+
 MagneticFieldPlotItem::MagneticFieldPlotItem(QQuickItem *parent)
     : QQuickPaintedItem(parent)
 {
@@ -117,14 +122,14 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
     // GRID
     // =====================================================
 
-    QPen gridPen(QColor("#EDF2FA"));
-    gridPen.setWidthF(1);
+    QPen gridPen(QColor("#CBD5E1"));
+    gridPen.setWidthF(1.2);
 
     painter->setPen(gridPen);
 
-    for (int i = 0; i <= 10; ++i) {
+    for (int i = 0; i <= GRID_DIVISIONS; ++i) {
 
-        qreal x = r.left() + (r.width() / 10.0) * i;
+        qreal x = r.left() + (r.width() / GRID_DIVISIONS) * i;
 
         painter->drawLine(
             QPointF(x, r.top()),
@@ -132,9 +137,9 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
             );
     }
 
-    for (int i = 0; i <= 10; ++i) {
+    for (int i = 0; i <= GRID_DIVISIONS; ++i) {
 
-        qreal y = r.top() + (r.height() / 10.0) * i;
+        qreal y = r.top() + (r.height() / GRID_DIVISIONS) * i;
 
         painter->drawLine(
             QPointF(r.left(), y),
@@ -218,24 +223,35 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
     tickFont.setPixelSize(qBound(12, qRound(r.width() * 0.024), 17));
     painter->setFont(tickFont);
     painter->setPen(QColor("#526174"));
-    for (int tick = 0; tick <= 4; ++tick) {
-        const qreal fraction = (tick - 2) / 2.0;
-        const qreal x = center.x() + fraction * axisX;
-        const qreal y = center.y() - fraction * axisY;
+    for (int tick = 0; tick <= GRID_DIVISIONS; ++tick) {
+        const qreal fraction = 2.0 * tick / GRID_DIVISIONS - 1.0;
+        const qreal x = r.left() + r.width() * tick / GRID_DIVISIONS;
+        const qreal y = r.top() + r.height() * (GRID_DIVISIONS - tick)
+                        / GRID_DIVISIONS;
         const QString xLabel = QString::number(qRound(fraction * xLimit));
         const QString yLabel = QString::number(qRound(fraction * yLimit));
-        QRectF xLabelRect(x - 34, center.y() + 7, 68, 20);
-        xLabelRect.moveLeft(qBound(r.left(), xLabelRect.left(),
-                                   r.right() - xLabelRect.width()));
+        QRectF xLabelRect(x - 27, center.y() + 7, 54, 20);
+        if (tick == 0)
+            xLabelRect.moveLeft(x);
+        else if (tick == GRID_DIVISIONS)
+            xLabelRect.moveRight(x);
+
         QRectF yLabelRect(center.x() - 48, y - 10, 40, 20);
-        yLabelRect.moveTop(qBound(r.top(), yLabelRect.top(),
-                                  r.bottom() - yLabelRect.height()));
-        if (tick != 2) {
-            painter->drawText(xLabelRect,
-                              Qt::AlignHCenter | Qt::AlignTop, xLabel);
-        }
+        if (tick == 0)
+            yLabelRect.moveBottom(y);
+        else if (tick == GRID_DIVISIONS)
+            yLabelRect.moveTop(y);
+
+        const Qt::Alignment xAlignment = tick == 0 ? Qt::AlignLeft
+                                         : tick == GRID_DIVISIONS ? Qt::AlignRight
+                                         : Qt::AlignHCenter;
+        painter->drawText(xLabelRect,
+                          xAlignment | Qt::AlignTop, xLabel);
+        const Qt::Alignment yAlignment = tick == 0 ? Qt::AlignBottom
+                                         : tick == GRID_DIVISIONS ? Qt::AlignTop
+                                         : Qt::AlignVCenter;
         painter->drawText(yLabelRect,
-                          Qt::AlignRight | Qt::AlignVCenter, yLabel);
+                          Qt::AlignRight | yAlignment, yLabel);
     }
 
     QFont labelFont;
