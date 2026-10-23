@@ -156,6 +156,14 @@ Rectangle {
         return index * sampleIntervalMilliseconds
     }
 
+    function cursorFrequencyText() {
+        var deltaMilliseconds = Math.abs(secondCursorIndex - firstCursorIndex)
+                                * sampleIntervalMilliseconds
+        return deltaMilliseconds > 0
+                ? (1000 / deltaMilliseconds).toFixed(1)
+                : "--"
+    }
+
     function formatSampleTime(milliseconds) {
         return (milliseconds / 1000).toFixed(3) + " s"
     }
@@ -680,6 +688,7 @@ Rectangle {
                                chartCard.secondCursorIndex)
                            - chartCard.sampleTimeMilliseconds(
                                chartCard.firstCursorIndex)))
+                       + "\nF : " + chartCard.cursorFrequencyText() + " Hz"
                      : "")
         }
     }
