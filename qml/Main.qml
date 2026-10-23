@@ -473,7 +473,7 @@ ApplicationWindow {
 
                 if (mainTopBar)
                     mainTopBar.showNotification(
-                        "✓ Parameters sent successfully"
+                        "✓ System is ready"
                     )
 
 
