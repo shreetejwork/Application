@@ -508,7 +508,7 @@ ApplicationWindow {
 
             if (mainTopBar)
                 mainTopBar.showNotification(
-                    "Sending parameters..."
+                    "Updating...."
                 )
 
 
@@ -841,7 +841,7 @@ ApplicationWindow {
             } else if (mainTopBar) {
 
                 mainTopBar.showNotification(
-                    "✓ Parameters sent successfully"
+                    "✓ System is ready"
                 )
             }
 
