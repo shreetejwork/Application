@@ -102,6 +102,12 @@ Item {
 
     property var xyLineHistory: []
     property var latestXYTrace: []
+    property real highestXYValue: 0
+    readonly property real xyAxisPeak: Math.max(
+                                           GlobalState.signalThreshold,
+                                           highestXYValue > GlobalState.signalThreshold
+                                           ? highestXYValue + 100
+                                           : GlobalState.signalThreshold)
     readonly property int maxPlotSamples: 1000
 
     function updateLatestXYTrace(points) {
@@ -109,15 +115,20 @@ Item {
             return
 
         var trace = []
+        var tracePeak = 0
         for (var i = 0; i < points.length; ++i) {
             var rawX = points[i].rawX
             var rawY = points[i].rawY
+            var x = Number(rawX !== undefined ? rawX : points[i].x)
+            var y = Number(rawY !== undefined ? rawY : points[i].y)
             trace.push({
-                           x: Number(rawX !== undefined ? rawX : points[i].x),
-                           y: Number(rawY !== undefined ? rawY : points[i].y)
+                           x: x,
+                           y: y
                        })
+            tracePeak = Math.max(tracePeak, Math.abs(x), Math.abs(y))
         }
 
+        highestXYValue = Math.max(highestXYValue, tracePeak)
         var history = root.xyLineHistory.concat(trace)
         if (history.length > root.maxPlotSamples)
             history = history.slice(history.length - root.maxPlotSamples)
@@ -129,6 +140,7 @@ Item {
     function clearPlotBuffer() {
         xyLineHistory = []
         latestXYTrace = []
+        highestXYValue = 0
     }
 
     Component.onDestruction: SerialManager.setPlotMode(false)
@@ -376,6 +388,7 @@ Item {
                         anchors.topMargin:    8 * root.scale
                         anchors.bottomMargin: 8 * root.scale
                         axisData:        root.latestXYTrace
+                        axisLimit:       root.xyAxisPeak
                         fieldHistory:    root.xyLineHistory.length > 0
                                          ? [{ points: root.xyLineHistory,
                                               color: "#1A4DB5" }]

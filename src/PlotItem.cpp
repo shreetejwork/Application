@@ -187,7 +187,7 @@ void MagneticFieldPlotItem::paint(QPainter *painter)
         maxAbsValue = qMax(maxAbsValue, qMax(qAbs(x), qAbs(y)));
         hasPoints = true;
     }
-    const qreal axisRange = hasPoints ? maxAbsValue + 100 : m_axisLimit;
+    const qreal axisRange = qMax(m_axisLimit, hasPoints ? maxAbsValue : 0.0);
     const qreal xLimit = axisRange;
     const qreal yLimit = axisRange;
     // =====================================================
