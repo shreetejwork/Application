@@ -24,6 +24,7 @@ Rectangle {
     readonly property int minVisibleSamples: 20
     readonly property int maxVisibleSamples: 10000
     readonly property real valueLimit: 32768
+    readonly property real sampleIntervalMilliseconds: 1
 
     function shouldShowPeakInfo() {
         var count = Math.min(visibleSamples,
@@ -31,11 +32,10 @@ Rectangle {
         if (count === 0)
             return false
 
-        var pointThreshold = plot.width / 6
-        for (var zoom = 0; zoom < 5 && count > pointThreshold; ++zoom)
-            count = Math.max(minVisibleSamples, Math.floor(count / 1.5))
-
-        return count <= pointThreshold
+        var left = 76 * scale
+        var right = 26 * scale
+        var plotWidth = Math.max(1, plot.width - left - right)
+        return count <= plotWidth / 3
     }
 
     function channelKeys() {
@@ -153,9 +153,7 @@ Rectangle {
     }
 
     function sampleTimeMilliseconds(index) {
-        if (samples.length <= 1)
-            return 0
-        return index * 10000 / (samples.length - 1)
+        return index * sampleIntervalMilliseconds
     }
 
     function formatSampleTime(milliseconds) {
@@ -677,10 +675,11 @@ Rectangle {
                        + chartCard.formatSampleTime(
                            chartCard.sampleTimeMilliseconds(chartCard.secondCursorIndex))
                        + "\nΔ: "
-                       + chartCard.formatSampleTime(
-                           Math.abs(chartCard.secondCursorIndex
-                                    - chartCard.firstCursorIndex)
-                           * 10000 / Math.max(1, chartCard.samples.length - 1))
+                       + chartCard.formatSampleTime(Math.abs(
+                           chartCard.sampleTimeMilliseconds(
+                               chartCard.secondCursorIndex)
+                           - chartCard.sampleTimeMilliseconds(
+                               chartCard.firstCursorIndex)))
                      : "")
         }
     }
