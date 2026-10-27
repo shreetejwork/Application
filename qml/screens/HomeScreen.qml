@@ -1271,18 +1271,35 @@ Item {
 
                         radius: 14
 
+                        property color statusAccent: !homeScreen.batchRunning
+                                                     ? "#1A4DB5"
+                                                     : homeScreen.batchPaused
+                                                       ? "#C62828"
+                                                       : "#2E7D32"
+
                         color: homeScreen.batchRunning
                                ? (homeScreen.batchPaused
                                   ? "#F7EAEA"
                                   : "#E8F3EB")
-                               : "#EDF1F8"
+                               : "#E7EFFF"
 
                         border.color: homeScreen.batchRunning
                                       ? (homeScreen.batchPaused
                                          ? "#D8B0B0"
                                          : "#A9C9B0")
-                                      : "#D0D8EC"
-                        border.width: 1
+                                      : "#9BB8EC"
+                        border.width: 2
+
+                        Rectangle {
+                            id: batchStatusGlow
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            radius: parent.radius + 4
+                            color: "transparent"
+                            border.color: batchStatusButton.statusAccent
+                            border.width: 3
+                            opacity: 0.25
+                        }
 
                         Column {
                             anchors.centerIn: parent
@@ -1335,7 +1352,7 @@ Item {
                         SequentialAnimation {
                             id: batchStatusPulse
 
-                            running: homeScreen.batchRunning
+                        running: true
                             loops: Animation.Infinite
 
                             onRunningChanged: {
@@ -1343,26 +1360,48 @@ Item {
                                     batchStatusButton.scale = 1
                             }
 
-                            NumberAnimation {
-                                target: batchStatusButton
-                                property: "scale"
-                                from: 1
-                                to: 1.05
-                                duration: 850
-                                easing.type: Easing.InOutSine
+                            ParallelAnimation {
+                                NumberAnimation {
+                                    target: batchStatusButton
+                                    property: "scale"
+                                    from: 1
+                                    to: 1.08
+                                    duration: 650
+                                    easing.type: Easing.InOutSine
+                                }
+
+                                NumberAnimation {
+                                    target: batchStatusGlow
+                                    property: "opacity"
+                                    from: 0.2
+                                    to: 0.9
+                                    duration: 650
+                                    easing.type: Easing.InOutSine
+                                }
                             }
 
-                            NumberAnimation {
-                                target: batchStatusButton
-                                property: "scale"
-                                from: 1.05
-                                to: 1
-                                duration: 850
-                                easing.type: Easing.InOutSine
+                            ParallelAnimation {
+                                NumberAnimation {
+                                    target: batchStatusButton
+                                    property: "scale"
+                                    from: 1.08
+                                    to: 1
+                                    duration: 650
+                                    easing.type: Easing.InOutSine
+                                }
+
+                                NumberAnimation {
+                                    target: batchStatusGlow
+                                    property: "opacity"
+                                    from: 0.9
+                                    to: 0.2
+                                    duration: 650
+                                    easing.type: Easing.InOutSine
+                                }
                             }
 
                             PauseAnimation {
-                                duration: 450
+                                duration: 180
                             }
                         }
 
