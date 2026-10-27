@@ -83,7 +83,7 @@ Item {
 
         {
             label: "Version",
-            value: "v4.0.1"
+            value: "v" + Qt.application.version
         }
     ]
 

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(Application VERSION 0.1 LANGUAGES CXX)
+project(Application VERSION 4.0.1 LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
@@ -159,6 +159,10 @@ target_link_libraries(appApplication
     PRIVATE Qt6::PrintSupport
     PRIVATE Qt6::SerialPort
     PRIVATE Qt6::Concurrent
+)
+
+target_compile_definitions(appApplication
+    PRIVATE APP_VERSION="${PROJECT_VERSION}"
 )
 
 include(GNUInstallDirs)

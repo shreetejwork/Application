@@ -26,7 +26,7 @@ Item {
     }
 
     Text {
-        text: "Version \n v4.0.1"
+        text: "Version \n v" + Qt.application.version
         anchors.centerIn: parent
 
         // Responsive font size

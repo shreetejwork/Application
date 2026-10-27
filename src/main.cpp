@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
 
     QCoreApplication::setOrganizationName("Shreetej");
     QCoreApplication::setApplicationName("MD_Application");
+    QCoreApplication::setApplicationVersion(QStringLiteral(APP_VERSION));
 
     // =========================================================
     // GLOBAL STATE
