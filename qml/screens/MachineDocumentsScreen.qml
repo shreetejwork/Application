@@ -70,6 +70,17 @@ Item {
             notify("⚠ Failed to send document to printer")
     }
 
+    function generateMachineSummary() {
+        var path = PdfExporter.generateMachineSummaryDocument(
+                    databaseManager.getMachineInfo())
+        if (path.length) {
+            loadDocuments()
+            notify("✓ Machine Summary Document generated")
+        } else {
+            notify("⚠ Failed to generate Machine Summary Document")
+        }
+    }
+
     Component.onCompleted: {
         openAnimation.start()
         loadDocuments()
@@ -178,19 +189,23 @@ Item {
                     }
 
                     Rectangle {
-                        width: countLabel.implicitWidth + 24 * root.scale
-                        height: 30 * root.scale
-                        radius: 15 * root.scale
+                        Layout.preferredWidth: 280 * root.scale
+                        Layout.preferredHeight: 38 * root.scale
+                        radius: 8 * root.scale
                         color: "#1A4DB5"
 
                         Text {
-                            id: countLabel
                             anchors.centerIn: parent
-                            text: documentModel.count + " file"
-                                  + (documentModel.count !== 1 ? "s" : "")
+                            text: "Generate Machine Summary Document"
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: "#FFFFFF"
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: root.generateMachineSummary()
                         }
                     }
                 }

@@ -26,6 +26,8 @@ public:
     Q_INVOKABLE QStringList getAllPdfFiles();
     Q_INVOKABLE QString     getMachineDocumentsFolderPath();
     Q_INVOKABLE QStringList getMachineDocumentFiles();
+    Q_INVOKABLE QString     generateMachineSummaryDocument(
+        const QVariantMap &machineInfo);
     Q_INVOKABLE bool        deletePdf(const QString &filePath);
     Q_INVOKABLE void        openPdf(const QString &filePath);
 

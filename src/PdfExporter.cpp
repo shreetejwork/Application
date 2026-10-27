@@ -2,6 +2,7 @@
 #include "DatabaseManager.h"
 
 #include <QDesktopServices>
+#include <QCoreApplication>
 #include <QUrl>
 #include <QFile>
 #include <QSaveFile>
@@ -215,6 +216,201 @@ QStringList PdfExporter::getMachineDocumentFiles()
     }
 
     return fullPaths;
+}
+
+QString PdfExporter::generateMachineSummaryDocument(
+    const QVariantMap &machineInfo)
+{
+    const QString folderPath = getMachineDocumentsFolderPath();
+    if (folderPath.isEmpty())
+        return QString();
+
+    const QDateTime createdAt = QDateTime::currentDateTime();
+    const QString filePath =
+        QDir(folderPath).filePath("Machine_Summary_Document.pdf");
+
+    QPdfWriter writer(filePath);
+    writer.setTitle("Machine Summary Document");
+    writer.setCreator(QCoreApplication::applicationName());
+    writer.setResolution(96);
+    writer.setPageSize(QPageSize(QPageSize::A4));
+    writer.setPageMargins(QMarginsF(0, 0, 0, 0));
+
+    QPainter painter;
+    if (!painter.begin(&writer))
+    {
+        qWarning() << "Unable to generate machine summary PDF:" << filePath;
+        QFile::remove(filePath);
+        return QString();
+    }
+
+    const int pageWidth = writer.width();
+    const int pageHeight = writer.height();
+    const int marginLeft = 58;
+    const int marginRight = 58;
+    const int marginTop = 56;
+    const int contentWidth = pageWidth - marginLeft - marginRight;
+
+    const int regularFontId =
+        QFontDatabase::addApplicationFont(":/assets/images/RobotoCondensed-Regular.ttf");
+    QFontDatabase::addApplicationFont(":/assets/images/RobotoCondensed-Bold.ttf");
+    QString fontFamily = "Arial";
+    if (regularFontId != -1)
+    {
+        const QStringList families =
+            QFontDatabase::applicationFontFamilies(regularFontId);
+        if (!families.isEmpty())
+            fontFamily = families.first();
+    }
+
+    const auto fontR = [&fontFamily](int size) {
+        return QFont(fontFamily, size, QFont::Normal);
+    };
+    const auto fontB = [&fontFamily](int size) {
+        return QFont(fontFamily, size, QFont::Bold);
+    };
+
+    const QString supplierName = machineInfo.value("supplierName").toString();
+    const QString machineId = machineInfo.value("machineId").toString();
+    const QString machineSerial = machineInfo.value("serialNumber").toString();
+    const QString machineType = machineInfo.value("machineType").toString();
+    const QString location = machineInfo.value("location").toString();
+    const QString userName = machineInfo.value("userName").toString();
+    const QString createdText = createdAt.toString("dd MMM yyyy, HH:mm:ss");
+    const QList<QPair<QString, QString>> details = {
+        {"Machine ID", machineId},
+        {"M/c Sr. No.", machineSerial},
+        {"M/c Type", machineType},
+        {"Supplier Name", supplierName},
+        {"User", userName},
+        {"Location", location},
+        {"Installation Date", createdAt.toString("dd/MM/yyyy")},
+        {"App Version", "v" + QCoreApplication::applicationVersion()},
+        {"CPU Version", machineInfo.value("cpuVersion").toString()}
+    };
+
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setPen(Qt::black);
+
+    const QString watermarkPath =
+        QDir(folderPath).filePath("splashLogo(WRS).png");
+    const QImage watermark(watermarkPath);
+    if (!watermark.isNull())
+    {
+        const QRect watermarkBounds(
+            pageWidth * 22 / 100,
+            pageHeight * 28 / 100,
+            pageWidth * 56 / 100,
+            pageHeight * 42 / 100);
+        const QSize watermarkSize =
+            watermark.size().scaled(watermarkBounds.size(),
+                                    Qt::KeepAspectRatio);
+        const QRect watermarkRect(
+            watermarkBounds.center().x() - watermarkSize.width() / 2,
+            watermarkBounds.center().y() - watermarkSize.height() / 2,
+            watermarkSize.width(),
+            watermarkSize.height());
+
+        painter.save();
+        painter.setOpacity(0.08);
+        painter.drawImage(watermarkRect, watermark);
+        painter.restore();
+    }
+
+    int y = marginTop + 36;
+    painter.setFont(fontB(14));
+    painter.drawText(QRect(marginLeft, y, contentWidth, 30),
+                     Qt::AlignHCenter | Qt::AlignVCenter,
+                     "MACHINE SUMMARY DOCUMENT");
+    y += 34;
+    painter.setPen(QPen(Qt::black, 2));
+    painter.drawLine(marginLeft, y + 4, pageWidth - marginRight, y + 4);
+    y += 20;
+    painter.setFont(fontB(10));
+    painter.drawText(QRect(marginLeft, y, contentWidth / 2, 20),
+                     Qt::AlignLeft | Qt::AlignVCenter,
+                     "MACHINE DETAILS");
+    painter.setFont(fontR(8));
+    painter.drawText(QRect(marginLeft + contentWidth / 2, y,
+                           contentWidth / 2, 20),
+                     Qt::AlignRight | Qt::AlignVCenter,
+                     "File Creation Date & Time: " + createdText);
+    y += 26;
+
+    const int tableWidth = contentWidth * 88 / 100;
+    const int tableLeft = (pageWidth - tableWidth) / 2;
+    const int labelWidth = tableWidth * 40 / 100;
+    const int rowHeight = 34;
+    const int tableHeaderHeight = 28;
+    const int cornerRadius = 6;
+
+    painter.save();
+    painter.setPen(Qt::NoPen);
+    painter.setBrush(QColor(52, 58, 64));
+    painter.drawRoundedRect(QRect(tableLeft, y, tableWidth, tableHeaderHeight),
+                            cornerRadius, cornerRadius);
+    painter.setPen(Qt::white);
+    painter.setFont(fontB(9));
+    painter.drawText(QRect(tableLeft, y, labelWidth, tableHeaderHeight),
+                     Qt::AlignCenter, "Machine Information");
+    painter.drawText(QRect(tableLeft + labelWidth, y,
+                           tableWidth - labelWidth, tableHeaderHeight),
+                     Qt::AlignCenter, "Details");
+    painter.restore();
+    y += tableHeaderHeight + 4;
+
+    for (qsizetype i = 0; i < details.size(); ++i)
+    {
+        const int rowTop = y + static_cast<int>(i) * rowHeight;
+        const QRect rowRect(tableLeft, rowTop, tableWidth, rowHeight);
+        painter.fillRect(rowRect, i % 2
+                         ? QColor(220, 235, 255)
+                         : QColor(248, 250, 253));
+
+        painter.setPen(QColor(45, 45, 45));
+        painter.setFont(fontB(9));
+        painter.drawText(QRect(tableLeft + 14, rowTop + 2,
+                               labelWidth - 28, rowHeight - 4),
+                         Qt::AlignCenter | Qt::TextSingleLine,
+                         details.at(i).first);
+        painter.setFont(fontR(10));
+        painter.drawText(QRect(tableLeft + labelWidth + 14, rowTop + 2,
+                               tableWidth - labelWidth - 28, rowHeight - 4),
+                         Qt::AlignCenter | Qt::TextSingleLine,
+                         details.at(i).second.isEmpty()
+                             ? QStringLiteral("---")
+                             : details.at(i).second);
+
+        painter.setPen(QPen(QColor(230, 230, 230), 1));
+        painter.drawLine(tableLeft + 12, rowTop + rowHeight,
+                         tableLeft + tableWidth - 12, rowTop + rowHeight);
+    }
+
+    y += rowHeight * details.size() + 16;
+    painter.setPen(QPen(Qt::black, 2));
+    painter.drawLine(marginLeft, y, pageWidth - marginRight, y);
+    painter.setPen(Qt::black);
+    painter.setFont(fontR(8));
+    painter.drawText(QRect(marginLeft, y + 3, contentWidth, 16),
+                     Qt::AlignHCenter | Qt::AlignVCenter,
+                     "This is machine generated document");
+
+    painter.setBrush(Qt::NoBrush);
+    painter.setPen(QPen(QColor("#23477A"), 1.6));
+    painter.drawRoundedRect(QRectF(24, 24, pageWidth - 48, pageHeight - 48),
+                            8, 8);
+    painter.setPen(QPen(QColor("#C8D5E8"), 0.7));
+    painter.drawRoundedRect(QRectF(30, 30, pageWidth - 60, pageHeight - 60),
+                            6, 6);
+
+    if (!painter.end())
+    {
+        qWarning() << "Unable to finalize machine summary PDF:" << filePath;
+        QFile::remove(filePath);
+        return QString();
+    }
+
+    return filePath;
 }
 
 // ================= DELETE PDF =================
