@@ -461,6 +461,7 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
         int col1x     = marginL;
         int col2x     = marginL + contentW / 3;
         int col3x     = marginL + 2 * contentW / 3;
+        int machineColX = marginL + (contentW * 2 / 3) - 12;
         int metaLineH = 18;
 
         auto drawMeta = [&](int x, int yy, const QString &label, const QString &val) {
@@ -474,17 +475,17 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
         QString now = QDateTime::currentDateTime().toString("dd/MM/yyyy @ HH:mm:ss");
 
         // Row 1
-        drawMeta(col1x, y + metaLineH,   "User",         userName);      // ← was "---"
+        drawMeta(col1x, y + metaLineH,   "User",         userName);
         drawMeta(col2x, y + metaLineH,   "File Created", now);
-        drawMeta(col3x, y + metaLineH,   "Machine ID",   machineId);     // ← was "PHMX"
+        drawMeta(machineColX, y + metaLineH,   "Machine ID",   machineId);
 
         // Row 2
-        drawMeta(col1x, y + 2*metaLineH, "Location",     location);      // ← was "---"
+        drawMeta(col1x, y + 2*metaLineH, "Location",     location);
         drawMeta(col2x, y + 2*metaLineH, "From",         fromDate);
-        drawMeta(col3x, y + 2*metaLineH, "M/c Sr. No.",  machineSerial); // ← was "---"
-        drawMeta(col3x, y + 3*metaLineH, "M/c Type",     machineType);
+        drawMeta(machineColX, y + 2*metaLineH, "M/c Sr. No.",  machineSerial);
 
         // Row 3
+        drawMeta(machineColX, y + 3*metaLineH, "M/c Type",     machineType);
         drawMeta(col2x, y + 3*metaLineH, "To",           toDate);
 
         y += 3*metaLineH + 6;
