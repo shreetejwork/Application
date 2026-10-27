@@ -60,8 +60,12 @@ Item {
                 iconSource: "qrc:/qt/qml/Application/assets/images/axis.png"
                 label: "4 Channel DSO"
                 iconSize: 100 * root.scale
+                visible: GlobalState.showWaveformScreen
 
-                onTileClicked: navigateTo("Waveform")
+                onTileClicked: {
+                    if (GlobalState.showWaveformScreen)
+                        navigateTo("Waveform")
+                }
             }
         }
     }

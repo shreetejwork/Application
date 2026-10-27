@@ -300,6 +300,49 @@ Item {
 
                         ColumnLayout {
                             Layout.fillWidth: true
+
+                            Text {
+                                text: "Waveform Screen"
+                                font.pixelSize: 20
+                                color: "#111827"
+                            }
+
+                            Text {
+                                text: GlobalState.showWaveformScreen
+                                      ? "Waveform Screen On"
+                                      : "Waveform Screen Off"
+                                font.pixelSize: 16
+                                color: "#6B7280"
+                            }
+                        }
+
+                        DDButton {
+                            width: 90 * root.scale
+                            height: 36 * root.scale
+
+                            toggled: GlobalState.showWaveformScreen
+
+                            onToggledChanged: {
+                                GlobalState.showWaveformScreen = toggled
+                            }
+                        }
+                    }
+                }
+
+                // ===== Card 6 : Baud Rate =====
+                Rectangle {
+                    width: flow.cardWidth
+                    height: 120 * root.scale
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.color: "#E5E7EB"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
                             spacing: 4
 
                             Text {
