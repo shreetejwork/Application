@@ -325,7 +325,7 @@ Item {
                               : !voltageStatusAvailable ? "Status unavailable"
                               : undervoltage ? "Low voltage detected"
                               : undervoltageOccurred ? "Low voltage recorded"
-                              : "No low voltage detected"
+                              : "System voltage is correct"
 
                         subtitle: isLoading ? ""
                                 : undervoltage ? "System firmware reports undervoltage now"
