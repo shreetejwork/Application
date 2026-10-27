@@ -101,9 +101,35 @@ void DatabaseManager::createTables()
             machineId TEXT,
             userName TEXT,
             location TEXT,
-            machineType TEXT
+            machineType TEXT,
+            cpuVersion TEXT
         );
     )");
+
+    bool hasCpuVersionColumn = false;
+    if (query.exec("PRAGMA table_info(machineinfo)"))
+    {
+        while (query.next())
+        {
+            if (query.value("name").toString() == "cpuVersion")
+            {
+                hasCpuVersionColumn = true;
+                break;
+            }
+        }
+    }
+    else
+    {
+        qWarning() << "Unable to inspect machineinfo schema:"
+                   << query.lastError().text();
+    }
+
+    if (!hasCpuVersionColumn &&
+        !query.exec("ALTER TABLE machineinfo ADD COLUMN cpuVersion TEXT"))
+    {
+        qWarning() << "Unable to add machineinfo.cpuVersion:"
+                   << query.lastError().text();
+    }
 
     // SYSTEM SETTINGS
     query.exec(R"(
@@ -779,12 +805,30 @@ bool DatabaseManager::saveMachineInfo(
 {
     QSqlQuery query;
 
-    query.exec("DELETE FROM machineinfo");
+    QString cpuVersion;
+    if (!query.exec("SELECT cpuVersion FROM machineinfo LIMIT 1"))
+    {
+        qWarning() << "Unable to preserve CPU version while saving machine info:"
+                   << query.lastError().text();
+        return false;
+    }
+
+    if (query.next())
+    {
+        cpuVersion = query.value(0).toString();
+    }
+
+    if (!query.exec("DELETE FROM machineinfo"))
+    {
+        qWarning() << "Unable to replace machine info:"
+                   << query.lastError().text();
+        return false;
+    }
 
     query.prepare(
         "INSERT INTO machineinfo "
-        "(supplierName, serialNumber, machineId, userName, location, machineType) "
-        "VALUES (?, ?, ?, ?, ?, ?)");
+        "(supplierName, serialNumber, machineId, userName, location, machineType, cpuVersion) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?)");
 
     query.addBindValue(supplierName);
     query.addBindValue(serialNumber);
@@ -792,6 +836,7 @@ bool DatabaseManager::saveMachineInfo(
     query.addBindValue(userName);
     query.addBindValue(location);
     query.addBindValue(machineType);
+    query.addBindValue(cpuVersion);
 
     return query.exec();
 }
@@ -833,11 +878,45 @@ QVariantMap DatabaseManager::getMachineInfo()
         data["machineType"] =
             query.value("machineType");
 
+        data["cpuVersion"] =
+            query.value("cpuVersion");
+
     }
 
 
     return data;
 
+}
+
+bool DatabaseManager::saveCpuVersion(const QString &cpuVersion)
+{
+    QSqlQuery query;
+    if (!query.exec("SELECT 1 FROM machineinfo LIMIT 1"))
+    {
+        qWarning() << "Unable to check machine info before saving CPU version:"
+                   << query.lastError().text();
+        return false;
+    }
+
+    if (query.next())
+    {
+        query.prepare("UPDATE machineinfo SET cpuVersion = ?");
+        query.addBindValue(cpuVersion);
+    }
+    else
+    {
+        query.prepare("INSERT INTO machineinfo (cpuVersion) VALUES (?)");
+        query.addBindValue(cpuVersion);
+    }
+
+    if (!query.exec())
+    {
+        qWarning() << "Unable to save CPU version:"
+                   << query.lastError().text();
+        return false;
+    }
+
+    return true;
 }
 
 // READ USERS

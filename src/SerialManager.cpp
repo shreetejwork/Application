@@ -181,6 +181,17 @@ void SerialManager::setCoilBalancingStatus(bool status)
 void SerialManager::setDatabaseManager(DatabaseManager *databaseManager)
 {
     m_databaseManager = databaseManager;
+    if (m_databaseManager)
+        setCpuVersion(m_databaseManager->getMachineInfo().value("cpuVersion").toString());
+}
+
+void SerialManager::setCpuVersion(const QString &cpuVersion)
+{
+    if (m_cpuVersion == cpuVersion)
+        return;
+
+    m_cpuVersion = cpuVersion;
+    emit cpuVersionChanged();
 }
 
 // =========== Batch Settings =================
@@ -790,6 +801,43 @@ void SerialManager::onReadyRead()
     // MCU REQUESTING MACHINE PARAMETERS
     // =====================================================
 
+    static const QByteArray cpuVersionMarker("{S");
+    static const QRegularExpression cpuVersionPayload(R"(^R[0-9]+$)");
+
+    while (true)
+    {
+        const qsizetype packetStart = rxBuffer.indexOf(cpuVersionMarker);
+        if (packetStart < 0)
+            break;
+
+        const qsizetype packetEnd =
+            rxBuffer.indexOf('}', packetStart + cpuVersionMarker.size());
+        if (packetEnd < 0)
+            break;
+
+        const QString cpuVersion = QString::fromLatin1(
+            rxBuffer.mid(packetStart + cpuVersionMarker.size(),
+                         packetEnd - packetStart - cpuVersionMarker.size()));
+        rxBuffer.remove(packetStart, packetEnd - packetStart + 1);
+
+        if (cpuVersionPayload.match(cpuVersion).hasMatch())
+        {
+            setCpuVersion(cpuVersion);
+
+            if (m_databaseManager &&
+                !m_databaseManager->saveCpuVersion(cpuVersion))
+            {
+                qWarning() << "Failed to persist MCU CPU version:"
+                           << cpuVersion;
+            }
+        }
+        else
+        {
+            qWarning() << "Ignoring invalid MCU CPU version payload:"
+                       << cpuVersion;
+        }
+    }
+
     if (rxBuffer.contains("{*****}"))
     {
         rxBuffer.replace("{*****}", "");
@@ -843,6 +891,15 @@ void SerialManager::onReadyRead()
 
         if (start < 0)
         {
+            const qsizetype pendingCpuVersionStart =
+                rxBuffer.indexOf(cpuVersionMarker);
+            if (pendingCpuVersionStart >= 0)
+            {
+                if (pendingCpuVersionStart > 0)
+                    rxBuffer.remove(0, pendingCpuVersionStart);
+                return;
+            }
+
             // Discard old non-packet bytes but retain a tail for a
             // marker fragmented across serial reads.
             if (rxBuffer.size() > 10)

@@ -54,6 +54,10 @@ class SerialManager : public QObject
                    READ rawTxLog
                        NOTIFY rawTxLogChanged)
 
+    Q_PROPERTY(QString cpuVersion
+                   READ cpuVersion
+                       NOTIFY cpuVersionChanged)
+
     Q_PROPERTY(QVariantList xyPlotData
                    READ xyPlotData
                        NOTIFY xyPlotDataChanged)
@@ -108,6 +112,11 @@ public:
     QString rawTxLog() const
     {
         return m_rawTxLog;
+    }
+
+    QString cpuVersion() const
+    {
+        return m_cpuVersion;
     }
 
     QVariantList xyPlotData() const
@@ -187,6 +196,8 @@ signals:
 
     void rawTxLogChanged();
 
+    void cpuVersionChanged();
+
     void xyPlotDataChanged();
 
     void waveformPacketReceived(const QByteArray &frame);
@@ -209,6 +220,7 @@ private:
     void logXyPacketBeforePlotUpdate(const QByteArray &frame,
                                      const QVariantList &data);
     void updateXyPlotData(const QVariantList &data);
+    void setCpuVersion(const QString &cpuVersion);
 
     bool m_coilBalancingOn = false;
 
@@ -247,6 +259,8 @@ private:
     QString m_rawRxLog;
 
     QString m_rawTxLog;
+
+    QString m_cpuVersion;
 
     QVariantList m_xyPlotData;
 };

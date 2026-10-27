@@ -173,6 +173,7 @@ public:
         const QString &machineType);
 
     Q_INVOKABLE QVariantMap getMachineInfo();
+    Q_INVOKABLE bool saveCpuVersion(const QString &cpuVersion);
 
     // =====================================================
     // PRODUCT LIBRARY

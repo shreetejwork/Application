@@ -82,8 +82,10 @@ Item {
         },
 
         {
-            label: "Version",
-            value: "v" + Qt.application.version
+            label: "App Version",
+            value: "v" + Qt.application.version,
+            cpuVersion: SerialManager.cpuVersion.length
+                        ? SerialManager.cpuVersion : "----"
         }
     ]
 
@@ -274,15 +276,62 @@ Item {
 
                                         spacing: 2 * root.scale
 
+                                        RowLayout {
+                                            visible: modelData.cpuVersion !== undefined
+                                            width: parent.width
+                                            spacing: 10 * root.scale
+
+                                            ColumnLayout {
+                                                Layout.fillWidth: true
+                                                spacing: 2 * root.scale
+
+                                                Text {
+                                                    text: "App Version"
+                                                    font.pixelSize: 15 * root.scale
+                                                    color: "#5B6B8C"
+                                                }
+
+                                                Text {
+                                                    text: modelData.value
+                                                    font.pixelSize: 18 * root.scale
+                                                    color: "#1A4DB5"
+                                                    Layout.fillWidth: true
+                                                    elide: Text.ElideRight
+                                                }
+                                            }
+
+                                            ColumnLayout {
+                                                Layout.fillWidth: true
+                                                spacing: 2 * root.scale
+
+                                                Text {
+                                                    text: "CPU Version"
+                                                    font.pixelSize: 15 * root.scale
+                                                    color: "#5B6B8C"
+                                                }
+
+                                                Text {
+                                                    text: modelData.cpuVersion
+                                                    font.pixelSize: 18 * root.scale
+                                                    color: "#1A4DB5"
+                                                    Layout.fillWidth: true
+                                                    elide: Text.ElideRight
+                                                }
+                                            }
+                                        }
+
                                         Text {
+                                            visible: modelData.cpuVersion === undefined
                                             text: modelData.label
                                             font.pixelSize: 18 * root.scale
                                             color: "#5B6B8C"
                                         }
 
                                         Text {
+                                            visible: modelData.cpuVersion === undefined
                                             text: modelData.value
-                                            font.pixelSize: 20 * root.scale
+                                            font.pixelSize:
+                                                20 * root.scale
                                             color: "#1A4DB5"
 
                                             width: parent.width
