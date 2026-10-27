@@ -802,7 +802,6 @@ void SerialManager::onReadyRead()
     // =====================================================
 
     static const QByteArray cpuVersionMarker("{S");
-    static const QRegularExpression cpuVersionPayload(R"(^R1\.[0-9]+$)");
 
     while (true)
     {
@@ -820,7 +819,7 @@ void SerialManager::onReadyRead()
                          packetEnd - packetStart - cpuVersionMarker.size()));
         rxBuffer.remove(packetStart, packetEnd - packetStart + 1);
 
-        if (cpuVersionPayload.match(cpuVersion).hasMatch())
+        if (!cpuVersion.isEmpty())
         {
             setCpuVersion(cpuVersion);
 
@@ -833,8 +832,7 @@ void SerialManager::onReadyRead()
         }
         else
         {
-            qWarning() << "Ignoring invalid MCU CPU version payload:"
-                       << cpuVersion;
+            qWarning() << "Ignoring empty MCU CPU version payload";
         }
     }
 
