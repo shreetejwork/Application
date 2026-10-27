@@ -113,6 +113,7 @@ qt_add_qml_module(appApplication
         src/WifiScanner.cpp
         src/PdfExporter.h
         QML_FILES qml/screens/ReportsFolderScreen.qml
+        qml/screens/MachineDocumentsScreen.qml
         QML_FILES qml/screens/DeveloperSettingsScreen.qml
         SOURCES src/SystemDiagnosis.h
         SOURCES src/SystemDiagnosis.cpp

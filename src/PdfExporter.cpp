@@ -175,6 +175,48 @@ QStringList PdfExporter::getAllPdfFiles()
     return fullPaths;
 }
 
+QString PdfExporter::getMachineDocumentsFolderPath()
+{
+    const QString documentsPath =
+        QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    if (documentsPath.isEmpty())
+    {
+        qWarning() << "Unable to resolve the Documents folder path";
+        return QString();
+    }
+
+    const QString folderPath = documentsPath + "/Machine Documents";
+
+    QDir dir(folderPath);
+    if (!dir.exists() && !dir.mkpath("."))
+    {
+        qWarning() << "Unable to create Machine Documents folder:"
+                   << folderPath;
+        return QString();
+    }
+
+    return dir.absolutePath();
+}
+
+QStringList PdfExporter::getMachineDocumentFiles()
+{
+    const QString folderPath = getMachineDocumentsFolderPath();
+    if (folderPath.isEmpty())
+        return {};
+
+    const QDir dir(folderPath);
+    const QStringList files = dir.entryList(QDir::Files, QDir::Time);
+
+    QStringList fullPaths;
+    for (const QString &file : files)
+    {
+        if (QFileInfo(file).suffix().compare("pdf", Qt::CaseInsensitive) == 0)
+            fullPaths << dir.absoluteFilePath(file);
+    }
+
+    return fullPaths;
+}
+
 // ================= DELETE PDF =================
 bool PdfExporter::deletePdf(const QString &filePath)
 {

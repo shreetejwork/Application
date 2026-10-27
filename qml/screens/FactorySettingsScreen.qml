@@ -228,18 +228,13 @@ Item {
                         onTileClicked: navigateTo("DeveloperSettings")
                     }
 
-                    // ── SLOT 3: Add your future PNG here ───────
-
                     MenuTile {
-                        iconSource: "qrc:/qt/qml/Application/assets/images/social.png"
-                        label:      ""
+                        iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
+                        label:      "Machine\nDocuments"
                         iconSize:   100 * root.scale
                         visible: true
                         enabled: true
-                        onTileClicked: {
-                            console.log("Slot 3 tapped")
-                            // TODO: navigateTo("YourScreen2")
-                        }
+                        onTileClicked: navigateTo("MachineDocuments")
                     }
 
                     MenuTile {
