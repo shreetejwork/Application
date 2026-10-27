@@ -802,7 +802,7 @@ void SerialManager::onReadyRead()
     // =====================================================
 
     static const QByteArray cpuVersionMarker("{S");
-    static const QRegularExpression cpuVersionPayload(R"(^R[0-9]+$)");
+    static const QRegularExpression cpuVersionPayload(R"(^R1\.[0-9]+$)");
 
     while (true)
     {
