@@ -14,8 +14,6 @@ Rectangle {
 
     property string notificationText: ""
     property bool notificationVisible: false
-    property var notificationQueue: []
-    property bool notificationProcessing: false
     property bool notificationPersistent: false
 
     property bool usbConnected: PdfExporter.usbMounted
@@ -239,21 +237,22 @@ Rectangle {
 
     Timer {
         id: notificationTimer
-        interval: 5000
+        interval: 3000
         repeat: false
         onTriggered: {
-            root.notificationVisible = false
-            notificationAdvanceTimer.start()
+            if (!root.notificationPersistent)
+                root.notificationVisible = false
         }
     }
 
     Timer {
-        id: notificationAdvanceTimer
-        interval: 250
+        id: notificationReplaceTimer
+        interval: 180
         repeat: false
         onTriggered: {
-            root.notificationProcessing = false
-            root.showNextNotification()
+            root.notificationVisible = true
+            if (!root.notificationPersistent)
+                notificationTimer.restart()
         }
     }
 
@@ -262,52 +261,20 @@ Rectangle {
         if (text.length === 0)
             return
 
-        if (notificationProcessing && notificationText === text)
-            return
+        var replacingVisibleNotification = notificationVisible
+        notificationTimer.stop()
+        notificationReplaceTimer.stop()
+        notificationPersistent = persistent === true
+        notificationText = text
 
-        for (var i = 0; i < notificationQueue.length; i++) {
-            if (notificationQueue[i].text === text)
-                return
-        }
-
-        if (persistent) {
-            notificationQueue.unshift({ text: text, persistent: true })
-            if (notificationProcessing && !notificationPersistent) {
-                notificationTimer.stop()
-                notificationVisible = false
-                notificationProcessing = false
-                notificationAdvanceTimer.restart()
-                return
-            }
-        } else {
-            notificationQueue.push({ text: text, persistent: false })
-        }
-
-        if (notificationProcessing && notificationPersistent && !persistent) {
-            notificationPersistent = false
+        if (replacingVisibleNotification) {
             notificationVisible = false
-            notificationAdvanceTimer.restart()
+            notificationReplaceTimer.start()
         } else {
-            showNextNotification()
+            notificationVisible = true
+            if (!notificationPersistent)
+                notificationTimer.restart()
         }
-    }
-
-    function showNextNotification() {
-        if (notificationProcessing || notificationQueue.length === 0)
-            return
-
-        notificationAdvanceTimer.stop()
-        var next = notificationQueue.shift()
-        notificationQueue = notificationQueue
-        notificationProcessing = true
-        notificationPersistent = next.persistent
-        notificationText = next.text
-        notificationVisible = true
-
-        if (next.persistent)
-            notificationTimer.stop()
-        else
-            notificationTimer.restart()
     }
 
     function resetSessionTimer() {
