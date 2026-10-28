@@ -16,6 +16,9 @@ Item {
     property string connectedSSID: ""
     property int connectedSignal: 0
     property bool isConnecting: false
+    property bool isScanning: false
+    property bool scanPending: false
+    property bool connectedNetworkSaved: false
     property bool nmcliAvailable: false
     property bool lanAvailable: false
     property bool lanConnected: false
@@ -131,7 +134,7 @@ Item {
 
                 WiFiScanner.currentConnectionAsync()
 
-                WiFiScanner.scanNetworksAsync()
+                root.scanWifi()
             }
         }
 
@@ -151,23 +154,59 @@ Item {
 
         function onCurrentConnectionReady(ssid) {
             connectedSSID = ssid
+            connectedNetworkSaved = false
+            for (var i = 0; i < networkModel.count; i++) {
+                if (networkModel.get(i).name === ssid) {
+                    connectedNetworkSaved = networkModel.get(i).saved
+                    break
+                }
+            }
             refreshAvailableNetworks()
             updateConnectedSignal()
         }
 
         function onNetworksScanned(networks) {
+            isScanning = false
             networkModel.clear()
             availableNetworkModel.clear()
+            connectedNetworkSaved = false
 
             for (var i = 0; i < networks.length; i++) {
                 if (networks[i].name === "")
                     continue
 
                 networkModel.append(networks[i])
+                if (networks[i].name === connectedSSID)
+                    connectedNetworkSaved = networks[i].saved
             }
 
             refreshAvailableNetworks()
             updateConnectedSignal()
+            if (scanPending) {
+                scanPending = false
+                Qt.callLater(root.scanWifi)
+            }
+        }
+
+        function onScanFailed(message) {
+            isScanning = false
+            if (notify)
+                notify("Unable to refresh WiFi networks: " + message)
+            if (scanPending) {
+                scanPending = false
+                Qt.callLater(root.scanWifi)
+            }
+        }
+
+        function onForgetResult(ssid, result) {
+            if (result === "FORGET_SUCCESS") {
+                if (notify)
+                    notify("Forgot WiFi network " + ssid)
+                WiFiScanner.currentConnectionAsync()
+                scanWifi()
+            } else if (notify) {
+                notify("Unable to forget WiFi network " + ssid)
+            }
         }
     }
 
@@ -249,6 +288,13 @@ Item {
             return
         }
 
+        if (isScanning) {
+            scanPending = true
+            return
+        }
+
+        scanPending = false
+        isScanning = true
         WiFiScanner.scanNetworksAsync()
     }
 
@@ -256,7 +302,7 @@ Item {
     // START WIFI CONNECTION
     // =========================================================
 
-    function startWifiConnect(ssid, password) {
+    function startWifiConnect(ssid, password, secured) {
 
         isConnecting = true
 
@@ -266,8 +312,32 @@ Item {
 
         WiFiScanner.connectToWifiAsync(
                     ssid,
-                    password
+                    password,
+                    secured
                     )
+    }
+
+    function openPasswordPopup(ssid) {
+        passwordPopup.ssid = ssid
+        passwordPopup.secured = true
+        passwordPopup.errorMessage = ""
+        passwordPopup.successMessage = ""
+        passwordPopup.isConnecting = false
+        passwordField.text = ""
+        passwordPopup.open()
+        Qt.callLater(function() {
+            passwordField.forceActiveFocus()
+            GlobalState.activeInputField = passwordField
+            GlobalState.loginKeyboardRequest = true
+            Qt.inputMethod.hide()
+        })
+    }
+
+    function closeWifiPasswordKeyboard() {
+        if (GlobalState.activeInputField === passwordField)
+            GlobalState.activeInputField = null
+        GlobalState.loginKeyboardRequest = false
+        Qt.inputMethod.hide()
     }
 
     // =========================================================
@@ -286,7 +356,7 @@ Item {
     // CONNECT WIFI
     // =========================================================
 
-    function connectWifi(ssid, secured) {
+    function connectWifi(ssid, secured, saved) {
 
         if (!nmcliAvailable) {
 
@@ -298,10 +368,12 @@ Item {
             return
         }
 
-        startWifiConnect(
-                    ssid,
-                    ""
-                    )
+        if (secured && !saved) {
+            openPasswordPopup(ssid)
+            return
+        }
+
+        startWifiConnect(ssid, "", secured)
     }
 
     // =========================================================
@@ -321,6 +393,7 @@ Item {
             if (result.startsWith("Connected to")) {
 
                 connectedSSID = resultSsid
+                closeWifiPasswordKeyboard()
 
                 updateConnectedSignal()
 
@@ -343,20 +416,7 @@ Item {
 
             }
             else if (result === "NEEDS_PASSWORD") {
-
-                passwordField.text = ""
-
-                passwordPopup.ssid =
-                        resultSsid
-
-                passwordPopup.errorMessage = ""
-                passwordPopup.successMessage = ""
-
-                passwordPopup.isConnecting = false
-
-                passwordPopup.open()
-
-                passwordField.forceActiveFocus()
+                openPasswordPopup(resultSsid)
 
             }
             else {
@@ -1023,30 +1083,57 @@ Item {
                                 Rectangle {
 
                                     Layout.preferredWidth:
-                                        100 * root.scale
+                                        root.connectedNetworkSaved
+                                        ? 180 * root.scale
+                                        : 100 * root.scale
 
                                     Layout.preferredHeight:
                                         36 * root.scale
 
-                                    radius:
-                                        8 * root.scale
+                                    Row {
+                                        anchors.fill: parent
+                                        spacing: 6 * root.scale
 
-                                    color:
-                                        "#E1F5E8"
+                                        Rectangle {
+                                            width: root.connectedNetworkSaved
+                                                   ? 90 * root.scale
+                                                   : parent.width
+                                            height: parent.height
+                                            radius: 8 * root.scale
+                                            color: "#E1F5E8"
 
-                                    Text {
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "Connected"
+                                                font.pixelSize: 17 * root.scale
+                                                color: "#259653"
+                                            }
+                                        }
 
-                                        anchors.centerIn:
-                                            parent
+                                        Rectangle {
+                                            visible: root.connectedNetworkSaved
+                                            width: visible ? 84 * root.scale : 0
+                                            height: parent.height
+                                            radius: 8 * root.scale
+                                            color: forgetConnectedMouse.pressed
+                                                   ? "#FDE8E7"
+                                                   : "#FFF1F0"
+                                            border.color: "#F1C7C4"
 
-                                        text:
-                                            "Connected"
+                                            Text {
+                                                anchors.centerIn: parent
+                                                text: "Forget"
+                                                font.pixelSize: 16 * root.scale
+                                                color: "#B93832"
+                                            }
 
-                                        font.pixelSize:
-                                            20 * root.scale
-
-                                        color:
-                                            "#259653"
+                                            MouseArea {
+                                                id: forgetConnectedMouse
+                                                anchors.fill: parent
+                                                enabled: !root.isConnecting
+                                                onClicked: WiFiScanner.forgetWifiAsync(root.connectedSSID)
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -1139,6 +1226,7 @@ Item {
 
                                     enabled:
                                         !root.isConnecting
+                                        && !root.isScanning
 
                                     onClicked:
                                         root.scanWifi()
@@ -1354,6 +1442,59 @@ Item {
                                         Rectangle {
 
                                             Layout.preferredWidth:
+                                                model.saved
+                                                ? 92 * root.scale
+                                                : 0
+
+                                            Layout.preferredHeight:
+                                                42 * root.scale
+
+                                            visible:
+                                                model.saved
+
+                                            radius:
+                                                8 * root.scale
+
+                                            color:
+                                                forgetNetworkMouse.pressed
+                                                ? "#FDE8E7"
+                                                : "#FFF1F0"
+
+                                            border.color:
+                                                "#F1C7C4"
+
+                                            Text {
+
+                                                anchors.centerIn:
+                                                    parent
+
+                                                text:
+                                                    "Forget"
+
+                                                font.pixelSize:
+                                                    18 * root.scale
+
+                                                color:
+                                                    "#B93832"
+                                            }
+
+                                            MouseArea {
+
+                                                id:
+                                                    forgetNetworkMouse
+
+                                                anchors.fill:
+                                                    parent
+
+                                                enabled: !root.isConnecting
+
+                                                onClicked: WiFiScanner.forgetWifiAsync(model.name)
+                                            }
+                                        }
+
+                                        Rectangle {
+
+                                            Layout.preferredWidth:
                                                 100 * root.scale
 
                                             Layout.preferredHeight:
@@ -1368,36 +1509,21 @@ Item {
                                                 : "#1A4DB5"
 
                                             Text {
-
-                                                anchors.centerIn:
-                                                    parent
-
-                                                text:
-                                                    "Connect"
-
-                                                font.pixelSize:
-                                                    21 * root.scale
-
-                                                color:
-                                                    "#FFFFFF"
+                                                anchors.centerIn: parent
+                                                text: "Connect"
+                                                font.pixelSize: 21 * root.scale
+                                                color: "#FFFFFF"
                                             }
 
                                             MouseArea {
-
-                                                id:
-                                                    networkMouse
-
-                                                anchors.fill:
-                                                    parent
-
-                                                enabled:
-                                                    !root.isConnecting
-
-                                                onClicked:
-                                                    root.connectWifi(
-                                                        model.name,
-                                                        model.secured
-                                                        )
+                                                id: networkMouse
+                                                anchors.fill: parent
+                                                enabled: !root.isConnecting
+                                                onClicked: root.connectWifi(
+                                                    model.name,
+                                                    model.secured,
+                                                    model.saved
+                                                )
                                             }
                                         }
                                     }
@@ -2852,18 +2978,24 @@ Item {
             440 * root.scale
 
         height:
-            330 * root.scale
+            (GlobalState.loginKeyboardRequest ? 290 : 330) * root.scale
 
         x:
             (root.width - width) / 2
 
         y:
-            (root.height - height) / 2
+            GlobalState.loginKeyboardRequest
+            ? 5 * root.scale
+            : (root.height - height) / 2
 
         closePolicy:
             Popup.NoAutoClose
 
+        onClosed:
+            root.closeWifiPasswordKeyboard()
+
         property string ssid: ""
+        property bool secured: true
         property string errorMessage: ""
         property string successMessage: ""
         property bool isConnecting: false
@@ -2890,10 +3022,10 @@ Item {
                 parent
 
             anchors.margins:
-                26 * root.scale
+                (GlobalState.loginKeyboardRequest ? 18 : 26) * root.scale
 
             spacing:
-                16 * root.scale
+                (GlobalState.loginKeyboardRequest ? 10 : 16) * root.scale
 
             // =============================================
             // TITLE
@@ -3021,6 +3153,21 @@ Item {
 
                     placeholderTextColor:
                         "#9DA9BA"
+
+                    property bool isPasswordField: true
+
+                    inputMethodHints:
+                        Qt.ImhHiddenText
+                        | Qt.ImhSensitiveData
+                        | Qt.ImhNoPredictiveText
+
+                    onActiveFocusChanged: {
+                        if (activeFocus) {
+                            GlobalState.activeInputField = passwordField
+                            GlobalState.loginKeyboardRequest = true
+                            Qt.inputMethod.hide()
+                        }
+                    }
                 }
 
                 Rectangle {
@@ -3345,7 +3492,8 @@ Item {
 
                             startWifiConnect(
                                         passwordPopup.ssid,
-                                        passwordField.text
+                                        passwordField.text,
+                                        passwordPopup.secured
                                         )
                         }
                     }

@@ -3,14 +3,74 @@
 #include <QSet>
 #include <QDebug>
 #include <QTimer>
-#include <QThread>
 
 WiFiScanner::WiFiScanner(QObject *parent) : QObject(parent) {}
 
+namespace {
+QStringList splitNmcliFields(const QString &line)
+{
+    QStringList fields;
+    QString field;
+    bool escaped = false;
+
+    for (const QChar character : line) {
+        if (escaped) {
+            if (character == 'n')
+                field.append('\n');
+            else
+                field.append(character);
+            escaped = false;
+        } else if (character == '\\') {
+            escaped = true;
+        } else if (character == ':') {
+            fields.append(field);
+            field.clear();
+        } else {
+            field.append(character);
+        }
+    }
+
+    if (escaped)
+        field.append('\\');
+    fields.append(field);
+    return fields;
+}
+
+QVariantList parseWifiNetworks(const QString &output, const QSet<QString> &savedSsids)
+{
+    QVariantList networks;
+    QSet<QString> seenSsids;
+
+    for (const QString &line : output.split('\n', Qt::SkipEmptyParts)) {
+        const QStringList parts = splitNmcliFields(line);
+        if (parts.size() < 4)
+            continue;
+
+        const QString inUse = parts[0].trimmed();
+        const QString ssid = parts[1].trimmed();
+        bool signalOk = false;
+        const int signal = parts[2].trimmed().toInt(&signalOk);
+        const QString security = parts.mid(3).join(":").trimmed();
+
+        if (ssid.isEmpty() || seenSsids.contains(ssid))
+            continue;
+
+        seenSsids.insert(ssid);
+        QVariantMap network;
+        network["name"] = ssid;
+        network["signal"] = signalOk ? signal : 0;
+        network["secured"] = !security.isEmpty() && security != "--";
+        network["connected"] = inUse == "*";
+        network["saved"] = savedSsids.contains(ssid);
+        networks.append(network);
+    }
+
+    return networks;
+}
+}
+
 QVariantList WiFiScanner::scanNetworks()
 {
-    QVariantList list;
-
     QProcess process;
     process.start("nmcli", QStringList()
                                << "-t"
@@ -19,59 +79,42 @@ QVariantList WiFiScanner::scanNetworks()
 
     if (!process.waitForStarted(5000)) {
         qDebug() << "Failed to start nmcli scan process";
-        return list;
+        return {};
     }
 
     if (!process.waitForFinished(10000)) {
         qDebug() << "nmcli scan process timed out";
         process.kill();
         process.waitForFinished(1000);
-        return list;
+        return {};
     }
 
     if (process.exitCode() != 0) {
         QString error = process.readAllStandardError();
         qDebug() << "nmcli scan failed:" << error;
-        return list;
+        return {};
     }
 
-    QString output = process.readAllStandardOutput();
-    QStringList lines = output.split("\n", Qt::SkipEmptyParts);
-    QSet<QString> seenSSIDs;
-
-    for (const QString &line : lines) {
-        QStringList parts = line.split(":");
-        if (parts.size() < 4)
-            continue;
-
-        QString inUse = parts[0].trimmed();
-        QString ssid = parts[1].trimmed();
-        int signal = parts[2].trimmed().toInt();
-        QString security = parts.mid(3).join(":").trimmed();
-
-        if (ssid.isEmpty() || seenSSIDs.contains(ssid))
-            continue;
-
-        seenSSIDs.insert(ssid);
-        QVariantMap net;
-        net["name"] = ssid;
-        net["signal"] = signal;
-        net["secured"] = !security.isEmpty() && security != "--";
-        net["connected"] = (inUse == "*");
-        list.append(net);
-    }
-
-    return list;
+    return parseWifiNetworks(QString::fromUtf8(process.readAllStandardOutput()), {});
 }
 
-void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
+void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secured)
 {
+    const QString profileId = m_savedProfileIds.value(ssid);
+    if (password.isEmpty() && secured && profileId.isEmpty()) {
+        emit connectionResult(ssid, "NEEDS_PASSWORD");
+        return;
+    }
+
     QProcess *process = new QProcess(this);
-    const bool useSavedProfile = password.isEmpty();
-    QStringList args = useSavedProfile
-        ? (QStringList() << "-w" << "30" << "connection" << "up" << "id" << ssid)
-        : (QStringList() << "-w" << "30" << "dev" << "wifi" << "connect" << ssid
-                         << "password" << password);
+    QStringList args;
+    if (password.isEmpty() && !profileId.isEmpty()) {
+        args << "-w" << "30" << "connection" << "up" << "id" << profileId;
+    } else {
+        args << "-w" << "30" << "dev" << "wifi" << "connect" << ssid;
+        if (!password.isEmpty())
+            args << "password" << password;
+    }
 
     QTimer *timeoutTimer = new QTimer(process);
     timeoutTimer->setSingleShot(true);
@@ -80,27 +123,16 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
     connect(timeoutTimer, &QTimer::timeout, this, [process]() {
         qDebug() << "nmcli async connect timed out";
         process->setProperty("wifiConnectTimedOut", true);
-        if (process->state() == QProcess::Running) {
+        if (process->state() == QProcess::Running)
             process->kill();
-            process->waitForFinished(1000);
-        }
     });
 
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
-            [this, process, ssid, timeoutTimer, useSavedProfile](int exitCode, QProcess::ExitStatus) mutable {
+            [this, process, ssid, timeoutTimer](int exitCode, QProcess::ExitStatus) {
                 timeoutTimer->stop();
                 QString output = process->readAllStandardOutput();
                 QString error = process->readAllStandardError();
                 const bool timedOut = process->property("wifiConnectTimedOut").toBool();
-
-                if (exitCode != 0 && useSavedProfile && !timedOut) {
-                    // No saved profile: let NetworkManager discover the network, then report
-                    // that credentials are needed if it cannot activate it without a secret.
-                    process->start("nmcli", QStringList() << "-w" << "30" << "dev" << "wifi"
-                                                            << "connect" << ssid);
-                    timeoutTimer->start();
-                    return;
-                }
 
                 const QString diagnostics = output + "\n" + error;
                 process->deleteLater();
@@ -139,15 +171,50 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password)
                 emit connectionResult(ssid, result);
             });
 
-    timeoutTimer->start();
-    process->start("nmcli", args);
-    if (!process->waitForStarted(5000)) {
+    connect(process, &QProcess::errorOccurred, this,
+            [this, process, ssid, timeoutTimer](QProcess::ProcessError error) {
+        if (error != QProcess::FailedToStart)
+            return;
         timeoutTimer->stop();
         timeoutTimer->deleteLater();
+        qWarning() << "Failed to start nmcli connect process:" << process->errorString();
         process->deleteLater();
-        qDebug() << "Failed to start nmcli async process";
         emit connectionResult(ssid, "CONNECTION_FAILED");
+    });
+    timeoutTimer->start();
+    process->start("nmcli", args);
+}
+
+void WiFiScanner::forgetWifiAsync(QString ssid)
+{
+    const QString profileId = m_savedProfileIds.value(ssid);
+    if (profileId.isEmpty()) {
+        emit forgetResult(ssid, "FORGET_FAILED");
+        return;
     }
+
+    QProcess *process = new QProcess(this);
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
+            [this, process, ssid](int exitCode, QProcess::ExitStatus) {
+                const QString error = QString::fromUtf8(process->readAllStandardError()).trimmed();
+                process->deleteLater();
+                if (exitCode == 0) {
+                    m_savedProfileIds.remove(ssid);
+                    emit forgetResult(ssid, "FORGET_SUCCESS");
+                } else {
+                    qWarning() << "Failed to forget WiFi profile:" << error;
+                    emit forgetResult(ssid, "FORGET_FAILED");
+                }
+            });
+    connect(process, &QProcess::errorOccurred, this,
+            [this, process, ssid](QProcess::ProcessError error) {
+                if (error != QProcess::FailedToStart)
+                    return;
+                qWarning() << "Failed to start nmcli forget process:" << process->errorString();
+                process->deleteLater();
+                emit forgetResult(ssid, "FORGET_FAILED");
+            });
+    process->start("nmcli", QStringList() << "connection" << "delete" << "id" << profileId);
 }
 
 QString WiFiScanner::currentConnection()
@@ -176,16 +243,11 @@ QString WiFiScanner::currentConnection()
         return "";
     }
 
-    QString output = process.readAllStandardOutput();
-    QStringList lines = output.split("\n", Qt::SkipEmptyParts);
-    for (const QString &line : lines) {
-        QString trimmedLine = line.trimmed();
-        if (trimmedLine.startsWith("yes:")) {
-            QString ssid = trimmedLine.section(":", 1, 1).trimmed();
-            if (!ssid.isEmpty()) {
-                return ssid;
-            }
-        }
+    const QString output = QString::fromUtf8(process.readAllStandardOutput());
+    for (const QString &line : output.split('\n', Qt::SkipEmptyParts)) {
+        const QStringList parts = splitNmcliFields(line);
+        if (parts.size() >= 2 && parts[0].trimmed() == "yes" && !parts[1].trimmed().isEmpty())
+            return parts[1].trimmed();
     }
     return "";
 }
@@ -210,36 +272,120 @@ bool WiFiScanner::isNmcliAvailable()
 
 void WiFiScanner::scanNetworksAsync()
 {
-    QThread *thread = new QThread(this);
-    QObject *worker = new QObject();
-    worker->moveToThread(thread);
+    if (m_scanInProgress)
+        return;
 
-    connect(thread, &QThread::started, this, [this, worker, thread]() {
-        QVariantList networks = scanNetworks();
-        emit networksScanned(networks);
-        thread->quit();
-        worker->deleteLater();
-        thread->deleteLater();
-    });
+    m_scanInProgress = true;
+    QProcess *scanProcess = new QProcess(this);
+    connect(scanProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
+            [this, scanProcess](int exitCode, QProcess::ExitStatus) {
+                const QString scanOutput = QString::fromUtf8(scanProcess->readAllStandardOutput());
+                const QString scanError = QString::fromUtf8(scanProcess->readAllStandardError()).trimmed();
+                scanProcess->deleteLater();
 
-    thread->start();
+                if (exitCode != 0) {
+                    m_scanInProgress = false;
+                    qWarning() << "nmcli scan failed:" << scanError;
+                    emit scanFailed(scanError.isEmpty() ? "WiFi scan failed" : scanError);
+                    return;
+                }
+
+                QProcess *profilesProcess = new QProcess(this);
+                connect(profilesProcess,
+                        QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
+                        [this, profilesProcess, scanOutput](int profilesExitCode, QProcess::ExitStatus) {
+                            QSet<QString> savedSsids;
+
+                            if (profilesExitCode == 0) {
+                                m_savedProfileIds.clear();
+                                const QString profilesOutput =
+                                    QString::fromUtf8(profilesProcess->readAllStandardOutput());
+                                for (const QString &line : profilesOutput.split('\n', Qt::SkipEmptyParts)) {
+                                    const QStringList fields = splitNmcliFields(line);
+                                    if (fields.size() < 3 || fields[1].trimmed() != "802-11-wireless")
+                                        continue;
+
+                                    const QString ssid = fields[2].trimmed();
+                                    if (ssid.isEmpty())
+                                        continue;
+                                    m_savedProfileIds.insert(ssid, fields[0]);
+                                    savedSsids.insert(ssid);
+                                }
+                            } else {
+                                qWarning() << "Failed to read saved WiFi profiles:"
+                                           << QString::fromUtf8(profilesProcess->readAllStandardError()).trimmed();
+                                profilesProcess->deleteLater();
+                                m_scanInProgress = false;
+                                emit scanFailed("Unable to read saved WiFi profiles");
+                                return;
+                            }
+
+                            profilesProcess->deleteLater();
+                            m_scanInProgress = false;
+                            emit networksScanned(parseWifiNetworks(scanOutput, savedSsids));
+                        });
+                connect(profilesProcess, &QProcess::errorOccurred, this,
+                        [this, profilesProcess](QProcess::ProcessError error) {
+                            if (error != QProcess::FailedToStart)
+                                return;
+                            const QString message = profilesProcess->errorString();
+                            qWarning() << "Failed to read saved WiFi profiles:" << message;
+                            profilesProcess->deleteLater();
+                            m_scanInProgress = false;
+                            emit scanFailed(message);
+                        });
+                profilesProcess->start("nmcli", QStringList()
+                    << "-t" << "-f" << "NAME,TYPE,802-11-wireless.ssid"
+                    << "connection" << "show");
+            });
+    connect(scanProcess, &QProcess::errorOccurred, this,
+            [this, scanProcess](QProcess::ProcessError error) {
+                if (error != QProcess::FailedToStart)
+                    return;
+                const QString message = scanProcess->errorString();
+                qWarning() << "Failed to start nmcli scan process:" << message;
+                scanProcess->deleteLater();
+                m_scanInProgress = false;
+                emit scanFailed(message);
+            });
+    scanProcess->start("nmcli", QStringList()
+        << "-t" << "-f" << "IN-USE,SSID,SIGNAL,SECURITY"
+        << "dev" << "wifi" << "list");
 }
 
 void WiFiScanner::currentConnectionAsync()
 {
-    QThread *thread = new QThread(this);
-    QObject *worker = new QObject();
-    worker->moveToThread(thread);
-
-    connect(thread, &QThread::started, this, [this, worker, thread]() {
-        QString ssid = currentConnection();
-        emit currentConnectionReady(ssid);
-        thread->quit();
-        worker->deleteLater();
-        thread->deleteLater();
-    });
-
-    thread->start();
+    QProcess *process = new QProcess(this);
+    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
+            [this, process](int exitCode, QProcess::ExitStatus) {
+                QString ssid;
+                if (exitCode == 0) {
+                    const QString output = QString::fromUtf8(process->readAllStandardOutput());
+                    for (const QString &line : output.split('\n', Qt::SkipEmptyParts)) {
+                        const QStringList fields = splitNmcliFields(line);
+                        if (fields.size() >= 2 && fields[0].trimmed() == "yes") {
+                            ssid = fields[1].trimmed();
+                            break;
+                        }
+                    }
+                } else {
+                    qWarning() << "nmcli current connection failed:"
+                               << QString::fromUtf8(process->readAllStandardError()).trimmed();
+                }
+                process->deleteLater();
+                emit currentConnectionReady(ssid);
+            });
+    connect(process, &QProcess::errorOccurred, this,
+            [this, process](QProcess::ProcessError error) {
+                if (error != QProcess::FailedToStart)
+                    return;
+                qWarning() << "Failed to start nmcli current connection process:"
+                           << process->errorString();
+                process->deleteLater();
+                emit currentConnectionReady({});
+            });
+    process->start("nmcli", QStringList()
+        << "-t" << "-f" << "ACTIVE,SSID" << "dev" << "wifi");
 }
 
 bool WiFiScanner::isWifiEnabled()
