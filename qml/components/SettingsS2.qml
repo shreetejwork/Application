@@ -67,6 +67,17 @@ Item {
         )
     }
 
+    function applyDateTime(d, successMessage) {
+        GlobalState.globalDateTime = d
+        var rtcError = SystemController.writeRtcDateTime(d)
+
+        if (notify) {
+            notify(rtcError === ""
+                   ? successMessage
+                   : successMessage + " (RTC update failed: " + rtcError + ")")
+        }
+    }
+
     Rectangle {
         anchors.fill: parent
         color: "#F5F7FC"
@@ -295,11 +306,7 @@ Item {
                         }
 
 
-                        GlobalState.globalDateTime = d
-
-
-                        if (notify)
-                            notify("✓ Time Updated")
+                        applyDateTime(d, "✓ Time Updated")
                     }
                 }
             }
@@ -566,11 +573,7 @@ Item {
                             }
 
 
-                            GlobalState.globalDateTime = d
-
-
-                            if (notify)
-                                notify("✓ Date Updated")
+                            applyDateTime(d, "✓ Date Updated")
                         }
                     }
                 }
