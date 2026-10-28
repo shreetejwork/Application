@@ -2982,10 +2982,10 @@ Item {
             true
 
         width:
-            440 * root.scale
+            460 * root.scale
 
         height:
-            (GlobalState.loginKeyboardRequest ? 290 : 330) * root.scale
+            (GlobalState.loginKeyboardRequest ? 290 : 350) * root.scale
 
         x:
             (root.width - width) / 2
@@ -3011,13 +3011,13 @@ Item {
             Rectangle {
 
             radius:
-                18 * root.scale
+                20 * root.scale
 
             color:
                 "#FFFFFF"
 
             border.color:
-                "#D5DDEA"
+                "#D7E0EF"
 
             border.width:
                 1
@@ -3029,10 +3029,10 @@ Item {
                 parent
 
             anchors.margins:
-                (GlobalState.loginKeyboardRequest ? 18 : 26) * root.scale
+                (GlobalState.loginKeyboardRequest ? 16 : 26) * root.scale
 
             spacing:
-                (GlobalState.loginKeyboardRequest ? 10 : 16) * root.scale
+                (GlobalState.loginKeyboardRequest ? 8 : 16) * root.scale
 
             // =============================================
             // TITLE
@@ -3055,7 +3055,10 @@ Item {
                         "Connect to WiFi"
 
                     font.pixelSize:
-                        23 * root.scale
+                        25 * root.scale
+
+                    font.weight:
+                        Font.DemiBold
 
                     color:
                         "#1A4DB5"
@@ -3096,10 +3099,10 @@ Item {
                     parent.width
 
                 height:
-                    54 * root.scale
+                    60 * root.scale
 
                 radius:
-                    9 * root.scale
+                    11 * root.scale
 
                 color:
                     "#F8FAFD"
@@ -3186,22 +3189,30 @@ Item {
                         parent.right
 
                     anchors.rightMargin:
-                        8 * root.scale
+                        6 * root.scale
 
                     anchors.verticalCenter:
                         parent.verticalCenter
 
                     width:
-                        64 * root.scale
+                        76 * root.scale
 
                     height:
-                        38 * root.scale
+                        48 * root.scale
 
                     radius:
-                        7 * root.scale
+                        9 * root.scale
 
                     color:
-                        "#EAF0FF"
+                        showPasswordMouse.pressed
+                        ? "#D5E2FF"
+                        : "#EAF0FF"
+
+                    border.color:
+                        "#D4E0F7"
+
+                    border.width:
+                        1
 
                     Text {
 
@@ -3215,7 +3226,10 @@ Item {
                             : "Hide"
 
                         font.pixelSize:
-                            14 * root.scale
+                            15 * root.scale
+
+                        font.weight:
+                            Font.DemiBold
 
                         color:
                             "#1A4DB5"
@@ -3223,8 +3237,12 @@ Item {
 
                     MouseArea {
 
+                        id: showPasswordMouse
                         anchors.fill:
                             parent
+
+                        hoverEnabled:
+                            true
 
                         onClicked: {
 
@@ -3249,7 +3267,7 @@ Item {
 
                 height:
                     passwordPopup.errorMessage !== ""
-                    ? 42 * root.scale
+                    ? 46 * root.scale
                     : 0
 
                 visible:
@@ -3309,7 +3327,7 @@ Item {
 
                 height:
                     passwordPopup.successMessage !== ""
-                    ? 42 * root.scale
+                    ? 46 * root.scale
                     : 0
 
                 visible:
@@ -3376,25 +3394,25 @@ Item {
                     parent.horizontalCenter
 
                 spacing:
-                    14 * root.scale
+                    12 * root.scale
 
                 // CANCEL
 
                 Rectangle {
 
                     width:
-                        150 * root.scale
+                        168 * root.scale
 
                     height:
-                        46 * root.scale
+                        56 * root.scale
 
                     radius:
-                        9 * root.scale
+                        10 * root.scale
 
                     color:
                         cancelMouse.pressed
-                        ? "#E1E7F0"
-                        : "#F3F5F8"
+                        ? "#DCE4F1"
+                        : "#F1F4F9"
 
                     border.color:
                         "#D5DDEA"
@@ -3411,7 +3429,10 @@ Item {
                             "Cancel"
 
                         font.pixelSize:
-                            17 * root.scale
+                            18 * root.scale
+
+                        font.weight:
+                            Font.DemiBold
 
                         color:
                             "#52627A"
@@ -3424,6 +3445,9 @@ Item {
 
                         anchors.fill:
                             parent
+
+                        hoverEnabled:
+                            true
 
                         enabled:
                             !passwordPopup.isConnecting
@@ -3438,13 +3462,13 @@ Item {
                 Rectangle {
 
                     width:
-                        150 * root.scale
+                        168 * root.scale
 
                     height:
-                        46 * root.scale
+                        56 * root.scale
 
                     radius:
-                        9 * root.scale
+                        10 * root.scale
 
                     color:
                         passwordPopup.isConnecting
@@ -3464,7 +3488,10 @@ Item {
                             : "Connect"
 
                         font.pixelSize:
-                            17 * root.scale
+                            18 * root.scale
+
+                        font.weight:
+                            Font.DemiBold
 
                         color:
                             "#FFFFFF"
@@ -3477,6 +3504,9 @@ Item {
 
                         anchors.fill:
                             parent
+
+                        hoverEnabled:
+                            true
 
                         enabled:
                             !passwordPopup.isConnecting
