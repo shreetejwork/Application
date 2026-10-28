@@ -46,7 +46,7 @@ QStringList splitNmcliFields(const QString &line)
 QVariantList parseWifiNetworks(const QString &output, const QSet<QString> &savedSsids)
 {
     QVariantList networks;
-    QSet<QString> seenSsids;
+    QHash<QString, int> networkIndexBySsid;
 
     for (const QString &line : output.split('\n', Qt::SkipEmptyParts)) {
         const QStringList parts = splitNmcliFields(line);
@@ -58,17 +58,27 @@ QVariantList parseWifiNetworks(const QString &output, const QSet<QString> &saved
         bool signalOk = false;
         const int signal = parts[2].trimmed().toInt(&signalOk);
         const QString security = parts.mid(3).join(":").trimmed();
+        const bool connected = inUse == "*";
 
-        if (ssid.isEmpty() || seenSsids.contains(ssid))
+        if (ssid.isEmpty())
             continue;
 
-        seenSsids.insert(ssid);
+        const auto existing = networkIndexBySsid.constFind(ssid);
+        if (existing != networkIndexBySsid.cend()) {
+            QVariantMap network = networks[existing.value()].toMap();
+            network["connected"] = network["connected"].toBool() || connected;
+            network["signal"] = qMax(network["signal"].toInt(), signalOk ? signal : 0);
+            networks[existing.value()] = network;
+            continue;
+        }
+
         QVariantMap network;
         network["name"] = ssid;
         network["signal"] = signalOk ? signal : 0;
         network["secured"] = !security.isEmpty() && security != "--";
-        network["connected"] = inUse == "*";
+        network["connected"] = connected;
         network["saved"] = savedSsids.contains(ssid);
+        networkIndexBySsid.insert(ssid, networks.size());
         networks.append(network);
     }
 

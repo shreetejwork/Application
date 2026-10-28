@@ -180,7 +180,12 @@ Item {
                     scannedConnectedSSID = networks[i].name
             }
 
-            connectedSSID = scannedConnectedSSID
+            if (scannedConnectedSSID !== "") {
+                connectedSSID = scannedConnectedSSID
+            } else if (connectedSSID !== "") {
+                WiFiScanner.currentConnectionAsync()
+            }
+
             connectedNetworkSaved = false
             for (var j = 0; j < networkModel.count; j++) {
                 var network = networkModel.get(j)
