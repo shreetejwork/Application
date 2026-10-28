@@ -9,6 +9,8 @@ class WiFiScanner : public QObject
 {
     Q_OBJECT
     bool m_scanInProgress = false;
+    bool m_connectionInProgress = false;
+    bool m_forgetInProgress = false;
     QHash<QString, QString> m_savedProfileIds;
 
 public:

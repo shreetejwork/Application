@@ -107,16 +107,21 @@ QVariantList WiFiScanner::scanNetworks()
 
 void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secured)
 {
+    if (m_connectionInProgress) {
+        return;
+    }
+
     const QString profileId = m_savedProfileIds.value(ssid);
     if (password.isEmpty() && secured && profileId.isEmpty()) {
         emit connectionResult(ssid, "NEEDS_PASSWORD");
         return;
     }
 
+    m_connectionInProgress = true;
     QProcess *process = new QProcess(this);
     QStringList args;
     if (password.isEmpty() && !profileId.isEmpty()) {
-        args << "-w" << "30" << "connection" << "up" << "id" << profileId;
+        args << "-w" << "30" << "connection" << "up" << "uuid" << profileId;
     } else {
         args << "-w" << "30" << "dev" << "wifi" << "connect" << ssid;
         if (!password.isEmpty())
@@ -135,7 +140,7 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
     });
 
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
-            [this, process, ssid, timeoutTimer](int exitCode, QProcess::ExitStatus) {
+            [this, process, ssid, secured, timeoutTimer](int exitCode, QProcess::ExitStatus) {
                 timeoutTimer->stop();
                 QString output = process->readAllStandardOutput();
                 QString error = process->readAllStandardError();
@@ -144,6 +149,7 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
                 const QString diagnostics = output + "\n" + error;
                 process->deleteLater();
                 timeoutTimer->deleteLater();
+                m_connectionInProgress = false;
 
                 QString result;
                 if (timedOut) {
@@ -153,7 +159,8 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
                 } else {
                     if (diagnostics.contains("Secrets were required", Qt::CaseInsensitive) ||
                         diagnostics.contains("802-11-wireless-security", Qt::CaseInsensitive) ||
-                        diagnostics.contains("No suitable secrets", Qt::CaseInsensitive)) {
+                        diagnostics.contains("No suitable secrets", Qt::CaseInsensitive) ||
+                        (secured && diagnostics.contains("unknown connection", Qt::CaseInsensitive))) {
                         result = "NEEDS_PASSWORD";
                     } else if (diagnostics.contains("wrong key", Qt::CaseInsensitive) ||
                                diagnostics.contains("invalid key", Qt::CaseInsensitive) ||
@@ -186,6 +193,7 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
         timeoutTimer->deleteLater();
         qWarning() << "Failed to start nmcli connect process:" << process->errorString();
         process->deleteLater();
+        m_connectionInProgress = false;
         emit connectionResult(ssid, "CONNECTION_FAILED");
     });
     timeoutTimer->start();
@@ -195,33 +203,75 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
 void WiFiScanner::forgetWifiAsync(QString ssid)
 {
     const QString profileId = m_savedProfileIds.value(ssid);
+    if (m_forgetInProgress) {
+        emit forgetResult(ssid, "FORGET_IN_PROGRESS");
+        return;
+    }
     if (profileId.isEmpty()) {
-        emit forgetResult(ssid, "FORGET_FAILED");
+        emit forgetResult(ssid, "FORGET_NOT_FOUND");
         return;
     }
 
-    QProcess *process = new QProcess(this);
-    connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
-            [this, process, ssid](int exitCode, QProcess::ExitStatus) {
-                const QString error = QString::fromUtf8(process->readAllStandardError()).trimmed();
-                process->deleteLater();
-                if (exitCode == 0) {
+    m_forgetInProgress = true;
+    QProcess *verifyProcess = new QProcess(this);
+    connect(verifyProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
+            [this, verifyProcess, ssid, profileId](int exitCode, QProcess::ExitStatus) {
+                const QString error =
+                    QString::fromUtf8(verifyProcess->readAllStandardError()).trimmed();
+                verifyProcess->deleteLater();
+                if (exitCode != 0) {
+                    qWarning() << "Saved WiFi profile is no longer available:" << error;
                     m_savedProfileIds.remove(ssid);
-                    emit forgetResult(ssid, "FORGET_SUCCESS");
-                } else {
-                    qWarning() << "Failed to forget WiFi profile:" << error;
-                    emit forgetResult(ssid, "FORGET_FAILED");
+                    m_forgetInProgress = false;
+                    emit forgetResult(ssid, "FORGET_NOT_FOUND");
+                    return;
                 }
+
+                QProcess *deleteProcess = new QProcess(this);
+                connect(deleteProcess,
+                        QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
+                        [this, deleteProcess, ssid](int deleteExitCode, QProcess::ExitStatus) {
+                            const QString deleteError =
+                                QString::fromUtf8(deleteProcess->readAllStandardError()).trimmed();
+                            deleteProcess->deleteLater();
+                            m_forgetInProgress = false;
+                            if (deleteExitCode == 0) {
+                                m_savedProfileIds.remove(ssid);
+                                emit forgetResult(ssid, "FORGET_SUCCESS");
+                            } else if (deleteError.contains("unknown connection", Qt::CaseInsensitive) ||
+                                       deleteError.contains("cannot delete unknown", Qt::CaseInsensitive)) {
+                                m_savedProfileIds.remove(ssid);
+                                emit forgetResult(ssid, "FORGET_NOT_FOUND");
+                            } else {
+                                qWarning() << "Failed to forget WiFi profile:" << deleteError;
+                                emit forgetResult(ssid, "FORGET_FAILED");
+                            }
+                        });
+                connect(deleteProcess, &QProcess::errorOccurred, this,
+                        [this, deleteProcess, ssid](QProcess::ProcessError error) {
+                            if (error != QProcess::FailedToStart)
+                                return;
+                            qWarning() << "Failed to start nmcli forget process:"
+                                       << deleteProcess->errorString();
+                            deleteProcess->deleteLater();
+                            m_forgetInProgress = false;
+                            emit forgetResult(ssid, "FORGET_FAILED");
+                        });
+                deleteProcess->start("nmcli",
+                    QStringList() << "connection" << "delete" << "uuid" << profileId);
             });
-    connect(process, &QProcess::errorOccurred, this,
-            [this, process, ssid](QProcess::ProcessError error) {
+    connect(verifyProcess, &QProcess::errorOccurred, this,
+            [this, verifyProcess, ssid](QProcess::ProcessError error) {
                 if (error != QProcess::FailedToStart)
                     return;
-                qWarning() << "Failed to start nmcli forget process:" << process->errorString();
-                process->deleteLater();
+                qWarning() << "Failed to verify saved WiFi profile:"
+                           << verifyProcess->errorString();
+                verifyProcess->deleteLater();
+                m_forgetInProgress = false;
                 emit forgetResult(ssid, "FORGET_FAILED");
             });
-    process->start("nmcli", QStringList() << "connection" << "delete" << "id" << profileId);
+    verifyProcess->start("nmcli", QStringList()
+        << "connection" << "show" << "uuid" << profileId);
 }
 
 QString WiFiScanner::currentConnection()

@@ -169,17 +169,26 @@ Item {
             isScanning = false
             networkModel.clear()
             availableNetworkModel.clear()
-            connectedNetworkSaved = false
+            var scannedConnectedSSID = ""
 
             for (var i = 0; i < networks.length; i++) {
                 if (networks[i].name === "")
                     continue
 
                 networkModel.append(networks[i])
-                if (networks[i].name === connectedSSID)
-                    connectedNetworkSaved = networks[i].saved
+                if (networks[i].connected)
+                    scannedConnectedSSID = networks[i].name
             }
 
+            connectedSSID = scannedConnectedSSID
+            connectedNetworkSaved = false
+            for (var j = 0; j < networkModel.count; j++) {
+                var network = networkModel.get(j)
+                if (network.name === connectedSSID) {
+                    connectedNetworkSaved = network.saved
+                    break
+                }
+            }
             refreshAvailableNetworks()
             updateConnectedSignal()
             if (scanPending) {
@@ -204,6 +213,13 @@ Item {
                     notify("Forgot WiFi network " + ssid)
                 WiFiScanner.currentConnectionAsync()
                 scanWifi()
+            } else if (result === "FORGET_NOT_FOUND") {
+                if (notify)
+                    notify("WiFi profile was already removed")
+                WiFiScanner.currentConnectionAsync()
+                scanWifi()
+            } else if (result === "FORGET_IN_PROGRESS") {
+                return
             } else if (notify) {
                 notify("Unable to forget WiFi network " + ssid)
             }
@@ -392,10 +408,9 @@ Item {
 
             if (result.startsWith("Connected to")) {
 
-                connectedSSID = resultSsid
                 closeWifiPasswordKeyboard()
-
-                updateConnectedSignal()
+                WiFiScanner.currentConnectionAsync()
+                scanWifi()
 
                 passwordPopup.successMessage =
                         "Connected successfully"
@@ -757,6 +772,7 @@ Item {
                                 48 * root.scale
 
                             DDButton {
+                                id: wifiToggleButton
                                 anchors.centerIn: parent
 
                                 width:
@@ -773,43 +789,29 @@ Item {
 
                                 useSymbols: true
 
-                                onToggledChanged: {
+                                onToggleRequested: {
+                                    var requestedState = toggled
+                                    var commandSucceeded = root.nmcliAvailable
+                                                           && WiFiScanner.enableWifi(requestedState)
+                                    var actualState = root.nmcliAvailable
+                                                      && WiFiScanner.isWifiEnabled()
+                                    root.wifiEnabled = actualState
+                                    toggled = root.wifiEnabled
 
-                                    if (toggled
-                                            && root.nmcliAvailable) {
-
-                                        root.wifiEnabled =
-                                                WiFiScanner.enableWifi(
-                                                    true
-                                                    )
-
-                                        if (root.wifiEnabled) {
-
-                                            WiFiScanner.currentConnectionAsync()
-
-                                            root.scanWifi()
-                                        }
-
-                                    }
-                                    else {
-
-                                        root.wifiEnabled =
-                                                false
-
-                                        WiFiScanner.enableWifi(
-                                                    false
-                                                    )
-
-                                        root.connectedSSID =
-                                                ""
-
-                                        root.connectedSignal =
-                                                0
-
+                                    if (root.wifiEnabled) {
+                                        WiFiScanner.currentConnectionAsync()
+                                        root.scanWifi()
+                                    } else {
+                                        root.connectedSSID = ""
+                                        root.connectedSignal = 0
+                                        root.connectedNetworkSaved = false
                                         networkModel.clear()
-
                                         availableNetworkModel.clear()
                                     }
+
+                                    if ((!commandSucceeded || actualState !== requestedState)
+                                            && root.notify)
+                                        root.notify("Unable to change WiFi radio state")
                                 }
                             }
                         }
