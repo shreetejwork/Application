@@ -131,9 +131,9 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
     QProcess *process = new QProcess(this);
     QStringList args;
     if (password.isEmpty() && !profileId.isEmpty()) {
-        args << "-w" << "30" << "connection" << "up" << "uuid" << profileId;
+        args << "--ask" << "-w" << "30" << "connection" << "up" << "uuid" << profileId;
     } else {
-        args << "-w" << "30" << "dev" << "wifi" << "connect" << ssid;
+        args << "--ask" << "-w" << "30" << "dev" << "wifi" << "connect" << ssid;
         if (!password.isEmpty())
             args << "password" << password;
     }
@@ -206,6 +206,7 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
         m_connectionInProgress = false;
         emit connectionResult(ssid, "CONNECTION_FAILED");
     });
+    connect(process, &QProcess::started, process, &QProcess::closeWriteChannel);
     timeoutTimer->start();
     process->start("nmcli", args);
 }
