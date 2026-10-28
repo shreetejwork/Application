@@ -3,10 +3,17 @@
 #include <QSet>
 #include <QDebug>
 #include <QTimer>
+#include <memory>
 
 WiFiScanner::WiFiScanner(QObject *parent) : QObject(parent) {}
 
 namespace {
+struct SavedProfileLookup {
+    QString scanOutput;
+    QHash<QString, QString> profileIds;
+    int pending = 0;
+};
+
 QStringList splitNmcliFields(const QString &line)
 {
     QStringList fields;
@@ -294,48 +301,99 @@ void WiFiScanner::scanNetworksAsync()
                 connect(profilesProcess,
                         QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
                         [this, profilesProcess, scanOutput](int profilesExitCode, QProcess::ExitStatus) {
-                            QSet<QString> savedSsids;
+                            const QString profileError =
+                                QString::fromUtf8(profilesProcess->readAllStandardError()).trimmed();
+                            const QString profilesOutput =
+                                QString::fromUtf8(profilesProcess->readAllStandardOutput());
+                            profilesProcess->deleteLater();
 
-                            if (profilesExitCode == 0) {
+                            if (profilesExitCode != 0) {
+                                qWarning() << "Failed to list saved WiFi profiles:" << profileError;
                                 m_savedProfileIds.clear();
-                                const QString profilesOutput =
-                                    QString::fromUtf8(profilesProcess->readAllStandardOutput());
-                                for (const QString &line : profilesOutput.split('\n', Qt::SkipEmptyParts)) {
-                                    const QStringList fields = splitNmcliFields(line);
-                                    if (fields.size() < 3 || fields[1].trimmed() != "802-11-wireless")
-                                        continue;
-
-                                    const QString ssid = fields[2].trimmed();
-                                    if (ssid.isEmpty())
-                                        continue;
-                                    m_savedProfileIds.insert(ssid, fields[0]);
-                                    savedSsids.insert(ssid);
-                                }
-                            } else {
-                                qWarning() << "Failed to read saved WiFi profiles:"
-                                           << QString::fromUtf8(profilesProcess->readAllStandardError()).trimmed();
-                                profilesProcess->deleteLater();
                                 m_scanInProgress = false;
-                                emit scanFailed("Unable to read saved WiFi profiles");
+                                emit networksScanned(parseWifiNetworks(scanOutput, {}));
                                 return;
                             }
 
-                            profilesProcess->deleteLater();
-                            m_scanInProgress = false;
-                            emit networksScanned(parseWifiNetworks(scanOutput, savedSsids));
+                            QStringList wirelessProfileUuids;
+                            for (const QString &line : profilesOutput.split('\n', Qt::SkipEmptyParts)) {
+                                const QStringList fields = splitNmcliFields(line);
+                                if (fields.size() >= 3 && fields[2].trimmed() == "802-11-wireless")
+                                    wirelessProfileUuids.append(fields[1].trimmed());
+                            }
+
+                            const auto state = std::make_shared<SavedProfileLookup>();
+                            state->scanOutput = scanOutput;
+                            state->pending = wirelessProfileUuids.size();
+
+                            const auto finishScan = [this, state]() {
+                                m_savedProfileIds = state->profileIds;
+                                QSet<QString> savedSsids;
+                                for (auto it = state->profileIds.cbegin(); it != state->profileIds.cend(); ++it)
+                                    savedSsids.insert(it.key());
+                                m_scanInProgress = false;
+                                emit networksScanned(parseWifiNetworks(state->scanOutput, savedSsids));
+                            };
+
+                            if (state->pending == 0) {
+                                finishScan();
+                                return;
+                            }
+
+                            for (const QString &uuid : wirelessProfileUuids) {
+                                QProcess *ssidProcess = new QProcess(this);
+                                const auto completeLookup = [state, finishScan, ssidProcess, uuid]() {
+                                    if (ssidProcess->property("wifiProfileLookupHandled").toBool())
+                                        return;
+                                    ssidProcess->setProperty("wifiProfileLookupHandled", true);
+
+                                    const QString ssid =
+                                        QString::fromUtf8(ssidProcess->readAllStandardOutput()).trimmed();
+                                    if (ssidProcess->exitStatus() == QProcess::NormalExit &&
+                                        ssidProcess->exitCode() == 0 && !ssid.isEmpty()) {
+                                        state->profileIds.insert(ssid, uuid);
+                                    } else {
+                                        qWarning() << "Unable to read SSID for saved WiFi profile"
+                                                   << uuid << ":"
+                                                   << QString::fromUtf8(ssidProcess->readAllStandardError()).trimmed();
+                                    }
+                                    ssidProcess->deleteLater();
+
+                                    if (--state->pending == 0)
+                                        finishScan();
+                                };
+
+                                connect(ssidProcess,
+                                        QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
+                                        this, [completeLookup](int, QProcess::ExitStatus) {
+                                            completeLookup();
+                                        });
+                                connect(ssidProcess, &QProcess::errorOccurred, this,
+                                        [completeLookup, ssidProcess](QProcess::ProcessError error) {
+                                            if (error != QProcess::FailedToStart)
+                                                return;
+                                            qWarning() << "Failed to start saved WiFi SSID lookup:"
+                                                       << ssidProcess->errorString();
+                                            completeLookup();
+                                        });
+                                ssidProcess->start("nmcli", QStringList()
+                                    << "-g" << "802-11-wireless.ssid"
+                                    << "connection" << "show" << "uuid" << uuid);
+                            }
                         });
                 connect(profilesProcess, &QProcess::errorOccurred, this,
-                        [this, profilesProcess](QProcess::ProcessError error) {
+                        [this, profilesProcess, scanOutput](QProcess::ProcessError error) {
                             if (error != QProcess::FailedToStart)
                                 return;
                             const QString message = profilesProcess->errorString();
-                            qWarning() << "Failed to read saved WiFi profiles:" << message;
+                            qWarning() << "Failed to list saved WiFi profiles:" << message;
                             profilesProcess->deleteLater();
+                            m_savedProfileIds.clear();
                             m_scanInProgress = false;
-                            emit scanFailed(message);
+                            emit networksScanned(parseWifiNetworks(scanOutput, {}));
                         });
                 profilesProcess->start("nmcli", QStringList()
-                    << "-t" << "-f" << "NAME,TYPE,802-11-wireless.ssid"
+                    << "-t" << "-f" << "NAME,UUID,TYPE"
                     << "connection" << "show");
             });
     connect(scanProcess, &QProcess::errorOccurred, this,
