@@ -2,6 +2,7 @@
 #include <QProcess>
 #include <QSet>
 #include <QDebug>
+#include <QRegularExpression>
 #include <QTimer>
 #include <memory>
 
@@ -150,11 +151,15 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
     });
 
     connect(process, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this,
-            [this, process, ssid, secured, timeoutTimer](int exitCode, QProcess::ExitStatus) {
+            [this, process, ssid, secured, hasPassword = !password.isEmpty(), timeoutTimer]
+            (int exitCode, QProcess::ExitStatus) {
                 timeoutTimer->stop();
-                QString output = process->readAllStandardOutput();
-                QString error = process->readAllStandardError();
+                const QString output = process->property("wifiConnectOutput").toString()
+                    + QString::fromUtf8(process->readAllStandardOutput());
+                const QString error = process->property("wifiConnectError").toString()
+                    + QString::fromUtf8(process->readAllStandardError());
                 const bool timedOut = process->property("wifiConnectTimedOut").toBool();
+                const bool secretPrompted = process->property("wifiSecretPrompted").toBool();
 
                 const QString diagnostics = output + "\n" + error;
                 process->deleteLater();
@@ -164,6 +169,8 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
                 QString result;
                 if (timedOut) {
                     result = "CONNECTION_TIMEOUT";
+                } else if (secretPrompted) {
+                    result = hasPassword ? "WRONG_PASSWORD" : "NEEDS_PASSWORD";
                 } else if (exitCode == 0) {
                     result = "Connected to " + ssid;
                 } else {
@@ -195,6 +202,30 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
                 emit connectionResult(ssid, result);
             });
 
+    const auto detectSecretPrompt = [process](QProcess::ProcessChannel channel) {
+        const QString chunk = QString::fromUtf8(channel == QProcess::StandardOutput
+            ? process->readAllStandardOutput()
+            : process->readAllStandardError());
+        const char *propertyName = channel == QProcess::StandardOutput
+            ? "wifiConnectOutput" : "wifiConnectError";
+        const QString accumulated = process->property(propertyName).toString() + chunk;
+        process->setProperty(propertyName, accumulated);
+
+        static const QRegularExpression secretPrompt(
+            QStringLiteral("(?:password|psk)[^\\r\\n]*:\\s*$"),
+            QRegularExpression::CaseInsensitiveOption);
+        if (!process->property("wifiSecretPrompted").toBool() &&
+            secretPrompt.match(accumulated).hasMatch()) {
+            process->setProperty("wifiSecretPrompted", true);
+            process->kill();
+        }
+    };
+    connect(process, &QProcess::readyReadStandardOutput, process, [detectSecretPrompt]() {
+        detectSecretPrompt(QProcess::StandardOutput);
+    });
+    connect(process, &QProcess::readyReadStandardError, process, [detectSecretPrompt]() {
+        detectSecretPrompt(QProcess::StandardError);
+    });
     connect(process, &QProcess::errorOccurred, this,
             [this, process, ssid, timeoutTimer](QProcess::ProcessError error) {
         if (error != QProcess::FailedToStart)
@@ -206,7 +237,6 @@ void WiFiScanner::connectToWifiAsync(QString ssid, QString password, bool secure
         m_connectionInProgress = false;
         emit connectionResult(ssid, "CONNECTION_FAILED");
     });
-    connect(process, &QProcess::started, process, &QProcess::closeWriteChannel);
     timeoutTimer->start();
     process->start("nmcli", args);
 }

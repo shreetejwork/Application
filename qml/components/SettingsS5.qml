@@ -524,151 +524,81 @@ Item {
         // PAGE HEADER
         // =====================================================
 
-        Column {
+        RowLayout {
             Layout.fillWidth: true
+            Layout.preferredHeight: 54 * root.scale
+            spacing: 16 * root.scale
 
-            spacing: 4 * root.scale
+            Column {
+                Layout.fillWidth: true
+                spacing: 4 * root.scale
 
-            Text {
-                text: "Network Settings"
-
-                font.pixelSize:
-                    32 * root.scale
-
-                color: "#1A4DB5"
-            }
-
-
-            Rectangle {
-                width: 90 * root.scale
-                height: 3 * root.scale
-
-                radius: 2 * root.scale
-
-                color: "#1A4DB5"
-            }
-        }
-
-        // =====================================================
-        // TAB CONTAINER
-        // =====================================================
-
-        Rectangle {
-            Layout.fillWidth: true
-            Layout.preferredHeight: 62 * root.scale
-
-            radius: 12 * root.scale
-
-            color: "#FFFFFF"
-
-            border.color: "#D9E1EF"
-            border.width: 1
-
-            Row {
-                anchors.fill: parent
-
-                anchors.leftMargin: 10 * root.scale
-                anchors.rightMargin: 10 * root.scale
-
-                anchors.topMargin: 8 * root.scale
-                anchors.bottomMargin: 8 * root.scale
-
-                spacing: 10 * root.scale
-
-                // =============================================
-                // WIFI TAB
-                // =============================================
-
-                Rectangle {
-                    width:
-                        (parent.width - 10 * root.scale)
-                        / 2
-
-                    height: parent.height
-
-                    radius: 9 * root.scale
-
-                    property bool selected:
-                        root.activeTab === "WiFi"
-
-                    color:
-                        selected
-                        ? "#1A4DB5"
-                        : "transparent"
-
-                    Text {
-                        anchors.centerIn: parent
-
-                        text: "WiFi"
-
-                        font.pixelSize:
-                            22 * root.scale
-
-                        color:
-                            parent.selected
-                            ? "#FFFFFF"
-                            : "#64748B"
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-
-                        onClicked: {
-
-                            if (root.activeTab !== "WiFi") {
-
-                                GlobalState.networkSelectedTab =
-                                        "WiFi"
-                            }
-                        }
-                    }
+                Text {
+                    text: "Network Settings"
+                    font.pixelSize: 32 * root.scale
+                    color: "#1A4DB5"
                 }
 
-                // =============================================
-                // LAN TAB
-                // =============================================
-
                 Rectangle {
-                    width:
-                        (parent.width - 10 * root.scale)
-                        / 2
+                    width: 90 * root.scale
+                    height: 3 * root.scale
+                    radius: 2 * root.scale
+                    color: "#1A4DB5"
+                }
+            }
 
-                    height: parent.height
+            Rectangle {
+                Layout.preferredWidth: 250 * root.scale
+                Layout.preferredHeight: 52 * root.scale
+                radius: 11 * root.scale
+                color: "#FFFFFF"
+                border.color: "#D9E1EF"
+                border.width: 1
 
-                    radius: 9 * root.scale
+                Row {
+                    anchors.fill: parent
+                    anchors.margins: 5 * root.scale
+                    spacing: 6 * root.scale
 
-                    property bool selected:
-                        root.activeTab === "LAN"
+                    Rectangle {
+                        width: (parent.width - parent.spacing) / 2
+                        height: parent.height
+                        radius: 8 * root.scale
 
-                    color:
-                        selected
-                        ? "#1A4DB5"
-                        : "transparent"
+                        property bool selected: root.activeTab === "WiFi"
+                        color: selected ? "#1A4DB5" : "transparent"
 
-                    Text {
-                        anchors.centerIn: parent
+                        Text {
+                            anchors.centerIn: parent
+                            text: "WiFi"
+                            font.pixelSize: 20 * root.scale
+                            color: parent.selected ? "#FFFFFF" : "#64748B"
+                        }
 
-                        text: "LAN"
-
-                        font.pixelSize:
-                            22 * root.scale
-
-                        color:
-                            parent.selected
-                            ? "#FFFFFF"
-                            : "#64748B"
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: GlobalState.networkSelectedTab = "WiFi"
+                        }
                     }
 
-                    MouseArea {
-                        anchors.fill: parent
+                    Rectangle {
+                        width: (parent.width - parent.spacing) / 2
+                        height: parent.height
+                        radius: 8 * root.scale
 
-                        onClicked: {
+                        property bool selected: root.activeTab === "LAN"
+                        color: selected ? "#1A4DB5" : "transparent"
 
-                            if (root.activeTab !== "LAN") {
+                        Text {
+                            anchors.centerIn: parent
+                            text: "LAN"
+                            font.pixelSize: 20 * root.scale
+                            color: parent.selected ? "#FFFFFF" : "#64748B"
+                        }
 
-                                GlobalState.networkSelectedTab =
-                                        "LAN"
-                            }
+                        MouseArea {
+                            anchors.fill: parent
+                            onClicked: GlobalState.networkSelectedTab = "LAN"
                         }
                     }
                 }
@@ -706,10 +636,10 @@ Item {
                     anchors.fill: parent
 
                     anchors.margins:
-                        22 * root.scale
+                        18 * root.scale
 
                     spacing:
-                        14 * root.scale
+                        8 * root.scale
 
                     // =========================================
                     // WIFI HEADER
@@ -723,10 +653,10 @@ Item {
 
                         Rectangle {
                             Layout.preferredWidth:
-                                52 * root.scale
+                                58 * root.scale
 
                             Layout.preferredHeight:
-                                52 * root.scale
+                                58 * root.scale
 
                             radius:
                                 12 * root.scale
@@ -740,7 +670,7 @@ Item {
                                 text: "WiFi"
 
                                 font.pixelSize:
-                                    20 * root.scale
+                                    21 * root.scale
 
                                 color:
                                     "#1A4DB5"
@@ -781,16 +711,16 @@ Item {
                                 anchors.centerIn: parent
 
                                 width:
-                                    120 * root.scale
+                                    126 * root.scale
 
                                 height:
-                                    44 * root.scale
+                                    48 * root.scale
 
                                 toggled:
                                     root.wifiEnabled
 
                                 knobSize:
-                                    35 * root.scale
+                                    38 * root.scale
 
                                 useSymbols: true
 
@@ -953,7 +883,7 @@ Item {
                                 true
 
                             Layout.preferredHeight:
-                                78 * root.scale
+                                84 * root.scale
 
                             visible:
                                 root.connectedSSID !== ""
@@ -1091,11 +1021,11 @@ Item {
 
                                     Layout.preferredWidth:
                                         root.connectedNetworkSaved
-                                        ? 180 * root.scale
-                                        : 100 * root.scale
+                                        ? 188 * root.scale
+                                        : 104 * root.scale
 
                                     Layout.preferredHeight:
-                                        36 * root.scale
+                                        42 * root.scale
 
                                     Row {
                                         anchors.fill: parent
@@ -1103,7 +1033,7 @@ Item {
 
                                         Rectangle {
                                             width: root.connectedNetworkSaved
-                                                   ? 90 * root.scale
+                                                   ? 96 * root.scale
                                                    : parent.width
                                             height: parent.height
                                             radius: 8 * root.scale
@@ -1119,7 +1049,7 @@ Item {
 
                                         Rectangle {
                                             visible: root.connectedNetworkSaved
-                                            width: visible ? 84 * root.scale : 0
+                                            width: visible ? 86 * root.scale : 0
                                             height: parent.height
                                             radius: 8 * root.scale
                                             color: forgetConnectedMouse.pressed
@@ -1189,10 +1119,10 @@ Item {
                             Rectangle {
 
                                 Layout.preferredWidth:
-                                    115 * root.scale
+                                    122 * root.scale
 
                                 Layout.preferredHeight:
-                                    38 * root.scale
+                                    42 * root.scale
 
                                 radius:
                                     8 * root.scale
@@ -1299,7 +1229,7 @@ Item {
                                         networkList.width
 
                                     height:
-                                        68 * root.scale
+                                        76 * root.scale
 
                                     radius:
                                         10 * root.scale
@@ -1332,10 +1262,10 @@ Item {
                                         Rectangle {
 
                                             Layout.preferredWidth:
-                                                42 * root.scale
+                                                48 * root.scale
 
                                             Layout.preferredHeight:
-                                                42 * root.scale
+                                                48 * root.scale
 
                                             radius:
                                                 9 * root.scale
@@ -1450,11 +1380,11 @@ Item {
 
                                             Layout.preferredWidth:
                                                 model.saved
-                                                ? 92 * root.scale
+                                                ? 98 * root.scale
                                                 : 0
 
                                             Layout.preferredHeight:
-                                                42 * root.scale
+                                                46 * root.scale
 
                                             visible:
                                                 model.saved
@@ -1502,10 +1432,10 @@ Item {
                                         Rectangle {
 
                                             Layout.preferredWidth:
-                                                100 * root.scale
+                                                106 * root.scale
 
                                             Layout.preferredHeight:
-                                                42 * root.scale
+                                                46 * root.scale
 
                                             radius:
                                                 8 * root.scale
@@ -1609,10 +1539,10 @@ Item {
                     anchors.fill: parent
 
                     anchors.margins:
-                        26 * root.scale
+                        18 * root.scale
 
                     spacing:
-                        16 * root.scale
+                        8 * root.scale
 
                     // =========================================
                     // LAN HEADER
@@ -1628,10 +1558,10 @@ Item {
                         Rectangle {
 
                             Layout.preferredWidth:
-                                52 * root.scale
+                                58 * root.scale
 
                             Layout.preferredHeight:
-                                52 * root.scale
+                                58 * root.scale
 
                             radius:
                                 12 * root.scale
@@ -1647,7 +1577,7 @@ Item {
                                     "LAN"
 
                                 font.pixelSize:
-                                    20 * root.scale
+                                    21 * root.scale
 
                                 color:
                                     "#1A4DB5"
