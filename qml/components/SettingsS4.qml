@@ -158,7 +158,7 @@ Item {
 
                 SettingsCard {
                     cardId: "serialNumber"
-                    fieldLabel: "Serial Number"
+                    fieldLabel: "Mfg's Serial Number"
                     placeholderText: "Enter serial number"
                     initialValue: GlobalState.serialNumber ?? ""
                     onConfirmed: (val) => {
@@ -169,7 +169,7 @@ Item {
 
                 SettingsCard {
                     cardId: "machineId"
-                    fieldLabel: "Machine ID"
+                    fieldLabel: "User's Machine ID"
                     placeholderText: "Enter machine ID"
                     initialValue: GlobalState.machineId ?? "PHMX"
                     onConfirmed: (val) => {
@@ -180,8 +180,8 @@ Item {
 
                 SettingsCard {
                     cardId: "user"
-                    fieldLabel: "User"
-                    placeholderText: "Enter user"
+                    fieldLabel: "User Name"
+                    placeholderText: "Enter user name"
                     initialValue: GlobalState.userName ?? ""
                     onConfirmed: (val) => {
                         GlobalState.userName = val

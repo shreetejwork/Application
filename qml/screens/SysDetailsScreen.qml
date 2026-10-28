@@ -58,19 +58,19 @@ Item {
         },
 
         {
-            label: "Serial Number",
+            label: "Mfg's Serial Number",
             value: GlobalState.serialNumber.length ?
                        GlobalState.serialNumber : "..."
         },
 
         {
-            label: "User",
+            label: "User Name",
             value: GlobalState.userName.length ?
                        GlobalState.userName : "..."
         },
 
         {
-            label: "Machine ID",
+            label: "User's Machine ID",
             value: GlobalState.machineId.length ?
                        GlobalState.machineId : "PHMX"
         },
@@ -142,7 +142,7 @@ Item {
                 Rectangle {
                     width: parent.width * 0.92
                     anchors.horizontalCenter: parent.horizontalCenter
-                    height: 155 * root.scale
+                    height: 172 * root.scale
 
                     radius: 22 * root.scale
                     color: "#FFFFFF"
@@ -153,58 +153,79 @@ Item {
 
                     Column {
                         anchors.fill: parent
-                        anchors.margins: 14 * root.scale
-                        spacing: 10 * root.scale
+                        anchors.topMargin: 15 * root.scale
+                        anchors.bottomMargin: 10 * root.scale
+                        anchors.leftMargin: 14 * root.scale
+                        anchors.rightMargin: 14 * root.scale
+                        spacing: 4 * root.scale
 
                         Item {
                             width: parent.width
-                            height: 40 * root.scale
+                            height: 66 * root.scale
 
-                            Button {
-                                id: coilBalanceButton
+                            Column {
+                                anchors.fill: parent
+                                spacing: 4 * root.scale
 
-                                anchors.centerIn: parent
-
-                                width: 150 * root.scale
-                                height: 40 * root.scale
-
-                                text: GlobalState.coilBalancingOn
-                                      ? "Coil Balancing ON"
-                                      : "Coil Balancing OFF"
-
-                                onClicked: {
-                                    GlobalState.coilBalancingOn = !GlobalState.coilBalancingOn
-                                }
-
-                                contentItem: Text {
-                                    text: coilBalanceButton.text
-                                    font.pixelSize: 16 * root.scale
-                                    font.bold: true
-
-                                    color: GlobalState.coilBalancingOn
-                                           ? "#1A4DB5"
-                                           : "#FFFFFF"
-
+                                Text {
+                                    width: parent.width
+                                    height: 22 * root.scale
+                                    text: GlobalState.coilBalancingOn
+                                          ? "Turn Off button after balancing"
+                                          : "Turn On button before balancing"
+                                    font.pixelSize: 18 * root.scale
+                                    color: "#52627B"
                                     horizontalAlignment: Text.AlignHCenter
                                     verticalAlignment: Text.AlignVCenter
+                                    elide: Text.ElideRight
                                 }
 
-                                background: Rectangle {
-                                    radius: 10 * root.scale
+                                Button {
+                                    id: coilBalanceButton
 
-                                    color: GlobalState.coilBalancingOn
-                                           ? "#FFFFFF"
-                                           : (coilBalanceButton.pressed ? "#153F94" : "#1A4DB5")
+                                    anchors.horizontalCenter: parent.horizontalCenter
 
-                                    border.width: 1
-                                    border.color: "#1A4DB5"
+                                    width: 150 * root.scale
+                                    height: 40 * root.scale
 
-                                    Behavior on color {
-                                        ColorAnimation { duration: 150 }
+                                    text: GlobalState.coilBalancingOn
+                                          ? "Coil Balancing ON"
+                                          : "Coil Balancing OFF"
+
+                                    onClicked: {
+                                        GlobalState.coilBalancingOn = !GlobalState.coilBalancingOn
                                     }
 
-                                    Behavior on border.color {
-                                        ColorAnimation { duration: 150 }
+                                    contentItem: Text {
+                                        text: coilBalanceButton.text
+                                        font.pixelSize: 17 * root.scale
+
+
+                                        color: GlobalState.coilBalancingOn
+                                               ? "#1A4DB5"
+                                               : "#FFFFFF"
+
+                                        horizontalAlignment: Text.AlignHCenter
+                                        verticalAlignment: Text.AlignVCenter
+                                    }
+
+                                    background: Rectangle {
+                                        radius: 10 * root.scale
+
+                                        color: GlobalState.coilBalancingOn
+                                               ? "#FFFFFF"
+                                               : (coilBalanceButton.pressed ? "#153F94" : "#1A4DB5")
+
+                                        border.width: 1
+                                        border.color: "#1A4DB5"
+
+                                        Behavior on color {
+                                            ColorAnimation { duration: 150 }
+                                        }
+
+                                        Behavior on border.color {
+                                            ColorAnimation { duration: 150 }
+                                        }
                                     }
                                 }
                             }
@@ -212,7 +233,7 @@ Item {
 
                         CoilProgressBar {
                             width: parent.width
-                            height: 78 * root.scale
+                            height: 72 * root.scale
 
                             scale: root.scale
                             value: SerialManager.coilOutput
