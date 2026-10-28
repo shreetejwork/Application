@@ -537,7 +537,7 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
 
     // ── LOGO ────────────────────────────────────────────────────────────────
     QString logoPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-                       + "/Logo.png";
+                       + "/PdfLogo.png";
     QPixmap logo(logoPath);
 
     // ── PAGE GEOMETRY ───────────────────────────────────────────────────────
@@ -1108,7 +1108,7 @@ QString PdfExporter::exportBatchToPdf(const QVariantMap &batchData,
     QString logoPath =
         QStandardPaths::writableLocation(
             QStandardPaths::DocumentsLocation
-            ) + "/Logo.png";
+            ) + "/PdfLogo.png";
 
     QPixmap logo(logoPath);
 
@@ -3173,7 +3173,7 @@ QString PdfExporter::exportXYPlotToPdf(const QString &imagePath,
 
     // ── LOGO ────────────────────────────────────────────────────────────────
     QString logoPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)
-                       + "/Logo.png";
+                       + "/PdfLogo.png";
     QPixmap logo(logoPath);
     if (logo.isNull()) {
         qDebug() << "[XYPlot] Note: Logo not found at:" << logoPath << "(continuing without it)";
@@ -3589,7 +3589,7 @@ QString PdfExporter::exportCoilOutputToPdf(
         QStandardPaths::writableLocation(
             QStandardPaths::DocumentsLocation
             )
-        +"/Logo.png";
+        +"/PdfLogo.png";
 
 
     QPixmap logo(logoPath);
