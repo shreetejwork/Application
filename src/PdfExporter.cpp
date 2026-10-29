@@ -5,7 +5,6 @@
 #include <QCoreApplication>
 #include <QUrl>
 #include <QFile>
-#include <QSaveFile>
 
 #include <QApplication>
 #include <QPdfWriter>
@@ -80,6 +79,22 @@ static bool atomicallyReplaceFile(const QString &sourcePath,
     qWarning() << "Unable to publish verified USB file:" << destinationPath;
     return false;
 #endif
+}
+
+static bool isCompletePdf(const QString &filePath)
+{
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly) || file.size() < 8)
+        return false;
+
+    if (!file.read(5).startsWith("%PDF-"))
+        return false;
+
+    const qint64 tailSize = qMin<qint64>(file.size(), 2048);
+    if (!file.seek(file.size() - tailSize))
+        return false;
+
+    return file.read(tailSize).trimmed().endsWith("%%EOF");
 }
 
 
@@ -513,7 +528,22 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
         QString folder = getReportsFolderPath();
         path = folder + "/Audit_Report_" + ts + ".pdf";
     }
-    QDir().mkpath(QFileInfo(path).absolutePath());
+    const QString outputDirectory = QFileInfo(path).absolutePath();
+    if (!QDir().mkpath(outputDirectory)) {
+        qWarning() << "Unable to create audit report directory:"
+                   << outputDirectory;
+        return QString();
+    }
+
+    QTemporaryDir stagingDirectory(
+        QDir(outputDirectory).filePath(".audit-report-XXXXXX"));
+    if (!stagingDirectory.isValid()) {
+        qWarning() << "Unable to create audit report staging directory:"
+                   << outputDirectory;
+        return QString();
+    }
+    const QString stagedPath =
+        QDir(stagingDirectory.path()).filePath("audit-report.pdf");
 
     QVariantMap machineInfo = getMachineDetails();
 
@@ -562,12 +592,17 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
             .arg(loggedUser);
 
     // ── WRITER ──────────────────────────────────────────────────────────────
-    QPdfWriter writer(path);
+    const bool generated = [&]() {
+    QPdfWriter writer(stagedPath);
     writer.setPageSize(QPageSize(QPageSize::A4));
     writer.setResolution(96);
     writer.setPageMargins(QMarginsF(0, 0, 0, 0));
 
-    QPainter painter(&writer);
+    QPainter painter;
+    if (!painter.begin(&writer)) {
+        qWarning() << "Unable to start audit report PDF painter:" << stagedPath;
+        return false;
+    }
 
     // ── FONT ────────────────────────────────────────────────────────────────
     int fontId     = QFontDatabase::addApplicationFont(":/assets/images/RobotoCondensed-Regular.ttf");
@@ -1087,7 +1122,23 @@ QString PdfExporter::exportTableToPdf(const QVariantList &data,
         page++;
     }
 
-    painter.end();
+    if (!painter.end()) {
+        qWarning() << "Unable to finalize audit report PDF:" << stagedPath;
+        return false;
+    }
+    return true;
+    }();
+
+    if (!generated)
+        return QString();
+    if (!isCompletePdf(stagedPath)) {
+        qWarning() << "Generated audit report PDF is incomplete:" << stagedPath;
+        return QString();
+    }
+
+    if (!atomicallyReplaceFile(stagedPath, path))
+        return QString();
+
     qDebug() << "PDF saved at:" << path;
     return path;
 }
@@ -2987,8 +3038,8 @@ static bool copyFilesToUsb(const QStringList &filePaths,
         qDebug() << "PDF source:" << srcFile
                  << "exists=" << fi.exists()
                  << "readable=" << fi.isReadable();
-        if (!fi.isFile() || !fi.isReadable() || fi.size() <= 0) {
-            qWarning() << "PDF source is not a readable completed file:" << srcFile;
+        if (!fi.isFile() || !fi.isReadable() || !isCompletePdf(srcFile)) {
+            qWarning() << "PDF source is not a complete readable PDF:" << srcFile;
             allOk = false;
             continue;
         }
@@ -3016,8 +3067,7 @@ static bool copyFilesToUsb(const QStringList &filePaths,
 
         const QString stagedFilePath =
             QDir(stagingDirectory.path()).filePath("payload.part");
-        QSaveFile destinationFile(stagedFilePath);
-        destinationFile.setDirectWriteFallback(false);
+        QFile destinationFile(stagedFilePath);
         if (!destinationFile.open(QIODevice::WriteOnly)) {
             qWarning() << "PDF staging file open failed:" << stagedFilePath
                        << destinationFile.errorString();
@@ -3084,17 +3134,12 @@ static bool copyFilesToUsb(const QStringList &filePaths,
         }
 
         if (!copyOk) {
-            destinationFile.cancelWriting();
+            destinationFile.close();
             allOk = false;
             continue;
         }
 
-        if (!destinationFile.commit()) {
-            qWarning() << "PDF staging file commit failed:" << stagedFilePath
-                       << destinationFile.errorString();
-            allOk = false;
-            continue;
-        }
+        destinationFile.close();
 
         QFile verifiedDestination(stagedFilePath);
         if (!verifiedDestination.open(QIODevice::ReadOnly)) {
@@ -3133,6 +3178,12 @@ static bool copyFilesToUsb(const QStringList &filePaths,
             copyOk = false;
         }
 
+        if (copyOk && !isCompletePdf(stagedFilePath)) {
+            qWarning() << "USB staging file is not a complete PDF:"
+                       << stagedFilePath;
+            copyOk = false;
+        }
+
         if (!copyOk) {
             qWarning() << "USB copy could not be verified:" << dstFile;
             allOk = false;
@@ -3148,6 +3199,43 @@ static bool copyFilesToUsb(const QStringList &filePaths,
 
         verifiedDestination.close();
         if (!atomicallyReplaceFile(stagedFilePath, dstFile)) {
+            allOk = false;
+            continue;
+        }
+
+        QFile publishedFile(dstFile);
+        if (!publishedFile.open(QIODevice::ReadOnly)) {
+            qWarning() << "Published USB PDF could not be opened:" << dstFile
+                       << publishedFile.errorString();
+            allOk = false;
+            continue;
+        }
+
+        QCryptographicHash publishedHash(QCryptographicHash::Sha256);
+        qint64 publishedBytes = 0;
+        while (true) {
+            const qint64 bytesRead =
+                publishedFile.read(buffer.data(), buffer.size());
+            if (bytesRead < 0) {
+                qWarning() << "Published USB PDF verification read failed:"
+                           << dstFile << publishedFile.errorString();
+                copyOk = false;
+                break;
+            }
+            if (bytesRead == 0)
+                break;
+
+            publishedHash.addData(QByteArrayView(buffer.constData(), bytesRead));
+            publishedBytes += bytesRead;
+        }
+        publishedFile.close();
+
+        if (!copyOk || publishedBytes != expectedSize
+            || publishedHash.result() != sourceHash.result()
+            || !isCompletePdf(dstFile)) {
+            qWarning() << "Published USB PDF verification failed:" << dstFile
+                       << "expected bytes=" << expectedSize
+                       << "actual bytes=" << publishedBytes;
             allOk = false;
             continue;
         }

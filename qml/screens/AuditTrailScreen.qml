@@ -808,9 +808,18 @@ Item {
                                                     sessionInfo
                                                 )
 
+                                        if (!path) {
+                                            if (globalTopBar &&
+                                                globalTopBar.showNotification) {
+                                                globalTopBar.showNotification(
+                                                    "⚠ Failed to generate PDF"
+                                                )
+                                            }
+                                            return
+                                        }
+
                                         if (globalTopBar &&
                                             globalTopBar.showNotification) {
-
                                             globalTopBar.showNotification(
                                                 "✓ PDF saved successfully"
                                             )
