@@ -22,6 +22,8 @@
 #include <QByteArrayView>
 #include <QCryptographicHash>
 #include <QTemporaryDir>
+#include <QTemporaryFile>
+#include <QUuid>
 #include <QRect>
 #include <QPageSize>
 #include <QMarginsF>
@@ -35,6 +37,7 @@
 #include <QtConcurrent/QtConcurrentRun>
 
 #ifdef Q_OS_UNIX
+#include <cerrno>
 #include <fcntl.h>
 #include <unistd.h>
 #include <cstdio>
@@ -55,8 +58,32 @@ static bool atomicallyReplaceFile(const QString &sourcePath,
     if (std::rename(sourceName.constData(), destinationName.constData()) == 0)
         return true;
 
-    qWarning() << "Atomic USB file replacement failed:" << destinationPath
-               << "errno=" << errno;
+    const QString backupPath =
+        destinationPath + ".backup-" + QUuid::createUuid().toString(QUuid::Id128);
+    const QByteArray backupName = QFile::encodeName(backupPath);
+    if (std::rename(destinationName.constData(), backupName.constData()) != 0) {
+        if (errno == ENOENT
+            && std::rename(sourceName.constData(), destinationName.constData()) == 0) {
+            return true;
+        }
+        qWarning() << "Unable to preserve existing USB file before replacement:"
+                   << destinationPath << "errno=" << errno;
+        return false;
+    }
+
+    if (std::rename(sourceName.constData(), destinationName.constData()) == 0) {
+        if (std::remove(backupName.constData()) != 0)
+            qWarning() << "Unable to remove replaced USB file backup:"
+                       << backupPath << "errno=" << errno;
+        return true;
+    }
+
+    const int publishError = errno;
+    if (std::rename(backupName.constData(), destinationName.constData()) != 0)
+        qCritical() << "Unable to restore previous USB file after replacement failed:"
+                    << destinationPath << "errno=" << errno;
+    qWarning() << "Unable to publish verified USB file:" << destinationPath
+               << "errno=" << publishError;
     return false;
 #elif defined(Q_OS_WIN)
     if (MoveFileExW(reinterpret_cast<LPCWSTR>(sourcePath.utf16()),
@@ -65,8 +92,42 @@ static bool atomicallyReplaceFile(const QString &sourcePath,
         return true;
     }
 
-    qWarning() << "Atomic USB file replacement failed:" << destinationPath
-               << "Windows error=" << GetLastError();
+    const QString backupPath =
+        destinationPath + ".backup-" + QUuid::createUuid().toString(QUuid::Id128);
+    if (!MoveFileExW(reinterpret_cast<LPCWSTR>(destinationPath.utf16()),
+                     reinterpret_cast<LPCWSTR>(backupPath.utf16()),
+                     MOVEFILE_WRITE_THROUGH)) {
+        const DWORD error = GetLastError();
+        if (error == ERROR_FILE_NOT_FOUND || error == ERROR_PATH_NOT_FOUND) {
+            if (MoveFileExW(reinterpret_cast<LPCWSTR>(sourcePath.utf16()),
+                            reinterpret_cast<LPCWSTR>(destinationPath.utf16()),
+                            MOVEFILE_WRITE_THROUGH)) {
+                return true;
+            }
+        }
+        qWarning() << "Unable to preserve existing USB file before replacement:"
+                   << destinationPath << "Windows error=" << GetLastError();
+        return false;
+    }
+
+    if (MoveFileExW(reinterpret_cast<LPCWSTR>(sourcePath.utf16()),
+                    reinterpret_cast<LPCWSTR>(destinationPath.utf16()),
+                    MOVEFILE_WRITE_THROUGH)) {
+        if (!DeleteFileW(reinterpret_cast<LPCWSTR>(backupPath.utf16())))
+            qWarning() << "Unable to remove replaced USB file backup:"
+                       << backupPath << "Windows error=" << GetLastError();
+        return true;
+    }
+
+    const DWORD publishError = GetLastError();
+    if (!MoveFileExW(reinterpret_cast<LPCWSTR>(backupPath.utf16()),
+                     reinterpret_cast<LPCWSTR>(destinationPath.utf16()),
+                     MOVEFILE_WRITE_THROUGH)) {
+        qCritical() << "Unable to restore previous USB file after replacement failed:"
+                    << destinationPath << "Windows error=" << GetLastError();
+    }
+    qWarning() << "Unable to publish verified USB file:" << destinationPath
+               << "Windows error=" << publishError;
     return false;
 #else
     if (QFileInfo::exists(destinationPath) && !QFile::remove(destinationPath)) {
@@ -3056,24 +3117,17 @@ static bool copyFilesToUsb(const QStringList &filePaths,
         }
 
         const qint64 expectedSize = sourceFile.size();
-        QTemporaryDir stagingDirectory(
-            QDir(destDir).filePath(".usb-copy-XXXXXX"));
-        if (!stagingDirectory.isValid()) {
-            qWarning() << "Unable to create USB copy staging directory:"
-                       << destDir;
+        const QString stagingTemplate =
+            QDir(destDir).filePath("." + fi.fileName() + ".usb-copy-XXXXXX");
+        QTemporaryFile stagedFile(
+            stagingTemplate);
+        if (!stagedFile.open()) {
+            qWarning() << "PDF staging file open failed:" << stagingTemplate
+                       << stagedFile.errorString();
             allOk = false;
             continue;
         }
-
-        const QString stagedFilePath =
-            QDir(stagingDirectory.path()).filePath("payload.part");
-        QFile destinationFile(stagedFilePath);
-        if (!destinationFile.open(QIODevice::WriteOnly)) {
-            qWarning() << "PDF staging file open failed:" << stagedFilePath
-                       << destinationFile.errorString();
-            allOk = false;
-            continue;
-        }
+        const QString stagedFilePath = stagedFile.fileName();
 
         qint64 copiedBytes = 0;
         bool copyOk = true;
@@ -3094,12 +3148,12 @@ static bool copyFilesToUsb(const QStringList &filePaths,
 
             qint64 bytesWritten = 0;
             while (bytesWritten < bytesRead) {
-                const qint64 written = destinationFile.write(
+                const qint64 written = stagedFile.write(
                     buffer.constData() + bytesWritten, bytesRead - bytesWritten);
                 if (written <= 0) {
                     qWarning() << "PDF staging file write failed:"
                                << stagedFilePath
-                               << destinationFile.errorString();
+                               << stagedFile.errorString();
                     copyOk = false;
                     break;
                 }
@@ -3114,14 +3168,14 @@ static bool copyFilesToUsb(const QStringList &filePaths,
             copyOk = false;
         }
 
-        if (copyOk && !destinationFile.flush()) {
+        if (copyOk && !stagedFile.flush()) {
             qWarning() << "PDF staging file flush failed:" << stagedFilePath
-                       << destinationFile.errorString();
+                       << stagedFile.errorString();
             copyOk = false;
         }
 
 #ifdef Q_OS_UNIX
-        if (copyOk && fsync(destinationFile.handle()) != 0) {
+        if (copyOk && fsync(stagedFile.handle()) != 0) {
             qWarning() << "PDF staging file sync failed:" << stagedFilePath;
             copyOk = false;
         }
@@ -3134,12 +3188,12 @@ static bool copyFilesToUsb(const QStringList &filePaths,
         }
 
         if (!copyOk) {
-            destinationFile.close();
+            stagedFile.close();
             allOk = false;
             continue;
         }
 
-        destinationFile.close();
+        stagedFile.close();
 
         QFile verifiedDestination(stagedFilePath);
         if (!verifiedDestination.open(QIODevice::ReadOnly)) {
