@@ -810,6 +810,9 @@ Item {
                     }
 
                     Rectangle {
+
+                        visible: GlobalState.showProductLib
+
                         parent: homeContent
                         x: centerCol.x + (centerCol.width - width) / 2
                         y: 10
@@ -844,7 +847,7 @@ Item {
                             Text {
                                 anchors.horizontalCenter: parent.horizontalCenter
 
-                                // Replace with actual active product
+
                                 text: GlobalState.productName
 
                                 font.pixelSize: 18

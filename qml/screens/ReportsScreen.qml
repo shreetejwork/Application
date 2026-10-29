@@ -144,14 +144,14 @@ Item {
 
                     MenuTile {
                         iconSource: "qrc:/qt/qml/Application/assets/images/More.png"
-                        label: "Product/Batch\nReport"
+                        label: "Batch Report"
                         iconSize: 100 * root.scale
                         onTileClicked: navigateTo("BatchReport")
                     }
 
                     MenuTile {
                         iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
-                        label: "Generated\nReports"
+                        label: "Generated PDF\n Files"
                         iconSize: 100 * root.scale
                         onTileClicked: navigateTo("ReportsFolder")
                     }
