@@ -4,6 +4,7 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QFile>
+#include <QFileInfo>
 #include <QDebug>
 #include <QDate>
 #include <QTime>
@@ -19,6 +20,17 @@ static QString productLibraryTableName(int groupNo)
         .arg(groupNo, 2, 10, QChar('0'));
 }
 
+static bool isRaspberryPi()
+{
+#ifdef Q_OS_LINUX
+    QFile modelFile(QStringLiteral("/proc/device-tree/model"));
+    return modelFile.open(QIODevice::ReadOnly)
+           && modelFile.readAll().toLower().contains("raspberry pi");
+#else
+    return false;
+#endif
+}
+
 
 DatabaseManager::DatabaseManager(QObject *parent)
     : QObject(parent)
@@ -27,8 +39,28 @@ DatabaseManager::DatabaseManager(QObject *parent)
 
 bool DatabaseManager::initialize()
 {
+    const bool raspberryPi = isRaspberryPi();
+    const QString dbPath = raspberryPi
+        ? QStringLiteral("/home/pi/AppDatabase.db")
+        : QDir::current().filePath(QStringLiteral("AppDataBase.db"));
 
-    QString dbPath = QDir::currentPath() + "/AppDataBase.db";
+    if (raspberryPi) {
+        const QFileInfo homeDirectory(QStringLiteral("/home/pi"));
+        if (!homeDirectory.isDir() || !homeDirectory.isWritable()) {
+            qCritical() << "Raspberry Pi database directory is unavailable or not writable:"
+                        << homeDirectory.absoluteFilePath();
+            return false;
+        }
+
+        const QString legacyPath =
+            QDir::current().filePath(QStringLiteral("AppDataBase.db"));
+        if (!QFile::exists(dbPath) && QFile::exists(legacyPath)
+            && !QFile::copy(legacyPath, dbPath)) {
+            qCritical() << "Unable to migrate the existing database to:"
+                        << dbPath;
+            return false;
+        }
+    }
 
     qDebug() << "DB Path:" << dbPath;
 
