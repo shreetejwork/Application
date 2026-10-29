@@ -686,11 +686,11 @@ void DatabaseManager::createTables()
                         ?,
                         ?,
                         45,
-                        350,
+                        300,
                         14000,
                         40,
                         32.1,
-                        0.5,
+                        1.0,
                         1,
                         1
                     )
@@ -718,11 +718,17 @@ void DatabaseManager::createTables()
                         product_name = ?,
                         product_code = ?,
                         machinePhase = COALESCE(machinePhase, 45),
-                        signalThr = COALESCE(signalThr, 350),
+                        signalThr = CASE
+                            WHEN signalThr = 350 THEN 300
+                            ELSE COALESCE(signalThr, 300)
+                        END,
                         ampThr = COALESCE(ampThr, 14000),
                         ddPower = COALESCE(ddPower, 40),
                         ddFreq = COALESCE(ddFreq, 32.1),
-                        digitalGain = COALESCE(digitalGain, 0.5),
+                        digitalGain = CASE
+                            WHEN digitalGain = 0.5 THEN 1.0
+                            ELSE COALESCE(digitalGain, 1.0)
+                        END,
                         analogGain = COALESCE(analogGain, 1)
                     WHERE sr_no = 1
                 )").arg(defaultTableName));
@@ -2881,7 +2887,7 @@ bool DatabaseManager::createProductLibraryTable(int groupNo)
 
         machinePhase INTEGER DEFAULT 45,
 
-        signalThr INTEGER DEFAULT 350,
+        signalThr INTEGER DEFAULT 300,
 
         ampThr INTEGER DEFAULT 14000,
 
@@ -2889,7 +2895,7 @@ bool DatabaseManager::createProductLibraryTable(int groupNo)
 
         ddFreq REAL DEFAULT 32.1,
 
-        digitalGain REAL DEFAULT 0.5,
+        digitalGain REAL DEFAULT 1.0,
 
         analogGain REAL DEFAULT 1,
 
@@ -3134,11 +3140,11 @@ bool DatabaseManager::addProductLibraryProduct(
             ?,
             ?,
             45,
-            350,
+            300,
             14000,
             40,
             32.1,
-            0.5,
+            1.0,
             1,
             0
         )

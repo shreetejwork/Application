@@ -1,0 +1,1665 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import AppState 1.0
+
+import Backend 1.0
+
+import "../components"
+
+
+Item {
+    id: homeScreen
+    property bool showTopBar: true
+    property var globalTopBar: null
+    property var navigateTo
+    property var batchPage: null
+    property var navigateToBatch
+
+    readonly property bool batchRunning:
+        batchPage ? batchPage.batchRunning : false
+
+    readonly property bool batchPaused:
+        batchPage ? batchPage.batchPaused : false
+
+    property real digitalGain: 1.0
+
+    property bool signalAlreadyRejected: false
+
+    property bool rejectCycleStarted: false
+
+    property int batchRejectionBuffer: 0
+    property bool batchBufferActive: false
+
+    property bool defectCardVisible: false
+
+    property var validationPopup
+
+    function loadMachineParameterSettings()
+    {
+        var settings = databaseManager.getMachinePhaseSettings()
+
+        if (settings.machinePhase !== undefined)
+            GlobalState.machinePhase = settings.machinePhase
+
+        if (settings.signalThr !== undefined)
+            GlobalState.signalThreshold = settings.signalThr
+
+        if (settings.ampThr !== undefined)
+            GlobalState.amplitudeThreshold = settings.ampThr
+    }
+
+    function updateRejectionCycle()
+    {
+        var thresholdExceeded =
+                SerialManager.signal > GlobalState.signalThreshold ||
+                SerialManager.amplitude > GlobalState.amplitudeThreshold
+
+        if (thresholdExceeded) {
+            homeScreen.rejectCycleStarted = true
+            return
+        }
+
+        if (!homeScreen.rejectCycleStarted)
+            return
+
+        if (GlobalState.countRejection) {
+            GlobalState.rejectedCount++
+
+            if (GlobalState.batchRunning && !GlobalState.batchPaused)
+                GlobalState.activeBatchRejectCount++
+
+            console.log("Rejected Count :", GlobalState.rejectedCount)
+
+            if (homeScreen.batchBufferActive) {
+                homeScreen.batchRejectionBuffer++
+                console.log(
+                    "Batch Buffer Rejection :",
+                    homeScreen.batchRejectionBuffer
+                )
+            }
+        }
+
+        homeScreen.rejectCycleStarted = false
+    }
+
+
+
+    Component.onCompleted: {
+
+        loadMachineParameterSettings()
+
+        var s1 = databaseManager.getS1Settings()
+
+        if (s1.digitalGain !== undefined)
+            GlobalState.digitalGain = s1.digitalGain
+    }
+
+    Connections {
+        target: databaseManager
+
+        function onMachineParametersChanged()
+        {
+
+            homeScreen.loadMachineParameterSettings()
+        }
+    }
+
+    // =====================================================
+    // 5 MINUTE BATCH REJECTION BUFFER
+    // =====================================================
+    Timer {
+        id: batchRejectionTimer
+
+        interval: 5 * 60 * 1000
+        repeat: true
+        running: homeScreen.batchBufferActive
+
+        onTriggered: {
+
+            if (homeScreen.batchRejectionBuffer > 0) {
+
+                console.log(
+                    "5 minute batch rejection count:",
+                    homeScreen.batchRejectionBuffer
+                )
+
+                homeScreen.saveBatchRejectionCount(
+                    homeScreen.batchRejectionBuffer
+                )
+
+                // Start a fresh 5 minute buffer
+                homeScreen.batchRejectionBuffer = 0
+            }
+        }
+    }
+
+    Timer {
+        id: defectCardTimer
+        interval: 10000
+        repeat: false
+
+        onTriggered: homeScreen.defectCardVisible = false
+    }
+
+    Connections {
+        target: SerialManager
+
+        function onDefectPacketReceived() {
+            homeScreen.defectCardVisible = true
+            defectCardTimer.restart()
+        }
+
+        function onSignalChanged() { homeScreen.updateRejectionCycle() }
+        function onAmplitudeChanged() { homeScreen.updateRejectionCycle() }
+    }
+
+    // =====================================================
+    // SAVE 5 MINUTE BATCH REJECTION COUNT
+    // =====================================================
+    function saveBatchRejectionCount(count)
+    {
+        if (count <= 0)
+            return
+
+        console.log(
+            "Saving batch rejection count:",
+            count
+        )
+
+        GlobalState.batchRejectionCount =
+                (GlobalState.batchRejectionCount || 0) + count
+    }
+
+
+
+    function saveValidationAudit(action)
+    {
+        var role = GlobalState.loggedInUserRole
+        var username = GlobalState.loggedInUserName
+
+        var auditUser = "---"
+
+        if (GlobalState.developerLogin) {
+            auditUser = "D/Developer"
+        }
+        else if (GlobalState.engineerLogin) {
+            auditUser = "E/Engineer"
+        }
+        else if (role !== "" && username !== "") {
+
+            var initial = "U"
+
+            if (role === "Admin")
+                initial = "A"
+            else if (role === "Supervisor")
+                initial = "S"
+            else if (role === "Operator")
+                initial = "O"
+
+            auditUser = initial + "/" + username
+        }
+
+        databaseManager.addAuditTrailRecord(
+                    auditUser,
+                    "",
+                    "",
+                    action
+                    )
+    }
+
+    function saveMachineSettingAudit(action, oldValue, newValue)
+    {
+        var role = GlobalState.loggedInUserRole
+        var username = GlobalState.loggedInUserName
+
+        var initial = "U"
+
+        if (role === "Admin")
+            initial = "A"
+        else if (role === "Supervisor")
+            initial = "S"
+        else if (role === "Operator")
+            initial = "O"
+
+
+        var auditUser = initial + "/" + username
+
+
+        var saved =
+                databaseManager.addAuditTrailRecord(
+                    auditUser,
+                    oldValue.toString(),
+                    newValue.toString(),
+                    action
+                )
+    }
+
+
+    Rectangle {
+        Typography {
+            id: screenTypography
+            scale: root.scale || 1.0
+        }
+        anchors.fill: parent
+        color: "#F5F7FC"
+
+        TopBar {
+            id: topBar
+            anchors.top: parent.top
+            anchors.left: parent.left
+            anchors.right: parent.right
+            height: showTopBar ? Math.max(70, parent.height * 0.08) : 0
+            visible: showTopBar
+
+            userName: "Rahul1234567789"
+            userRole: "Supervisor"
+        }
+
+        AccessDeniedPopup {
+            id: accessDeniedPopup
+        }
+
+        // ================= POPUP =================
+        Rectangle {
+            id: popup
+
+            visible: isOpen || animScale > 0.01
+            z: 101
+            width: Math.min(parent.width * 0.40, 450)
+            height: Math.min(parent.height * 0.95, 730)
+            radius: 16
+            color: "#FFFFFF"
+            anchors.centerIn: parent
+
+            // =====================================================
+            // ANIMATION
+            // =====================================================
+
+            property real animScale: 0.0
+            property real animOpacity: 0.0
+            property bool isOpen: false
+
+            transform: Scale {
+                origin.x: popup.width / 2
+                origin.y: popup.height / 2
+                xScale: popup.animScale
+                yScale: popup.animScale
+            }
+
+            opacity: popup.animOpacity
+
+            Behavior on animScale {
+                NumberAnimation {
+                    duration: popup.isOpen ? 350 : 280
+                    easing.type: popup.isOpen ? Easing.OutQuad : Easing.InQuad
+                }
+            }
+
+            Behavior on animOpacity {
+                NumberAnimation {
+                    duration: popup.isOpen ? 350 : 280
+                    easing.type: popup.isOpen ? Easing.OutQuad : Easing.InQuad
+                }
+            }
+
+            onAnimOpacityChanged: {
+
+                if (animOpacity <= 0.01 && !isOpen)
+                    visible = false
+            }
+
+            function openPopup() {
+
+                visible = true
+
+                isOpen = true
+
+                animScale = 1.0
+                animOpacity = 1.0
+            }
+
+            function closePopup() {
+
+                isOpen = false
+
+                animScale = 0.0
+                animOpacity = 0.0
+            }
+            // =====================================================
+
+            Rectangle {
+                anchors.fill: popup
+                anchors.margins: -4
+                radius: popup.radius
+                color: "transparent"
+                border.color: "#10000000"
+                border.width: 1
+                z: 0
+            }
+
+            property string fieldName: ""
+            property var onSaveCallback
+            property int minValue: 0
+            property int maxValue: 100
+            property string errorText: ""
+            property bool hasError: false
+
+            function open(title, value, callback, minVal = 0, maxVal = 100) {
+                fieldName = title
+                inputField.text = ""
+                onSaveCallback = callback
+                minValue = minVal
+                maxValue = maxVal
+                errorText = ""
+                hasError = false
+
+                openPopup()
+
+                inputField.forceActiveFocus()
+                inputField.selectAll()
+            }
+
+            ColumnLayout {
+                anchors.fill: parent
+                anchors.margins: 20
+                spacing: 12
+
+                // ===== TITLE =====
+                Text {
+                    text: popup.fieldName
+                    font.pixelSize: 22
+
+                    horizontalAlignment: Text.AlignHCenter
+                    color: "#1A4DB5"
+                    Layout.fillWidth: true
+                }
+
+                // ===== INPUT =====
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 60
+                    radius: 12
+                    border.color: popup.hasError ? "#FF5252" : "#D0D0D0"
+                    border.width: popup.hasError ? 2 : 1
+                    color: "#F8F9FB"
+
+                    Behavior on border.color { ColorAnimation { duration: 150 } }
+
+                    TextInput {
+                        id: inputField
+                        anchors.fill: parent
+                        anchors.margins: 12
+                        font.pixelSize: 28
+
+                        color: "#333"
+                        horizontalAlignment: TextInput.AlignHCenter
+                        verticalAlignment: TextInput.AlignVCenter
+
+                        readOnly: true
+                        inputMethodHints: Qt.ImhNoPredictiveText
+
+                        onTextChanged: {
+                            if (popup.hasError) {
+                                popup.errorText = ""
+                                popup.hasError = false
+                            }
+                        }
+                    }
+                }
+
+                // ===== MIN MAX =====
+                Rectangle {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 35
+                    radius: 8
+                    color: "#E8EEFB"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 10
+                        spacing: 15
+
+                        Text {
+                            text: "Min: " + popup.minValue
+                            color: "#1A4DB5"
+                            font.pixelSize: 15
+
+                            Layout.fillWidth: true
+                        }
+
+                        Rectangle { width: 1; height: parent.height * 0.6; color: "#D0D0D0" }
+
+                        Text {
+                            text: "Max: " + popup.maxValue
+                            color: "#1A4DB5"
+                            font.pixelSize: 15
+
+                            Layout.fillWidth: true
+                        }
+                    }
+                }
+
+                // ===== ERROR =====
+                Text {
+                    text: popup.errorText
+                    color: "#FF5252"
+                    font.pixelSize: 15
+
+                    Layout.fillWidth: true
+                    horizontalAlignment: Text.AlignHCenter
+                    visible: popup.hasError
+                    Layout.preferredHeight: visible ? 20 : 0
+                }
+
+                // ===== KEYPAD =====
+                GridLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 160
+                    columns: 3
+                    rowSpacing: 6
+                    columnSpacing: 6
+
+                    Repeater {
+                        model: ["1","2","3","4","5","6","7","8","9",".","0","⌫"]
+
+                        delegate: Rectangle {
+                            Layout.fillWidth: true
+                            Layout.fillHeight: true
+                            radius: 10
+
+                            property bool decimalDisabled:
+                                modelData === "." && !GlobalState.useDecimal
+
+                            color: decimalDisabled
+                                   ? "#E5E5E5"
+                                   : mouseArea.pressed
+                                     ? (modelData === "C" ? "#FF9999"
+                                                          : modelData === "⌫" ? "#FFCC99"
+                                                                              : "#CCCCCC")
+                                     : (modelData === "C" ? "#FFCDD2"
+                                                          : modelData === "⌫" ? "#FFE0B2"
+                                                                              : "#F0F0F0")
+
+                            border.color: decimalDisabled ? "#D5D5D5" : "#E0E0E0"
+                            border.width: 1
+
+                            opacity: decimalDisabled ? 0.45 : 1.0
+
+                            Item {
+                                anchors.fill: parent
+
+                                Image {
+                                    anchors.centerIn: parent
+
+                                    visible: modelData === "⌫"
+
+                                    source: "qrc:/qt/qml/Application/assets/images/backspace.png"
+
+                                    width: parent.width * 0.7
+                                    height: parent.height * 0.7
+
+                                    fillMode: Image.PreserveAspectFit
+                                }
+
+                                Text {
+                                    anchors.centerIn: parent
+
+                                    visible: modelData !== "⌫"
+
+                                    text: modelData
+
+                                    font.pixelSize: 18
+
+                                    color: decimalDisabled ? "#999999" : "#333333"
+                                }
+                            }
+
+                            MouseArea {
+                                id: mouseArea
+                                anchors.fill: parent
+
+                                enabled: true
+
+                                onClicked: {
+
+                                    // "." is visually disabled and does nothing
+                                    if (modelData === "." && !GlobalState.useDecimal) {
+                                        return
+                                    }
+
+                                    if (modelData === "C") {
+
+                                        inputField.text = ""
+                                        popup.errorText = ""
+                                        popup.hasError = false
+
+                                    }
+                                    else if (modelData === "⌫") {
+
+                                        if (inputField.text.length > 0) {
+                                            inputField.text =
+                                                    inputField.text.slice(0, -1)
+                                        }
+
+                                    }
+                                    else if (modelData === ".") {
+
+                                        // Allow only one decimal point
+                                        if (inputField.text.indexOf(".") === -1) {
+                                            inputField.text += "."
+                                        }
+
+                                    }
+                                    else {
+
+                                        inputField.text += modelData
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // ===== BUTTONS =====
+                RowLayout {
+                    Layout.fillWidth: true
+                    Layout.preferredHeight: 48
+                    Layout.topMargin: 5
+                    spacing: 10
+
+                    // CANCEL
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: 10
+                        color: cancelMouseArea.pressed ? "#CCCCCC" : "#E8E8E8"
+                        border.color: "#D0D0D0"
+                        border.width: 1
+
+                        Behavior on color { ColorAnimation { duration: 100 } }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Cancel"
+
+                            font.pixelSize: 23
+                            color: "#333"
+                        }
+
+                        MouseArea {
+                            id: cancelMouseArea
+                            anchors.fill: parent
+                            onClicked: {
+                                popup.closePopup()
+                                popup.errorText = ""
+                                popup.hasError = false
+
+                                GlobalState.useDecimal = false
+                            }
+                        }
+                    }
+
+                    // SAVE
+                    Rectangle {
+                        Layout.fillWidth: true
+                        Layout.fillHeight: true
+                        radius: 10
+                        color: saveMouseArea.pressed ? "#0D3BA8" : "#1A4DB5"
+
+                        Behavior on color { ColorAnimation { duration: 100 } }
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Save"
+                            color: "white"
+
+                            font.pixelSize: 23
+                        }
+
+                        MouseArea {
+                            id: saveMouseArea
+                            anchors.fill: parent
+
+                            onClicked: {
+                                var inputText = inputField.text.trim()
+
+                                if (inputText === "") {
+                                    popup.errorText = "Please enter a value"
+                                    popup.hasError = true
+                                    return
+                                }
+
+                                var val = parseFloat(inputText)
+
+                                if (isNaN(val)) {
+                                    popup.errorText = "Enter valid number"
+                                    popup.hasError = true
+                                    return
+                                }
+
+                                if (val < popup.minValue) {
+                                    popup.errorText = "Too low! Min: " + popup.minValue
+                                    popup.hasError = true
+                                    return
+                                }
+
+                                if (val > popup.maxValue) {
+                                    popup.errorText = "Too high! Max: " + popup.maxValue
+                                    popup.hasError = true
+                                    return
+                                }
+
+                                if (popup.onSaveCallback)
+                                    popup.onSaveCallback(val)
+
+                                if (globalTopBar) {
+                                    globalTopBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
+                                    globalTopBar.resetSessionTimer()
+                                } else {
+                                    topBar.showNotification("✓ " + popup.fieldName + " updated to " + val)
+                                    topBar.resetSessionTimer()
+                                }
+
+                                popup.closePopup()
+                                popup.errorText = ""
+                                popup.hasError = false
+                                GlobalState.useDecimal = false
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ================= OVERLAY =================
+        Rectangle {
+            anchors.fill: parent
+            color: "#000000"
+            visible: popup.visible
+            opacity: popup.visible ? 0.4 : 0
+            z: 100
+
+            Behavior on opacity { NumberAnimation { duration: 200 } }
+
+            MouseArea {
+                anchors.fill: parent
+                enabled: popup.visible
+                onClicked: {
+                    popup.visible = false
+                    GlobalState.useDecimal = false
+                }
+            }
+        }
+
+
+        // ================= CONTENT =================
+        Item {
+            id: homeContent
+
+            anchors.top: topBar.bottom
+            anchors.left: parent.left
+            anchors.right: parent.right
+            anchors.bottom: parent.bottom
+            anchors.margins: Math.max(12, parent.width * 0.01)
+
+            // LEFT
+            Item {
+                id: leftCol
+                anchors.left: parent.left
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+                width: parent.width * 0.30
+
+                AnalogGauge {
+                    id: analogGauge
+                    anchors.fill: parent
+
+                    onMachinePhaseClicked: {
+
+                        if (GlobalState.loggedInUserRole === ""
+                                && !GlobalState.developerLogin
+                                && !GlobalState.engineerLogin) {
+
+                            accessDeniedPopup.popupTitle = "Access Denied !"
+
+                            accessDeniedPopup.popupMessage =
+                                    "Please login first"
+
+                            accessDeniedPopup.open()
+
+                            return
+                        }
+
+                        GlobalState.useDecimal = true
+
+
+                        popup.open(
+
+                                    "Machine Phase",
+
+                                    GlobalState.machinePhase,
+
+                                    function(val){
+
+                                        var oldValue = GlobalState.machinePhase
+
+
+                                        var phase = Math.round(val * 10)
+
+                                        SerialManager.setMachinePhase(phase)
+
+
+                                        GlobalState.machinePhase = val
+
+
+                                        databaseManager.saveMachinePhaseSettings(
+                                            GlobalState.machinePhase,
+                                            GlobalState.signalThreshold,
+                                            GlobalState.amplitudeThreshold
+                                        )
+
+
+                                        saveMachineSettingAudit(
+                                            "M/C Phase Changed",
+                                            oldValue,
+                                            val
+                                        )
+                                    },
+
+                                    0,
+
+                                    180
+
+                                    )
+
+                    }
+                }
+            }
+
+            // CENTER
+            Item {
+                id: centerCol
+
+                anchors.left: leftCol.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+
+                anchors.leftMargin: parent.width * 0.02
+
+                width: parent.width * 0.36
+
+                Column {
+                    width: parent.width
+
+                    // MOVE ENTIRE SECTION UP
+                    anchors.top: parent.top
+                    anchors.topMargin: 10
+
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    spacing: 18
+
+                    // =====================================================
+                    // ACTIVE PRODUCT CARD
+                    // =====================================================
+
+                    Item {
+                        width: 1
+                        height: 65
+                    }
+
+                    Rectangle {
+                        parent: homeContent
+                        x: centerCol.x + (centerCol.width - width) / 2
+                        y: 10
+                        width: centerCol.width * 0.50
+                        height: 65
+
+                        radius: 14
+
+                        color: "#FFFFFF"
+
+                        border.color: "#D0D8EC"
+                        border.width: 1
+
+                        property bool hovered: false
+                        property bool pressed: false
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 4
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                text: "Active Product"
+
+                                font.pixelSize: 14
+
+
+                                color: "#5E5C64"
+                            }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                
+                                text: GlobalState.productName
+
+                                font.pixelSize: 18
+
+
+                                color: "#1A4DB5"
+                            }
+                        }
+                        MouseArea {
+                            anchors.fill: parent
+
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+
+                            onEntered: parent.hovered = true
+                            onExited: parent.hovered = false
+
+                            onPressed: parent.pressed = true
+                            onReleased: parent.pressed = false
+
+                            onClicked: {
+
+                                if (GlobalState.loggedInUserRole !== "Admin"
+                                        && !GlobalState.developerLogin
+                                        && !GlobalState.engineerLogin)
+                                {
+                                    accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                    accessDeniedPopup.popupMessage =
+                                            "Only Admin can access"
+
+                                    accessDeniedPopup.open()
+                                    return
+                                }
+
+                                if (GlobalState.showProductLib)
+                                    navigateTo("ProductLibrary")
+                            }
+                        }
+
+                        scale: pressed ? 0.96 : 1.0
+
+                        Behavior on scale {
+                            NumberAnimation {
+                                duration: 120
+                            }
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+
+                        states: [
+
+                            State {
+                                name: "hovered"
+                                when: parent.hovered && !parent.pressed
+
+                                PropertyChanges {
+                                    target: parent
+                                    color: "#F7F9FF"
+                                }
+                            },
+
+                            State {
+                                name: "pressed"
+                                when: parent.pressed
+
+                                PropertyChanges {
+                                    target: parent
+                                    color: "#EEF2FF"
+                                }
+                            }
+                        ]
+                    }
+
+                    // =====================================================
+                    // SIGNAL GAUGE
+                    // =====================================================
+
+                    CircularGauge {
+                        id: signalGauge
+
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        width: parent.width * 0.85
+                        height: width
+
+                        value: SerialManager.signal
+
+                        label: "Signal <span style='font-size:18px; color:#6B7280;'>"
+                             + "(×<span style='font-size:18px;'>"
+                             + GlobalState.digitalGain.toFixed(1)
+                             + "</span>"
+                             + ")</span>"
+
+                        threshold: GlobalState.signalThreshold
+
+                        thresholdLabel: "Threshold-S"
+
+                        maxValue: 1200
+
+                        onThresholdClicked: {
+
+                            if (GlobalState.loggedInUserRole === ""
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin) {
+
+                                accessDeniedPopup.popupTitle = "Access Denied !"
+                                accessDeniedPopup.popupMessage = "Please login first"
+                                accessDeniedPopup.open()
+                                return
+                            }
+
+                            popup.open(
+
+                                        "Threshold-S",
+
+                                        signalGauge.threshold,
+
+                                        function(val){
+
+                                            var oldValue =
+                                                    GlobalState.signalThreshold
+
+
+                                            SerialManager.setSignalThreshold(val)
+
+
+                                            GlobalState.signalThreshold = val
+
+
+                                            databaseManager.saveMachinePhaseSettings(
+                                                GlobalState.machinePhase,
+                                                GlobalState.signalThreshold,
+                                                GlobalState.amplitudeThreshold
+                                            )
+
+
+                                            saveMachineSettingAudit(
+                                                "Threshold-S Changed",
+                                                oldValue,
+                                                val
+                                            )
+                                        },
+
+                                        10,
+                                        10000
+                                        )
+                        }
+                    }
+
+                    Rectangle {
+                        id: defectCard
+
+                        width: parent.width * 0.98
+                        height: homeScreen.defectCardVisible ? 70 : 0
+                        visible: homeScreen.defectCardVisible
+
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        radius: 14
+                        color: "#FFFFFF"
+
+                        border.color: "#E57373"
+                        border.width: 1
+
+                        antialiasing: true
+
+                        // --------------------------------------------------
+                        // MOVE CARD UP
+                        // --------------------------------------------------
+                        transform: Translate {
+                            y: -9
+                        }
+
+                        // --------------------------------------------------
+                        // RED GLOW BORDER
+                        // --------------------------------------------------
+                        Rectangle {
+                            id: defectGlowBorder
+
+                            anchors.centerIn: parent
+
+                            width: parent.width + 8
+                            height: parent.height + 8
+
+                            radius: 17
+
+                            color: "transparent"
+
+                            border.color: "#E53935"
+                            border.width: 3
+
+                            opacity: 0.15
+
+                            antialiasing: true
+
+                            z: -1
+                        }
+
+                        // --------------------------------------------------
+                        // CONTENT
+                        // --------------------------------------------------
+                        Column {
+                            anchors.fill: parent
+
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
+                            anchors.topMargin: 7
+                            anchors.bottomMargin: 7
+
+                            spacing: 5
+
+                            Text {
+                                width: parent.width
+                                height: 18
+
+                                horizontalAlignment: Text.AlignHCenter
+                                verticalAlignment: Text.AlignVCenter
+
+                                text: "DEFECT DETECTED"
+
+                                color: "#5E5C64"
+                                font.pixelSize: 16
+
+                                // Never truncate the title
+                                elide: Text.ElideNone
+                            }
+
+                            Row {
+                                width: parent.width
+                                height: 28
+
+                                spacing: 0
+
+                                // --------------------------------------------------
+                                // PHASE
+                                // --------------------------------------------------
+                                Text {
+                                    width: parent.width / 3
+                                    height: parent.height
+
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+
+                                    text: "Phase: " + SerialManager.defectPhase
+
+                                    color: "#1A4DB5"
+                                    font.pixelSize: 18
+
+                                    // Do not show "..."
+                                    elide: Text.ElideNone
+
+                                    // Allow the complete value to remain visible
+                                    minimumPixelSize: 12
+                                    fontSizeMode: Text.Fit
+                                }
+
+                                // --------------------------------------------------
+                                // SIGNAL
+                                // --------------------------------------------------
+                                Text {
+                                    width: parent.width / 3
+                                    height: parent.height
+
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+
+                                    text: "Signal: " + SerialManager.defectSignal
+
+                                    color: "#1A4DB5"
+                                    font.pixelSize: 18
+
+                                    // Do not show "..."
+                                    elide: Text.ElideNone
+
+                                    // Automatically reduce font slightly if required
+                                    minimumPixelSize: 12
+                                    fontSizeMode: Text.Fit
+                                }
+
+                                // --------------------------------------------------
+                                // AMPLITUDE
+                                // --------------------------------------------------
+                                Text {
+                                    width: parent.width / 3
+                                    height: parent.height
+
+                                    horizontalAlignment: Text.AlignHCenter
+                                    verticalAlignment: Text.AlignVCenter
+
+                                    text: "Amplitude: " + SerialManager.defectAmplitude
+
+                                    color: "#1A4DB5"
+                                    font.pixelSize: 18
+
+                                    // IMPORTANT:
+                                    // Remove ElideRight so 5-digit amplitude
+                                    // is never replaced by "..."
+                                    elide: Text.ElideNone
+
+                                    // Fit the complete text inside the available width
+                                    minimumPixelSize: 12
+                                    fontSizeMode: Text.Fit
+                                }
+                            }
+                        }
+
+                        // --------------------------------------------------
+                        // ZOOM IN / OUT
+                        // --------------------------------------------------
+                        SequentialAnimation {
+                            running: homeScreen.defectCardVisible
+                            loops: Animation.Infinite
+
+                            NumberAnimation {
+                                target: defectCard
+                                property: "scale"
+
+                                from: 1.0
+                                to: 1.025
+
+                                duration: 650
+
+                                easing.type: Easing.InOutSine
+                            }
+
+                            NumberAnimation {
+                                target: defectCard
+                                property: "scale"
+
+                                from: 1.025
+                                to: 1.0
+
+                                duration: 650
+
+                                easing.type: Easing.InOutSine
+                            }
+
+                            PauseAnimation {
+                                duration: 350
+                            }
+                        }
+
+                        // --------------------------------------------------
+                        // RED GLOW PULSE
+                        // --------------------------------------------------
+                        SequentialAnimation {
+                            running: homeScreen.defectCardVisible
+                            loops: Animation.Infinite
+
+                            NumberAnimation {
+                                target: defectGlowBorder
+                                property: "opacity"
+
+                                from: 0.12
+                                to: 0.35
+
+                                duration: 700
+
+                                easing.type: Easing.InOutQuad
+                            }
+
+                            NumberAnimation {
+                                target: defectGlowBorder
+                                property: "opacity"
+
+                                from: 0.35
+                                to: 0.12
+
+                                duration: 700
+
+                                easing.type: Easing.InOutQuad
+                            }
+
+                            PauseAnimation {
+                                duration: 300
+                            }
+                        }
+                    }
+                }
+            }
+
+            // RIGHT
+            Item {
+                id: rightCol
+
+                anchors.left: centerCol.right
+                anchors.right: parent.right
+                anchors.top: parent.top
+                anchors.bottom: parent.bottom
+
+                anchors.leftMargin: parent.width * 0.02
+
+                Column {
+                    width: parent.width * 0.85
+
+                    anchors.top: parent.top
+                    anchors.topMargin: 10
+
+                    anchors.horizontalCenter: parent.horizontalCenter
+
+                    spacing: 40
+
+                    // =====================================================
+                    // BATCH STATUS BUTTON
+                    // =====================================================
+
+                    Rectangle {
+                        id: batchStatusButton
+
+                        parent: homeContent
+                        x: (centerCol.x + centerCol.width / 2
+                            + centerCol.width * 0.25
+                            + rightCol.x + rightCol.width / 2
+                            - rightCol.width * 0.85 * 0.25
+                            - width) / 2
+                        y: 10
+                        width: rightCol.width * 0.85 * 0.50
+                        height: 65
+
+                        radius: 14
+
+                        property color statusAccent: !homeScreen.batchRunning
+                                                     ? "#1A4DB5"
+                                                     : homeScreen.batchPaused
+                                                       ? "#C62828"
+                                                       : "#2E7D32"
+
+                        color: homeScreen.batchRunning
+                               ? (homeScreen.batchPaused
+                                  ? "#F7EAEA"
+                                  : "#E8F3EB")
+                               : "#E7EFFF"
+
+                        border.color: homeScreen.batchRunning
+                                      ? (homeScreen.batchPaused
+                                         ? "#D8B0B0"
+                                         : "#A9C9B0")
+                                      : "#9BB8EC"
+                        border.width: 2
+
+                        Rectangle {
+                            id: batchStatusGlow
+                            anchors.fill: parent
+                            anchors.margins: -4
+                            radius: parent.radius + 4
+                            color: "transparent"
+                            border.color: batchStatusButton.statusAccent
+                            border.width: 3
+                            opacity: 0.25
+                        }
+
+                        Column {
+                            anchors.centerIn: parent
+                            width: parent.width - 12
+                            spacing: 2
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                text: "Batch Status"
+                                font.pixelSize: 13
+                                color: "#5E5C64"
+                            }
+
+                            Text {
+                                width: parent.width
+                                horizontalAlignment: Text.AlignHCenter
+
+                                text: !homeScreen.batchRunning
+                                      ? "No Batch Running"
+                                      : homeScreen.batchPaused
+                                        ? "Batch Paused"
+                                        : "Batch Running"
+
+                                font.pixelSize: 15
+                                color: !homeScreen.batchRunning
+                                       ? "#6B7280"
+                                       : homeScreen.batchPaused
+                                         ? "#815252"
+                                         : "#2F5D3A"
+                                wrapMode: Text.Wrap
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+
+                            onClicked: {
+                                if (homeScreen.navigateToBatch)
+                                    homeScreen.navigateToBatch()
+                            }
+                        }
+
+                        Behavior on color {
+                            ColorAnimation { duration: 180 }
+                        }
+
+                        SequentialAnimation {
+                            id: batchStatusPulse
+
+                        running: true
+                            loops: Animation.Infinite
+
+                            onRunningChanged: {
+                                if (!running)
+                                    batchStatusButton.scale = 1
+                            }
+
+                            ParallelAnimation {
+                                NumberAnimation {
+                                    target: batchStatusButton
+                                    property: "scale"
+                                    from: 1
+                                    to: 1.08
+                                    duration: 650
+                                    easing.type: Easing.InOutSine
+                                }
+
+                                NumberAnimation {
+                                    target: batchStatusGlow
+                                    property: "opacity"
+                                    from: 0.2
+                                    to: 0.9
+                                    duration: 650
+                                    easing.type: Easing.InOutSine
+                                }
+                            }
+
+                            ParallelAnimation {
+                                NumberAnimation {
+                                    target: batchStatusButton
+                                    property: "scale"
+                                    from: 1.08
+                                    to: 1
+                                    duration: 650
+                                    easing.type: Easing.InOutSine
+                                }
+
+                                NumberAnimation {
+                                    target: batchStatusGlow
+                                    property: "opacity"
+                                    from: 0.9
+                                    to: 0.2
+                                    duration: 650
+                                    easing.type: Easing.InOutSine
+                                }
+                            }
+
+                            PauseAnimation {
+                                duration: 180
+                            }
+                        }
+
+                        Connections {
+                            target: homeScreen
+
+                            function onBatchRunningChanged() {
+                                if (homeScreen.batchRunning)
+                                    batchStatusPulse.restart()
+                            }
+
+                            function onBatchPausedChanged() {
+                                if (homeScreen.batchRunning)
+                                    batchStatusPulse.restart()
+                            }
+                        }
+                    }
+
+                    // =====================================================
+                    // MANUAL VALIDATION BUTTON
+                    // =====================================================
+
+                    Rectangle {
+                        parent: homeContent
+                        x: rightCol.x + (rightCol.width - width) / 2
+                        y: 10
+                        width: rightCol.width * 0.85 * 0.50
+                        height: 65
+
+                        radius: 14
+
+                        color: "#FFFFFF"
+
+                        border.color: "#D0D8EC"
+                        border.width: 1
+
+                        property bool hovered: false
+                        property bool pressed: false
+
+                        Column {
+                            anchors.centerIn: parent
+                            spacing: 4
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                text: "Manual"
+
+                                font.pixelSize: 15
+
+
+                                color: "#1A4DB5"
+                            }
+
+                            Text {
+                                anchors.horizontalCenter: parent.horizontalCenter
+
+                                text: "Validation"
+
+                                font.pixelSize: 15
+
+
+                                color: "#1A4DB5"
+                            }
+                        }
+
+                        MouseArea {
+                            anchors.fill: parent
+
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+
+                            onEntered: parent.hovered = true
+                            onExited: parent.hovered = false
+
+                            onPressed: parent.pressed = true
+                            onReleased: parent.pressed = false
+
+                            onClicked: {
+                                globalTopBar.showNotification(
+                                            "✓ Manual Validation ON"
+                                            )
+
+                                saveValidationAudit("Validation Started")
+
+                                validationPopup.open()
+                            }
+                        }
+
+                        scale: pressed ? 0.96 : 1.0
+
+                        Behavior on scale {
+                            NumberAnimation {
+                                duration: 120
+                            }
+                        }
+
+                        Behavior on color {
+                            ColorAnimation {
+                                duration: 150
+                            }
+                        }
+
+                        states: [
+
+                            State {
+                                name: "hovered"
+                                when: parent.hovered && !parent.pressed
+
+                                PropertyChanges {
+                                    target: parent
+                                    color: "#F7F9FF"
+                                }
+                            },
+
+                            State {
+                                name: "pressed"
+                                when: parent.pressed
+
+                                PropertyChanges {
+                                    target: parent
+                                    color: "#EEF2FF"
+                                }
+                            }
+                        ]
+                    }
+
+                    // =====================================================
+                    // CIRCULAR GAUGE
+                    // =====================================================
+
+                    Item {
+                        width: 1
+                        height: 65
+                    }
+
+                    CircularGauge {
+
+                        id: ampGauge
+
+                        anchors.horizontalCenter: parent.horizontalCenter
+
+                        width: parent.width
+                        height: width
+
+
+                        value: SerialManager.amplitude
+
+
+                        label: "Amplitude"
+
+
+                        threshold: GlobalState.amplitudeThreshold
+
+
+                        thresholdLabel: "Threshold-A"
+
+
+                        maxValue: 1200
+
+
+
+                        onThresholdClicked: {
+
+                            if (GlobalState.loggedInUserRole === ""
+                                    && !GlobalState.developerLogin
+                                    && !GlobalState.engineerLogin) {
+
+                                accessDeniedPopup.popupTitle = "Access Denied !"
+
+                                accessDeniedPopup.popupMessage =
+                                        "Please login first"
+
+                                accessDeniedPopup.open()
+
+                                return
+                            }
+
+
+
+                            popup.open(
+
+                                        "Threshold-A",
+
+                                        ampGauge.threshold,
+
+
+                                        function(val){
+
+                                            var oldValue =
+                                                    GlobalState.amplitudeThreshold
+
+
+                                            SerialManager.setAmplitudeThreshold(val)
+
+
+                                            GlobalState.amplitudeThreshold = val
+
+
+                                            databaseManager.saveMachinePhaseSettings(
+                                                GlobalState.machinePhase,
+                                                GlobalState.signalThreshold,
+                                                GlobalState.amplitudeThreshold
+                                            )
+
+
+                                            saveMachineSettingAudit(
+                                                "Threshold-A Changed",
+                                                oldValue,
+                                                val
+                                            )
+                                        },
+
+                                        800,
+
+                                        14000
+
+                                        )
+
+                        }
+
+                    }
+
+                    Item{
+                        width: 1
+                        height: 2
+                    }
+
+                    Text {
+                        textFormat: Text.RichText
+
+                        text: GlobalState.rejectedCount
+                              + " : Total Rejections<br>"
+                              + "<span style='font-size:16px; color:#1A4DB5;'>(Since Power On)</span>"
+
+                        font.pixelSize: screenTypography.bodySmall
+                        color: "#1A4DB5"
+
+                        width: parent.width
+                        horizontalAlignment: Text.AlignRight
+
+                        anchors.right: parent.right
+                        anchors.rightMargin: 10
+                        anchors.topMargin: 50
+
+                        MouseArea {
+                            anchors.fill: parent
+                            pressAndHoldInterval: 1500
+
+                            onPressAndHold: {
+                                GlobalState.rejectedCount = 0
+                                console.log("Rejected count reset")
+                            }
+                        }
+
+                    }
+                }
+            }
+        }
+    }
+}
