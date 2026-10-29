@@ -625,15 +625,26 @@ void DatabaseManager::createTables()
         VALUES
         (
             1,
-            10,
-            30,
-            3,
+            20,
+            25,
+            151,
             0,
             250,
             250,
             0.5,
             1.0
         );
+    )");
+
+    query.exec(R"(
+        UPDATE filtersettings
+        SET lpf = 20,
+            hpf = 25,
+            filterOption = 151
+        WHERE id = 1
+          AND lpf = 10
+          AND hpf = 30
+          AND filterOption = 3;
     )");
 
 
