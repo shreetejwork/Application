@@ -22,6 +22,7 @@
 #include <QStringList>
 #include <QByteArrayView>
 #include <QCryptographicHash>
+#include <QTemporaryDir>
 #include <QRect>
 #include <QPageSize>
 #include <QMarginsF>
@@ -37,7 +38,49 @@
 #ifdef Q_OS_UNIX
 #include <fcntl.h>
 #include <unistd.h>
+#include <cstdio>
+#elif defined(Q_OS_WIN)
+#ifndef NOMINMAX
+#define NOMINMAX
 #endif
+#include <windows.h>
+#endif
+
+
+static bool atomicallyReplaceFile(const QString &sourcePath,
+                                 const QString &destinationPath)
+{
+#ifdef Q_OS_UNIX
+    const QByteArray sourceName = QFile::encodeName(sourcePath);
+    const QByteArray destinationName = QFile::encodeName(destinationPath);
+    if (std::rename(sourceName.constData(), destinationName.constData()) == 0)
+        return true;
+
+    qWarning() << "Atomic USB file replacement failed:" << destinationPath
+               << "errno=" << errno;
+    return false;
+#elif defined(Q_OS_WIN)
+    if (MoveFileExW(reinterpret_cast<LPCWSTR>(sourcePath.utf16()),
+                    reinterpret_cast<LPCWSTR>(destinationPath.utf16()),
+                    MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH)) {
+        return true;
+    }
+
+    qWarning() << "Atomic USB file replacement failed:" << destinationPath
+               << "Windows error=" << GetLastError();
+    return false;
+#else
+    if (QFileInfo::exists(destinationPath) && !QFile::remove(destinationPath)) {
+        qWarning() << "Unable to replace existing USB file:" << destinationPath;
+        return false;
+    }
+    if (QFile::rename(sourcePath, destinationPath))
+        return true;
+
+    qWarning() << "Unable to publish verified USB file:" << destinationPath;
+    return false;
+#endif
+}
 
 
 PdfExporter::PdfExporter(QObject *parent)
@@ -2962,10 +3005,21 @@ static bool copyFilesToUsb(const QStringList &filePaths,
         }
 
         const qint64 expectedSize = sourceFile.size();
-        QSaveFile destinationFile(dstFile);
+        QTemporaryDir stagingDirectory(
+            QDir(destDir).filePath(".usb-copy-XXXXXX"));
+        if (!stagingDirectory.isValid()) {
+            qWarning() << "Unable to create USB copy staging directory:"
+                       << destDir;
+            allOk = false;
+            continue;
+        }
+
+        const QString stagedFilePath =
+            QDir(stagingDirectory.path()).filePath("payload.part");
+        QSaveFile destinationFile(stagedFilePath);
         destinationFile.setDirectWriteFallback(false);
         if (!destinationFile.open(QIODevice::WriteOnly)) {
-            qWarning() << "PDF destination open failed:" << dstFile
+            qWarning() << "PDF staging file open failed:" << stagedFilePath
                        << destinationFile.errorString();
             allOk = false;
             continue;
@@ -2993,7 +3047,8 @@ static bool copyFilesToUsb(const QStringList &filePaths,
                 const qint64 written = destinationFile.write(
                     buffer.constData() + bytesWritten, bytesRead - bytesWritten);
                 if (written <= 0) {
-                    qWarning() << "PDF destination write failed:" << dstFile
+                    qWarning() << "PDF staging file write failed:"
+                               << stagedFilePath
                                << destinationFile.errorString();
                     copyOk = false;
                     break;
@@ -3010,14 +3065,14 @@ static bool copyFilesToUsb(const QStringList &filePaths,
         }
 
         if (copyOk && !destinationFile.flush()) {
-            qWarning() << "PDF destination flush failed:" << dstFile
+            qWarning() << "PDF staging file flush failed:" << stagedFilePath
                        << destinationFile.errorString();
             copyOk = false;
         }
 
 #ifdef Q_OS_UNIX
         if (copyOk && fsync(destinationFile.handle()) != 0) {
-            qWarning() << "PDF destination sync failed:" << dstFile;
+            qWarning() << "PDF staging file sync failed:" << stagedFilePath;
             copyOk = false;
         }
 #endif
@@ -3035,15 +3090,16 @@ static bool copyFilesToUsb(const QStringList &filePaths,
         }
 
         if (!destinationFile.commit()) {
-            qWarning() << "PDF destination commit failed:" << dstFile
+            qWarning() << "PDF staging file commit failed:" << stagedFilePath
                        << destinationFile.errorString();
             allOk = false;
             continue;
         }
 
-        QFile verifiedDestination(dstFile);
+        QFile verifiedDestination(stagedFilePath);
         if (!verifiedDestination.open(QIODevice::ReadOnly)) {
-            qWarning() << "PDF destination verification open failed:" << dstFile
+            qWarning() << "PDF staging verification open failed:"
+                       << stagedFilePath
                        << verifiedDestination.errorString();
             allOk = false;
             continue;
@@ -3055,7 +3111,8 @@ static bool copyFilesToUsb(const QStringList &filePaths,
             const qint64 bytesRead =
                 verifiedDestination.read(buffer.data(), buffer.size());
             if (bytesRead < 0) {
-                qWarning() << "PDF destination verification read failed:" << dstFile
+                qWarning() << "PDF staging verification read failed:"
+                           << stagedFilePath
                            << verifiedDestination.errorString();
                 copyOk = false;
                 break;
@@ -3069,10 +3126,30 @@ static bool copyFilesToUsb(const QStringList &filePaths,
 
         if (copyOk && (verifiedBytes != expectedSize
                        || destinationHash.result() != sourceHash.result())) {
-            qWarning() << "PDF destination content verification failed:" << dstFile
+            qWarning() << "PDF staging content verification failed:"
+                       << stagedFilePath
                        << "expected size=" << expectedSize
                        << "actual size=" << verifiedBytes;
             copyOk = false;
+        }
+
+        if (!copyOk) {
+            qWarning() << "USB copy could not be verified:" << dstFile;
+            allOk = false;
+            continue;
+        }
+
+        if (!usbIsStillMounted()) {
+            qWarning() << "USB was disconnected before report transfer completed:"
+                       << usbPath;
+            allOk = false;
+            continue;
+        }
+
+        verifiedDestination.close();
+        if (!atomicallyReplaceFile(stagedFilePath, dstFile)) {
+            allOk = false;
+            continue;
         }
 
 #ifdef Q_OS_LINUX
@@ -3080,22 +3157,19 @@ static bool copyFilesToUsb(const QStringList &filePaths,
             QFile::encodeName(QFileInfo(dstFile).absolutePath());
         const int directoryFd =
             open(destinationDirectoryName.constData(), O_RDONLY | O_DIRECTORY);
-        if (copyOk && (directoryFd < 0 || fsync(directoryFd) != 0)) {
+        if (directoryFd < 0 || fsync(directoryFd) != 0) {
             qWarning() << "PDF destination directory sync failed:"
                        << QFileInfo(dstFile).absolutePath();
-            copyOk = false;
+            if (directoryFd >= 0)
+                close(directoryFd);
+            allOk = false;
+            continue;
         }
-        if (directoryFd >= 0)
-            close(directoryFd);
+        close(directoryFd);
 #endif
 
-        if (!copyOk || !usbIsStillMounted()) {
-            if (!copyOk)
-                qWarning() << "USB copy could not be verified and durably committed:"
-                           << dstFile;
-            else
-                qWarning() << "USB was disconnected after report transfer:"
-                           << usbPath;
+        if (!usbIsStillMounted()) {
+            qWarning() << "USB was disconnected after report transfer:" << usbPath;
             allOk = false;
             continue;
         }
