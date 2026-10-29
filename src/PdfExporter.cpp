@@ -20,6 +20,8 @@
 #include <QVariantList>
 #include <QVariantMap>
 #include <QStringList>
+#include <QByteArrayView>
+#include <QCryptographicHash>
 #include <QRect>
 #include <QPageSize>
 #include <QMarginsF>
@@ -33,6 +35,7 @@
 #include <QtConcurrent/QtConcurrentRun>
 
 #ifdef Q_OS_UNIX
+#include <fcntl.h>
 #include <unistd.h>
 #endif
 
@@ -2970,6 +2973,7 @@ static bool copyFilesToUsb(const QStringList &filePaths,
 
         qint64 copiedBytes = 0;
         bool copyOk = true;
+        QCryptographicHash sourceHash(QCryptographicHash::Sha256);
         QByteArray buffer(1024 * 1024, '\0');
         while (copyOk) {
             const qint64 bytesRead = sourceFile.read(buffer.data(), buffer.size());
@@ -2981,6 +2985,8 @@ static bool copyFilesToUsb(const QStringList &filePaths,
             }
             if (bytesRead == 0)
                 break;
+
+            sourceHash.addData(QByteArrayView(buffer.constData(), bytesRead));
 
             qint64 bytesWritten = 0;
             while (bytesWritten < bytesRead) {
@@ -3035,18 +3041,67 @@ static bool copyFilesToUsb(const QStringList &filePaths,
             continue;
         }
 
-        const QFileInfo destinationInfo(dstFile);
-        if (!destinationInfo.isFile() || destinationInfo.size() != expectedSize
-            || !usbIsStillMounted()) {
-            qWarning() << "PDF destination verification failed:" << dstFile
+        QFile verifiedDestination(dstFile);
+        if (!verifiedDestination.open(QIODevice::ReadOnly)) {
+            qWarning() << "PDF destination verification open failed:" << dstFile
+                       << verifiedDestination.errorString();
+            allOk = false;
+            continue;
+        }
+
+        QCryptographicHash destinationHash(QCryptographicHash::Sha256);
+        qint64 verifiedBytes = 0;
+        while (true) {
+            const qint64 bytesRead =
+                verifiedDestination.read(buffer.data(), buffer.size());
+            if (bytesRead < 0) {
+                qWarning() << "PDF destination verification read failed:" << dstFile
+                           << verifiedDestination.errorString();
+                copyOk = false;
+                break;
+            }
+            if (bytesRead == 0)
+                break;
+
+            destinationHash.addData(QByteArrayView(buffer.constData(), bytesRead));
+            verifiedBytes += bytesRead;
+        }
+
+        if (copyOk && (verifiedBytes != expectedSize
+                       || destinationHash.result() != sourceHash.result())) {
+            qWarning() << "PDF destination content verification failed:" << dstFile
                        << "expected size=" << expectedSize
-                       << "actual size=" << destinationInfo.size();
+                       << "actual size=" << verifiedBytes;
+            copyOk = false;
+        }
+
+#ifdef Q_OS_LINUX
+        const QByteArray destinationDirectoryName =
+            QFile::encodeName(QFileInfo(dstFile).absolutePath());
+        const int directoryFd =
+            open(destinationDirectoryName.constData(), O_RDONLY | O_DIRECTORY);
+        if (copyOk && (directoryFd < 0 || fsync(directoryFd) != 0)) {
+            qWarning() << "PDF destination directory sync failed:"
+                       << QFileInfo(dstFile).absolutePath();
+            copyOk = false;
+        }
+        if (directoryFd >= 0)
+            close(directoryFd);
+#endif
+
+        if (!copyOk || !usbIsStillMounted()) {
+            if (!copyOk)
+                qWarning() << "USB copy could not be verified and durably committed:"
+                           << dstFile;
+            else
+                qWarning() << "USB was disconnected after report transfer:"
+                           << usbPath;
             allOk = false;
             continue;
         }
 
         qDebug() << "PDF copy verified:" << dstFile
-                 << "bytes=" << expectedSize;
+                 << "bytes=" << verifiedBytes;
     }
     return allOk;
 }
