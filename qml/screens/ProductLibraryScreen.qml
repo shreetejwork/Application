@@ -1431,9 +1431,9 @@ Item {
 
                             Text { text: "Analog Gain : " + (root.loadedProduct ? root.loadedProduct.analogGain : "--"); font.pixelSize: 20; color: "#202020" }
 
-                            Text { visible: GlobalState.ddusterEnabled; text: "DD Frequency : " + (root.loadedProduct ? root.loadedProduct.ddFreq : "--"); font.pixelSize: 20; color: "#202020" }
+                            Text { visible: GlobalState.showDDuster; text: "DD Frequency : " + (root.loadedProduct ? root.loadedProduct.ddFreq : "--"); font.pixelSize: 20; color: "#202020" }
 
-                            Text { visible: GlobalState.ddusterEnabled; text: "DD Power : " + (root.loadedProduct ? root.loadedProduct.ddPower : "--"); font.pixelSize: 20; color: "#202020" }
+                            Text { visible: GlobalState.showDDuster; text: "DD Power : " + (root.loadedProduct ? root.loadedProduct.ddPower : "--"); font.pixelSize: 20; color: "#202020" }
 
                             Rectangle {
                                 width: parent.width
