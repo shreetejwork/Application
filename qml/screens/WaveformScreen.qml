@@ -9,14 +9,9 @@ Item {
     anchors.fill: parent
     property real scale: Math.min(width / 1024, height / 600)
     property var samples: []
-    property var packetHistory: []
-    property int samplesPerPacket: 0
     property bool captureEnabled: true
     property var selectedChannels: ["x", "y", "z1", "z2"]
     property string packetGapMessage: ""
-    readonly property int maxHistoryPackets: samplesPerPacket > 0
-                                            ? Math.max(1, Math.floor(10000 / samplesPerPacket))
-                                            : 1
     readonly property int maxHistorySamples: 10000
     readonly property real sampleIntervalMilliseconds: 1
 
@@ -40,46 +35,13 @@ Item {
         if (!points || points.length === 0)
             return
 
-        samplesPerPacket = points.length
-
-        var packetSamples = []
-        for (var i = 0; i < points.length; ++i) {
-            packetSamples.push({
-                                   x: Number(points[i].x),
-                                   y: Number(points[i].y),
-                                   z1: Number(points[i].z1),
-                                   z2: Number(points[i].z2)
-                               })
-        }
-
-        var packets = packetHistory.concat([packetSamples])
-        var bufferedSampleCount = 0
-        for (var packetIndex = 0; packetIndex < packets.length; ++packetIndex)
-            bufferedSampleCount += packets[packetIndex].length
-
-        while (packets.length > maxHistoryPackets)
-            bufferedSampleCount -= packets.shift().length
-
-        while (bufferedSampleCount > maxHistorySamples) {
-            var excessSamples = bufferedSampleCount - maxHistorySamples
-            if (packets[0].length <= excessSamples) {
-                bufferedSampleCount -= packets.shift().length
-            } else {
-                packets[0] = packets[0].slice(excessSamples)
-                bufferedSampleCount -= excessSamples
-            }
-        }
-
-        packetHistory = packets
-
-        var flattenedSamples = []
-        for (var packetIndex = 0; packetIndex < packets.length; ++packetIndex)
-            flattenedSamples = flattenedSamples.concat(packets[packetIndex])
-        samples = flattenedSamples
+        var updatedSamples = samples.concat(points)
+        if (updatedSamples.length > maxHistorySamples)
+            updatedSamples.splice(0, updatedSamples.length - maxHistorySamples)
+        samples = updatedSamples
     }
 
     function clearBuffer() {
-        packetHistory = []
         samples = []
         waveformChart.resetView()
         waveformChart.clearCursorSelection()

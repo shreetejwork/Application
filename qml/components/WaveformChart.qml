@@ -450,19 +450,55 @@ Rectangle {
                     ctx.strokeStyle = series[seriesIndex].color
                     ctx.beginPath()
 
-                    for (var i = chartCard.windowStart; i < end; ++i) {
-                        var sampleValue = Math.max(
-                                    -axisLimit,
-                                    Math.min(axisLimit,
-                                             Number(samples[i][series[seriesIndex].key])))
-                        var x = left + plotWidth
-                                * chartCard.samplePosition(i, count)
-                        var sampleY = top + (axisLimit - sampleValue)
-                                  * plotHeight / (2 * axisLimit)
-                        if (i === chartCard.windowStart)
-                            ctx.moveTo(x, sampleY)
+                    var bucketCount = Math.min(count, Math.ceil(plotWidth * 2))
+                    for (var bucket = 0; bucket < bucketCount; ++bucket) {
+                        var bucketStart = chartCard.windowStart
+                                + Math.floor(bucket * count / bucketCount)
+                        var bucketEnd = chartCard.windowStart
+                                + Math.floor((bucket + 1) * count / bucketCount)
+                        var minIndex = bucketStart
+                        var maxIndex = bucketStart
+                        var minValue = Number(samples[bucketStart][series[seriesIndex].key])
+                        var maxValue = minValue
+
+                        for (var sampleIndex = bucketStart + 1;
+                             sampleIndex < bucketEnd;
+                             ++sampleIndex) {
+                            var value = Number(samples[sampleIndex][series[seriesIndex].key])
+                            if (value < minValue) {
+                                minValue = value
+                                minIndex = sampleIndex
+                            }
+                            if (value > maxValue) {
+                                maxValue = value
+                                maxIndex = sampleIndex
+                            }
+                        }
+
+                        var firstIndex = Math.min(minIndex, maxIndex)
+                        var secondIndex = Math.max(minIndex, maxIndex)
+                        var firstValue = firstIndex === minIndex ? minValue : maxValue
+                        var secondValue = secondIndex === maxIndex ? maxValue : minValue
+                        var firstX = left + plotWidth
+                                * chartCard.samplePosition(firstIndex, count)
+                        var firstY = top + (axisLimit - Math.max(
+                                                   -axisLimit,
+                                                   Math.min(axisLimit, firstValue)))
+                                * plotHeight / (2 * axisLimit)
+                        if (bucket === 0)
+                            ctx.moveTo(firstX, firstY)
                         else
-                            ctx.lineTo(x, sampleY)
+                            ctx.lineTo(firstX, firstY)
+
+                        if (secondIndex !== firstIndex) {
+                            var secondX = left + plotWidth
+                                    * chartCard.samplePosition(secondIndex, count)
+                            var secondY = top + (axisLimit - Math.max(
+                                                       -axisLimit,
+                                                       Math.min(axisLimit, secondValue)))
+                                    * plotHeight / (2 * axisLimit)
+                            ctx.lineTo(secondX, secondY)
+                        }
                     }
 
                     ctx.stroke()
