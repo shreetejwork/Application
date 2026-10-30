@@ -22,9 +22,9 @@ Rectangle {
     property int zoomInLevel: 0
 
     readonly property int minVisibleSamples: 20
-    readonly property int maxVisibleSamples: 10000
+    property int maxVisibleSamples: 10000
     readonly property real valueLimit: 32768
-    readonly property real sampleIntervalMilliseconds: 1
+    property real sampleIntervalMilliseconds: 1
 
     function shouldShowPeakInfo() {
         var count = Math.min(visibleSamples,
@@ -126,7 +126,7 @@ Rectangle {
         var left = 76 * scale
         var right = 26 * scale
         var top = 18 * scale
-        var bottom = 8 * scale
+        var bottom = 26 * scale
         var plotWidth = Math.max(1, plot.width - left - right)
         var plotHeight = Math.max(1, plot.height - top - bottom)
         var count = Math.min(visibleSamples,
@@ -319,7 +319,7 @@ Rectangle {
                 var left = 76 * chartCard.scale
                 var right = 26 * chartCard.scale
                 var top = 18 * chartCard.scale
-                var bottom = 8 * chartCard.scale
+                var bottom = 26 * chartCard.scale
                 var plotWidth = Math.max(1, w - left - right)
                 var plotHeight = Math.max(1, h - top - bottom)
                 var centerY = top + plotHeight / 2
@@ -355,6 +355,14 @@ Rectangle {
                     ctx.moveTo(gridX, top)
                     ctx.lineTo(gridX, top + plotHeight)
                     ctx.stroke()
+
+                    ctx.fillStyle = "#526174"
+                    ctx.textAlign = gridIndex === 0 ? "left"
+                                  : gridIndex === 10 ? "right" : "center"
+                    ctx.textBaseline = "bottom"
+                    ctx.fillText(gridIndex + "s",
+                                 gridX,
+                                 top + plotHeight + 22 * chartCard.scale)
                 }
 
                 ctx.strokeStyle = "#526174"

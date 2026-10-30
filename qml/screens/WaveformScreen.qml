@@ -9,9 +9,20 @@ Item {
     anchors.fill: parent
     property real scale: Math.min(width / 1024, height / 600)
     property var samples: []
+    property var packetHistory: []
+    property int samplesPerPacket: 0
     property bool captureEnabled: true
     property var selectedChannels: ["x", "y", "z1", "z2"]
-    readonly property int maxHistorySamples: 10000
+    property string packetGapMessage: ""
+    property int packetIntervalMilliseconds: -1
+    property bool packetOverdue: false
+    readonly property int maxHistoryPackets: 50
+    readonly property int maxHistorySamples: Math.max(
+                                                  1,
+                                                  samplesPerPacket * maxHistoryPackets)
+    readonly property real sampleIntervalMilliseconds: samplesPerPacket > 0
+                                                       ? 200 / samplesPerPacket
+                                                       : 200
 
     Component.onDestruction: Backend.SerialManager.setWaveformMode(false)
 
@@ -33,6 +44,9 @@ Item {
         if (!points || points.length === 0)
             return
 
+        if (samplesPerPacket === 0)
+            samplesPerPacket = points.length
+
         var packetSamples = []
         for (var i = 0; i < points.length; ++i) {
             packetSamples.push({
@@ -42,13 +56,20 @@ Item {
                                    z2: Number(points[i].z2)
                                })
         }
-        var history = samples.concat(packetSamples)
-        if (history.length > maxHistorySamples)
-            history = history.slice(history.length - maxHistorySamples)
-        samples = history
+
+        var packets = packetHistory.concat([packetSamples])
+        if (packets.length > maxHistoryPackets)
+            packets = packets.slice(packets.length - maxHistoryPackets)
+        packetHistory = packets
+
+        var flattenedSamples = []
+        for (var packetIndex = 0; packetIndex < packets.length; ++packetIndex)
+            flattenedSamples = flattenedSamples.concat(packets[packetIndex])
+        samples = flattenedSamples
     }
 
     function clearBuffer() {
+        packetHistory = []
         samples = []
         waveformChart.resetView()
         waveformChart.clearCursorSelection()
@@ -66,11 +87,87 @@ Item {
             if (root.captureEnabled)
                 root.showPacket(Backend.WaveformManager.waveformData)
         }
+
+        function onPacketGapDetected(firstMissingPacket, missingPacketCount) {
+            if (missingPacketCount === 1) {
+                root.packetGapMessage =
+                        "Packet " + firstMissingPacket + " is missing"
+            } else {
+                var lastMissingPacket =
+                        (firstMissingPacket + missingPacketCount - 1) % 65536
+                root.packetGapMessage =
+                        "Packets " + firstMissingPacket + "-" + lastMissingPacket
+                        + " are missing"
+            }
+            packetGapTimer.restart()
+        }
+
+        function onPacketIntervalChanged(intervalMilliseconds) {
+            root.packetIntervalMilliseconds = intervalMilliseconds
+            root.packetOverdue = false
+            packetWatchdog.restart()
+        }
+    }
+
+    Timer {
+        id: packetWatchdog
+        interval: 400
+        onTriggered: root.packetOverdue = true
+    }
+
+    Timer {
+        id: packetGapTimer
+        interval: 6000
+        onTriggered: root.packetGapMessage = ""
     }
 
     Rectangle {
         anchors.fill: parent
         color: "#F5F7FC"
+    }
+
+    Rectangle {
+        anchors.top: parent.top
+        anchors.topMargin: 96 * root.scale
+        anchors.right: parent.right
+        anchors.rightMargin: 18 * root.scale
+        width: gapMessage.implicitWidth + 58 * root.scale
+        height: 42 * root.scale
+        radius: 8 * root.scale
+        color: "#FFF7E6"
+        border.color: "#E6A23C"
+        visible: root.packetGapMessage !== ""
+        z: 2
+
+        Row {
+            anchors.centerIn: parent
+            spacing: 9 * root.scale
+
+            Rectangle {
+                width: 20 * root.scale
+                height: 20 * root.scale
+                radius: 10 * root.scale
+                anchors.verticalCenter: parent.verticalCenter
+                color: "#E6A23C"
+
+                Text {
+                    anchors.centerIn: parent
+                    text: "!"
+                    color: "#FFFFFF"
+                    font.pixelSize: 14 * root.scale
+                    font.bold: true
+                }
+            }
+
+            Text {
+                id: gapMessage
+                text: root.packetGapMessage
+                color: "#7A4B08"
+                font.pixelSize: 15 * root.scale
+                font.weight: Font.DemiBold
+                anchors.verticalCenter: parent.verticalCenter
+            }
+        }
     }
 
     ColumnLayout {
@@ -86,6 +183,30 @@ Item {
                 text: "Waveform"
                 color: "#1A4DB5"
                 font.pixelSize: Math.max(24, 30 * root.scale)
+            }
+
+            Rectangle {
+                Layout.preferredWidth: intervalLabel.implicitWidth + 18 * root.scale
+                Layout.preferredHeight: 28 * root.scale
+                radius: 7 * root.scale
+                color: root.packetIntervalMilliseconds === 200 && !root.packetOverdue
+                       ? "#E9F7EF" : "#FFF7E6"
+                border.color: root.packetIntervalMilliseconds === 200 && !root.packetOverdue
+                              ? "#8BC9A5" : "#E6A23C"
+                visible: root.packetIntervalMilliseconds >= 0 || root.packetOverdue
+
+                Text {
+                    id: intervalLabel
+                    anchors.centerIn: parent
+                    text: root.packetOverdue
+                          ? "Packet overdue (expected 200 ms)"
+                          : "Packet interval: " + root.packetIntervalMilliseconds
+                            + " ms (expected 200 ms)"
+                    color: root.packetIntervalMilliseconds === 200 && !root.packetOverdue
+                           ? "#176B3A" : "#7A4B08"
+                    font.pixelSize: Math.max(12, 13 * root.scale)
+                    font.weight: Font.DemiBold
+                }
             }
 
             Item { Layout.fillWidth: true }
@@ -238,6 +359,8 @@ Item {
             Layout.minimumHeight: 0
             scale: root.scale
             visibleSamples: root.maxHistorySamples
+            maxVisibleSamples: root.maxHistorySamples
+            sampleIntervalMilliseconds: root.sampleIntervalMilliseconds
             title: "Waveform"
             selectedChannels: root.selectedChannels
             samples: root.samples

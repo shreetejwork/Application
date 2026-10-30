@@ -11,11 +11,13 @@ constexpr uint8_t SYNC1 = 0xA5;
 constexpr uint8_t SYNC2 = 0x5A;
 constexpr uint8_t END1 = 0xB5;
 constexpr uint8_t END2 = 0x5B;
-constexpr int FRAME_OVERHEAD = 6;
+constexpr int FRAME_OVERHEAD = 8;
+constexpr int PACKET_NUMBER_SIZE = 2;
 constexpr int WAVEFORM_PAYLOAD_UNIT = 4;
 constexpr int CHANNEL_COUNT = 4;
 constexpr int CHANNEL_SIZE = 2;
 constexpr int SAMPLE_SIZE = CHANNEL_COUNT * CHANNEL_SIZE;
+constexpr int PACKET_NUMBER_MODULUS = 1 << 16;
 
 uint16_t crc16Ccitt(const QByteArray &data)
 {
@@ -66,16 +68,26 @@ void WaveformManager::processPacket(const QByteArray &frame)
         return;
     }
 
-    const QByteArray payload = frame.mid(2, payloadSize);
-    const int crcOffset = 2 + payloadSize;
+    const int packetNumber =
+        (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(2))) << 8) |
+        static_cast<uint16_t>(static_cast<uint8_t>(frame.at(3)));
+    const QByteArray payload = frame.mid(2 + PACKET_NUMBER_SIZE, payloadSize);
+    const QByteArray crcData = frame.mid(2, PACKET_NUMBER_SIZE + payloadSize);
+    const int crcOffset = 2 + PACKET_NUMBER_SIZE + payloadSize;
     const uint16_t receivedCrc =
         (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset))) << 8) |
         static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset + 1)));
-    if (crc16Ccitt(payload) != receivedCrc)
+    if (crc16Ccitt(crcData) != receivedCrc)
     {
         qWarning() << "Waveform packet rejected: CRC mismatch";
         return;
     }
+
+    emit packetIntervalChanged(
+        m_packetTimer.isValid()
+            ? static_cast<int>(m_packetTimer.elapsed())
+            : -1);
+    m_packetTimer.restart();
 
     const auto readSignedValue = [&payload](int offset) {
         const uint16_t raw =
@@ -105,6 +117,20 @@ void WaveformManager::processPacket(const QByteArray &frame)
         decodedSamples.append(sample);
     }
 
+    if (m_lastPacketNumber >= 0)
+    {
+        const int distance =
+            (packetNumber - m_lastPacketNumber + PACKET_NUMBER_MODULUS) %
+            PACKET_NUMBER_MODULUS;
+        if (distance > 1 && distance <= PACKET_NUMBER_MODULUS / 2)
+        {
+            emit packetGapDetected(
+                (m_lastPacketNumber + 1) % PACKET_NUMBER_MODULUS,
+                distance - 1);
+        }
+    }
+
+    m_lastPacketNumber = packetNumber;
     m_waveformData = decodedSamples;
     emit waveformDataChanged();
 }

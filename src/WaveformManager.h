@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QByteArray>
+#include <QElapsedTimer>
 #include <QObject>
 #include <QVariantList>
 
@@ -25,7 +26,11 @@ public slots:
 
 signals:
     void waveformDataChanged();
+    void packetGapDetected(int firstMissingPacket, int missingPacketCount);
+    void packetIntervalChanged(int intervalMilliseconds);
 
 private:
     QVariantList m_waveformData;
+    int m_lastPacketNumber = -1;
+    QElapsedTimer m_packetTimer;
 };
