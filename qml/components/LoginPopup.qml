@@ -63,7 +63,7 @@ Popup {
     property bool hasError: false
 
     property int maxAttempts: 5
-    property int blockDurationSeconds: 60
+    property int blockDurationSeconds: 86400
 
 
     property string currentSelectedUser: ""
