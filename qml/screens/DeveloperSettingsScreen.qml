@@ -302,6 +302,49 @@ Item {
                             Layout.fillWidth: true
 
                             Text {
+                                text: "X-Y Plot Screen"
+                                font.pixelSize: 20
+                                color: "#111827"
+                            }
+
+                            Text {
+                                text: GlobalState.showXyPlotScreen
+                                      ? "X-Y Plot Screen On"
+                                      : "X-Y Plot Screen Off"
+                                font.pixelSize: 16
+                                color: "#6B7280"
+                            }
+                        }
+
+                        DDButton {
+                            width: 90 * root.scale
+                            height: 36 * root.scale
+
+                            toggled: GlobalState.showXyPlotScreen
+
+                            onToggledChanged: {
+                                GlobalState.showXyPlotScreen = toggled
+                            }
+                        }
+                    }
+                }
+
+                // ===== Baud Rate =====
+                Rectangle {
+                    width: flow.cardWidth
+                    height: 120 * root.scale
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.color: "#E5E7EB"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+
+                            Text {
                                 text: "Waveform Screen"
                                 font.pixelSize: 20
                                 color: "#111827"

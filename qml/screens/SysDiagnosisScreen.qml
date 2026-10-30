@@ -44,8 +44,12 @@ Item {
                 iconSource: "qrc:/qt/qml/Application/assets/images/axis.png"
                 label: "X-Y Plot"
                 iconSize: 100 * root.scale
+                visible: GlobalState.showXyPlotScreen
 
-                onTileClicked: navigateTo("XyPlot")
+                onTileClicked: {
+                    if (GlobalState.showXyPlotScreen)
+                        navigateTo("XyPlot")
+                }
             }
 
             MenuTile {
