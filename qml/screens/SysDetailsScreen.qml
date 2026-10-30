@@ -171,8 +171,8 @@ Item {
                                     width: parent.width
                                     height: 22 * root.scale
                                     text: GlobalState.coilBalancingOn
-                                          ? "Turn Off button after balancing"
-                                          : "Turn On button before balancing"
+                                          ? "Turn On stamping after balancing"
+                                          : "Turn Off stamping before balancing"
                                     font.pixelSize: 18 * root.scale
                                     color: "#52627B"
                                     horizontalAlignment: Text.AlignHCenter
@@ -189,8 +189,8 @@ Item {
                                     height: 40 * root.scale
 
                                     text: GlobalState.coilBalancingOn
-                                          ? "Coil Balancing ON"
-                                          : "Coil Balancing OFF"
+                                          ? "Stamping Off"
+                                          : "Stamping On"
 
                                     onClicked: {
                                         GlobalState.coilBalancingOn = !GlobalState.coilBalancingOn

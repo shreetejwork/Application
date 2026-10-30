@@ -1365,16 +1365,64 @@ Item {
         modal: true
         focus: true
         anchors.centerIn: parent
-        width: 720 * root.scale
-        height: 420 * root.scale
+        width: 760 * root.scale
+        height: 540 * root.scale
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
 
         property var pendingChecked: []
+        property var filterSections: [
+            {
+                title: "Machine Parameters",
+                filters: [
+                    "LCF Changed", "HCF Changed", "Operate Delay Changed",
+                    "Filter Taps Changed", "Hold Delay Changed", "Relay Delay Changed",
+                    "Digital Gain Changed", "Analog Gain Changed",
+                    "Machine ID Changed", "Machine User Changed", "Location Changed",
+                    "Serial Number Changed", "M/C Phase Changed",
+                    "Threshold-S Changed", "Threshold-A Changed",
+                    "Tracking On", "Tracking Off", "Tracking Enabled", "Tracking Disabled",
+                    "Tracking Count Changed", "Tracking Threshold Changed",
+                    "Tracking Tolerance Changed", "DD Power Changed", "DD Frequency Changed"
+                ]
+            },
+            {
+                title: "Product",
+                filters: [
+                    "Supplier Name Changed", "New Product Added",
+                    "Product Deleted", "Product Loaded"
+                ]
+            },
+            {
+                title: "System",
+                filters: [
+                    "M/C Switch ON", "M/C Switched OFF", "M/C OFF (Power Failure)",
+                    "Application Updated", "Time Changed", "Date Changed",
+                    "Validation Timer Set", "No Validation Timer", "Validation Started",
+                    "Validation Passed", "Validation Failed", "Validation Skipped",
+                    "Remainder for validation", "DD ON", "DD OFF"
+                ]
+            },
+            {
+                title: "User",
+                filters: [
+                    "Auto Logout", "User Added", "User PW Changed", "User Deleted",
+                    "User Logged In", "User Logged Out"
+                ]
+            }
+        ]
+
+        function allFilters() {
+            var filters = []
+            for (var i = 0; i < filterSections.length; i++)
+                filters = filters.concat(filterSections[i].filters)
+            return filters
+        }
+        property var filterList: allFilters()
 
         onOpened: {
 
-            var list = grid.filterList
+            var list = filterPopup.filterList
             var pending = []
             for (var i = 0; i < list.length; i++) {
                 var label = list[i].replace(/\n/g, " ").toLowerCase()
@@ -1403,133 +1451,154 @@ Item {
             spacing: 12 * root.scale
 
             // ===== TITLE =====
-            Column {
-                Layout.alignment: Qt.AlignHCenter
-                spacing: 4 * root.scale
+            ColumnLayout {
+                Layout.fillWidth: true
+                spacing: 3 * root.scale
 
                 Text {
-                    text: "Filters"
+                    text: "Filter Audit Events"
                     font.pixelSize: 22
-
                     color: "#1A4DB5"
-                }
-
-                Rectangle {
-                    width: 60 * root.scale
-                    height: 3 * root.scale
-                    radius: 2
-                    color: "#1A4DB5"
+                    Layout.alignment: Qt.AlignHCenter
                 }
             }
 
-            // ===== CHECKLIST GRID =====
+            // ===== CHECKLIST SECTIONS =====
             Flickable {
                 Layout.fillWidth: true
                 Layout.fillHeight: true
-                contentHeight: grid.height
+                contentHeight: sectionColumn.height
                 clip: true
+                boundsBehavior: Flickable.StopAtBounds
 
-                Grid {
-                    id: grid
+                ScrollBar.vertical: ScrollBar { }
+
+                Column {
+                    id: sectionColumn
                     width: parent.width
-                    columns: 3
-
-                    rowSpacing: 14 * root.scale
-                    columnSpacing: 28 * root.scale
-
-                    property real cellWidth: (width / columns) - columnSpacing
-
-                    property var filterList: [
-                        "M/C Switch ON", "M/C Switched OFF", "M/C OFF (Power Failure)",
-                        "Application Updated",
-                        "Auto Logout", "User Added", "User PW Changed", "User Deleted",
-                        "User Logged In", "User Logged Out",
-                        "LCF Changed", "HCF Changed", "Operate Delay Changed",
-                        "Filter Taps Changed", "Hold Delay Changed", "Relay Delay Changed",
-                        "Digital Gain Changed",
-                        "Analog Gain Changed", "Time Changed", "Date Changed",
-                        "Validation Timer Set", "No Validation Timer", "Validation Started",
-                        "Validation Passed", "Validation Failed", "Validation Skipped",
-                        "Remainder for validation",
-                        "Supplier Name Changed", "Machine ID Changed", "Machine User Changed",
-                        "Location Changed", "Serial Number Changed",
-                        "M/C Phase Changed", "Threshold-S Changed", "Threshold-A Changed",
-                        "Tracking On", "Tracking Off", "Tracking Enabled", "Tracking Disabled",
-                        "Tracking Count Changed",
-                        "Tracking Threshold Changed", "Tracking Tolerance Changed",
-                        "DD ON", "DD OFF", "DD Power Changed", "DD Frequency Changed",
-                        "New Product Added", "Product Deleted", "Product Loaded"
-                    ]
+                    height: childrenRect.height
+                    spacing: 10 * root.scale
 
                     Repeater {
                         id: filterRepeater
-                        model: grid.filterList
+                        model: filterPopup.filterSections
 
                         function resetAll() {
                             var blank = []
-                            for (var i = 0; i < grid.filterList.length; i++) blank.push(false)
+                            for (var i = 0; i < filterPopup.filterList.length; i++)
+                                blank.push(false)
                             filterPopup.pendingChecked = blank
                         }
 
                         delegate: Rectangle {
-                            id: filterItem
-                            width: grid.cellWidth
-                            color: "transparent"
-                            implicitHeight: Math.max(labelText.implicitHeight + 12 * root.scale, 48 * root.scale)
+                            id: sectionCard
+                            property var sectionData: modelData
+                            property int sectionIndex: index
 
-                            property bool isChecked: filterPopup.pendingChecked.length > index
-                                                     ? filterPopup.pendingChecked[index]
-                                                     : false
+                            width: sectionColumn.width
+                            height: sectionContent.implicitHeight + 20 * root.scale
+                            implicitHeight: sectionContent.implicitHeight + 20 * root.scale
+                            radius: 9 * root.scale
+                            color: "#F8FAFE"
+                            border.color: "#E1E8F5"
+                            border.width: 1
 
-                            Row {
+                            Column {
+                                id: sectionContent
                                 anchors.fill: parent
-                                anchors.margins: 6 * root.scale
-                                spacing: 12 * root.scale
-
-                                // Custom checkbox rectangle
-                                Rectangle {
-                                    id: checkRect
-                                    width: 22 * root.scale
-                                    height: 22 * root.scale
-                                    radius: 4 * root.scale
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    color: filterItem.isChecked ? "#1A4DB5" : "#FFFFFF"
-                                    border.color: filterItem.isChecked ? "#1A4DB5" : "#B0BEE0"
-                                    border.width: 1.5
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "✓"
-                                        color: "#FFFFFF"
-                                        font.pixelSize: 15
-
-                                        visible: filterItem.isChecked
-                                    }
-                                }
+                                anchors.margins: 10 * root.scale
+                                spacing: 8 * root.scale
 
                                 Text {
-                                    id: labelText
-                                    text: modelData
-                                    font.pixelSize: 20
-                                    color: "#2E2E2E"
-                                    wrapMode: Text.WordWrap
-                                    width: parent.width - (40 * root.scale)
-                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: sectionCard.sectionData.title
+                                    font.pixelSize: 19
+                                    color: "#294675"
                                 }
-                            }
 
-                            MouseArea {
-                                anchors.fill: parent
-                                onClicked: {
-                                    var arr = filterPopup.pendingChecked.slice()
-                                    while (arr.length <= index) arr.push(false)
-                                    arr[index] = !arr[index]
-                                    filterPopup.pendingChecked = arr
+                                GridLayout {
+                                    width: parent.width
+                                    columns: sectionCard.sectionData.filters.length > 6 ? 3 : 2
+                                    rowSpacing: 4 * root.scale
+                                    columnSpacing: 12 * root.scale
+
+                                    Repeater {
+                                        model: sectionCard.sectionData.filters
+
+                                        delegate: Rectangle {
+                                            id: filterItem
+                                            property int itemIndex: index
+                                            property int globalIndex: {
+                                                var offset = 0
+                                                for (var i = 0; i < sectionCard.sectionIndex; i++)
+                                                    offset += filterPopup.filterSections[i].filters.length
+                                                return offset + itemIndex
+                                            }
+                                            property bool isChecked: filterPopup.pendingChecked.length > globalIndex
+                                                                     ? filterPopup.pendingChecked[globalIndex]
+                                                                     : false
+
+                                            Layout.fillWidth: true
+                                            Layout.preferredHeight: 40 * root.scale
+                                            radius: 5 * root.scale
+                                            color: isChecked ? "#EAF1FF"
+                                                             : hoverArea.containsMouse ? "#F0F4FA" : "transparent"
+                                            border.color: isChecked ? "#C6D7FA" : "transparent"
+
+                                            Row {
+                                                anchors.fill: parent
+                                                anchors.leftMargin: 7 * root.scale
+                                                anchors.rightMargin: 5 * root.scale
+                                                spacing: 8 * root.scale
+
+                                                Rectangle {
+                                                    width: 22 * root.scale
+                                                    height: 22 * root.scale
+                                                    radius: 4 * root.scale
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                    color: filterItem.isChecked ? "#1A4DB5" : "#FFFFFF"
+                                                    border.color: filterItem.isChecked ? "#1A4DB5" : "#AAB9D2"
+                                                    border.width: 1.2
+
+                                                    Text {
+                                                        anchors.centerIn: parent
+                                                        text: "✓"
+                                                        color: "#FFFFFF"
+                                                        font.pixelSize: 16
+                                                        visible: filterItem.isChecked
+                                                    }
+                                                }
+
+                                                Text {
+                                                    text: modelData
+                                                    font.pixelSize: 18
+                                                    color: "#303B50"
+                                                    wrapMode: Text.WordWrap
+                                                    width: parent.width - 30 * root.scale
+                                                    anchors.verticalCenter: parent.verticalCenter
+                                                }
+                                            }
+
+                                            MouseArea {
+                                                id: hoverArea
+                                                anchors.fill: parent
+                                                hoverEnabled: true
+                                                cursorShape: Qt.PointingHandCursor
+                                                onClicked: {
+                                                    var arr = filterPopup.pendingChecked.slice()
+                                                    while (arr.length <= filterItem.globalIndex)
+                                                        arr.push(false)
+                                                    arr[filterItem.globalIndex] = !arr[filterItem.globalIndex]
+                                                    filterPopup.pendingChecked = arr
+                                                }
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
+
             }
 
             // ===== BUTTONS =====
@@ -1579,7 +1648,7 @@ Item {
                         cursorShape: Qt.PointingHandCursor
                         onClicked: {
                             var selected = []
-                            var list = grid.filterList
+                            var list = filterPopup.filterList
                             for (var i = 0; i < list.length; i++) {
                                 if (filterPopup.pendingChecked.length > i && filterPopup.pendingChecked[i]) {
                                     selected.push(list[i])
