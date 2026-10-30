@@ -1369,6 +1369,45 @@ Item {
         height: 540 * root.scale
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside
 
+        enter: Transition {
+            ParallelAnimation {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 0.0
+                    to: 1.0
+                    duration: 350
+                    easing.type: Easing.OutQuad
+                }
+
+                NumberAnimation {
+                    property: "scale"
+                    from: 0.0
+                    to: 1.0
+                    duration: 350
+                    easing.type: Easing.OutQuad
+                }
+            }
+        }
+
+        exit: Transition {
+            ParallelAnimation {
+                NumberAnimation {
+                    property: "opacity"
+                    from: 1.0
+                    to: 0.0
+                    duration: 280
+                    easing.type: Easing.InQuad
+                }
+
+                NumberAnimation {
+                    property: "scale"
+                    from: 1.0
+                    to: 0.0
+                    duration: 280
+                    easing.type: Easing.InQuad
+                }
+            }
+        }
 
         property var pendingChecked: []
         property var filterSections: [
