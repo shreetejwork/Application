@@ -14,15 +14,11 @@ Item {
     property bool captureEnabled: true
     property var selectedChannels: ["x", "y", "z1", "z2"]
     property string packetGapMessage: ""
-    property int packetIntervalMilliseconds: -1
-    property bool packetOverdue: false
-    readonly property int maxHistoryPackets: 50
-    readonly property int maxHistorySamples: Math.max(
-                                                  1,
-                                                  samplesPerPacket * maxHistoryPackets)
-    readonly property real sampleIntervalMilliseconds: samplesPerPacket > 0
-                                                       ? 200 / samplesPerPacket
-                                                       : 200
+    readonly property int maxHistoryPackets: samplesPerPacket > 0
+                                            ? Math.max(1, Math.floor(10000 / samplesPerPacket))
+                                            : 1
+    readonly property int maxHistorySamples: 10000
+    readonly property real sampleIntervalMilliseconds: 1
 
     Component.onDestruction: Backend.SerialManager.setWaveformMode(false)
 
@@ -44,8 +40,7 @@ Item {
         if (!points || points.length === 0)
             return
 
-        if (samplesPerPacket === 0)
-            samplesPerPacket = points.length
+        samplesPerPacket = points.length
 
         var packetSamples = []
         for (var i = 0; i < points.length; ++i) {
@@ -58,8 +53,23 @@ Item {
         }
 
         var packets = packetHistory.concat([packetSamples])
-        if (packets.length > maxHistoryPackets)
-            packets = packets.slice(packets.length - maxHistoryPackets)
+        var bufferedSampleCount = 0
+        for (var packetIndex = 0; packetIndex < packets.length; ++packetIndex)
+            bufferedSampleCount += packets[packetIndex].length
+
+        while (packets.length > maxHistoryPackets)
+            bufferedSampleCount -= packets.shift().length
+
+        while (bufferedSampleCount > maxHistorySamples) {
+            var excessSamples = bufferedSampleCount - maxHistorySamples
+            if (packets[0].length <= excessSamples) {
+                bufferedSampleCount -= packets.shift().length
+            } else {
+                packets[0] = packets[0].slice(excessSamples)
+                bufferedSampleCount -= excessSamples
+            }
+        }
+
         packetHistory = packets
 
         var flattenedSamples = []
@@ -102,17 +112,6 @@ Item {
             packetGapTimer.restart()
         }
 
-        function onPacketIntervalChanged(intervalMilliseconds) {
-            root.packetIntervalMilliseconds = intervalMilliseconds
-            root.packetOverdue = false
-            packetWatchdog.restart()
-        }
-    }
-
-    Timer {
-        id: packetWatchdog
-        interval: 400
-        onTriggered: root.packetOverdue = true
     }
 
     Timer {
@@ -183,30 +182,6 @@ Item {
                 text: "Waveform"
                 color: "#1A4DB5"
                 font.pixelSize: Math.max(24, 30 * root.scale)
-            }
-
-            Rectangle {
-                Layout.preferredWidth: intervalLabel.implicitWidth + 18 * root.scale
-                Layout.preferredHeight: 28 * root.scale
-                radius: 7 * root.scale
-                color: root.packetIntervalMilliseconds === 200 && !root.packetOverdue
-                       ? "#E9F7EF" : "#FFF7E6"
-                border.color: root.packetIntervalMilliseconds === 200 && !root.packetOverdue
-                              ? "#8BC9A5" : "#E6A23C"
-                visible: root.packetIntervalMilliseconds >= 0 || root.packetOverdue
-
-                Text {
-                    id: intervalLabel
-                    anchors.centerIn: parent
-                    text: root.packetOverdue
-                          ? "Packet overdue (expected 200 ms)"
-                          : "Packet interval: " + root.packetIntervalMilliseconds
-                            + " ms (expected 200 ms)"
-                    color: root.packetIntervalMilliseconds === 200 && !root.packetOverdue
-                           ? "#176B3A" : "#7A4B08"
-                    font.pixelSize: Math.max(12, 13 * root.scale)
-                    font.weight: Font.DemiBold
-                }
             }
 
             Item { Layout.fillWidth: true }

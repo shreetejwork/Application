@@ -26,6 +26,15 @@ constexpr int XY_END_SIZE = 2;
 constexpr int XY_PAYLOAD_OFFSET = XY_SYNC_SIZE;
 constexpr qreal XY_PLOT_LIMIT = 100.0;
 constexpr qreal XY_SIGNED_SCALE = XY_PLOT_LIMIT / 32768.0;
+constexpr uint8_t WAVEFORM_SYNC1 = 0xA5;
+constexpr uint8_t WAVEFORM_SYNC2 = 0x5A;
+constexpr uint8_t WAVEFORM_END1 = 0xB5;
+constexpr uint8_t WAVEFORM_END2 = 0x5B;
+constexpr int WAVEFORM_SYNC_SIZE = 2;
+constexpr int WAVEFORM_CRC_SIZE = 2;
+constexpr int WAVEFORM_END_SIZE = 2;
+constexpr int WAVEFORM_FRAME_OVERHEAD = 8;
+constexpr int WAVEFORM_SAMPLE_SIZE = 8;
 
 uint16_t crc16Ccitt(const QByteArray &data)
 {
@@ -45,6 +54,31 @@ uint16_t crc16Ccitt(const QByteArray &data)
     }
 
     return crc;
+}
+
+bool isValidWaveformFrame(const QByteArray &frame)
+{
+    if (frame.size() < WAVEFORM_FRAME_OVERHEAD + WAVEFORM_SAMPLE_SIZE ||
+        static_cast<uint8_t>(frame.at(0)) != WAVEFORM_SYNC1 ||
+        static_cast<uint8_t>(frame.at(1)) != WAVEFORM_SYNC2 ||
+        static_cast<uint8_t>(frame.at(frame.size() - 2)) != WAVEFORM_END1 ||
+        static_cast<uint8_t>(frame.at(frame.size() - 1)) != WAVEFORM_END2)
+    {
+        return false;
+    }
+
+    const int dataSize = frame.size() - WAVEFORM_FRAME_OVERHEAD;
+    if (dataSize % WAVEFORM_SAMPLE_SIZE != 0)
+        return false;
+
+    const int crcOffset = frame.size() - WAVEFORM_END_SIZE - WAVEFORM_CRC_SIZE;
+    const uint16_t receivedCrc =
+        (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset))) << 8) |
+        static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset + 1)));
+    return crc16Ccitt(frame.mid(WAVEFORM_SYNC_SIZE,
+                                frame.size() - WAVEFORM_SYNC_SIZE
+                                - WAVEFORM_CRC_SIZE - WAVEFORM_END_SIZE))
+           == receivedCrc;
 }
 }
 
@@ -691,7 +725,8 @@ void SerialManager::processXyAsciiBuffer()
             continue;
 
         QVariantList decodedData;
-        emit waveformPacketReceived(frame);
+        if (isValidWaveformFrame(frame))
+            emit waveformPacketReceived(frame);
         if (parseXyPlotFrame(frame, decodedData))
         {
             xyRxBuffer.remove(0, tokens[endToken].capturedEnd());
@@ -703,6 +738,72 @@ void SerialManager::processXyAsciiBuffer()
             qDebug() << "XY ASCII packet rejected; resynchronizing";
             xyRxBuffer.remove(0, tokens[startToken].capturedStart() + 2);
         }
+    }
+}
+
+void SerialManager::processWaveformBuffer()
+{
+    const QByteArray sync =
+        QByteArray(1, static_cast<char>(WAVEFORM_SYNC1)) +
+        QByteArray(1, static_cast<char>(WAVEFORM_SYNC2));
+    const QByteArray terminator =
+        QByteArray(1, static_cast<char>(WAVEFORM_END1)) +
+        QByteArray(1, static_cast<char>(WAVEFORM_END2));
+
+    while (true)
+    {
+        const qsizetype startIndex = waveformRxBuffer.indexOf(sync);
+        if (startIndex < 0)
+        {
+            if (!waveformRxBuffer.isEmpty() &&
+                static_cast<uint8_t>(waveformRxBuffer.back()) == WAVEFORM_SYNC1)
+            {
+                waveformRxBuffer = waveformRxBuffer.right(1);
+            }
+            else
+            {
+                waveformRxBuffer.clear();
+            }
+            return;
+        }
+
+        if (startIndex > 0)
+            waveformRxBuffer.remove(0, startIndex);
+
+        qsizetype terminatorSearchIndex = WAVEFORM_SYNC_SIZE;
+        bool frameEmitted = false;
+        while (true)
+        {
+            const qsizetype endIndex =
+                waveformRxBuffer.indexOf(terminator, terminatorSearchIndex);
+            if (endIndex < 0)
+                break;
+
+            const QByteArray frame =
+                waveformRxBuffer.left(endIndex + WAVEFORM_END_SIZE);
+            if (isValidWaveformFrame(frame))
+            {
+                emit waveformPacketReceived(frame);
+                waveformRxBuffer.remove(0, endIndex + WAVEFORM_END_SIZE);
+                frameEmitted = true;
+                break;
+            }
+
+            terminatorSearchIndex = endIndex + 1;
+        }
+
+        if (frameEmitted)
+            continue;
+
+        const qsizetype nextSyncIndex =
+            waveformRxBuffer.indexOf(sync, WAVEFORM_SYNC_SIZE);
+        if (nextSyncIndex >= 0)
+        {
+            waveformRxBuffer.remove(0, nextSyncIndex);
+            continue;
+        }
+
+        return;
     }
 }
 
@@ -725,7 +826,10 @@ void SerialManager::onReadyRead()
         // Existing buffers
         rxBuffer.append(data);
         xyRxBuffer.append(data);
+        waveformRxBuffer.append(data);
     }
+
+    processWaveformBuffer();
 
 
     // =====================================================
@@ -769,8 +873,6 @@ void SerialManager::onReadyRead()
 
 
             QVariantList decodedData;
-
-            emit waveformPacketReceived(frame);
 
             if (parseXyPlotFrame(frame, decodedData))
             {

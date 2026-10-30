@@ -216,6 +216,7 @@ private:
 
     bool parseXyPlotFrame(const QByteArray &frame, QVariantList &outData);
     bool decodeXyPlotPayload(const QByteArray &payload, QVariantList &outData);
+    void processWaveformBuffer();
     void processXyAsciiBuffer();
     void logXyPacketBeforePlotUpdate(const QByteArray &frame,
                                      const QVariantList &data);
@@ -239,6 +240,7 @@ private:
 
     QByteArray rxBuffer;
     QByteArray xyRxBuffer;
+    QByteArray waveformRxBuffer;
 
     double m_productPhase = 0.0;   // 0 - 180
 

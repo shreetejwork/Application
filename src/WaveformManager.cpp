@@ -13,7 +13,6 @@ constexpr uint8_t END1 = 0xB5;
 constexpr uint8_t END2 = 0x5B;
 constexpr int FRAME_OVERHEAD = 8;
 constexpr int PACKET_NUMBER_SIZE = 2;
-constexpr int WAVEFORM_PAYLOAD_UNIT = 4;
 constexpr int CHANNEL_COUNT = 4;
 constexpr int CHANNEL_SIZE = 2;
 constexpr int SAMPLE_SIZE = CHANNEL_COUNT * CHANNEL_SIZE;
@@ -44,7 +43,7 @@ WaveformManager::WaveformManager(QObject *parent)
 
 void WaveformManager::processPacket(const QByteArray &frame)
 {
-    if (frame.size() < FRAME_OVERHEAD + WAVEFORM_PAYLOAD_UNIT ||
+    if (frame.size() < FRAME_OVERHEAD + SAMPLE_SIZE ||
         static_cast<uint8_t>(frame.at(0)) != SYNC1 ||
         static_cast<uint8_t>(frame.at(1)) != SYNC2 ||
         static_cast<uint8_t>(frame.at(frame.size() - 2)) != END1 ||
@@ -55,16 +54,10 @@ void WaveformManager::processPacket(const QByteArray &frame)
     }
 
     const int payloadSize = frame.size() - FRAME_OVERHEAD;
-    if (payloadSize % WAVEFORM_PAYLOAD_UNIT != 0)
-    {
-        qDebug() << "Waveform packet ignored: payload size is not divisible by four:"
-                 << payloadSize;
-        return;
-    }
     if (payloadSize % SAMPLE_SIZE != 0)
     {
-        qDebug() << "Waveform packet ignored: incomplete four-channel sample,"
-                   << "payload bytes:" << payloadSize;
+        qDebug() << "Waveform packet ignored: data must contain complete 8-byte samples,"
+                   << "data bytes:" << payloadSize;
         return;
     }
 
@@ -82,12 +75,6 @@ void WaveformManager::processPacket(const QByteArray &frame)
         qWarning() << "Waveform packet rejected: CRC mismatch";
         return;
     }
-
-    emit packetIntervalChanged(
-        m_packetTimer.isValid()
-            ? static_cast<int>(m_packetTimer.elapsed())
-            : -1);
-    m_packetTimer.restart();
 
     const auto readSignedValue = [&payload](int offset) {
         const uint16_t raw =
@@ -117,18 +104,31 @@ void WaveformManager::processPacket(const QByteArray &frame)
         decodedSamples.append(sample);
     }
 
+    int packetDistance = 1;
     if (m_lastPacketNumber >= 0)
     {
-        const int distance =
+        packetDistance =
             (packetNumber - m_lastPacketNumber + PACKET_NUMBER_MODULUS) %
             PACKET_NUMBER_MODULUS;
-        if (distance > 1 && distance <= PACKET_NUMBER_MODULUS / 2)
+        if (packetDistance == 0 ||
+            packetDistance > PACKET_NUMBER_MODULUS / 2)
         {
-            emit packetGapDetected(
-                (m_lastPacketNumber + 1) % PACKET_NUMBER_MODULUS,
-                distance - 1);
+            qDebug() << "Duplicate or out-of-order waveform packet ignored:"
+                     << packetNumber;
+            return;
         }
     }
+
+    if (m_lastPacketNumber >= 0 && packetDistance > 1)
+        emit packetGapDetected(
+            (m_lastPacketNumber + 1) % PACKET_NUMBER_MODULUS,
+            packetDistance - 1);
+
+    emit packetIntervalChanged(
+        m_packetTimer.isValid()
+            ? static_cast<int>(m_packetTimer.elapsed())
+            : -1);
+    m_packetTimer.restart();
 
     m_lastPacketNumber = packetNumber;
     m_waveformData = decodedSamples;

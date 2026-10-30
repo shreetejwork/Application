@@ -136,10 +136,17 @@ Rectangle {
                 || y < top || y > top + plotHeight)
             return -1
 
-        if (count === 1)
-            return windowStart
+        var bufferOffset = visibleSamples - count
+        var localIndex = Math.round((x - left) * (visibleSamples - 1) / plotWidth
+                                    - bufferOffset)
+        return localIndex >= 0 && localIndex < count
+                ? windowStart + localIndex
+                : -1
+    }
 
-        return windowStart + Math.round((x - left) * (count - 1) / plotWidth)
+    function samplePosition(index, count) {
+        return (visibleSamples - count + index - windowStart)
+                / Math.max(1, visibleSamples - 1)
     }
 
     function pointDescription(index) {
@@ -153,7 +160,7 @@ Rectangle {
     }
 
     function sampleTimeMilliseconds(index) {
-        return index * sampleIntervalMilliseconds
+        return (samples.length - 1 - index) * sampleIntervalMilliseconds
     }
 
     function cursorFrequencyText() {
@@ -360,7 +367,24 @@ Rectangle {
                     ctx.textAlign = gridIndex === 0 ? "left"
                                   : gridIndex === 10 ? "right" : "center"
                     ctx.textBaseline = "bottom"
-                    ctx.fillText(gridIndex + "s",
+                    var bufferOffset = chartCard.visibleSamples - count
+                    var leftAgeMilliseconds = samples.length === 0
+                            ? chartCard.visibleSamples
+                              * chartCard.sampleIntervalMilliseconds
+                            : chartCard.sampleTimeMilliseconds(chartCard.windowStart)
+                              + bufferOffset * chartCard.sampleIntervalMilliseconds
+                    var rightAgeMilliseconds = count === 0
+                            ? 0
+                            : chartCard.sampleTimeMilliseconds(
+                                  chartCard.windowStart + count - 1)
+                    var ageMilliseconds = leftAgeMilliseconds
+                            + (rightAgeMilliseconds - leftAgeMilliseconds)
+                              * gridIndex / 10
+                    var ageSeconds = ageMilliseconds / 1000
+                    var ageLabel = leftAgeMilliseconds - rightAgeMilliseconds >= 10000
+                            ? Math.round(ageSeconds)
+                            : ageSeconds.toFixed(1)
+                    ctx.fillText(ageLabel + "s",
                                  gridX,
                                  top + plotHeight + 22 * chartCard.scale)
                 }
@@ -373,12 +397,12 @@ Rectangle {
                 ctx.lineTo(left - 4 * chartCard.scale, top + 7 * chartCard.scale)
                 ctx.moveTo(left, top)
                 ctx.lineTo(left + 4 * chartCard.scale, top + 7 * chartCard.scale)
-                ctx.moveTo(left, centerY)
-                ctx.lineTo(left + plotWidth, centerY)
-                ctx.lineTo(left + plotWidth - 7 * chartCard.scale,
-                           centerY - 4 * chartCard.scale)
                 ctx.moveTo(left + plotWidth, centerY)
-                ctx.lineTo(left + plotWidth - 7 * chartCard.scale,
+                ctx.lineTo(left, centerY)
+                ctx.lineTo(left + 7 * chartCard.scale,
+                           centerY - 4 * chartCard.scale)
+                ctx.moveTo(left, centerY)
+                ctx.lineTo(left + 7 * chartCard.scale,
                            centerY + 4 * chartCard.scale)
                 ctx.stroke()
 
@@ -431,10 +455,8 @@ Rectangle {
                                     -axisLimit,
                                     Math.min(axisLimit,
                                              Number(samples[i][series[seriesIndex].key])))
-                        var x = left + (count === 1
-                                        ? plotWidth
-                                        : plotWidth * (i - chartCard.windowStart)
-                                          / (count - 1))
+                        var x = left + plotWidth
+                                * chartCard.samplePosition(i, count)
                         var sampleY = top + (axisLimit - sampleValue)
                                   * plotHeight / (2 * axisLimit)
                         if (i === chartCard.windowStart)
@@ -453,10 +475,8 @@ Rectangle {
                                         -axisLimit,
                                         Math.min(axisLimit,
                                                  Number(samples[pointIndex][series[seriesIndex].key])))
-                            var pointX = left + (count === 1
-                                                 ? plotWidth
-                                                 : plotWidth * (pointIndex - chartCard.windowStart)
-                                                   / (count - 1))
+                            var pointX = left + plotWidth
+                                         * chartCard.samplePosition(pointIndex, count)
                             var pointY = top + (axisLimit - pointValue)
                                        * plotHeight / (2 * axisLimit)
                             ctx.beginPath()
@@ -475,11 +495,8 @@ Rectangle {
                          peakIndex < allPeaks.length;
                          ++peakIndex) {
                         var peak = allPeaks[peakIndex]
-                        var peakX = left + (count === 1
-                                            ? plotWidth
-                                            : plotWidth * (peak.index
-                                                           - chartCard.windowStart)
-                                              / (count - 1))
+                        var peakX = left + plotWidth
+                                    * chartCard.samplePosition(peak.index, count)
                         var peakValue = Math.max(-axisLimit,
                                                  Math.min(axisLimit, peak.value))
                         var peakY = top + (axisLimit - peakValue)
@@ -525,10 +542,8 @@ Rectangle {
                     if (cursorIndex < chartCard.windowStart || cursorIndex >= end)
                         continue
 
-                    var cursorX = left + (count === 1
-                                          ? plotWidth
-                                          : plotWidth * (cursorIndex - chartCard.windowStart)
-                                            / (count - 1))
+                    var cursorX = left + plotWidth
+                                  * chartCard.samplePosition(cursorIndex, count)
                     var dashStep = Math.max(1, 10 * chartCard.scale)
                     var dashLength = Math.max(1, 5 * chartCard.scale)
                     ctx.strokeStyle = cursorColors[cursor]
