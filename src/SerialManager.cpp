@@ -346,6 +346,11 @@ void SerialManager::setWaveformMode(bool enabled)
     sendCommand(enabled ? "{U11111}" : "{U00000}");
 }
 
+void SerialManager::sendWaveformAction()
+{
+    sendCommand("{V00001}");
+}
+
 // =============== D-duster ======================
 
 void SerialManager::setDDuster(bool enabled)

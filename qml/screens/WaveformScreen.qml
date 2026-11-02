@@ -91,6 +91,16 @@ Item {
             Item { Layout.fillWidth: true }
 
             WaveformControlButton {
+                text: "Send V00001"
+                Layout.preferredWidth: 132 * root.scale
+                Layout.preferredHeight: 38 * root.scale
+                labelPixelSize: Math.max(15, 17 * root.scale)
+                accent: "#16804A"
+                pressAnimationEnabled: true
+                onClicked: Backend.SerialManager.sendWaveformAction()
+            }
+
+            WaveformControlButton {
                 text: "Clear Buffer"
                 Layout.preferredWidth: 100 * root.scale
                 Layout.preferredHeight: 38 * root.scale

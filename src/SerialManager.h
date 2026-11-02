@@ -170,6 +170,7 @@ public slots:
     void setBaudRate(int baudRate);
     void setPlotMode(bool enabled);
     void setWaveformMode(bool enabled);
+    void sendWaveformAction();
 
 signals:
     void productPhaseChanged();

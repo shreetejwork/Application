@@ -9,11 +9,20 @@ Button {
     property color selectedLabelColor: "#FFFFFF"
     property bool selected: false
     property real labelPixelSize: 12
+    property bool pressAnimationEnabled: false
 
     implicitWidth: label.implicitWidth + 20
     implicitHeight: 30
     padding: 0
     hoverEnabled: true
+    scale: pressAnimationEnabled && down ? 0.96 : 1
+
+    Behavior on scale {
+        NumberAnimation {
+            duration: 100
+            easing.type: Easing.OutCubic
+        }
+    }
 
     contentItem: Text {
         id: label
