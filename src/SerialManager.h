@@ -62,6 +62,18 @@ class SerialManager : public QObject
                    READ xyPlotData
                        NOTIFY xyPlotDataChanged)
 
+    Q_PROPERTY(bool connected
+                   READ isConnected
+                       NOTIFY connectionChanged)
+
+    Q_PROPERTY(QString connectedPort
+                   READ connectedPort
+                       NOTIFY connectionChanged)
+
+    Q_PROPERTY(qulonglong receivedByteCount
+                   READ receivedByteCount
+                       NOTIFY receivedByteCountChanged)
+
 public:
     explicit SerialManager(QObject *parent = nullptr);
 
@@ -127,6 +139,16 @@ public:
     Q_INVOKABLE bool isConnected() const
     {
         return serial.isOpen();
+    }
+
+    QString connectedPort() const
+    {
+        return m_connectedPort;
+    }
+
+    qulonglong receivedByteCount() const
+    {
+        return m_receivedByteCount;
     }
 
     Q_INVOKABLE void clearRxLog();
@@ -203,8 +225,13 @@ signals:
 
     void waveformPacketReceived(const QByteArray &frame);
 
+    void connectionChanged();
+
+    void receivedByteCountChanged();
+
 private slots:
     void onReadyRead();
+    void scanForSerialPort();
 
 private:
     bool openPort(const QString &port);
@@ -237,6 +264,13 @@ private:
 
 
     QSerialPort serial;
+    QTimer m_portScanTimer;
+    QString m_connectedPort;
+    QString m_lastPortScanSummary;
+    qulonglong m_receivedByteCount = 0;
+    int m_baudRate = 115200;
+    bool m_plotModeRequested = false;
+    bool m_waveformModeRequested = false;
 
     QByteArray rxBuffer;
     QByteArray xyRxBuffer;

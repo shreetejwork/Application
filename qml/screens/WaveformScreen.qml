@@ -80,12 +80,28 @@ Item {
 
         RowLayout {
             Layout.fillWidth: true
-            Layout.preferredHeight: 40 * root.scale
+            Layout.preferredHeight: 48 * root.scale
 
-            Text {
-                text: "Waveform"
-                color: "#1A4DB5"
-                font.pixelSize: Math.max(24, 30 * root.scale)
+            ColumnLayout {
+                spacing: 0
+
+                Text {
+                    text: "Waveform"
+                    color: "#1A4DB5"
+                    font.pixelSize: Math.max(24, 30 * root.scale)
+                }
+
+                Text {
+                    text: root.samples.length > 0
+                          ? "Receiving waveform data from MCU"
+                          : Backend.SerialManager.receivedByteCount > 0
+                            ? "MCU data received, but no valid waveform is available"
+                            : "Data is not coming from MCU"
+                    color: root.samples.length > 0 ? "#16804A"
+                           : Backend.SerialManager.receivedByteCount > 0
+                             ? "#B42318" : "#64748B"
+                    font.pixelSize: Math.max(12, 14 * root.scale)
+                }
             }
 
             Item { Layout.fillWidth: true }

@@ -4,6 +4,7 @@
 #include <QRandomGenerator>
 #include <QTimer>
 #include <QFile>
+#include <QFileInfo>
 #include <QSerialPortInfo>
 #include <QRegularExpression>
 #include <QtEndian>
@@ -61,52 +62,29 @@ SerialManager::SerialManager(QObject *parent)
             this,
             &SerialManager::processCoilBuffer);
 
+    connect(&m_portScanTimer,
+            &QTimer::timeout,
+            this,
+            &SerialManager::scanForSerialPort);
+
+    connect(&serial,
+            &QSerialPort::errorOccurred,
+            this,
+            [this](QSerialPort::SerialPortError error) {
+                if (error != QSerialPort::ResourceError)
+                    return;
+
+                qWarning() << "Serial device disconnected:"
+                           << serial.portName() << serial.errorString();
+                if (serial.isOpen())
+                    serial.close();
+                m_connectedPort.clear();
+                emit connectionChanged();
+            });
+
     m_coilAverageTimer.start(15 * 60 * 1000);    // 15 minutes
-
-
-#ifdef Q_OS_MACOS
-
-    openPort("/dev/cu.usbserial-10");
-
-#include <QSerialPortInfo>
-
-#elif defined(Q_OS_LINUX)
-
-    bool connected = false;
-
-    const QList<QSerialPortInfo> availablePorts =
-        QSerialPortInfo::availablePorts();
-
-    qDebug() << "Available Serial Ports:";
-
-    for (const QSerialPortInfo &info : availablePorts)
-    {
-        qDebug() << "--------------------------------";
-        qDebug() << "Port Name      :" << info.portName();
-        qDebug() << "System Location:" << info.systemLocation();
-        qDebug() << "Description    :" << info.description();
-        qDebug() << "Manufacturer   :" << info.manufacturer();
-
-        QString port = info.systemLocation();
-
-        qDebug() << "Trying:" << port;
-
-        if (openPort(port))
-        {
-            qDebug() << "Connected to:" << port;
-            connected = true;
-            break;
-        }
-
-        qDebug() << "Failed:" << port;
-    }
-
-    if (!connected)
-    {
-        qDebug() << "No usable serial port found.";
-    }
-
-#endif
+    m_portScanTimer.start(2000);
+    scanForSerialPort();
 }
 
 void SerialManager::appendRxLog(const QString &text)
@@ -338,11 +316,13 @@ void SerialManager::setTrackingTolerance(int value)
 
 void SerialManager::setPlotMode(bool enabled)
 {
+    m_plotModeRequested = enabled;
     sendCommand(enabled ? "{T11111}" : "{T00000}");
 }
 
 void SerialManager::setWaveformMode(bool enabled)
 {
+    m_waveformModeRequested = enabled;
     sendCommand(enabled ? "{U11111}" : "{U00000}");
 }
 
@@ -386,7 +366,7 @@ void SerialManager::setBaudRate(int baudRate)
         return;
     }
 
-    if (serial.baudRate() == baudRate)
+    if (m_baudRate == baudRate && serial.baudRate() == baudRate)
     {
         qDebug() << "Baud rate already set to:" << baudRate;
         return;
@@ -405,11 +385,14 @@ void SerialManager::setBaudRate(int baudRate)
             return;
         }
     }
-    else
+    else if (!serial.setBaudRate(baudRate))
     {
-        serial.setBaudRate(baudRate);
+        qWarning() << "Failed to configure serial baud rate:"
+                   << baudRate << serial.errorString();
+        return;
     }
 
+    m_baudRate = baudRate;
     qDebug() << "Serial baud rate changed to:"
              << baudRate;
 }
@@ -418,13 +401,11 @@ void SerialManager::setBaudRate(int baudRate)
 
 bool SerialManager::openPort(const QString &port)
 {
-    if(serial.isOpen())
+    if (serial.isOpen())
         serial.close();
 
-
     serial.setPortName(port);
-
-    serial.setBaudRate(115200);
+    serial.setBaudRate(m_baudRate);
     serial.setDataBits(QSerialPort::Data8);
     serial.setParity(QSerialPort::NoParity);
     serial.setStopBits(QSerialPort::OneStop);
@@ -433,8 +414,7 @@ bool SerialManager::openPort(const QString &port)
     serial.setReadBufferSize(8192);
 
 
-    bool ok = serial.open(QIODevice::ReadWrite);
-
+    const bool ok = serial.open(QIODevice::ReadWrite);
 
     qDebug() << "==============================";
     qDebug() << "Opening Port :" << port;
@@ -443,8 +423,105 @@ bool SerialManager::openPort(const QString &port)
     qDebug() << "Error        :" << serial.errorString();
     qDebug() << "==============================";
 
+    if (!ok)
+        return false;
 
-    return ok;
+    m_connectedPort = port;
+    m_lastPortScanSummary.clear();
+    emit connectionChanged();
+    if (m_plotModeRequested)
+        sendCommand("{T11111}");
+    if (m_waveformModeRequested)
+        sendCommand("{U11111}");
+
+    return true;
+}
+
+void SerialManager::scanForSerialPort()
+{
+    if (serial.isOpen())
+        return;
+
+    const QList<QSerialPortInfo> availablePorts =
+        QSerialPortInfo::availablePorts();
+    QStringList candidatePorts;
+
+#ifdef Q_OS_MACOS
+    const QString preferredPort = QStringLiteral("/dev/cu.usbserial-10");
+    for (const QSerialPortInfo &info : availablePorts)
+    {
+        if (info.systemLocation() == preferredPort)
+        {
+            candidatePorts.append(preferredPort);
+            break;
+        }
+    }
+#elif defined(Q_OS_LINUX)
+    const QStringList raspberryPiPorts = {
+        QStringLiteral("/dev/serial0"),
+        QStringLiteral("/dev/ttyAMA0"),
+        QStringLiteral("/dev/ttyS0")
+    };
+    for (const QString &port : raspberryPiPorts)
+    {
+        if (QFileInfo::exists(port))
+            candidatePorts.append(port);
+    }
+#endif
+
+    for (const QSerialPortInfo &info : availablePorts)
+    {
+        const QString location = info.systemLocation();
+        if (candidatePorts.contains(location))
+            continue;
+
+        const QString identity =
+            (info.portName() + QLatin1Char(' ') + location + QLatin1Char(' ')
+             + info.description() + QLatin1Char(' ') + info.manufacturer())
+                .toLower();
+        if (identity.contains(QStringLiteral("bluetooth")))
+            continue;
+
+        const bool likelySerialDevice =
+            identity.contains(QStringLiteral("usb"))
+            || identity.contains(QStringLiteral("serial"))
+            || identity.contains(QStringLiteral("uart"))
+            || identity.contains(QStringLiteral("ttyusb"))
+            || identity.contains(QStringLiteral("ttyacm"))
+            || identity.contains(QStringLiteral("silicon labs"))
+            || identity.contains(QStringLiteral("cp210"))
+            || identity.contains(QStringLiteral("ch340"))
+            || identity.contains(QStringLiteral("ftdi"))
+            || identity.contains(QStringLiteral("prolific"));
+        if (likelySerialDevice)
+            candidatePorts.append(location);
+    }
+
+    for (const QString &port : candidatePorts)
+    {
+        qDebug() << "Trying MCU serial port:" << port;
+        if (openPort(port))
+            return;
+    }
+
+    QStringList availablePortDescriptions;
+    for (const QSerialPortInfo &info : availablePorts)
+    {
+        availablePortDescriptions.append(
+            info.systemLocation() + QStringLiteral(" (")
+            + info.description() + QLatin1Char(')'));
+    }
+
+    const QString portScanSummary = availablePortDescriptions.join(
+        QStringLiteral(", "));
+    if (m_lastPortScanSummary != portScanSummary)
+    {
+        m_lastPortScanSummary = portScanSummary;
+        qWarning() << (availablePorts.isEmpty()
+                           ? "No serial ports detected."
+                           : "No matching MCU serial port found. Available ports:")
+                   << portScanSummary;
+    }
 }
 
 
@@ -717,6 +794,9 @@ void SerialManager::onReadyRead()
 
     if (!data.isEmpty())
     {
+        m_receivedByteCount += static_cast<qulonglong>(data.size());
+        emit receivedByteCountChanged();
+
         const QByteArray preview = data.left(12).toHex(' ');
 
         qDebug() << "XY serial bytes received:" << data.size()
