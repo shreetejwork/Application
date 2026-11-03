@@ -328,7 +328,7 @@ void SerialManager::setWaveformMode(bool enabled)
 
 void SerialManager::sendWaveformAction()
 {
-    sendCommand("{V00001}");
+    sendCommand("{V00011}");
 }
 
 // =============== D-duster ======================

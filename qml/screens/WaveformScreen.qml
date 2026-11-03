@@ -107,7 +107,7 @@ Item {
             Item { Layout.fillWidth: true }
 
             WaveformControlButton {
-                text: "Send V00001"
+                text: "Send V00011"
                 Layout.preferredWidth: 132 * root.scale
                 Layout.preferredHeight: 38 * root.scale
                 labelPixelSize: Math.max(15, 17 * root.scale)
