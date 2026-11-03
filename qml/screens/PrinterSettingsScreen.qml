@@ -40,13 +40,31 @@ Item {
                 }
             }
 
-            WaveformControlButton {
-                text: "Refresh"
-                accent: "#1A4DB5"
-                labelPixelSize: Math.max(13, 15 * root.scale)
-                Layout.preferredWidth: 100 * root.scale
-                Layout.preferredHeight: 38 * root.scale
-                onClicked: PrinterManager.refresh()
+            RowLayout {
+                spacing: 8 * root.scale
+
+                WaveformControlButton {
+                    text: PrinterManager.printerSearchEnabled
+                          ? "Search: On"
+                          : "Search: Off"
+                    accent: PrinterManager.printerSearchEnabled
+                            ? "#16804A" : "#64748B"
+                    selected: PrinterManager.printerSearchEnabled
+                    labelPixelSize: Math.max(13, 15 * root.scale)
+                    Layout.preferredWidth: 112 * root.scale
+                    Layout.preferredHeight: 38 * root.scale
+                    onClicked: PrinterManager.setPrinterSearchEnabled(
+                                   !PrinterManager.printerSearchEnabled)
+                }
+
+                WaveformControlButton {
+                    text: "Refresh"
+                    accent: "#1A4DB5"
+                    labelPixelSize: Math.max(13, 15 * root.scale)
+                    Layout.preferredWidth: 100 * root.scale
+                    Layout.preferredHeight: 38 * root.scale
+                    onClicked: PrinterManager.refresh()
+                }
             }
         }
 

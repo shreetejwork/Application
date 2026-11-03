@@ -12,6 +12,8 @@ class PrinterManager : public QObject
     Q_PROPERTY(QString defaultPrinter READ defaultPrinter NOTIFY printersChanged)
     Q_PROPERTY(QString status READ status NOTIFY statusChanged)
     Q_PROPERTY(bool installRunning READ installRunning NOTIFY installRunningChanged)
+    Q_PROPERTY(bool printerSearchEnabled READ printerSearchEnabled
+                   NOTIFY printerSearchEnabledChanged)
 
 public:
     explicit PrinterManager(QObject *parent = nullptr);
@@ -20,8 +22,10 @@ public:
     QString defaultPrinter() const;
     QString status() const;
     bool installRunning() const;
+    bool printerSearchEnabled() const;
 
     Q_INVOKABLE void refresh();
+    Q_INVOKABLE void setPrinterSearchEnabled(bool enabled);
     Q_INVOKABLE void installDriver(const QString &printerName);
     Q_INVOKABLE void setDefaultPrinter(const QString &printerName);
 
@@ -29,6 +33,7 @@ signals:
     void printersChanged();
     void statusChanged();
     void installRunningChanged();
+    void printerSearchEnabledChanged();
     void printerConnected(const QString &printerName);
 
 private:
@@ -48,4 +53,5 @@ private:
     QString m_pendingBrand;
     bool m_statusPinned = false;
     bool m_installRunning = false;
+    bool m_printerSearchEnabled = false;
 };

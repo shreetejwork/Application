@@ -93,7 +93,6 @@ PrinterManager::PrinterManager(QObject *parent)
     connect(&m_refreshTimer, &QTimer::timeout,
             this, &PrinterManager::refreshPrinters);
     m_refreshTimer.setInterval(5000);
-    m_refreshTimer.start();
 
     connect(&m_installProcess,
             QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished),
@@ -109,7 +108,6 @@ PrinterManager::PrinterManager(QObject *parent)
                 }
             });
 
-    QTimer::singleShot(0, this, &PrinterManager::refreshPrinters);
 }
 
 QVariantList PrinterManager::printers() const
@@ -130,6 +128,28 @@ QString PrinterManager::status() const
 bool PrinterManager::installRunning() const
 {
     return m_installRunning;
+}
+
+bool PrinterManager::printerSearchEnabled() const
+{
+    return m_printerSearchEnabled;
+}
+
+void PrinterManager::setPrinterSearchEnabled(bool enabled)
+{
+    if (m_printerSearchEnabled == enabled)
+        return;
+
+    m_printerSearchEnabled = enabled;
+    if (enabled) {
+        m_statusPinned = false;
+        m_refreshTimer.start();
+        refreshPrinters();
+    } else {
+        m_refreshTimer.stop();
+    }
+
+    emit printerSearchEnabledChanged();
 }
 
 void PrinterManager::setStatus(const QString &status, bool transient)
