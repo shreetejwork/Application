@@ -164,6 +164,15 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: PrinterManager
+
+        function onPrinterConnected(printerName) {
+            if (mainTopBar)
+                mainTopBar.showNotification("Printer connected: " + printerName)
+        }
+    }
+
 
     // =========================================================
     // NAVIGATE TO HOME

@@ -15,6 +15,7 @@
 #include "WaveformManager.h"
 #include "LanManager.h"
 #include "UsbSoftwareUpdateManager.h"
+#include "PrinterManager.h"
 
 int main(int argc, char *argv[])
 {
@@ -121,6 +122,7 @@ int main(int argc, char *argv[])
     UsbSoftwareUpdateManager usbUpdateManager;
     WiFiScanner wifi;
     PdfExporter pdfExporter;
+    PrinterManager printerManager;
     SystemDiagnosis diag;
     NetworkManager networkManager;
 
@@ -139,6 +141,10 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextProperty(
         "PdfExporter",
         &pdfExporter);
+
+    engine.rootContext()->setContextProperty(
+        "PrinterManager",
+        &printerManager);
 
     engine.rootContext()->setContextProperty(
         "SystemDiag",

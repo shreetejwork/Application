@@ -208,6 +208,13 @@ Item {
                             usbUpdatePopup.openUpdate()
                         }
                     }
+
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/printer.png"
+                        label:      "Printer\nSettings"
+                        iconSize:   100 * root.scale
+                        onTileClicked: navigateTo("PrinterSettings")
+                    }
                 }
 
                 // ── Row 2: 3 tiles (col 1 & col 3 reserved for future) ───

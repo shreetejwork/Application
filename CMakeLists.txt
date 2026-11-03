@@ -13,6 +13,7 @@ qt_add_executable(appApplication
     src/main.cpp
     src/PdfExporter.cpp
     src/UsbSoftwareUpdateManager.cpp
+    src/PrinterManager.cpp
 )
 
 qt_add_qml_module(appApplication
@@ -42,6 +43,7 @@ qt_add_qml_module(appApplication
         qml/components/MenuTile.qml
         qml/screens/UserScreen.qml
         qml/screens/FactorySettingsScreen.qml
+        qml/screens/PrinterSettingsScreen.qml
         qml/components/LoginPopup.qml
         qml/components/CreateUserPopup.qml
         qml/components/DeleteUserPopup.qml
@@ -100,6 +102,7 @@ qt_add_qml_module(appApplication
         assets/images/axis.png
         assets/images/cpu.png
         assets/images/barchart.png
+        assets/images/printer.png
         assets/images/RobotoCondensed-Bold.ttf
         assets/images/RobotoCondensed-Regular.ttf
 
@@ -131,6 +134,7 @@ qt_add_qml_module(appApplication
         QML_FILES qml/components/AccessDeniedPopup.qml
         SOURCES src/SerialManager.h
         SOURCES src/SerialManager.cpp
+        SOURCES src/PrinterManager.h
         SOURCES src/WaveformManager.h
         SOURCES src/WaveformManager.cpp
         QML_FILES qml/screens/SysDiagnosisScreen.qml
