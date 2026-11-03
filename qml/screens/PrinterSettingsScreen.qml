@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import "../components"
 
 Item {
     id: root
@@ -22,34 +23,71 @@ Item {
         RowLayout {
             Layout.fillWidth: true
 
-            Text {
-                text: "Printer Settings"
-                color: "#1A4DB5"
-                font.pixelSize: Math.max(24, 30 * root.scale)
+            ColumnLayout {
                 Layout.fillWidth: true
+                spacing: 2 * root.scale
+
+                Text {
+                    text: "Printer Settings"
+                    color: "#1A4DB5"
+                    font.pixelSize: Math.max(24, 30 * root.scale)
+                }
+
+                Text {
+                    text: "Manage connected printers, drivers, and the system default"
+                    color: "#64748B"
+                    font.pixelSize: Math.max(12, 14 * root.scale)
+                }
             }
 
-            Button {
+            WaveformControlButton {
                 text: "Refresh"
+                accent: "#1A4DB5"
+                labelPixelSize: Math.max(13, 15 * root.scale)
+                Layout.preferredWidth: 100 * root.scale
+                Layout.preferredHeight: 38 * root.scale
                 onClicked: PrinterManager.refresh()
             }
         }
 
-        Text {
+        Rectangle {
             Layout.fillWidth: true
-            text: PrinterManager.status
-            color: "#475569"
-            font.pixelSize: Math.max(14, 17 * root.scale)
-            wrapMode: Text.Wrap
+            Layout.preferredHeight: 42 * root.scale
+            radius: 6
+            color: "#EEF4FF"
+            border.color: "#D8E5FC"
+
+            Text {
+                anchors.fill: parent
+                anchors.leftMargin: 12 * root.scale
+                anchors.rightMargin: 12 * root.scale
+                text: PrinterManager.status
+                color: "#334155"
+                font.pixelSize: Math.max(13, 15 * root.scale)
+                verticalAlignment: Text.AlignVCenter
+                wrapMode: Text.Wrap
+            }
         }
 
-        Text {
+        Rectangle {
             Layout.fillWidth: true
-            text: PrinterManager.defaultPrinter.length > 0
-                  ? "Default printer: " + PrinterManager.defaultPrinter
-                  : "No system default printer"
-            color: "#16804A"
-            font.pixelSize: Math.max(15, 18 * root.scale)
+            Layout.preferredHeight: 38 * root.scale
+            radius: 6
+            color: "#ECFDF3"
+            border.color: "#C9EBD8"
+
+            Text {
+                anchors.fill: parent
+                anchors.leftMargin: 12 * root.scale
+                text: PrinterManager.defaultPrinter.length > 0
+                      ? "Default printer: " + PrinterManager.defaultPrinter
+                      : "No system default printer"
+                color: "#16804A"
+                font.pixelSize: Math.max(14, 16 * root.scale)
+                font.weight: Font.Medium
+                verticalAlignment: Text.AlignVCenter
+                elide: Text.ElideRight
+            }
         }
 
         Rectangle {
@@ -70,10 +108,10 @@ Item {
                 delegate: Rectangle {
                     required property var modelData
                     width: printerList.width
-                    height: 94 * root.scale
-                    radius: 6
-                    color: "#F8FAFC"
-                    border.color: "#E2E8F0"
+                    height: 102 * root.scale
+                    radius: 8
+                    color: "#FFFFFF"
+                    border.color: "#D8E0EF"
 
                     RowLayout {
                         anchors.fill: parent
@@ -114,20 +152,29 @@ Item {
                             }
                         }
 
-                        Button {
+                        WaveformControlButton {
                             text: PrinterManager.installRunning
                                   ? "Installing..."
                                   : "Install driver"
+                            accent: "#1A4DB5"
+                            labelPixelSize: Math.max(11, 13 * root.scale)
+                            Layout.preferredWidth: 112 * root.scale
+                            Layout.preferredHeight: 36 * root.scale
                             enabled: !PrinterManager.installRunning &&
                                      modelData.brand.length > 0 &&
                                      modelData.driver.indexOf("Not installed") >= 0
                             onClicked: PrinterManager.installDriver(modelData.key)
                         }
 
-                        Button {
+                        WaveformControlButton {
                             text: PrinterManager.defaultPrinter === modelData.name
                                   ? "Default"
                                   : "Set default"
+                            accent: "#16804A"
+                            selected: PrinterManager.defaultPrinter === modelData.name
+                            labelPixelSize: Math.max(11, 13 * root.scale)
+                            Layout.preferredWidth: 104 * root.scale
+                            Layout.preferredHeight: 36 * root.scale
                             enabled: modelData.queued &&
                                      PrinterManager.defaultPrinter !== modelData.name
                             onClicked: PrinterManager.setDefaultPrinter(modelData.name)
