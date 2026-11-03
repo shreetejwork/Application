@@ -72,6 +72,8 @@ Popup {
     modal: true
     focus: true
     dim: true
+    parent: Overlay.overlay
+    anchors.centerIn: parent
 
 
     Overlay.modal: Rectangle {
@@ -80,11 +82,10 @@ Popup {
 
     closePolicy: Popup.CloseOnPressOutside
 
-    width: 520 * scale
-    height: 360 * scale
-
-    x: (Overlay.overlay.width - width) / 2
-    y: (Overlay.overlay.height - height) / 2 - (70 * scale)
+    width: parent ? Math.min(520 * scale, Math.max(0, parent.width - 24 * scale))
+                  : 520 * scale
+    height: parent ? Math.min(360 * scale, Math.max(0, parent.height - 24 * scale))
+                   : 360 * scale
 
     background: Rectangle {
         color: "#EBEBEB"

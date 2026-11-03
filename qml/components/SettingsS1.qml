@@ -103,6 +103,12 @@ Item {
         globalTopBar: root.globalTopBar
     }
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+        parent: Overlay.overlay
+        z: 10000
+    }
+
     // ===== MODEL =====
     ListModel {
         id: fieldModel
@@ -149,10 +155,32 @@ Item {
         }
     }
 
+    function permissionIdForField(fieldId) {
+        switch (fieldId) {
+        case "lpf1": return "lpf"
+        case "hpf1": return "hpf"
+        case "filterOption": return "filterTaps"
+        case "od": return "operateDelay"
+        case "hd": return "holdDelay"
+        case "rd": return "relayDelay"
+        case "dg": return "digitalGain"
+        case "ag": return "analogGain"
+        default: return ""
+        }
+    }
+
     // ===== OPEN POPUP =====
     function openDialog(fieldId) {
         var item = getItem(fieldId)
         if (!item) return
+        var permissionId = permissionIdForField(fieldId)
+        if (!GlobalState.hasParameterAccess(permissionId)) {
+            accessDeniedPopup.popupMessage =
+                    "Your role does not have permission to change " +
+                    item.title + ". Contact your administrator."
+            accessDeniedPopup.open()
+            return
+        }
 
         GlobalState.loginKeyboardRequest = false
 

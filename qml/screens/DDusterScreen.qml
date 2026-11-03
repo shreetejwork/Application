@@ -91,6 +91,18 @@ Item {
             globalTopBar.showNotification(msg)
     }
 
+    function requireParameterAccess(parameterId, label) {
+        if (GlobalState.hasParameterAccess(parameterId))
+            return true
+
+        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupMessage =
+                "Your role does not have permission to " + label +
+                ". Contact your administrator."
+        accessDeniedPopup.open()
+        return false
+    }
+
     function getAuditUser()
     {
         if (GlobalState.loggedInUserRole !== "" &&
@@ -744,6 +756,10 @@ Item {
                                         return
                                     }
 
+                                    if (!root.requireParameterAccess(
+                                                "batchStart", "start a batch"))
+                                        return
+
                                     root.batchRunning = true
                                     root.batchPaused = false
 
@@ -889,6 +905,11 @@ Item {
                                         return
                                     }
 
+                                    if (!root.requireParameterAccess(
+                                                "batchPauseResume",
+                                                "pause or resume a batch"))
+                                        return
+
                                     root.batchPaused = !root.batchPaused
 
                                     var auditUser = getAuditUser()
@@ -991,6 +1012,10 @@ Item {
                                         accessDeniedPopup.open()
                                         return
                                     }
+
+                                    if (!root.requireParameterAccess(
+                                                "batchEnd", "end a batch"))
+                                        return
 
                                     var endTime = new Date()
                                     var auditUser = getAuditUser()
@@ -1170,6 +1195,11 @@ Item {
                                 Layout.alignment: Qt.AlignHCenter
 
                                 onToggleRequested: {
+                                    if (!root.requireParameterAccess(
+                                                "ddToggle", "turn the D-Duster on or off")) {
+                                        ddBtn.toggled = GlobalState.ddusterEnabled
+                                        return
+                                    }
 
                                     GlobalState.ddusterEnabled = toggled
                                     SerialManager.setDDuster(toggled)
@@ -1217,6 +1247,7 @@ Item {
 
                             ValueControl {
                                 id: ddPowerControl
+                                permissionKey: "ddPower"
 
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -parent.height * 0.1
@@ -1232,6 +1263,9 @@ Item {
 
                                 onValueChangedDelayed: function(val)
                                 {
+                                    if (!GlobalState.hasParameterAccess("ddPower"))
+                                        return
+
                                     if (root.ddPower !== val)
                                         root.previousDDPower = root.ddPower
 
@@ -1242,6 +1276,10 @@ Item {
 
                                 onSaveClicked: function(val)
                                 {
+                                    if (!root.requireParameterAccess(
+                                                "ddPower", "change D-Duster power"))
+                                        return
+
                                     var settings =
                                             databaseManager.getDDSettings()
 
@@ -1293,6 +1331,7 @@ Item {
 
                             ValueControl {
                                 id: ddFrequencyControl
+                                permissionKey: "ddFrequency"
 
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -parent.height * 0.1
@@ -1308,6 +1347,9 @@ Item {
 
                                 onValueChangedDelayed: function(val)
                                 {
+                                    if (!GlobalState.hasParameterAccess("ddFrequency"))
+                                        return
+
                                     if (root.ddFrequency !== val)
                                         root.previousDDFrequency =
                                                 root.ddFrequency
@@ -1321,6 +1363,10 @@ Item {
 
                                 onSaveClicked: function(val)
                                 {
+                                    if (!root.requireParameterAccess(
+                                                "ddFrequency", "change D-Duster frequency"))
+                                        return
+
                                     var settings =
                                             databaseManager.getDDSettings()
 

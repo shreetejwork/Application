@@ -9,6 +9,10 @@ Item {
     id: root
     anchors.fill: parent
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
     ListModel {
         id: auditModel
     }
@@ -21,6 +25,18 @@ Item {
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
     property bool todayFilterActive: false
+
+    function requireParameterAccess(parameterId, label) {
+        if (GlobalState.hasParameterAccess(parameterId))
+            return true
+
+        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupMessage =
+                "Your role does not have permission to " + label +
+                ". Contact your administrator."
+        accessDeniedPopup.open()
+        return false
+    }
 
     // =====================================================
     // STATIC BACKDROP
@@ -743,6 +759,10 @@ Item {
                                     // =================================================
 
                                     else if (modelData === "Create PDF") {
+                                        if (!root.requireParameterAccess(
+                                                    "auditTrailPdf",
+                                                    "generate the Audit Trail PDF"))
+                                            return
 
                                         var filtered = []
 

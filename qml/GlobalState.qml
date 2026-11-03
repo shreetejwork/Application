@@ -26,6 +26,8 @@ QtObject {
 
         property string blockedUsersJson:   "{}"
         property string failedAttemptsJson: "{}"
+        property string parameterAccessJson: "{}"
+        property int parameterAccessDefaultsVersion: 0
 
         property string validationTimersJson:
             '[{"time":"11:15","enabled":false},
@@ -65,6 +67,7 @@ QtObject {
 
     property string blockedUsersJson:   settings.blockedUsersJson
     property string failedAttemptsJson: settings.failedAttemptsJson
+    property string parameterAccessJson: settings.parameterAccessJson
 
     property string machinePowerState: settings.machinePowerState
 
@@ -83,6 +86,60 @@ QtObject {
 
     onBlockedUsersJsonChanged:   settings.blockedUsersJson   = blockedUsersJson
     onFailedAttemptsJsonChanged: settings.failedAttemptsJson = failedAttemptsJson
+    onParameterAccessJsonChanged: settings.parameterAccessJson = parameterAccessJson
+
+    function hasFullParameterAccess() {
+        return developerLogin || engineerLogin ||
+                loggedInUserRole === "Admin"
+    }
+
+    function hasParameterAccess(parameterId) {
+        if (hasFullParameterAccess())
+            return true
+
+        if (loggedInUserRole !== "Supervisor" &&
+                loggedInUserRole !== "Operator")
+            return false
+
+        try {
+            var permissions = JSON.parse(parameterAccessJson || "{}")
+            return permissions[loggedInUserRole] &&
+                    permissions[loggedInUserRole][parameterId] === true
+        } catch (error) {
+            console.error("Could not read parameter permissions:", error)
+            return false
+        }
+    }
+
+    function setParameterAccess(role, parameterId, allowed) {
+        var supportedParameters = parameterIds
+        if ((role !== "Supervisor" && role !== "Operator") ||
+                supportedParameters.indexOf(parameterId) < 0)
+            return false
+
+        try {
+            var permissions = JSON.parse(parameterAccessJson || "{}")
+            if (!permissions[role])
+                permissions[role] = {}
+            permissions[role][parameterId] = allowed === true
+            parameterAccessJson = JSON.stringify(permissions)
+            return true
+        } catch (error) {
+            console.error("Could not update parameter permissions:", error)
+            return false
+        }
+    }
+
+    property var parameterIds: [
+        "machinePhase", "signalThreshold", "amplitudeThreshold",
+        "lpf", "hpf", "filterTaps", "operateDelay", "holdDelay",
+        "relayDelay", "digitalGain", "analogGain", "ddPower",
+        "ddFrequency", "trackingCount", "trackingThreshold",
+        "trackingTolerance", "productAdd", "productLoad", "productDelete",
+        "trackingToggle", "batchStart", "batchPauseResume", "batchEnd",
+        "ddToggle", "auditTrailPdf", "batchReportPdf", "reportFileView",
+        "reportFileCopyUsb", "reportFilePrint", "reportFileDelete"
+    ]
 
     onShowDDusterChanged: settings.showDDuster = showDDuster
     onShowNetworkScreenChanged: settings.showNetworkScreen = showNetworkScreen
@@ -218,6 +275,25 @@ QtObject {
     }
 
     Component.onCompleted: {
+
+        try {
+            if (settings.parameterAccessDefaultsVersion < 1) {
+                var permissions = JSON.parse(parameterAccessJson || "{}")
+                permissions.Supervisor = {}
+                permissions.Operator = {}
+                for (var permissionIndex = 0;
+                     permissionIndex < parameterIds.length;
+                     ++permissionIndex) {
+                    var parameterId = parameterIds[permissionIndex]
+                    permissions.Supervisor[parameterId] = true
+                    permissions.Operator[parameterId] = false
+                }
+                parameterAccessJson = JSON.stringify(permissions)
+                settings.parameterAccessDefaultsVersion = 1
+            }
+        } catch (error) {
+            console.error("Could not initialize default role permissions:", error)
+        }
 
         try {
 

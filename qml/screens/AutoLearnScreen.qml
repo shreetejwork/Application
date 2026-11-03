@@ -51,6 +51,18 @@ Item {
 
     property bool trackingEnabled: false
 
+    function requireParameterAccess(parameterId, label) {
+        if (GlobalState.hasParameterAccess(parameterId))
+            return true
+
+        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupMessage =
+                "Your role does not have permission to change " +
+                label + ". Contact your administrator."
+        accessDeniedPopup.open()
+        return false
+    }
+
 
 
 
@@ -660,20 +672,8 @@ Item {
 
                         onClicked: {
 
-                            if (
-                                    GlobalState.loggedInUserRole !== "Admin"
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin
-                                    ) {
-
-                                accessDeniedPopup.popupTitle =
-                                        "Access Denied!"
-
-                                accessDeniedPopup.popupMessage =
-                                        "Only Admin can access"
-
-                                accessDeniedPopup.open()
-
+                            if (!root.requireParameterAccess(
+                                        "trackingToggle", "turn Tracking on or off")) {
                                 return
                             }
 
@@ -979,20 +979,8 @@ Item {
 
                         onClicked: {
 
-                            if (
-                                    GlobalState.loggedInUserRole !== "Admin"
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin
-                                    ) {
-
-                                accessDeniedPopup.popupTitle =
-                                        "Access Denied!"
-
-                                accessDeniedPopup.popupMessage =
-                                        "Only Admin can access"
-
-                                accessDeniedPopup.open()
-
+                            if (!root.requireParameterAccess(
+                                        "trackingCount", "Tracking Count")) {
                                 return
                             }
 
@@ -1292,20 +1280,8 @@ Item {
 
                         onClicked: {
 
-                            if (
-                                    GlobalState.loggedInUserRole !== "Admin"
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin
-                                    ) {
-
-                                accessDeniedPopup.popupTitle =
-                                        "Access Denied!"
-
-                                accessDeniedPopup.popupMessage =
-                                        "Only Admin can access"
-
-                                accessDeniedPopup.open()
-
+                            if (!root.requireParameterAccess(
+                                        "trackingThreshold", "Tracking Threshold")) {
                                 return
                             }
 
@@ -1605,20 +1581,8 @@ Item {
 
                         onClicked: {
 
-                            if (
-                                    GlobalState.loggedInUserRole !== "Admin"
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin
-                                    ) {
-
-                                accessDeniedPopup.popupTitle =
-                                        "Access Denied!"
-
-                                accessDeniedPopup.popupMessage =
-                                        "Only Admin can access"
-
-                                accessDeniedPopup.open()
-
+                            if (!root.requireParameterAccess(
+                                        "trackingTolerance", "Tracking Tolerance")) {
                                 return
                             }
 

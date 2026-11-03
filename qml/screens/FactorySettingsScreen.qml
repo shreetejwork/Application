@@ -231,7 +231,7 @@ Item {
                         iconSource: "qrc:/qt/qml/Application/assets/images/coding.png"
                         label:      "Developer Settings"
                         iconSize:   100 * root.scale
-                        enabled: true
+                        enabled: GlobalState.developerLogin
                         onTileClicked: navigateTo("DeveloperSettings")
                     }
 

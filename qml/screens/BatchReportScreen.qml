@@ -3,10 +3,15 @@ import QtQuick.Controls
 import QtQuick.Layouts
 
 import AppState 1.0
+import "../components"
 
 Item {
     id: root
     anchors.fill: parent
+
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
 
     property var globalTopBar
     property var navigateTo
@@ -14,6 +19,18 @@ Item {
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
+
+    function requireParameterAccess(parameterId, label) {
+        if (GlobalState.hasParameterAccess(parameterId))
+            return true
+
+        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupMessage =
+                "Your role does not have permission to " + label +
+                ". Contact your administrator."
+        accessDeniedPopup.open()
+        return false
+    }
 
     function loadBatchReports()
     {
@@ -687,6 +704,11 @@ Item {
                                             anchors.fill: parent
                                             cursorShape: Qt.PointingHandCursor
                                             onClicked: {
+                                                if (!root.requireParameterAccess(
+                                                            "batchReportPdf",
+                                                            "generate the Batch Report PDF"))
+                                                    return
+
                                                 // Pass the batch row data
                                                 var batchInfo = {
 

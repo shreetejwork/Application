@@ -51,6 +51,18 @@ Item {
         return false
     }
 
+    function requireParameterAccess(parameterId, label) {
+        if (GlobalState.hasParameterAccess(parameterId))
+            return true
+
+        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupMessage =
+                "Your role does not have permission to " + label +
+                ". Contact your administrator."
+        accessDeniedPopup.open()
+        return false
+    }
+
     function notify(msg) {
         if (root.globalTopBar && root.globalTopBar.showNotification) {
             root.globalTopBar.showNotification(msg)
@@ -99,6 +111,8 @@ Item {
 
     function startBatch() {
         if (!root.isAuthorized())
+            return
+        if (!root.requireParameterAccess("batchStart", "start a batch"))
             return
 
         var loadedProduct = databaseManager.getActiveProduct()
@@ -160,6 +174,9 @@ Item {
     function toggleBatchPause() {
         if (!root.isAuthorized())
             return
+        if (!root.requireParameterAccess("batchPauseResume",
+                                         "pause or resume a batch"))
+            return
 
         var eventTime = new Date()
         var user = root.getAuditUser()
@@ -204,6 +221,8 @@ Item {
 
     function endBatch() {
         if (!root.isAuthorized())
+            return
+        if (!root.requireParameterAccess("batchEnd", "end a batch"))
             return
 
         var endTime = new Date()

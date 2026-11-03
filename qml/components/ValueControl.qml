@@ -46,6 +46,7 @@ Item {
 
     property real stepSize: 1
     property int decimals: 0
+    property string permissionKey: ""
 
 
     // =========================================================
@@ -84,6 +85,16 @@ Item {
 
     function updateValue(delta)
     {
+        if (root.permissionKey !== "" &&
+                !GlobalState.hasParameterAccess(root.permissionKey)) {
+            root.internalValue = root.value
+            accessDeniedPopup.popupTitle = "Access Denied"
+            accessDeniedPopup.popupMessage =
+                    "Your role does not have permission to change this parameter. Contact your administrator."
+            accessDeniedPopup.open()
+            return
+        }
+
         var newValue = Math.max(
             root.minValue,
             Math.min(
@@ -564,6 +575,15 @@ Item {
 
 
                 onClicked: {
+
+                    if (root.permissionKey !== "" &&
+                            !GlobalState.hasParameterAccess(root.permissionKey)) {
+                        accessDeniedPopup.popupTitle = "Access Denied"
+                        accessDeniedPopup.popupMessage =
+                                "Your role does not have permission to change this parameter. Contact your administrator."
+                        accessDeniedPopup.open()
+                        return
+                    }
 
                     /*
                         Save the value currently displayed.

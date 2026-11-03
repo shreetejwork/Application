@@ -731,6 +731,14 @@ Item {
                             return
                         }
 
+                        if (!GlobalState.hasParameterAccess("machinePhase")) {
+                            accessDeniedPopup.popupTitle = "Access Denied"
+                            accessDeniedPopup.popupMessage =
+                                    "Your role does not have permission to change Machine Phase. Contact your administrator."
+                            accessDeniedPopup.open()
+                            return
+                        }
+
                         GlobalState.useDecimal = true
 
 
@@ -960,6 +968,14 @@ Item {
 
                                 accessDeniedPopup.popupTitle = "Access Denied !"
                                 accessDeniedPopup.popupMessage = "Please login first"
+                                accessDeniedPopup.open()
+                                return
+                            }
+
+                            if (!GlobalState.hasParameterAccess("signalThreshold")) {
+                                accessDeniedPopup.popupTitle = "Access Denied"
+                                accessDeniedPopup.popupMessage =
+                                        "Your role does not have permission to change Signal Threshold. Contact your administrator."
                                 accessDeniedPopup.open()
                                 return
                             }
@@ -1580,6 +1596,14 @@ Item {
 
                                 accessDeniedPopup.open()
 
+                                return
+                            }
+
+                            if (!GlobalState.hasParameterAccess("amplitudeThreshold")) {
+                                accessDeniedPopup.popupTitle = "Access Denied"
+                                accessDeniedPopup.popupMessage =
+                                        "Your role does not have permission to change Amplitude Threshold. Contact your administrator."
+                                accessDeniedPopup.open()
                                 return
                             }
 

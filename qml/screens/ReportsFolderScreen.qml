@@ -10,6 +10,10 @@ Item {
     id: root
     anchors.fill: parent
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
     property var globalTopBar
     property var navigateTo
 
@@ -121,6 +125,18 @@ Item {
     property string activeFilter: "All"
     property bool selectionMode: false
 
+    function requireParameterAccess(parameterId, label) {
+        if (GlobalState.hasParameterAccess(parameterId))
+            return true
+
+        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupMessage =
+                "Your role does not have permission to " + label +
+                ". Contact your administrator."
+        accessDeniedPopup.open()
+        return false
+    }
+
     // COLUMN WIDTHS (shared)
     property real colCheck: 36 * root.scale
     property real colName: 0.55
@@ -211,6 +227,9 @@ Item {
     }
 
     function deleteSelected() {
+        if (!root.requireParameterAccess(
+                    "reportFileDelete", "delete report files"))
+            return
 
         for (var i = filteredModel.count - 1; i >= 0; i--) {
 
@@ -235,6 +254,10 @@ Item {
     }
 
     function copySelected() {
+        if (!root.requireParameterAccess(
+                    "reportFileCopyUsb", "copy report files to USB"))
+            return
+
         if (PdfExporter.usbCopyRunning)
             return
 
@@ -269,6 +292,9 @@ Item {
     }
 
     function printSelected() {
+        if (!root.requireParameterAccess(
+                    "reportFilePrint", "print report files"))
+            return
 
         var paths = []
 
@@ -830,6 +856,9 @@ Item {
                                         anchors.fill: parent
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: {
+                                            if (!root.requireParameterAccess(
+                                                        "reportFileView", "view report files"))
+                                                return
                                             pdfPreview.pdfSource = "file:///" + filePath
                                             pdfPreview.open()
                                         }

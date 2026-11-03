@@ -37,6 +37,22 @@ Item {
 
     property var globalTopBar
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
+    function requireParameterAccess(parameterId, label) {
+        if (GlobalState.hasParameterAccess(parameterId))
+            return true
+
+        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupMessage =
+                "Your role does not have permission to " + label +
+                ". Contact your administrator."
+        accessDeniedPopup.open()
+        return false
+    }
+
     // =====================================================
     // STATIC BACKDROP
     // =====================================================
@@ -481,6 +497,8 @@ Item {
     }
 
     function addProduct(productName, productCode) {
+        if (!root.requireParameterAccess("productAdd", "add products"))
+            return false
 
         var model = currentModel()
 
@@ -609,6 +627,8 @@ Item {
     }
 
     function deleteSelectedProducts() {
+        if (!root.requireParameterAccess("productDelete", "delete products"))
+            return
 
         var model = currentModel()
 
@@ -948,6 +968,9 @@ Item {
                                     onClicked: {
 
                                         if (modelData === "LOAD") {
+                                            if (!root.requireParameterAccess(
+                                                        "productLoad", "load products"))
+                                                return
 
                                             GlobalState.sendDataAfterLoad = true
 
@@ -1120,6 +1143,9 @@ Item {
 
                                         else if (modelData === "ADD") {
 
+                                            if (!root.requireParameterAccess(
+                                                        "productAdd", "add products"))
+                                                return
                                             addProductPopup.open()
                                         }
 

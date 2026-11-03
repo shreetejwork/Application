@@ -1211,6 +1211,13 @@ ApplicationWindow {
                             item.navigateTo =
                                     function(screen) {
 
+                                if (screen === "DeveloperSettings" &&
+                                        !GlobalState.developerLogin) {
+                                    mainTopBar.showNotification(
+                                                "Developer login is required to open Developer Settings.")
+                                    return
+                                }
+
                                 if (
                                     root.currentMenuScreen
                                     !== ""

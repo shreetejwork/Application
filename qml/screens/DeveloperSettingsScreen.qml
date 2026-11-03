@@ -14,6 +14,11 @@ Item {
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
 
+    ParameterAuthorityPopup {
+        id: parameterAuthorityPopup
+
+    }
+
     Rectangle {
     Typography {
         id: screenTypography
@@ -369,6 +374,7 @@ Item {
                                 GlobalState.showWaveformScreen = toggled
                             }
                         }
+
                     }
                 }
 
@@ -515,6 +521,7 @@ Item {
                                             }
                                         }
                                     }
+
                                 }
                             }
 
@@ -528,6 +535,48 @@ Item {
                                     GlobalState.baudRate = selectedBaudRate
                                     SerialManager.setBaudRate(selectedBaudRate)
                                 }
+                            }
+                        }
+                    }
+                }
+
+                Rectangle {
+                    width: flow.cardWidth
+                    height: 120 * root.scale
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.color: "#E5E7EB"
+
+                    ColumnLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        spacing: 8 * root.scale
+
+                        Text {
+                            text: "Give User Authority"
+                            font.pixelSize: 20
+                            color: "#111827"
+                        }
+
+
+                        Rectangle {
+                            Layout.preferredWidth: 132 * root.scale
+                            Layout.preferredHeight: 34 * root.scale
+                            radius: 6 * root.scale
+                            color: openAuthorityArea.pressed ? "#163E91" : "#1A4DB5"
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Configure"
+                                color: "#FFFFFF"
+                                font.pixelSize: Math.max(12, 14 * root.scale)
+                                font.weight: Font.Medium
+                            }
+
+                            MouseArea {
+                                id: openAuthorityArea
+                                anchors.fill: parent
+                                onClicked: parameterAuthorityPopup.open()
                             }
                         }
                     }
