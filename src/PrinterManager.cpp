@@ -11,11 +11,12 @@ namespace {
 
 bool runCommand(const QString &program,
                 const QStringList &arguments,
-                QString *standardOutput = nullptr)
+                QString *standardOutput = nullptr,
+                int timeoutMs = 1500)
 {
     QProcess process;
     process.start(program, arguments);
-    if (!process.waitForStarted(1500) || !process.waitForFinished(1500))
+    if (!process.waitForStarted(timeoutMs) || !process.waitForFinished(timeoutMs))
         return false;
 
     if (standardOutput)
@@ -70,6 +71,20 @@ QStringList driverPackages(const QString &brand)
     return {};
 }
 
+bool isNetworkError(const QString &message)
+{
+    const QString lower = message.toLower();
+    return lower.contains(QStringLiteral("unable to resolve")) ||
+           lower.contains(QStringLiteral("could not resolve")) ||
+           lower.contains(QStringLiteral("temporary failure resolving")) ||
+           lower.contains(QStringLiteral("failed to fetch")) ||
+           lower.contains(QStringLiteral("could not connect")) ||
+           lower.contains(QStringLiteral("unable to connect")) ||
+           lower.contains(QStringLiteral("network is unreachable")) ||
+           lower.contains(QStringLiteral("no route to host")) ||
+           lower.contains(QStringLiteral("connection timed out"));
+}
+
 } // namespace
 
 PrinterManager::PrinterManager(QObject *parent)
@@ -117,16 +132,21 @@ bool PrinterManager::installRunning() const
     return m_installRunning;
 }
 
-void PrinterManager::setStatus(const QString &status)
+void PrinterManager::setStatus(const QString &status, bool transient)
 {
+    if (transient && m_statusPinned)
+        return;
     if (m_status == status)
         return;
     m_status = status;
+    if (!transient)
+        m_statusPinned = true;
     emit statusChanged();
 }
 
 void PrinterManager::refresh()
 {
+    m_statusPinned = false;
     refreshPrinters();
 }
 
@@ -138,7 +158,8 @@ void PrinterManager::refreshPrinters()
     QString deviceOutput;
     QString detailedOutput;
     if (!runCommand(QStringLiteral("lpstat"), {QStringLiteral("-p")}, &printerOutput)) {
-        setStatus(QStringLiteral("CUPS is unavailable. Check that the CUPS service is running."));
+        setStatus(QStringLiteral("CUPS is unavailable. Check that the CUPS service is running."),
+                  true);
         return;
     }
 
@@ -204,6 +225,7 @@ void PrinterManager::refreshPrinters()
         QVariantMap printer;
         printer.insert(QStringLiteral("key"), name);
         printer.insert(QStringLiteral("name"), name);
+        printer.insert(QStringLiteral("deviceUri"), deviceUri);
         printer.insert(QStringLiteral("model"),
                        printerModels.value(
                            name,
@@ -252,6 +274,7 @@ void PrinterManager::refreshPrinters()
         QVariantMap printer;
         printer.insert(QStringLiteral("key"), uri);
         printer.insert(QStringLiteral("name"), displayName);
+        printer.insert(QStringLiteral("deviceUri"), uri);
         printer.insert(QStringLiteral("model"), model);
         printer.insert(QStringLiteral("driver"), QStringLiteral("Not installed"));
         printer.insert(QStringLiteral("brand"), brand);
@@ -274,11 +297,13 @@ void PrinterManager::refreshPrinters()
     m_previousPrinterNames = connectedPrinterKeys;
 
     if (updatedPrinters.isEmpty())
-        setStatus(QStringLiteral("No printers detected. Connect a printer and refresh."));
+        setStatus(QStringLiteral("No printers detected. Connect a printer and refresh."),
+                  true);
     else
         setStatus(QStringLiteral("%1 printer(s) detected; %2 currently connected.")
                       .arg(updatedPrinters.size())
-                      .arg(connectedPrinterKeys.size()));
+                      .arg(connectedPrinterKeys.size()),
+                  true);
 }
 
 void PrinterManager::installDriver(const QString &printerName)
@@ -306,6 +331,24 @@ void PrinterManager::installDriver(const QString &printerName)
         return;
     }
 
+    QProcess networkCheck;
+    networkCheck.start(QStringLiteral("getent"),
+                       {QStringLiteral("ahosts"),
+                        QStringLiteral("deb.debian.org")});
+    if (!networkCheck.waitForStarted(2000) ||
+        !networkCheck.waitForFinished(3000) ||
+        networkCheck.exitStatus() != QProcess::NormalExit ||
+        networkCheck.exitCode() != 0) {
+        setStatus(QStringLiteral(
+            "Internet connection unavailable. Turn on Wi-Fi or Ethernet and check internet access, then try again."));
+        return;
+    }
+
+    const QVariantMap printer = printerIt->toMap();
+    m_pendingDeviceUri = printer.value(QStringLiteral("deviceUri")).toString();
+    m_pendingModel = printer.value(QStringLiteral("model")).toString();
+    m_pendingBrand = brand;
+
     QStringList arguments{QStringLiteral("apt-get"),
                           QStringLiteral("install"),
                           QStringLiteral("-y")};
@@ -323,14 +366,19 @@ void PrinterManager::finishInstall(int exitCode, QProcess::ExitStatus exitStatus
     emit installRunningChanged();
 
     if (exitStatus != QProcess::NormalExit || exitCode != 0) {
-        const QString error =
-            QString::fromLocal8Bit(m_installProcess.readAllStandardError())
-                .trimmed().left(250);
+        const QString error = QString::fromLocal8Bit(
+            m_installProcess.readAllStandardError() +
+            m_installProcess.readAllStandardOutput()).trimmed();
+        if (isNetworkError(error)) {
+            setStatus(QStringLiteral(
+                "Driver download failed because internet is unavailable. Turn on Wi-Fi or Ethernet, check internet access, and try again."));
+            return;
+        }
         setStatus(QStringLiteral(
             "Driver installation failed or was cancelled. %1")
                       .arg(error.isEmpty()
                                ? QStringLiteral("Check administrator authorization and network access.")
-                               : error));
+                               : error.left(250)));
         return;
     }
 
@@ -343,25 +391,68 @@ void PrinterManager::finishInstall(int exitCode, QProcess::ExitStatus exitStatus
                    {QStringLiteral("systemctl"),
                     QStringLiteral("restart"),
                     QStringLiteral("wrs-usb-printer-auto-setup.service")},
-                   &ignored);
-    QTimer::singleShot(1500, this, [this, serviceRestarted]() {
-        refreshPrinters();
-        const bool hasUnqueuedPrinter = std::any_of(
-            m_printers.cbegin(), m_printers.cend(),
-            [](const QVariant &entry) {
-                return !entry.toMap().value(QStringLiteral("queued")).toBool();
-            });
-        if (!serviceRestarted) {
-            setStatus(QStringLiteral(
-                "Driver packages installed, but the printer auto-setup service could not be restarted."));
-        } else if (hasUnqueuedPrinter || m_printers.isEmpty()) {
-            setStatus(QStringLiteral(
-                "Driver packages installed, but this model has no matching queue/driver yet."));
-        } else {
-            setStatus(QStringLiteral(
-                "Driver packages installed and the printer queue was refreshed. Verify the driver shown below."));
+                   &ignored, 15000);
+    if (!serviceRestarted) {
+        setStatus(QStringLiteral(
+            "Driver packages installed, but the printer setup service could not be restarted. Check that the kiosk printer service is installed and authorized."));
+        return;
+    }
+
+    setStatus(QStringLiteral(
+        "Packages installed. Checking for a matching printer queue and driver..."));
+    QTimer::singleShot(2000, this, [this]() { verifyPrinterSetup(5); });
+}
+
+void PrinterManager::verifyPrinterSetup(int attemptsRemaining)
+{
+    QString output;
+    if (runCommand(QStringLiteral("lpstat"), {QStringLiteral("-v")}, &output)) {
+        const QRegularExpression queuePattern(
+            QStringLiteral("^device for (\\S+): (\\S+)$"),
+            QRegularExpression::MultilineOption);
+        auto it = queuePattern.globalMatch(output);
+        while (it.hasNext()) {
+            const auto match = it.next();
+            if (match.captured(2) != m_pendingDeviceUri)
+                continue;
+
+            const QString queueName = match.captured(1);
+            QString driver = readDriverName(queueName);
+            if (driver == QStringLiteral("Not installed") &&
+                match.captured(2).startsWith(QStringLiteral("ipp")))
+                driver = QStringLiteral("Driverless (IPP)");
+
+            if (driver != QStringLiteral("Not installed")) {
+                const QString driverBrand = brandForPrinter(driver, driver);
+                if (!m_pendingBrand.isEmpty() &&
+                    !driverBrand.isEmpty() &&
+                    driverBrand != m_pendingBrand) {
+                    setStatus(QStringLiteral(
+                        "A CUPS queue was found, but its driver does not match %1. The printer was not confirmed ready.")
+                                  .arg(m_pendingModel));
+                    return;
+                }
+
+                refreshPrinters();
+                setStatus(QStringLiteral(
+                    "%1 is configured with driver: %2. Send a test print to confirm the printer works.")
+                              .arg(m_pendingModel, driver));
+                return;
+            }
         }
-    });
+    }
+
+    if (attemptsRemaining > 1) {
+        QTimer::singleShot(2000, this, [this, attemptsRemaining]() {
+            verifyPrinterSetup(attemptsRemaining - 1);
+        });
+        return;
+    }
+
+    refreshPrinters();
+    setStatus(QStringLiteral(
+        "Driver packages installed, but no matching CUPS queue/driver was configured for %1. Check that this exact model is supported by the installed packages.")
+                  .arg(m_pendingModel));
 }
 
 void PrinterManager::setDefaultPrinter(const QString &printerName)

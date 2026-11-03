@@ -32,9 +32,10 @@ signals:
     void printerConnected(const QString &printerName);
 
 private:
-    void setStatus(const QString &status);
+    void setStatus(const QString &status, bool transient = false);
     void refreshPrinters();
     void finishInstall(int exitCode, QProcess::ExitStatus exitStatus);
+    void verifyPrinterSetup(int attemptsRemaining);
 
     QVariantList m_printers;
     QString m_defaultPrinter;
@@ -42,5 +43,9 @@ private:
     QStringList m_previousPrinterNames;
     QTimer m_refreshTimer;
     QProcess m_installProcess;
+    QString m_pendingDeviceUri;
+    QString m_pendingModel;
+    QString m_pendingBrand;
+    bool m_statusPinned = false;
     bool m_installRunning = false;
 };
