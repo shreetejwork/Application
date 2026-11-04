@@ -2,6 +2,13 @@ cmake_minimum_required(VERSION 3.16)
 
 project(Application VERSION 4.0.1 LANGUAGES CXX)
 
+set(APP_DISPLAY_VERSION "1.0/04112026" CACHE STRING
+    "Application display version (maximum 16 characters)")
+string(LENGTH "${APP_DISPLAY_VERSION}" APP_DISPLAY_VERSION_LENGTH)
+if(APP_DISPLAY_VERSION_LENGTH GREATER 16)
+    message(FATAL_ERROR "APP_DISPLAY_VERSION must be 16 characters or fewer")
+endif()
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 find_package(Qt6 REQUIRED COMPONENTS Quick Sql Svg PrintSupport SerialPort Concurrent)
@@ -168,7 +175,7 @@ target_link_libraries(appApplication
 )
 
 target_compile_definitions(appApplication
-    PRIVATE APP_VERSION="${PROJECT_VERSION}"
+    PRIVATE APP_VERSION="${APP_DISPLAY_VERSION}"
 )
 
 include(GNUInstallDirs)
