@@ -13,7 +13,7 @@ Item {
     property var selectedChannels: ["x", "y", "z1", "z2"]
     readonly property int maxHistorySamples: 10000
 
-    Component.onDestruction: Backend.SerialManager.setWaveformMode(false)
+    Component.onDestruction: Backend.SerialManager.setPlotMode(false)
 
     function isChannelSelected(channel) {
         return selectedChannels.indexOf(channel.toLowerCase()) >= 0
@@ -55,7 +55,7 @@ Item {
     }
 
     Component.onCompleted: {
-        Backend.SerialManager.setWaveformMode(true)
+        Backend.SerialManager.setPlotMode(true)
         root.showPacket(Backend.WaveformManager.waveformData)
     }
 
