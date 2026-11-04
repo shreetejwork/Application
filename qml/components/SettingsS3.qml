@@ -84,7 +84,7 @@ Item {
         if (GlobalState.hasParameterAccess("validationTimeScheduler"))
             return true
 
-        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupTitle = "Access Denied !"
         accessDeniedPopup.popupMessage =
                 GlobalState.parameterAccessDeniedMessage(
                     "validationTimeScheduler", "change the Validation Time Scheduler")

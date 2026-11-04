@@ -88,9 +88,9 @@ Item {
     }
 
     function showDateTimeAccessDenied() {
-        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupTitle = "Access Denied !"
         accessDeniedPopup.popupMessage =
-                "Only Admin, Developer, or Engineer can change the date and time."
+                "Only Admin can change the date and time."
         accessDeniedPopup.open()
     }
 

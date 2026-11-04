@@ -55,7 +55,7 @@ Item {
         if (GlobalState.hasParameterAccess(parameterId))
             return true
 
-        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupTitle = "Access Denied !"
         accessDeniedPopup.popupMessage =
                 GlobalState.parameterAccessDeniedMessage(
                     parameterId, "change " + label)

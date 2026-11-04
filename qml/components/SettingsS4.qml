@@ -31,10 +31,10 @@ Item {
     }
 
     function showMachineFieldAccessDenied(cardId) {
-        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupTitle = "Access Denied !"
         accessDeniedPopup.popupMessage = cardId === "serialNumber"
                 ? "Only Developer can change the serial number."
-                : "Only Admin, Developer, or Engineer can change machine details."
+                : "Only Admin can change machine details."
         accessDeniedPopup.open()
     }
 

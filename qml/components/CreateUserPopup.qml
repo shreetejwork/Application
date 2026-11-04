@@ -706,6 +706,13 @@ Popup {
                                 return
                             }
 
+                            if (passwordInput.text.length < 4) {
+                                createUserPopup.errorText =
+                                        "Password must be at least 4 characters."
+                                createUserPopup.hasError = true
+                                return
+                            }
+
                             var username = usernameInput.text.trim()
 
                             // Generate simple FPID

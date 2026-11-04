@@ -10,7 +10,7 @@ Popup {
     }
     id:  accessDeniedPopup
 
-    property string popupTitle: "Access Denied"
+    property string popupTitle: "Access Denied !"
     property string popupMessage: ""
 
     signal logoutRequested()

@@ -732,7 +732,7 @@ Item {
                         }
 
                         if (!GlobalState.hasParameterAccess("machinePhase")) {
-                            accessDeniedPopup.popupTitle = "Access Denied"
+                            accessDeniedPopup.popupTitle = "Access Denied !"
                             accessDeniedPopup.popupMessage =
                                     GlobalState.parameterAccessDeniedMessage(
                                         "machinePhase", "change Machine Phase")
@@ -960,7 +960,7 @@ Item {
                             }
 
                             if (!GlobalState.hasParameterAccess("signalThreshold")) {
-                                accessDeniedPopup.popupTitle = "Access Denied"
+                                accessDeniedPopup.popupTitle = "Access Denied !"
                                 accessDeniedPopup.popupMessage =
                                         GlobalState.parameterAccessDeniedMessage(
                                             "signalThreshold", "change Signal Threshold")
@@ -1588,7 +1588,7 @@ Item {
                             }
 
                             if (!GlobalState.hasParameterAccess("amplitudeThreshold")) {
-                                accessDeniedPopup.popupTitle = "Access Denied"
+                                accessDeniedPopup.popupTitle = "Access Denied !"
                                 accessDeniedPopup.popupMessage =
                                         GlobalState.parameterAccessDeniedMessage(
                                             "amplitudeThreshold", "change Amplitude Threshold")

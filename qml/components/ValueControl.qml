@@ -94,7 +94,7 @@ Item {
                 !GlobalState.hasParameterAccess(root.permissionKey) &&
                 !anonymousChange) {
             root.internalValue = root.value
-            accessDeniedPopup.popupTitle = "Access Denied"
+            accessDeniedPopup.popupTitle = "Access Denied !"
             accessDeniedPopup.popupMessage =
                     GlobalState.parameterAccessDeniedMessage(
                         root.permissionKey, "change this parameter")
@@ -587,7 +587,7 @@ Item {
 
                     if (root.permissionKey !== "" &&
                             !GlobalState.hasParameterAccess(root.permissionKey)) {
-                        accessDeniedPopup.popupTitle = "Access Denied"
+                        accessDeniedPopup.popupTitle = "Access Denied !"
                         accessDeniedPopup.popupMessage =
                                 GlobalState.parameterAccessDeniedMessage(
                                     root.permissionKey, "change this parameter")

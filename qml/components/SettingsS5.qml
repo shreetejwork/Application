@@ -26,6 +26,10 @@ Item {
     property var globalTopBar
     property var notify
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
     // =========================================================
     // LAN EDIT POPUP STATE
     // =========================================================
@@ -45,10 +49,30 @@ Item {
     property string lanGateway: ""
     property string lanDns: "8.8.8.8"
 
+    readonly property bool canManageNetworkSettings:
+        GlobalState.hasFullParameterAccess()
+
     property string activeTab:
         GlobalState.networkSelectedTab === "LAN"
         ? "LAN"
         : "WiFi"
+
+    Rectangle {
+        anchors.fill: parent
+        z: 10000
+        visible: !root.canManageNetworkSettings
+        color: "transparent"
+
+        MouseArea {
+            anchors.fill: parent
+            onClicked: {
+                accessDeniedPopup.popupTitle = "Access Denied !"
+                accessDeniedPopup.popupMessage =
+                        "Only Admin can use Network Settings."
+                accessDeniedPopup.open()
+            }
+        }
+    }
 
     Typography {
         id: componentTypography

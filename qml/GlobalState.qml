@@ -111,11 +111,11 @@ QtObject {
 
         var contact = "Contact your administrator."
         if (role === "Operator")
-            contact = "Contact your Supervisor."
+            contact = "Contact Supervisor / Admin."
         else if (role === "Supervisor")
-            contact = "Contact your Admin."
+            contact = "Contact Admin."
 
-        return "Your " + role + " account is not permitted to " +
+        return " This account is not permitted to " +
                 requestedAction + ". " + contact
     }
 

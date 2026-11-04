@@ -822,6 +822,18 @@ Popup {
                                 return
                             }
 
+                            if (newPasswordInput.text.length < 4)
+                            {
+                                if (editPasswordPopup.globalTopBar &&
+                                        editPasswordPopup.globalTopBar.showNotification)
+                                {
+                                    editPasswordPopup.globalTopBar.showNotification(
+                                        "✗ Password must be at least 4 characters"
+                                    )
+                                }
+                                return
+                            }
+
                             if (newPasswordInput.text !== confirmPasswordInput.text)
                             {
                                 if (editPasswordPopup.globalTopBar &&

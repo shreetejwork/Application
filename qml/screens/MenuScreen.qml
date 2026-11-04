@@ -82,7 +82,7 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
                             if (!GlobalState.isUserLoggedIn()) {
-                                accessDeniedPopup.popupTitle = "Access Denied"
+                                accessDeniedPopup.popupTitle = "Access Denied !"
                                 accessDeniedPopup.popupMessage = "Please login first"
                                 accessDeniedPopup.open()
                                 return
@@ -137,9 +137,9 @@ Item {
                         iconSize: 100 * root.scale
                         onTileClicked: {
                             if (!GlobalState.hasFullParameterAccess()) {
-                                accessDeniedPopup.popupTitle = "Access Denied"
+                                accessDeniedPopup.popupTitle = "Access Denied !"
                                 accessDeniedPopup.popupMessage =
-                                        "Only Admin, Developer, or Engineer can access Factory Settings."
+                                        "Only Admin can access Factory Settings."
                                 accessDeniedPopup.open()
                                 return
                             }
