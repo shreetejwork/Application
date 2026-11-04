@@ -15,6 +15,9 @@ Popup {
 
     property string popupTitle: "Validation Reminder"
     property string popupMessage: "This is reminder for Validation"
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
 
     property real baseWidth: 1024
     property real baseHeight: 600
@@ -61,11 +64,36 @@ Popup {
                     )
     }
 
+    function requireLogin() {
+        if (GlobalState.isUserLoggedIn())
+            return true
+
+        accessDeniedPopup.popupTitle = "Access Denied !"
+        accessDeniedPopup.popupMessage = "Please login first"
+        accessDeniedPopup.open()
+        return false
+    }
+
     onOpened: {
+        minimized = false
+        minimizeTimer.stop()
         saveValidationAudit("Remainder for validation")
     }
 
     signal continueClicked()
+
+    Timer {
+        id: minimizeTimer
+        interval: 5 * 60 * 1000
+        repeat: false
+        onTriggered: {
+            if (!validationAlarmPopup.minimized)
+                return
+
+            validationAlarmPopup.minimized = false
+            validationAlarmPopup.open()
+        }
+    }
 
     modal: true
     focus: true
@@ -280,9 +308,12 @@ Popup {
                     MouseArea {
                         anchors.fill: parent
                         onClicked: {
+                            if (!validationAlarmPopup.requireLogin())
+                                return
 
                             saveValidationAudit("Validation Skipped")
 
+                            minimizeTimer.stop()
                             validationAlarmPopup.close()
                         }
                     }
@@ -311,9 +342,8 @@ Popup {
                         anchors.fill: parent
 
                         onClicked: {
-
                             validationAlarmPopup.minimized = true
-
+                            minimizeTimer.restart()
                             validationAlarmPopup.visible = false
                         }
                     }
@@ -343,9 +373,12 @@ Popup {
                         anchors.fill: parent
 
                         onClicked: {
+                            if (!validationAlarmPopup.requireLogin())
+                                return
 
                             saveValidationAudit("Validation Started")
 
+                            minimizeTimer.stop()
                             validationAlarmPopup.close()
 
                             validationAlarmPopup.continueClicked()
