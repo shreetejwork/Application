@@ -97,8 +97,7 @@ Item {
 
         accessDeniedPopup.popupTitle = "Access Denied"
         accessDeniedPopup.popupMessage =
-                "Your role does not have permission to " + label +
-                ". Contact your administrator."
+                GlobalState.parameterAccessDeniedMessage(parameterId, label)
         accessDeniedPopup.open()
         return false
     }
@@ -1195,7 +1194,8 @@ Item {
                                 Layout.alignment: Qt.AlignHCenter
 
                                 onToggleRequested: {
-                                    if (!root.requireParameterAccess(
+                                    if (GlobalState.isUserLoggedIn() &&
+                                            !root.requireParameterAccess(
                                                 "ddToggle", "turn the D-Duster on or off")) {
                                         ddBtn.toggled = GlobalState.ddusterEnabled
                                         return
@@ -1205,9 +1205,11 @@ Item {
                                     SerialManager.setDDuster(toggled)
 
 
-                                    saveDDAudit(
-                                        toggled ? "DD ON" : "DD OFF"
-                                    )
+                                    if (GlobalState.isUserLoggedIn()) {
+                                        saveDDAudit(
+                                            toggled ? "DD ON" : "DD OFF"
+                                        )
+                                    }
 
 
                                     root.notify(
@@ -1248,6 +1250,9 @@ Item {
                             ValueControl {
                                 id: ddPowerControl
                                 permissionKey: "ddPower"
+                                allowUnauthenticatedChanges: true
+                                showSaveButton: true
+                                saveEnabled: GlobalState.isUserLoggedIn()
 
                                 anchors.centerIn: parent
                                 anchors.verticalCenterOffset: -parent.height * 0.1
@@ -1263,7 +1268,10 @@ Item {
 
                                 onValueChangedDelayed: function(val)
                                 {
-                                    if (!GlobalState.hasParameterAccess("ddPower"))
+                                    var anonymousChange =
+                                            !GlobalState.isUserLoggedIn()
+                                    if (!GlobalState.hasParameterAccess("ddPower") &&
+                                            !anonymousChange)
                                         return
 
                                     if (root.ddPower !== val)
@@ -1312,7 +1320,8 @@ Item {
                         border.color: "#E5E7EB"
                         border.width: 1
 
-                        enabled: ddBtn.toggled
+                        enabled: ddBtn.toggled &&
+                                GlobalState.isUserLoggedIn()
 
                         opacity: enabled ? 1.0 : 0.5
 

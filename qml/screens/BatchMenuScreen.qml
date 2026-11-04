@@ -57,8 +57,7 @@ Item {
 
         accessDeniedPopup.popupTitle = "Access Denied"
         accessDeniedPopup.popupMessage =
-                "Your role does not have permission to " + label +
-                ". Contact your administrator."
+                GlobalState.parameterAccessDeniedMessage(parameterId, label)
         accessDeniedPopup.open()
         return false
     }

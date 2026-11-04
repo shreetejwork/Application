@@ -734,7 +734,8 @@ Item {
                         if (!GlobalState.hasParameterAccess("machinePhase")) {
                             accessDeniedPopup.popupTitle = "Access Denied"
                             accessDeniedPopup.popupMessage =
-                                    "Your role does not have permission to change Machine Phase. Contact your administrator."
+                                    GlobalState.parameterAccessDeniedMessage(
+                                        "machinePhase", "change Machine Phase")
                             accessDeniedPopup.open()
                             return
                         }
@@ -975,7 +976,8 @@ Item {
                             if (!GlobalState.hasParameterAccess("signalThreshold")) {
                                 accessDeniedPopup.popupTitle = "Access Denied"
                                 accessDeniedPopup.popupMessage =
-                                        "Your role does not have permission to change Signal Threshold. Contact your administrator."
+                                        GlobalState.parameterAccessDeniedMessage(
+                                            "signalThreshold", "change Signal Threshold")
                                 accessDeniedPopup.open()
                                 return
                             }
@@ -1602,7 +1604,8 @@ Item {
                             if (!GlobalState.hasParameterAccess("amplitudeThreshold")) {
                                 accessDeniedPopup.popupTitle = "Access Denied"
                                 accessDeniedPopup.popupMessage =
-                                        "Your role does not have permission to change Amplitude Threshold. Contact your administrator."
+                                        GlobalState.parameterAccessDeniedMessage(
+                                            "amplitudeThreshold", "change Amplitude Threshold")
                                 accessDeniedPopup.open()
                                 return
                             }

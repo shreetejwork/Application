@@ -176,8 +176,8 @@ Item {
         var permissionId = permissionIdForField(fieldId)
         if (!GlobalState.hasParameterAccess(permissionId)) {
             accessDeniedPopup.popupMessage =
-                    "Your role does not have permission to change " +
-                    item.title + ". Contact your administrator."
+                    GlobalState.parameterAccessDeniedMessage(
+                        permissionId, "change " + item.title)
             accessDeniedPopup.open()
             return
         }

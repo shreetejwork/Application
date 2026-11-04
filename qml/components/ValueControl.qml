@@ -47,6 +47,9 @@ Item {
     property real stepSize: 1
     property int decimals: 0
     property string permissionKey: ""
+    property bool allowUnauthenticatedChanges: false
+    property bool showSaveButton: true
+    property bool saveEnabled: true
 
 
     // =========================================================
@@ -85,12 +88,16 @@ Item {
 
     function updateValue(delta)
     {
+        var anonymousChange = root.allowUnauthenticatedChanges &&
+                !GlobalState.isUserLoggedIn()
         if (root.permissionKey !== "" &&
-                !GlobalState.hasParameterAccess(root.permissionKey)) {
+                !GlobalState.hasParameterAccess(root.permissionKey) &&
+                !anonymousChange) {
             root.internalValue = root.value
             accessDeniedPopup.popupTitle = "Access Denied"
             accessDeniedPopup.popupMessage =
-                    "Your role does not have permission to change this parameter. Contact your administrator."
+                    GlobalState.parameterAccessDeniedMessage(
+                        root.permissionKey, "change this parameter")
             accessDeniedPopup.open()
             return
         }
@@ -431,8 +438,7 @@ Item {
                 property bool pressed: false
 
                 property bool disabled:
-                    root.internalValue <=
-                    root.minValue
+                    root.internalValue <= root.minValue
 
 
                 color:
@@ -539,9 +545,11 @@ Item {
             Layout.preferredWidth: 60
             Layout.preferredHeight: 50
 
+            visible: root.showSaveButton
             radius: 10
 
-            color: "#1A4DB5"
+            color: root.saveEnabled ? "#1A4DB5" : "#D1D5DB"
+            opacity: root.saveEnabled ? 1.0 : 0.6
 
             property bool pressed: false
 
@@ -562,6 +570,7 @@ Item {
             MouseArea {
 
                 anchors.fill: parent
+                enabled: root.saveEnabled
 
 
                 onPressed: {
@@ -580,7 +589,8 @@ Item {
                             !GlobalState.hasParameterAccess(root.permissionKey)) {
                         accessDeniedPopup.popupTitle = "Access Denied"
                         accessDeniedPopup.popupMessage =
-                                "Your role does not have permission to change this parameter. Contact your administrator."
+                                GlobalState.parameterAccessDeniedMessage(
+                                    root.permissionKey, "change this parameter")
                         accessDeniedPopup.open()
                         return
                     }

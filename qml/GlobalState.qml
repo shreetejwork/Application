@@ -93,6 +93,26 @@ QtObject {
                 loggedInUserRole === "Admin"
     }
 
+    function isUserLoggedIn() {
+        return developerLogin || engineerLogin || loggedInUserRole !== ""
+    }
+
+    function parameterAccessDeniedMessage(parameterId, action) {
+        var requestedAction = action ||
+                "access " + (parameterId || "this parameter")
+        if (!isUserLoggedIn())
+            return "Please login first"
+
+        var role = loggedInUserRole
+        if (role === "" && developerLogin)
+            role = "Developer"
+        else if (role === "" && engineerLogin)
+            role = "Engineer"
+
+        return "Your " + role + " account is not permitted to " +
+                requestedAction + ". Contact your administrator."
+    }
+
     function hasParameterAccess(parameterId) {
         if (hasFullParameterAccess())
             return true
