@@ -878,20 +878,6 @@ Item {
                             onReleased: parent.pressed = false
 
                             onClicked: {
-
-                                if (GlobalState.loggedInUserRole !== "Admin"
-                                        && !GlobalState.developerLogin
-                                        && !GlobalState.engineerLogin)
-                                {
-                                    accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                    accessDeniedPopup.popupMessage =
-                                            "Only Admin can access"
-
-                                    accessDeniedPopup.open()
-                                    return
-                                }
-
                                 if (GlobalState.showProductLib)
                                     navigateTo("ProductLibrary")
                             }

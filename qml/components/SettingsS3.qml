@@ -76,6 +76,22 @@ Item {
     property var globalTopBar
     property var notify
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
+    function requireSchedulerAccess() {
+        if (GlobalState.hasParameterAccess("validationTimeScheduler"))
+            return true
+
+        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupMessage =
+                GlobalState.parameterAccessDeniedMessage(
+                    "validationTimeScheduler", "change the Validation Time Scheduler")
+        accessDeniedPopup.open()
+        return false
+    }
+
     Rectangle {
         anchors.fill: parent
         color: "#F5F7FC"
@@ -113,6 +129,8 @@ Item {
 
     function saveTimers()
     {
+        if (!requireSchedulerAccess())
+            return false
 
         var data=[]
 
@@ -160,6 +178,7 @@ Item {
 
 
         GlobalState.saveValidationTimers(data)
+        return true
     }
 
     // ===== MAIN WRAPPER =====
@@ -324,6 +343,9 @@ Item {
                                         MouseArea {
                                             anchors.fill: parent
                                             onClicked: {
+                                                if (!root.requireSchedulerAccess())
+                                                    return
+
                                                 timePopup.editIndex = index
 
                                                 var t = model.time.split(":")
@@ -350,6 +372,8 @@ Item {
                                         anchors.centerIn: parent
                                         width: 120 * root.scale
                                         height: 44 * root.scale
+                                        enabled: GlobalState.hasParameterAccess(
+                                                     "validationTimeScheduler")
                                         toggled: model.enabled
                                         knobSize: 35 * root.scale
                                         useSymbols: true
@@ -365,6 +389,15 @@ Item {
                                                 )
                                             }
                                         }
+                                    }
+
+                                    MouseArea {
+                                        anchors.centerIn: parent
+                                        width: 120 * root.scale
+                                        height: 44 * root.scale
+                                        visible: !GlobalState.hasParameterAccess(
+                                                     "validationTimeScheduler")
+                                        onClicked: root.requireSchedulerAccess()
                                     }
                                 }
                             }
@@ -533,6 +566,9 @@ Item {
                                     anchors.fill: parent
 
                                     onClicked: {
+                                        if (!root.requireSchedulerAccess())
+                                            return
+
                                         var h = hourTumbler.currentIndex
                                         var m = minuteTumbler.currentIndex
 
@@ -584,11 +620,7 @@ Item {
 
                             onClicked:
                             {
-
-                                saveTimers()
-
-
-                                if(notify)
+                                if (saveTimers() && notify)
                                     notify("✓ Alarm Set")
                             }
                         }

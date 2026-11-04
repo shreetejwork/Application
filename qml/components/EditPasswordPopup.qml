@@ -64,7 +64,7 @@ Popup {
 
     function setLoggedInUser()
     {
-        if(GlobalState.loggedInUserRole !== "Admin")
+        if(!GlobalState.hasFullParameterAccess())
         {
             userTypeValue.text = GlobalState.loggedInUserRole
             usernameValue.text = GlobalState.loggedInUserName
@@ -132,7 +132,7 @@ Popup {
         GlobalState.activeInputField = null
 
 
-        if(GlobalState.loggedInUserRole === "Admin")
+        if(GlobalState.hasFullParameterAccess())
         {
             userTypeValue.text = "--- Select ---"
             usernameValue.text = "--- Select ---"
@@ -428,7 +428,7 @@ Popup {
                 MouseArea {
                     anchors.fill: parent
 
-                    enabled: GlobalState.loggedInUserRole === "Admin"
+                    enabled: GlobalState.hasFullParameterAccess()
 
                     onClicked: {
 
@@ -491,7 +491,7 @@ Popup {
                 MouseArea {
                     anchors.fill: parent
 
-                    enabled: GlobalState.loggedInUserRole === "Admin"
+                    enabled: GlobalState.hasFullParameterAccess()
 
                     onClicked: {
 

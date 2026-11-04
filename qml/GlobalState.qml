@@ -109,8 +109,14 @@ QtObject {
         else if (role === "" && engineerLogin)
             role = "Engineer"
 
+        var contact = "Contact your administrator."
+        if (role === "Operator")
+            contact = "Contact your Supervisor."
+        else if (role === "Supervisor")
+            contact = "Contact your Admin."
+
         return "Your " + role + " account is not permitted to " +
-                requestedAction + ". Contact your administrator."
+                requestedAction + ". " + contact
     }
 
     function hasParameterAccess(parameterId) {
@@ -155,7 +161,8 @@ QtObject {
         "lpf", "hpf", "filterTaps", "operateDelay", "holdDelay",
         "relayDelay", "digitalGain", "analogGain", "ddPower",
         "ddFrequency", "trackingCount", "trackingThreshold",
-        "trackingTolerance", "productAdd", "productLoad", "productDelete",
+        "trackingTolerance", "validationTimeScheduler",
+        "productAdd", "productLoad", "productDelete",
         "trackingToggle", "batchStart", "batchPauseResume", "batchEnd",
         "ddToggle", "auditTrailPdf", "batchReportPdf", "reportFileView",
         "reportFileCopyUsb", "reportFilePrint", "reportFileDelete"
@@ -310,6 +317,20 @@ QtObject {
                 }
                 parameterAccessJson = JSON.stringify(permissions)
                 settings.parameterAccessDefaultsVersion = 1
+            }
+
+            if (settings.parameterAccessDefaultsVersion < 2) {
+                var updatedPermissions = JSON.parse(parameterAccessJson || "{}")
+                if (!updatedPermissions.Supervisor)
+                    updatedPermissions.Supervisor = {}
+                if (!updatedPermissions.Operator)
+                    updatedPermissions.Operator = {}
+                if (updatedPermissions.Supervisor.validationTimeScheduler === undefined)
+                    updatedPermissions.Supervisor.validationTimeScheduler = true
+                if (updatedPermissions.Operator.validationTimeScheduler === undefined)
+                    updatedPermissions.Operator.validationTimeScheduler = false
+                parameterAccessJson = JSON.stringify(updatedPermissions)
+                settings.parameterAccessDefaultsVersion = 2
             }
         } catch (error) {
             console.error("Could not initialize default role permissions:", error)

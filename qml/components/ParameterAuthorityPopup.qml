@@ -30,6 +30,7 @@ Popup {
         { id: "analogGain", name: "Analog Gain" },
         { id: "ddPower", name: "D-Duster Power" },
         { id: "ddFrequency", name: "D-Duster Frequency" },
+        { id: "validationTimeScheduler", name: "Validation Time Scheduler" },
         { id: "trackingCount", name: "Tracking Count" },
         { id: "trackingThreshold", name: "Tracking Threshold" },
         { id: "trackingTolerance", name: "Tracking Tolerance" },

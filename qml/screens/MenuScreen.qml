@@ -81,16 +81,9 @@ Item {
                         label: "User"
                         iconSize: 100 * root.scale
                         onTileClicked: {
-
-                            if (GlobalState.loggedInUserRole === ""
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin)
-                            {
-                                accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                accessDeniedPopup.popupMessage =
-                                        "Please login first"
-
+                            if (!GlobalState.isUserLoggedIn()) {
+                                accessDeniedPopup.popupTitle = "Access Denied"
+                                accessDeniedPopup.popupMessage = "Please login first"
                                 accessDeniedPopup.open()
                                 return
                             }
@@ -106,20 +99,6 @@ Item {
                         label: "Product\nLibrary"
                         iconSize: 100 * root.scale
                         onTileClicked: {
-
-                            if (GlobalState.loggedInUserRole !== "Admin"
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin)
-                            {
-                                accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                accessDeniedPopup.popupMessage =
-                                        "Only Admin can access."
-
-                                accessDeniedPopup.open()
-                                return
-                            }
-
                             navigateTo("ProductLibrary")
                         }
                     }
@@ -157,19 +136,13 @@ Item {
                         label: "Factory\nSettings"
                         iconSize: 100 * root.scale
                         onTileClicked: {
-
-                            // if (GlobalState.loggedInUserRole !== "Admin"
-                            //         && !GlobalState.developerLogin
-                            //         && !GlobalState.engineerLogin)
-                            // {
-                            //     accessDeniedPopup.popupTitle = "Access Denied!"
-
-                            //     accessDeniedPopup.popupMessage =
-                            //             "Only Admin can access"
-
-                            //     accessDeniedPopup.open()
-                            //     return
-                            // }
+                            if (!GlobalState.hasFullParameterAccess()) {
+                                accessDeniedPopup.popupTitle = "Access Denied"
+                                accessDeniedPopup.popupMessage =
+                                        "Only Admin, Developer, or Engineer can access Factory Settings."
+                                accessDeniedPopup.open()
+                                return
+                            }
 
                             navigateTo("FactorySettings")
                         }
@@ -179,20 +152,6 @@ Item {
                         label: "System\nSettings"
                         iconSize: 100 * root.scale
                         onTileClicked: {
-
-                            if (GlobalState.loggedInUserRole === ""
-                                    && !GlobalState.developerLogin
-                                    && !GlobalState.engineerLogin)
-                            {
-                                accessDeniedPopup.popupTitle = "Access Denied !"
-
-                                accessDeniedPopup.popupMessage =
-                                        "Please login first"
-
-                                accessDeniedPopup.open()
-                                return
-                            }
-
                             navigateTo("SysSettings")
                         }
                     }

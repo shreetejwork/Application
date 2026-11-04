@@ -20,6 +20,24 @@ Item {
     property var notify
     property string activeCardId: ""
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
+    function canEditMachineField(cardId) {
+        if (cardId === "serialNumber")
+            return GlobalState.developerLogin
+        return GlobalState.hasFullParameterAccess()
+    }
+
+    function showMachineFieldAccessDenied(cardId) {
+        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupMessage = cardId === "serialNumber"
+                ? "Only Developer can change the serial number."
+                : "Only Admin, Developer, or Engineer can change machine details."
+        accessDeniedPopup.open()
+    }
+
     property real keyboardHeight: GlobalState.loginKeyboardRequest ? 340 * root.scale : 0
     property real visibleHeight: root.height - keyboardHeight
 
@@ -287,6 +305,11 @@ Item {
             }
 
             onConfirmed: (id, val) => {
+                if (!root.canEditMachineField(id)) {
+                    if (id !== "serialNumber")
+                        root.showMachineFieldAccessDenied(id)
+                    return
+                }
 
                 if (id === "supplierName") {
 
@@ -565,7 +588,16 @@ Item {
 
         MouseArea {
             anchors.fill: parent
-            onClicked: root.activeCardId = card.cardId
+            enabled: card.cardId !== "serialNumber" ||
+                    GlobalState.developerLogin
+            onClicked: {
+                if (!root.canEditMachineField(card.cardId)) {
+                    if (card.cardId !== "serialNumber")
+                        root.showMachineFieldAccessDenied(card.cardId)
+                    return
+                }
+                root.activeCardId = card.cardId
+            }
         }
 
         Column {

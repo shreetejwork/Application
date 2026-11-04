@@ -31,6 +31,10 @@ Item {
     property var globalTopBar
     property var notify
 
+    AccessDeniedPopup {
+        id: accessDeniedPopup
+    }
+
     function saveDateTimeAudit(action, oldValue, newValue)
     {
         var auditUser = "---"
@@ -68,6 +72,11 @@ Item {
     }
 
     function applyDateTime(d, successMessage) {
+        if (!GlobalState.hasFullParameterAccess()) {
+            showDateTimeAccessDenied()
+            return
+        }
+
         GlobalState.globalDateTime = d
         var rtcError = SystemController.writeRtcDateTime(d)
 
@@ -76,6 +85,13 @@ Item {
                    ? successMessage
                    : successMessage + " (RTC update failed: " + rtcError + ")")
         }
+    }
+
+    function showDateTimeAccessDenied() {
+        accessDeniedPopup.popupTitle = "Access Denied"
+        accessDeniedPopup.popupMessage =
+                "Only Admin, Developer, or Engineer can change the date and time."
+        accessDeniedPopup.open()
     }
 
     Rectangle {
@@ -276,6 +292,10 @@ Item {
                     anchors.fill: parent
 
                     onClicked: {
+                        if (!GlobalState.hasFullParameterAccess()) {
+                            root.showDateTimeAccessDenied()
+                            return
+                        }
 
                         var oldTime = Qt.formatTime(
                                     GlobalState.globalDateTime,
@@ -541,6 +561,10 @@ Item {
                         id: calSetMouse
                         anchors.fill: parent
                         onClicked: {
+                            if (!GlobalState.hasFullParameterAccess()) {
+                                root.showDateTimeAccessDenied()
+                                return
+                            }
 
 
                             var oldDate = Qt.formatDate(

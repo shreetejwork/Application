@@ -303,7 +303,7 @@ Item {
 
                     ActionButton {
 
-                        visible: GlobalState.loggedInUserRole === "Admin"
+                        visible: GlobalState.hasFullParameterAccess()
 
                         label: "Add User"
                         onClicked: {
@@ -322,7 +322,7 @@ Item {
 
                     ActionButton {
 
-                        visible: GlobalState.loggedInUserRole === "Admin"
+                        visible: GlobalState.hasFullParameterAccess()
 
                         label: "Delete User"
                         onClicked: {
