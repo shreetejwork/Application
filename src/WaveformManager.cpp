@@ -11,11 +11,14 @@ constexpr uint8_t SYNC1 = 0xA5;
 constexpr uint8_t SYNC2 = 0x5A;
 constexpr uint8_t END1 = 0xB5;
 constexpr uint8_t END2 = 0x5B;
-constexpr int FRAME_OVERHEAD = 6;
-constexpr int WAVEFORM_PAYLOAD_UNIT = 4;
+constexpr int SYNC_SIZE = 2;
+constexpr int SIZE_FIELD_SIZE = 2;
+constexpr int CRC_SIZE = 2;
+constexpr int END_SIZE = 2;
 constexpr int CHANNEL_COUNT = 4;
 constexpr int CHANNEL_SIZE = 2;
 constexpr int SAMPLE_SIZE = CHANNEL_COUNT * CHANNEL_SIZE;
+constexpr int MIN_PACKET_SIZE = SIZE_FIELD_SIZE + SAMPLE_SIZE + CRC_SIZE;
 
 uint16_t crc16Ccitt(const QByteArray &data)
 {
@@ -42,38 +45,48 @@ WaveformManager::WaveformManager(QObject *parent)
 
 void WaveformManager::processPacket(const QByteArray &frame)
 {
-    if (frame.size() < FRAME_OVERHEAD + WAVEFORM_PAYLOAD_UNIT ||
+    if (frame.size() < SYNC_SIZE + MIN_PACKET_SIZE + END_SIZE ||
         static_cast<uint8_t>(frame.at(0)) != SYNC1 ||
         static_cast<uint8_t>(frame.at(1)) != SYNC2 ||
-        static_cast<uint8_t>(frame.at(frame.size() - 2)) != END1 ||
+        static_cast<uint8_t>(frame.at(frame.size() - END_SIZE)) != END1 ||
         static_cast<uint8_t>(frame.at(frame.size() - 1)) != END2)
     {
         qWarning() << "Waveform packet rejected: invalid frame";
         return;
     }
 
-    const int payloadSize = frame.size() - FRAME_OVERHEAD;
-    if (payloadSize % WAVEFORM_PAYLOAD_UNIT != 0)
+    const int packetSize =
+        (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(SYNC_SIZE))) << 8) |
+        static_cast<uint16_t>(
+            static_cast<uint8_t>(frame.at(SYNC_SIZE + 1)));
+    if (packetSize < MIN_PACKET_SIZE ||
+        frame.size() != SYNC_SIZE + packetSize + END_SIZE)
     {
-        qDebug() << "Waveform packet ignored: payload size is not divisible by four:"
-                 << payloadSize;
+        qWarning() << "Waveform packet rejected: declared size does not match frame"
+                   << "declared:" << packetSize << "frame bytes:" << frame.size();
         return;
     }
+
+    const int payloadSize = packetSize - SIZE_FIELD_SIZE - CRC_SIZE;
     if (payloadSize % SAMPLE_SIZE != 0)
     {
-        qDebug() << "Waveform packet ignored: incomplete four-channel sample,"
+        qWarning() << "Waveform packet rejected: incomplete four-channel sample,"
                    << "payload bytes:" << payloadSize;
         return;
     }
 
-    const QByteArray payload = frame.mid(2, payloadSize);
-    const int crcOffset = 2 + payloadSize;
+    const QByteArray payload = frame.mid(SYNC_SIZE + SIZE_FIELD_SIZE, payloadSize);
+    const int crcOffset = SYNC_SIZE + packetSize - CRC_SIZE;
     const uint16_t receivedCrc =
         (static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset))) << 8) |
         static_cast<uint16_t>(static_cast<uint8_t>(frame.at(crcOffset + 1)));
-    if (crc16Ccitt(payload) != receivedCrc)
+    const QByteArray crcInput = frame.mid(SYNC_SIZE, packetSize - CRC_SIZE);
+    const uint16_t calculatedCrc = crc16Ccitt(crcInput);
+    if (calculatedCrc != receivedCrc)
     {
-        qWarning() << "Waveform packet rejected: CRC mismatch";
+        qWarning() << "Waveform packet rejected: CRC mismatch"
+                   << "calculated:" << Qt::hex << calculatedCrc
+                   << "received:" << receivedCrc << Qt::dec;
         return;
     }
 

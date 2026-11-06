@@ -25,6 +25,11 @@ constexpr int XY_SAMPLE_SIZE = 4 * XY_CHANNEL_SIZE;
 constexpr int XY_CRC_SIZE = 2;
 constexpr int XY_END_SIZE = 2;
 constexpr int XY_PAYLOAD_OFFSET = XY_SYNC_SIZE;
+constexpr int WAVEFORM_SIZE_FIELD_SIZE = 2;
+constexpr int WAVEFORM_CRC_SIZE = 2;
+constexpr int WAVEFORM_END_SIZE = 2;
+constexpr int WAVEFORM_MIN_PACKET_SIZE =
+    WAVEFORM_SIZE_FIELD_SIZE + 4 * XY_CHANNEL_SIZE + WAVEFORM_CRC_SIZE;
 constexpr qreal XY_PLOT_LIMIT = 100.0;
 constexpr qreal XY_SIGNED_SCALE = XY_PLOT_LIMIT / 32768.0;
 
@@ -323,6 +328,8 @@ void SerialManager::setPlotMode(bool enabled)
 void SerialManager::setWaveformMode(bool enabled)
 {
     m_waveformModeRequested = enabled;
+    if (!enabled)
+        waveformRxBuffer.clear();
     sendCommand(enabled ? "{U11111}" : "{U00000}");
 }
 
@@ -404,6 +411,7 @@ bool SerialManager::openPort(const QString &port)
     if (serial.isOpen())
         serial.close();
 
+    waveformRxBuffer.clear();
     serial.setPortName(port);
     serial.setBaudRate(m_baudRate);
     serial.setDataBits(QSerialPort::Data8);
@@ -435,6 +443,77 @@ bool SerialManager::openPort(const QString &port)
         sendCommand("{U11111}");
 
     return true;
+}
+
+void SerialManager::processWaveformBuffer()
+{
+    if (!m_waveformModeRequested)
+    {
+        waveformRxBuffer.clear();
+        return;
+    }
+
+    const QByteArray sync =
+        QByteArray(1, static_cast<char>(XY_SYNC1)) +
+        QByteArray(1, static_cast<char>(XY_SYNC2));
+
+    while (true)
+    {
+        const qsizetype syncIndex = waveformRxBuffer.indexOf(sync);
+        if (syncIndex < 0)
+        {
+            const bool keepSyncPrefix =
+                !waveformRxBuffer.isEmpty() &&
+                static_cast<uint8_t>(waveformRxBuffer.back()) == XY_SYNC1;
+            waveformRxBuffer = keepSyncPrefix
+                                   ? QByteArray(1, static_cast<char>(XY_SYNC1))
+                                   : QByteArray();
+            return;
+        }
+
+        if (syncIndex > 0)
+            waveformRxBuffer.remove(0, syncIndex);
+
+        if (waveformRxBuffer.size() <
+            XY_SYNC_SIZE + WAVEFORM_SIZE_FIELD_SIZE)
+        {
+            return;
+        }
+
+        const uint16_t packetSize =
+            (static_cast<uint16_t>(
+                 static_cast<uint8_t>(waveformRxBuffer.at(XY_SYNC_SIZE)))
+             << 8) |
+            static_cast<uint16_t>(
+                static_cast<uint8_t>(
+                    waveformRxBuffer.at(XY_SYNC_SIZE + 1)));
+
+        if (packetSize < WAVEFORM_MIN_PACKET_SIZE)
+        {
+            qWarning() << "Waveform packet rejected: invalid declared size"
+                       << packetSize;
+            waveformRxBuffer.remove(0, 1);
+            continue;
+        }
+
+        const qsizetype frameSize =
+            XY_SYNC_SIZE + packetSize + WAVEFORM_END_SIZE;
+        if (waveformRxBuffer.size() < frameSize)
+            return;
+
+        const qsizetype endOffset = XY_SYNC_SIZE + packetSize;
+        if (static_cast<uint8_t>(waveformRxBuffer.at(endOffset)) != XY_END1 ||
+            static_cast<uint8_t>(waveformRxBuffer.at(endOffset + 1)) != XY_END2)
+        {
+            qWarning() << "Waveform packet rejected: invalid terminator for declared size"
+                       << packetSize;
+            waveformRxBuffer.remove(0, 1);
+            continue;
+        }
+
+        emit waveformPacketReceived(waveformRxBuffer.left(frameSize));
+        waveformRxBuffer.remove(0, frameSize);
+    }
 }
 
 void SerialManager::scanForSerialPort()
@@ -773,7 +852,6 @@ void SerialManager::processXyAsciiBuffer()
             continue;
 
         QVariantList decodedData;
-        emit waveformPacketReceived(frame);
         if (parseXyPlotFrame(frame, decodedData))
         {
             xyRxBuffer.remove(0, tokens[endToken].capturedEnd());
@@ -810,8 +888,10 @@ void SerialManager::onReadyRead()
         // Existing buffers
         rxBuffer.append(data);
         xyRxBuffer.append(data);
+        waveformRxBuffer.append(data);
     }
 
+    processWaveformBuffer();
 
     // =====================================================
     // XY PLOT PROCESSING
@@ -854,8 +934,6 @@ void SerialManager::onReadyRead()
 
 
             QVariantList decodedData;
-
-            emit waveformPacketReceived(frame);
 
             if (parseXyPlotFrame(frame, decodedData))
             {
