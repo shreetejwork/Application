@@ -11,7 +11,11 @@ Item {
     property var samples: []
     property bool captureEnabled: true
     property var selectedChannels: ["x", "y", "z1", "z2"]
-    readonly property int maxHistorySamples: 10000
+    readonly property int waveformWindowMilliseconds: 10000
+    readonly property real waveformSampleIntervalMilliseconds: 1
+    readonly property int maxHistorySamples:
+        Math.ceil(waveformWindowMilliseconds
+                  / waveformSampleIntervalMilliseconds)
 
     Component.onDestruction: Backend.SerialManager.setWaveformMode(false)
 
@@ -264,6 +268,8 @@ Item {
             Layout.minimumHeight: 0
             scale: root.scale
             visibleSamples: root.maxHistorySamples
+            sampleIntervalMilliseconds:
+                root.waveformSampleIntervalMilliseconds
             title: "Waveform"
             selectedChannels: root.selectedChannels
             samples: root.samples

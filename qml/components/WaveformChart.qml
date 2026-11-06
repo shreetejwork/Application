@@ -24,7 +24,7 @@ Rectangle {
     readonly property int minVisibleSamples: 20
     readonly property int maxVisibleSamples: 10000
     readonly property real valueLimit: 32768
-    readonly property real sampleIntervalMilliseconds: 1
+    property real sampleIntervalMilliseconds: 1
 
     function shouldShowPeakInfo() {
         var count = Math.min(visibleSamples,
