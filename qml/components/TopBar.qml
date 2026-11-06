@@ -810,15 +810,15 @@ Rectangle {
                                 powerItem.longPressTriggered = true
 
 
-                                if (GlobalState.developerLogin) {
+                                // if (GlobalState.developerLogin) {
 
-                                    console.log(
-                                        "Developer mode: Exiting to OS..."
-                                    )
+                                //     console.log(
+                                //         "Developer mode: Exiting to OS..."
+                                //     )
 
-                                    Qt.quit()
+                                //     Qt.quit()
 
-                                }
+                                // }
 
                                 Qt.quit()
                                 console.log(
