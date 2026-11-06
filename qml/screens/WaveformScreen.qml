@@ -37,16 +37,7 @@ Item {
         if (!points || points.length === 0)
             return
 
-        var packetSamples = []
-        for (var i = 0; i < points.length; ++i) {
-            packetSamples.push({
-                                   x: Number(points[i].x),
-                                   y: Number(points[i].y),
-                                   z1: Number(points[i].z1),
-                                   z2: Number(points[i].z2)
-                               })
-        }
-        var history = samples.concat(packetSamples)
+        var history = samples.concat(points)
         if (history.length > maxHistorySamples)
             history = history.slice(history.length - maxHistorySamples)
         samples = history
