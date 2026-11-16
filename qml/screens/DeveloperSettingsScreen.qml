@@ -159,6 +159,47 @@ Item {
                         }
                     }
                 }
+                // ===== Printer Settings =====
+                Rectangle {
+                    width: flow.cardWidth
+                    height: 120 * root.scale
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.color: "#E5E7EB"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+
+                            Text {
+                                text: "Printer Settings"
+                                font.pixelSize: 20
+                                color: "#111827"
+                            }
+
+                            Text {
+                                text: GlobalState.showPrinterSettings
+                                      ? "Printer Settings On"
+                                      : "Printer Settings Off"
+                                font.pixelSize: 16
+                                color: "#6B7280"
+                            }
+                        }
+
+                        DDButton {
+                            width: 90 * root.scale
+                            height: 36 * root.scale
+                            toggled: GlobalState.showPrinterSettings
+
+                            onToggledChanged: {
+                                GlobalState.showPrinterSettings = toggled
+                            }
+                        }
+                    }
+                }
                 // ===== Card 3 =====
                 Rectangle {
                     width: flow.cardWidth

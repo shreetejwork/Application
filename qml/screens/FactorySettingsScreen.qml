@@ -217,6 +217,8 @@ Item {
                     }
 
                     MenuTile {
+                        visible: GlobalState.showPrinterSettings
+                        enabled: GlobalState.showPrinterSettings
                         iconSource: "qrc:/qt/qml/Application/assets/images/printer.png"
                         label:      "Printer\nSettings"
                         iconSize:   100 * root.scale

@@ -16,6 +16,7 @@ QtObject {
 
         property bool showDDuster: true
         property bool showNetworkScreen: true
+        property bool showPrinterSettings: true
         property bool showAuditTrail: true
         property bool showProductLib: true
         property bool showTrackingScreen: true
@@ -55,6 +56,7 @@ QtObject {
     property bool ddusterEnabled: false
     property bool showDDuster: settings.showDDuster
     property bool showNetworkScreen: settings.showNetworkScreen
+    property bool showPrinterSettings: settings.showPrinterSettings
     property bool showAuditTrail: settings.showAuditTrail
     property bool showProductLib: settings.showProductLib
     property bool showTrackingScreen: settings.showTrackingScreen
@@ -82,6 +84,7 @@ QtObject {
 
     onNetworkSelectedTabChanged: settings.networkSelectedTab = networkSelectedTab
 
+    onShowPrinterSettingsChanged: settings.showPrinterSettings = showPrinterSettings
     onBlockedUsersJsonChanged:   settings.blockedUsersJson   = blockedUsersJson
     onFailedAttemptsJsonChanged: settings.failedAttemptsJson = failedAttemptsJson
     onParameterAccessJsonChanged: settings.parameterAccessJson = parameterAccessJson
