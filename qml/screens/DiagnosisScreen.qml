@@ -246,57 +246,57 @@ Item {
                     }
 
                     // MEMORY ──────────────────────────────────────────
-                    DiagCard {
-                        id: memCard
-                        Layout.fillWidth:  true
-                        Layout.fillHeight: true
+                    // DiagCard {
+                    //     id: memCard
+                    //     Layout.fillWidth:  true
+                    //     Layout.fillHeight: true
 
-                        title:    "Storage"
-                        uiScale:  root.scale
+                    //     title:    "Storage"
+                    //     uiScale:  root.scale
 
-                        property real usage: SystemDiag.memTotal > 0
-                                             ? SystemDiag.memUsed / SystemDiag.memTotal : 0
+                    //     property real usage: SystemDiag.memTotal > 0
+                    //                          ? SystemDiag.memUsed / SystemDiag.memTotal : 0
 
-                        progress:  isLoading ? -1 : usage
+                    //     progress:  isLoading ? -1 : usage
 
-                        status: isLoading    ? "Checking..."
-                              : usage > 0.9  ? "Critical"
-                              : usage > 0.6  ? "Warning"
-                              : "OK"
+                    //     status: isLoading    ? "Checking..."
+                    //           : usage > 0.9  ? "Critical"
+                    //           : usage > 0.6  ? "Warning"
+                    //           : "OK"
 
-                        detail: isLoading ? "— GB / — GB" : SystemDiag.memoryUsage
+                    //     detail: isLoading ? "— GB / — GB" : SystemDiag.memoryUsage
 
-                        cardColor: status === "Critical" ? "#FFF5F5"
-                                 : status === "Warning"  ? "#FFFBF0"
-                                 : "#F7FBF7"
-                    }
+                    //     cardColor: status === "Critical" ? "#FFF5F5"
+                    //              : status === "Warning"  ? "#FFFBF0"
+                    //              : "#F7FBF7"
+                    // }
 
                     // TEMPERATURE ─────────────────────────────────────
-                    DiagCard {
-                        id: tempCard
-                        Layout.fillWidth:  true
-                        Layout.fillHeight: true
+                    // DiagCard {
+                    //     id: tempCard
+                    //     Layout.fillWidth:  true
+                    //     Layout.fillHeight: true
 
-                        title:    "CPU Temperature"
-                        uiScale:  root.scale
+                    //     title:    "CPU Temperature"
+                    //     uiScale:  root.scale
 
-                        property real temp: SystemDiag.temperatureValue
-                        property real tempProgress: temp > 0 ? Math.min(temp / 100.0, 1.0) : -1
+                    //     property real temp: SystemDiag.temperatureValue
+                    //     property real tempProgress: temp > 0 ? Math.min(temp / 100.0, 1.0) : -1
 
-                        progress: isLoading ? -1 : tempProgress
+                    //     progress: isLoading ? -1 : tempProgress
 
-                        status: isLoading ? "Checking..."
-                              : temp < 0  ? "Unknown"
-                              : temp > 75 ? "Critical"
-                              : temp > 60 ? "Warning"
-                              : "OK"
+                    //     status: isLoading ? "Checking..."
+                    //           : temp < 0  ? "Unknown"
+                    //           : temp > 75 ? "Critical"
+                    //           : temp > 60 ? "Warning"
+                    //           : "OK"
 
-                        detail: isLoading ? "— °C" : SystemDiag.temperature
+                    //     detail: isLoading ? "— °C" : SystemDiag.temperature
 
-                        cardColor: status === "Critical" ? "#FFF5F5"
-                                 : status === "Warning"  ? "#FFFBF0"
-                                 : "#F7FBF7"
-                    }
+                    //     cardColor: status === "Critical" ? "#FFF5F5"
+                    //              : status === "Warning"  ? "#FFFBF0"
+                    //              : "#F7FBF7"
+                    // }
 
                     // INPUT VOLTAGE ─────────────────────────────────
                     DiagCard {

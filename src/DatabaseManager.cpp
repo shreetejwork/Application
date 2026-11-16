@@ -816,6 +816,35 @@ bool DatabaseManager::insertUser(
         }
     }
 
+    int roleLimit = 0;
+    if (role == QStringLiteral("Admin"))
+        roleLimit = 10;
+    else if (role == QStringLiteral("Supervisor"))
+        roleLimit = 10;
+    else if (role == QStringLiteral("Operator"))
+        roleLimit = 20;
+
+    if (roleLimit > 0)
+    {
+        QSqlQuery countQuery;
+        countQuery.prepare(
+            "SELECT COUNT(*) FROM usertable WHERE role = ?");
+        countQuery.addBindValue(role);
+
+        if (!countQuery.exec() || !countQuery.next())
+        {
+            qWarning() << "Failed to count users for role" << role << ":"
+                       << countQuery.lastError().text();
+            return false;
+        }
+
+        if (countQuery.value(0).toInt() >= roleLimit)
+        {
+            qDebug() << "User limit reached for role:" << role;
+            return false;
+        }
+    }
+
     QSqlQuery query;
 
     query.prepare(

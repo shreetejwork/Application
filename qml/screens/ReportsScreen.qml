@@ -156,24 +156,24 @@ Item {
                         onTileClicked: navigateTo("ReportsFolder")
                     }
                 }
-                RowLayout {
-                    spacing: 65 * root.scale
-                    Layout.alignment: Qt.AlignHCenter
+                // RowLayout {
+                //     spacing: 65 * root.scale
+                //     Layout.alignment: Qt.AlignHCenter
 
-                    MenuTile {
-                        iconSource: "qrc:/qt/qml/Application/assets/images/log.png"
-                        label: "Reports\nLog"
-                        iconSize: 100 * root.scale
-                        onTileClicked: navigateTo("ReportsLog")
-                    }
+                //     MenuTile {
+                //         iconSource: "qrc:/qt/qml/Application/assets/images/log.png"
+                //         label: "Reports\nLog"
+                //         iconSize: 100 * root.scale
+                //         onTileClicked: navigateTo("ReportsLog")
+                //     }
 
-                    MenuTile {
-                        iconSource: "qrc:/qt/qml/Application/assets/images/BatchHistory.png"
-                        label: "Batch\nHistory"
-                        iconSize: 100 * root.scale
-                        onTileClicked: navigateTo("BatchHistory")
-                    }
-                }
+                //     MenuTile {
+                //         iconSource: "qrc:/qt/qml/Application/assets/images/BatchHistory.png"
+                //         label: "Batch\nHistory"
+                //         iconSize: 100 * root.scale
+                //         onTileClicked: navigateTo("BatchHistory")
+                //     }
+                // }
             }
         }
     }

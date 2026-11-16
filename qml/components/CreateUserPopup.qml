@@ -713,6 +713,20 @@ Popup {
                                 return
                             }
 
+                            var selectedRole = userTypeValue.text
+                            var roleLimit = selectedRole === "Admin" ? 10
+                                            : selectedRole === "Supervisor" ? 10
+                                            : selectedRole === "Operator" ? 20
+                                            : 0
+
+                            if (roleLimit > 0 &&
+                                    databaseManager.getUsersByRole(selectedRole).length >= roleLimit) {
+                                createUserPopup.errorText =
+                                        "Maximum of " + roleLimit + " " + selectedRole + " users reached."
+                                createUserPopup.hasError = true
+                                return
+                            }
+
                             var username = usernameInput.text.trim()
 
                             // Generate simple FPID
@@ -809,7 +823,13 @@ Popup {
                             }
                             else
                             {
-                                createUserPopup.errorText = "User already exists with same role"
+                                if (roleLimit > 0 &&
+                                        databaseManager.getUsersByRole(selectedRole).length >= roleLimit) {
+                                    createUserPopup.errorText =
+                                            "Maximum of " + roleLimit + " " + selectedRole + " users reached."
+                                } else {
+                                    createUserPopup.errorText = "User already exists with same role"
+                                }
                                 createUserPopup.hasError = true
 
                             }

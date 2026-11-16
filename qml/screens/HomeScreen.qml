@@ -935,11 +935,11 @@ Item {
 
                         value: SerialManager.signal
 
-                        label: "Signal <span style='font-size:18px; color:#6B7280;'>"
+                        label: "Signal"/*"Signal <span style='font-size:18px; color:#6B7280;'>"
                              + "(×<span style='font-size:18px;'>"
                              + GlobalState.digitalGain.toFixed(1)
                              + "</span>"
-                             + ")</span>"
+                             + ")</span>"*/
 
                         threshold: GlobalState.signalThreshold
 
@@ -1263,169 +1263,169 @@ Item {
                     // BATCH STATUS BUTTON
                     // =====================================================
 
-                    Rectangle {
-                        id: batchStatusButton
+                    // Rectangle {
+                    //     id: batchStatusButton
 
-                        parent: homeContent
-                        x: (centerCol.x + centerCol.width / 2
-                            + centerCol.width * 0.25
-                            + rightCol.x + rightCol.width / 2
-                            - rightCol.width * 0.85 * 0.25
-                            - width) / 2
-                        y: 10
-                        width: rightCol.width * 0.85 * 0.50
-                        height: 65
+                    //     parent: homeContent
+                    //     x: (centerCol.x + centerCol.width / 2
+                    //         + centerCol.width * 0.25
+                    //         + rightCol.x + rightCol.width / 2
+                    //         - rightCol.width * 0.85 * 0.25
+                    //         - width) / 2
+                    //     y: 10
+                    //     width: rightCol.width * 0.85 * 0.50
+                    //     height: 65
 
-                        radius: 14
+                    //     radius: 14
 
-                        property color statusAccent: !homeScreen.batchRunning
-                                                     ? "#1A4DB5"
-                                                     : homeScreen.batchPaused
-                                                       ? "#C62828"
-                                                       : "#2E7D32"
+                    //     property color statusAccent: !homeScreen.batchRunning
+                    //                                  ? "#1A4DB5"
+                    //                                  : homeScreen.batchPaused
+                    //                                    ? "#C62828"
+                    //                                    : "#2E7D32"
 
-                        color: homeScreen.batchRunning
-                               ? (homeScreen.batchPaused
-                                  ? "#F7EAEA"
-                                  : "#E8F3EB")
-                               : "#E7EFFF"
+                    //     color: homeScreen.batchRunning
+                    //            ? (homeScreen.batchPaused
+                    //               ? "#F7EAEA"
+                    //               : "#E8F3EB")
+                    //            : "#E7EFFF"
 
-                        border.color: homeScreen.batchRunning
-                                      ? (homeScreen.batchPaused
-                                         ? "#D8B0B0"
-                                         : "#A9C9B0")
-                                      : "#9BB8EC"
-                        border.width: 2
+                    //     border.color: homeScreen.batchRunning
+                    //                   ? (homeScreen.batchPaused
+                    //                      ? "#D8B0B0"
+                    //                      : "#A9C9B0")
+                    //                   : "#9BB8EC"
+                    //     border.width: 2
 
-                        Rectangle {
-                            id: batchStatusGlow
-                            anchors.fill: parent
-                            anchors.margins: -4
-                            radius: parent.radius + 4
-                            color: "transparent"
-                            border.color: batchStatusButton.statusAccent
-                            border.width: 3
-                            opacity: 0.25
-                        }
+                    //     Rectangle {
+                    //         id: batchStatusGlow
+                    //         anchors.fill: parent
+                    //         anchors.margins: -4
+                    //         radius: parent.radius + 4
+                    //         color: "transparent"
+                    //         border.color: batchStatusButton.statusAccent
+                    //         border.width: 3
+                    //         opacity: 0.25
+                    //     }
 
-                        Column {
-                            anchors.centerIn: parent
-                            width: parent.width - 12
-                            spacing: 2
+                    //     Column {
+                    //         anchors.centerIn: parent
+                    //         width: parent.width - 12
+                    //         spacing: 2
 
-                            Text {
-                                anchors.horizontalCenter: parent.horizontalCenter
+                    //         Text {
+                    //             anchors.horizontalCenter: parent.horizontalCenter
 
-                                text: "Batch Status"
-                                font.pixelSize: 13
-                                color: "#5E5C64"
-                            }
+                    //             text: "Batch Status"
+                    //             font.pixelSize: 13
+                    //             color: "#5E5C64"
+                    //         }
 
-                            Text {
-                                width: parent.width
-                                horizontalAlignment: Text.AlignHCenter
+                    //         Text {
+                    //             width: parent.width
+                    //             horizontalAlignment: Text.AlignHCenter
 
-                                text: !homeScreen.batchRunning
-                                      ? "No Batch Running"
-                                      : homeScreen.batchPaused
-                                        ? "Batch Paused"
-                                        : "Batch Running"
+                    //             text: !homeScreen.batchRunning
+                    //                   ? "No Batch Running"
+                    //                   : homeScreen.batchPaused
+                    //                     ? "Batch Paused"
+                    //                     : "Batch Running"
 
-                                font.pixelSize: 15
-                                color: !homeScreen.batchRunning
-                                       ? "#6B7280"
-                                       : homeScreen.batchPaused
-                                         ? "#815252"
-                                         : "#2F5D3A"
-                                wrapMode: Text.Wrap
-                            }
-                        }
+                    //             font.pixelSize: 15
+                    //             color: !homeScreen.batchRunning
+                    //                    ? "#6B7280"
+                    //                    : homeScreen.batchPaused
+                    //                      ? "#815252"
+                    //                      : "#2F5D3A"
+                    //             wrapMode: Text.Wrap
+                    //         }
+                    //     }
 
-                        MouseArea {
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
+                    //     MouseArea {
+                    //         anchors.fill: parent
+                    //         hoverEnabled: true
+                    //         cursorShape: Qt.PointingHandCursor
 
-                            onClicked: {
-                                if (homeScreen.navigateToBatch)
-                                    homeScreen.navigateToBatch()
-                            }
-                        }
+                    //         onClicked: {
+                    //             if (homeScreen.navigateToBatch)
+                    //                 homeScreen.navigateToBatch()
+                    //         }
+                    //     }
 
-                        Behavior on color {
-                            ColorAnimation { duration: 180 }
-                        }
+                    //     Behavior on color {
+                    //         ColorAnimation { duration: 180 }
+                    //     }
 
-                        SequentialAnimation {
-                            id: batchStatusPulse
+                    //     SequentialAnimation {
+                    //         id: batchStatusPulse
 
-                        running: true
-                            loops: Animation.Infinite
+                    //     running: true
+                    //         loops: Animation.Infinite
 
-                            onRunningChanged: {
-                                if (!running)
-                                    batchStatusButton.scale = 1
-                            }
+                    //         onRunningChanged: {
+                    //             if (!running)
+                    //                 batchStatusButton.scale = 1
+                    //         }
 
-                            ParallelAnimation {
-                                NumberAnimation {
-                                    target: batchStatusButton
-                                    property: "scale"
-                                    from: 1
-                                    to: 1.08
-                                    duration: 650
-                                    easing.type: Easing.InOutSine
-                                }
+                    //         ParallelAnimation {
+                    //             NumberAnimation {
+                    //                 target: batchStatusButton
+                    //                 property: "scale"
+                    //                 from: 1
+                    //                 to: 1.08
+                    //                 duration: 650
+                    //                 easing.type: Easing.InOutSine
+                    //             }
 
-                                NumberAnimation {
-                                    target: batchStatusGlow
-                                    property: "opacity"
-                                    from: 0.2
-                                    to: 0.9
-                                    duration: 650
-                                    easing.type: Easing.InOutSine
-                                }
-                            }
+                    //             NumberAnimation {
+                    //                 target: batchStatusGlow
+                    //                 property: "opacity"
+                    //                 from: 0.2
+                    //                 to: 0.9
+                    //                 duration: 650
+                    //                 easing.type: Easing.InOutSine
+                    //             }
+                    //         }
 
-                            ParallelAnimation {
-                                NumberAnimation {
-                                    target: batchStatusButton
-                                    property: "scale"
-                                    from: 1.08
-                                    to: 1
-                                    duration: 650
-                                    easing.type: Easing.InOutSine
-                                }
+                    //         ParallelAnimation {
+                    //             NumberAnimation {
+                    //                 target: batchStatusButton
+                    //                 property: "scale"
+                    //                 from: 1.08
+                    //                 to: 1
+                    //                 duration: 650
+                    //                 easing.type: Easing.InOutSine
+                    //             }
 
-                                NumberAnimation {
-                                    target: batchStatusGlow
-                                    property: "opacity"
-                                    from: 0.9
-                                    to: 0.2
-                                    duration: 650
-                                    easing.type: Easing.InOutSine
-                                }
-                            }
+                    //             NumberAnimation {
+                    //                 target: batchStatusGlow
+                    //                 property: "opacity"
+                    //                 from: 0.9
+                    //                 to: 0.2
+                    //                 duration: 650
+                    //                 easing.type: Easing.InOutSine
+                    //             }
+                    //         }
 
-                            PauseAnimation {
-                                duration: 180
-                            }
-                        }
+                    //         PauseAnimation {
+                    //             duration: 180
+                    //         }
+                    //     }
 
-                        Connections {
-                            target: homeScreen
+                    //     Connections {
+                    //         target: homeScreen
 
-                            function onBatchRunningChanged() {
-                                if (homeScreen.batchRunning)
-                                    batchStatusPulse.restart()
-                            }
+                    //         function onBatchRunningChanged() {
+                    //             if (homeScreen.batchRunning)
+                    //                 batchStatusPulse.restart()
+                    //         }
 
-                            function onBatchPausedChanged() {
-                                if (homeScreen.batchRunning)
-                                    batchStatusPulse.restart()
-                            }
-                        }
-                    }
+                    //         function onBatchPausedChanged() {
+                    //             if (homeScreen.batchRunning)
+                    //                 batchStatusPulse.restart()
+                    //         }
+                    //     }
+                    // }
 
                     // =====================================================
                     // MANUAL VALIDATION BUTTON

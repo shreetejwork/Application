@@ -189,15 +189,15 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     spacing: 70 * root.scale
 
-                    MenuTile {
-                        iconSource: "qrc:/qt/qml/Application/assets/images/updated.png"
-                        label:      "Software Update \n(Online)"
-                        iconSize:   100 * root.scale
-                        onTileClicked: {
-                            console.log("Software Update tapped")
-                            // TODO: navigateTo("SoftwareUpdate")
-                        }
-                    }
+                    // MenuTile {
+                    //     iconSource: "qrc:/qt/qml/Application/assets/images/updated.png"
+                    //     label:      "Software Update \n(Online)"
+                    //     iconSize:   100 * root.scale
+                    //     onTileClicked: {
+                    //         console.log("Software Update tapped")
+                    //         // TODO: navigateTo("SoftwareUpdate")
+                    //     }
+                    // }
 
                     MenuTile {
                         iconSource: "qrc:/qt/qml/Application/assets/images/usbupdate.png"
@@ -235,21 +235,23 @@ Item {
                         onTileClicked: navigateTo("DeveloperSettings")
                     }
 
-                    MenuTile {
-                        iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
-                        label:      "Machine\nDocuments"
-                        iconSize:   100 * root.scale
-                        visible: true
-                        enabled: true
-                        onTileClicked: navigateTo("MachineDocuments")
-                    }
+                    // MenuTile {
+                    //     iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
+                    //     label:      "Machine\nDocuments"
+                    //     iconSize:   100 * root.scale
+                    //     visible: true
+                    //     enabled: true
+                    //     onTileClicked: navigateTo("MachineDocuments")
+                    // }
 
                     MenuTile {
+
+                        // visible: GlobalState.developerLogin
+                        // enabled: GlobalState.developerLogin
+
                         iconSource: "qrc:/qt/qml/Application/assets/images/bug.png"
                         label:      "Debug Console"
                         iconSize:   100 * root.scale
-                        visible: true
-                        enabled: true
                         onTileClicked: {
                             navigateTo("DebugConsole")
                             console.log("Bug tapped")
