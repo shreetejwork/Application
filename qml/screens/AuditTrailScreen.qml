@@ -1433,9 +1433,8 @@ Item {
             {
                 title: "Machine Parameters",
                 filters: [
-                    "LCF Changed", "HCF Changed", "Operate Delay Changed",
-                    "Filter Taps Changed", "Hold Delay Changed", "Relay Delay Changed",
-                    "Digital Gain Changed", "Analog Gain Changed",
+                    "LCF Changed", "HCF Changed",
+                    "Digital Gain Changed",
                     "Machine ID Changed", "Machine User Changed", "Location Changed",
                     "Serial Number Changed", "M/C Phase Changed",
                     "Threshold-S Changed", "Threshold-A Changed",

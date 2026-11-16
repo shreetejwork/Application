@@ -200,11 +200,18 @@ Item {
                     // }
 
                     MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/MachieDetails.png"
+                        label:      "Machine Details"
+                        iconSize:   100 * root.scale
+                        onTileClicked: navigateTo("MachineDetails")
+                    }
+
+                    MenuTile {
                         iconSource: "qrc:/qt/qml/Application/assets/images/usbupdate.png"
                         label:      "Software Update \n(USB)"
                         iconSize:   100 * root.scale
                         onTileClicked: {
-                            console.log("USB software update tapped")
+
                             usbUpdatePopup.openUpdate()
                         }
                     }
@@ -254,7 +261,6 @@ Item {
                         iconSize:   100 * root.scale
                         onTileClicked: {
                             navigateTo("DebugConsole")
-                            console.log("Bug tapped")
                         }
                     }
                 }

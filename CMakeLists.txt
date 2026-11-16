@@ -111,6 +111,7 @@ qt_add_qml_module(appApplication
         assets/images/cpu.png
         assets/images/barchart.png
         assets/images/printer.png
+        assets/images/MachieDetails.png
         assets/images/RobotoCondensed-Bold.ttf
         assets/images/RobotoCondensed-Regular.ttf
 
@@ -156,6 +157,7 @@ qt_add_qml_module(appApplication
         QML_FILES qml/screens/DebugConsoleScreen.qml
         SOURCES src/LanManager.h
         SOURCES src/LanManager.cpp
+        QML_FILES qml/screens/MachineDetailsScreen.qml
 )
 
 set_target_properties(appApplication PROPERTIES

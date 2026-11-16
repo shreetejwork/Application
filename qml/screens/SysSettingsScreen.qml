@@ -175,7 +175,6 @@ Item {
                                  "Parameters",
                                  "Date & Time",
                                  "Validation Time",
-                                 "About Machine",
                                  "Network",
                                  "Version"
                              ]
@@ -183,7 +182,6 @@ Item {
                                  "Parameters",
                                  "Date & Time",
                                  "Validation Time",
-                                 "About Machine",
                                  "Version"
                              ]
 
@@ -242,7 +240,7 @@ Item {
             screen1,
             screen2,
             screen3,
-            screen4
+
         ]
 
         if (GlobalState.showNetworkScreen)
@@ -366,32 +364,32 @@ Item {
     // SCREEN 4
     // =====================================================
 
-    Component {
-        id: screen4
+    // Component {
+    //     id: screen4
 
-        Rectangle {
-            color: "#F5F7FC"
+    //     Rectangle {
+    //         color: "#F5F7FC"
 
-            Item {
-                anchors.centerIn: parent
+    //         Item {
+    //             anchors.centerIn: parent
 
-                width:
-                    Math.min(parent.width * 0.9,
-                             900 * root.uiScale)
+    //             width:
+    //                 Math.min(parent.width * 0.9,
+    //                          900 * root.uiScale)
 
-                height:
-                    Math.min(parent.height * 0.9,
-                             520 * root.uiScale)
+    //             height:
+    //                 Math.min(parent.height * 0.9,
+    //                          520 * root.uiScale)
 
-                SettingsS4 {
-                    anchors.fill: parent
+    //             SettingsS4 {
+    //                 anchors.fill: parent
 
-                    notify: root.notify
-                    globalTopBar: root.globalTopBar
-                }
-            }
-        }
-    }
+    //                 notify: root.notify
+    //                 globalTopBar: root.globalTopBar
+    //             }
+    //         }
+    //     }
+    // }
 
     // =====================================================
     // SCREEN 5

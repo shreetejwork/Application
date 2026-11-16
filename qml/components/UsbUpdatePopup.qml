@@ -934,6 +934,54 @@ Popup {
                 }
             }
 
+            Rectangle {
+
+                id: noButton
+
+                width: 140
+                height: 46
+
+                anchors.right:
+                    parent.right
+
+                visible:
+                    popupRoot.showConfirmation
+
+                radius: 11
+
+                color: "#FFFFFF"
+
+                border.width: 1.5
+
+                border.color:
+                    popupRoot.borderColor
+
+                Label {
+
+                    anchors.centerIn: parent
+
+                    text: "No"
+
+                    color:
+                        popupRoot.secondaryColor
+
+                    font.pixelSize: 18
+
+                }
+
+                MouseArea {
+
+                    anchors.fill: parent
+
+                    onClicked: {
+
+                        popupRoot.declineRequested()
+
+                        popupRoot.close()
+                    }
+                }
+            }
+
             // ----------------------------------------------------
             // OK
             // ----------------------------------------------------
