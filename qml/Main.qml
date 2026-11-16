@@ -633,57 +633,6 @@ ApplicationWindow {
 
 
             if (
-                s1Settings.holdDelay
-                !== undefined
-            )
-            {
-
-                parameterQueue.push(
-                    function() {
-
-                        SerialManager.setHoldDelay(
-                            s1Settings.holdDelay
-                        )
-                    }
-                )
-            }
-
-
-            if (
-                s1Settings.operateDelay
-                !== undefined
-            )
-            {
-
-                parameterQueue.push(
-                    function() {
-
-                        SerialManager.setOperateDelay(
-                            s1Settings.operateDelay
-                        )
-                    }
-                )
-            }
-
-
-            if (
-                s1Settings.relayDelay
-                !== undefined
-            )
-            {
-
-                parameterQueue.push(
-                    function() {
-
-                        SerialManager.setRelayDelay(
-                            s1Settings.relayDelay
-                        )
-                    }
-                )
-            }
-
-
-            if (
                 s1Settings.digitalGain
                 !== undefined
             )
@@ -697,23 +646,6 @@ ApplicationWindow {
                                 s1Settings.digitalGain
                                 * 10
                             )
-                        )
-                    }
-                )
-            }
-
-
-            if (
-                s1Settings.analogGain
-                !== undefined
-            )
-            {
-
-                parameterQueue.push(
-                    function() {
-
-                        SerialManager.setAnalogGain(
-                            s1Settings.analogGain
                         )
                     }
                 )
@@ -821,16 +753,6 @@ ApplicationWindow {
                                 trackingSettings.trackingTolerance
                                 * 10
                             )
-                        )
-                    }
-                )
-            }
-
-            if (s1Settings.filterOption !== undefined) {
-                parameterQueue.push(
-                    function() {
-                        SerialManager.setFilterOption(
-                            Number(s1Settings.filterOption)
                         )
                     }
                 )
