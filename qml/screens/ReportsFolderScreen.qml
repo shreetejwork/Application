@@ -454,8 +454,8 @@ Item {
                                        "All",
                                        "Audit Report",
                                        "Batch Report",
-                                       "X-Y Plot",
-                                       "Coil Output"
+                                       // "X-Y Plot",
+                                       // "Coil Output"
                                    ]
 
                                 Rectangle {
