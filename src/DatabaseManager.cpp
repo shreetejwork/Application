@@ -13,7 +13,7 @@
 
 static QString productLibraryTableName(int groupNo)
 {
-    if (groupNo < 1 || groupNo > 10)
+    if (groupNo != 1)
         return QString();
 
     return QString("prodlib_grp%1")
@@ -3108,10 +3108,19 @@ bool DatabaseManager::addProductLibraryProduct(
 
 
     // ---------------------------------------------------------
-    // Maximum 100 products
+    // Maximum 10 products
     // ---------------------------------------------------------
 
-    if (srNo > 100)
+    QSqlQuery countQuery;
+    if (!countQuery.exec(QString("SELECT COUNT(*) FROM %1").arg(tableName))
+        || !countQuery.next())
+    {
+        qDebug() << "Failed to count products in group:" << groupNo
+                 << countQuery.lastError().text();
+        return false;
+    }
+
+    if (countQuery.value(0).toInt() >= 10 || srNo > 10)
     {
         qDebug()
         << "Product library group is full:"

@@ -368,59 +368,59 @@ Item {
 
                             FilterTile { fieldId: "lpf1" }
                             FilterTile { fieldId: "hpf1" }
-                            FilterTile { fieldId: "filterOption" }
+                            // FilterTile { fieldId: "filterOption" }
                         }
                     }
                 }
             }
         }
         // --- Middle panel: Delay ---
-        Column {
-            spacing: 8 * root.scale
+        // Column {
+        //     spacing: 8 * root.scale
 
-            // ===== TITLE =====
-            Text {
-                text: "Delay Settings"
-                font.pixelSize: s1Typography.title
+        //     // ===== TITLE =====
+        //     Text {
+        //         text: "Delay Settings"
+        //         font.pixelSize: s1Typography.title
 
-                color: "#1A4DB5"
-            }
+        //         color: "#1A4DB5"
+        //     }
 
-            Rectangle {
-                width: 40 * root.scale
-                height: 3 * root.scale
-                radius: 2 * root.scale
-                color: "#1A4DB5"
-            }
+        //     Rectangle {
+        //         width: 40 * root.scale
+        //         height: 3 * root.scale
+        //         radius: 2 * root.scale
+        //         color: "#1A4DB5"
+        //     }
 
-            // ===== PANEL =====
-            Rectangle {
-                width: 280 * root.scale
-                height: 460 * root.scale
-                radius: 18 * root.scale
-                color: "#FFFFFF"
-                border.color: "#E5E7EB"
-                border.width: 1
+        //     // ===== PANEL =====
+        //     Rectangle {
+        //         width: 280 * root.scale
+        //         height: 460 * root.scale
+        //         radius: 18 * root.scale
+        //         color: "#FFFFFF"
+        //         border.color: "#E5E7EB"
+        //         border.width: 1
 
-                Column {
-                    anchors.fill: parent
-                    anchors.margins: 20 * root.scale
+        //         Column {
+        //             anchors.fill: parent
+        //             anchors.margins: 20 * root.scale
 
-                    Item {
-                        anchors.fill: parent
+        //             Item {
+        //                 anchors.fill: parent
 
-                        Column {
-                            anchors.centerIn: parent
-                            spacing: 40 * root.scale
+        //                 Column {
+        //                     anchors.centerIn: parent
+        //                     spacing: 40 * root.scale
 
-                            FilterTile { fieldId: "hd" }
-                            FilterTile { fieldId: "od" }
-                            FilterTile { fieldId: "rd" }
-                        }
-                    }
-                }
-            }
-        }
+        //                     FilterTile { fieldId: "hd" }
+        //                     FilterTile { fieldId: "od" }
+        //                     FilterTile { fieldId: "rd" }
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
 
         // --- Right panel: Gain ---
         Column {
@@ -461,7 +461,7 @@ Item {
                             anchors.centerIn: parent
                             spacing: 40 * root.scale
 
-                            FilterTile { fieldId: "ag" }
+                            // FilterTile { fieldId: "ag" }
                             FilterTile { fieldId: "dg" }
                         }
                     }

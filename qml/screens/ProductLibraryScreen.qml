@@ -475,7 +475,7 @@ Item {
 
     function getFreeSrNo(model) {
 
-        for (var srNo = 1; srNo <= 100; srNo++) {
+        for (var srNo = 1; srNo <= 10; srNo++) {
 
             var found = false
 
@@ -502,15 +502,15 @@ Item {
         var model = currentModel()
 
         // ---------------------------------------------------------
-        // Maximum 100 products
+        // Maximum 10 products
         // ---------------------------------------------------------
 
-        if (model.count >= 100) {
+        if (model.count >= 10) {
 
             console.log(
                 "GROUP",
                 currentGroup,
-                "already contains 100 products"
+                "already contains 10 products"
             )
 
             return false
@@ -810,10 +810,7 @@ Item {
                             Layout.preferredHeight: Math.max(38, 44 * root.scale)
                             Layout.alignment: Qt.AlignVCenter
 
-                            model: [
-                                "GROUP 01", "GROUP 02", "GROUP 03", "GROUP 04", "GROUP 05",
-                                "GROUP 06", "GROUP 07", "GROUP 08", "GROUP 09", "GROUP 10"
-                            ]
+                            model: ["GROUP 01"]
 
                             currentIndex: 0
 
@@ -927,11 +924,15 @@ Item {
                                     modelData === "DELETE"
                                     && selectedCount === 0
 
+                                property bool addDisabled:
+                                    modelData === "ADD"
+                                    && currentModel().count >= 10
+
                                 width: 100 * root.scale
                                 height: 38 * root.scale
                                 radius: 8 * root.scale
 
-                                color: (loadDisabled || deleteDisabled)
+                                color: (loadDisabled || deleteDisabled || addDisabled)
                                        ? "#E4EAF5"
                                        : "#FFFFFF"
 
@@ -942,7 +943,8 @@ Item {
                                     ? "#C62828"
                                     : "#1A4DB5"
 
-                                opacity: (loadDisabled || deleteDisabled) ? 0.5 : 1.0
+                                opacity: (loadDisabled || deleteDisabled || addDisabled)
+                                         ? 0.5 : 1.0
 
                                 Text {
                                     anchors.centerIn: parent
@@ -959,7 +961,7 @@ Item {
                                 MouseArea {
                                     anchors.fill: parent
 
-                                    enabled: !(loadDisabled || deleteDisabled)
+                                    enabled: !(loadDisabled || deleteDisabled || addDisabled)
 
                                     hoverEnabled: true
                                     cursorShape: Qt.PointingHandCursor
@@ -1479,7 +1481,7 @@ Item {
                             Text {
                                 text: "Products : "
                                       + currentModel().count
-                                      + " / 100"
+                                      + " / 10"
 
                                 font.pixelSize: 18
                                 color: "#1A1A1A"
