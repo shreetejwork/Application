@@ -31,9 +31,7 @@ QtObject {
 
         property string validationTimersJson:
             '[{"time":"11:15","enabled":false},
-              {"time":"11:30","enabled":false},
-              {"time":"11:45","enabled":false},
-              {"time":"11:00","enabled":false}]'
+              {"time":"11:30","enabled":false}]'
 
         property string machinePowerState: "Shutdown"
 
@@ -508,14 +506,14 @@ QtObject {
 
     function getValidationTimers()
     {
-        return JSON.parse(validationTimersJson)
+        return JSON.parse(validationTimersJson).slice(0, 2)
     }
 
 
 
     function saveValidationTimers(data)
     {
-        validationTimersJson = JSON.stringify(data)
+        validationTimersJson = JSON.stringify(data.slice(0, 2))
 
     }
 
