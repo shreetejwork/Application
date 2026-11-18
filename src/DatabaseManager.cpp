@@ -627,7 +627,7 @@ void DatabaseManager::createTables()
             1,
             20,
             25,
-            151,
+            121,
             0,
             250,
             250,
@@ -640,7 +640,7 @@ void DatabaseManager::createTables()
         UPDATE filtersettings
         SET lpf = 20,
             hpf = 25,
-            filterOption = 151
+            filterOption = 121
         WHERE id = 1
           AND lpf = 10
           AND hpf = 30
@@ -2190,8 +2190,8 @@ bool DatabaseManager::saveS1Settings(
     double digitalGain,
     double analogGain)
 {
-    if (filterOption < 3 || filterOption > 151 || filterOption % 2 == 0) {
-        qWarning() << "Filter Taps must be an odd value from 3 to 151.";
+    if (filterOption < 3 || filterOption > 121 || filterOption % 2 == 0) {
+        qWarning() << "Filter Taps must be an odd value from 3 to 121.";
         return false;
     }
 
