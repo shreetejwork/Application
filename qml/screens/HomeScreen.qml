@@ -1488,6 +1488,13 @@ Item {
                             onReleased: parent.pressed = false
 
                             onClicked: {
+                                if (!GlobalState.isUserLoggedIn()) {
+                                    accessDeniedPopup.popupTitle = "Access Denied !"
+                                    accessDeniedPopup.popupMessage = "Please login first"
+                                    accessDeniedPopup.open()
+                                    return
+                                }
+
                                 globalTopBar.showNotification(
                                             "✓ Manual Validation ON"
                                             )

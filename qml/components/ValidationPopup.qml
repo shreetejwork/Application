@@ -157,6 +157,28 @@ Popup {
     // ROUND HANDLING
     // ================================================================
 
+    function allRoundsDetected() {
+        for (var i = 0; i < totalRounds; i++) {
+            if (!roundStatus[i])
+                return false
+        }
+
+        return true
+    }
+
+    function failValidation() {
+        if (validationState !== "running")
+            return
+
+        countdown.stop()
+        rejectCycleStarted = false
+        validationState = "failed"
+        timerProgress.requestPaint()
+        recordAudit("Validation Failed")
+        GlobalState.countRejection = true
+        Qt.callLater(showResult)
+    }
+
     function finishRound() {
 
         if (validationState !== "running")
@@ -189,6 +211,11 @@ Popup {
 
             countdown.stop()
 
+            if (!allRoundsDetected()) {
+                failValidation()
+                return
+            }
+
             validationState = "passed"
             rejectCycleStarted = false
 
@@ -220,6 +247,9 @@ Popup {
     // ================================================================
 
     function skipValidation() {
+
+        if (validationState !== "running")
+            return
 
         countdown.stop()
 
@@ -306,28 +336,10 @@ Popup {
 
             stop()
 
-            var undetectedRound = false
-            for (var i = 0; i < validationpopupnew.totalRounds; i++) {
-                if (!validationpopupnew.roundStatus[i]) {
-                    undetectedRound = true
-                    break
-                }
-            }
-
-            if (!undetectedRound)
+            if (validationpopupnew.allRoundsDetected())
                 return
 
-            validationpopupnew.rejectCycleStarted = false
-
-            validationpopupnew.validationState = "failed"
-
-            validationpopupnew.timerProgress.requestPaint()
-
-            validationpopupnew.recordAudit("Validation Failed")
-
-            GlobalState.countRejection = true
-
-            Qt.callLater(validationpopupnew.showResult)
+            validationpopupnew.failValidation()
         }
     }
 
@@ -1003,7 +1015,12 @@ Popup {
                             ? "Validation Failed"
                             : validationpopupnew.validationState === "passed"
                               ? "Validation Passed"
-                              : "Please pass the sample for validation"
+                              : validationpopupnew.rejectCycleStarted
+                                ? "Sample detected - completing rejection cycle"
+                                : "Waiting for sample " +
+                                  validationpopupnew.currentRound +
+                                  " of " +
+                                  validationpopupnew.totalRounds
                     }
                 }
             }
