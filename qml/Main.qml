@@ -91,24 +91,24 @@ ApplicationWindow {
             if (GlobalState.sendDataAfterLoad === true) {
 
                 console.log(
-                    "sendDataAfterLoad = TRUE"
-                )
+                            "sendDataAfterLoad = TRUE"
+                            )
 
                 console.log(
-                    "Restarting startupTimer..."
-                )
+                            "Restarting startupTimer..."
+                            )
 
                 startupTimer.restart()
 
             } else {
 
                 console.log(
-                    "sendDataAfterLoad = FALSE"
-                )
+                            "sendDataAfterLoad = FALSE"
+                            )
 
                 console.log(
-                    "Parameters loaded, not sending to MCU"
-                )
+                            "Parameters loaded, not sending to MCU"
+                            )
             }
         }
     }
@@ -124,8 +124,8 @@ ApplicationWindow {
         function onLoggedInUserRoleChanged() {
 
             if (
-                GlobalState.loggedInUserRole === ""
-            ) {
+                    GlobalState.loggedInUserRole === ""
+                    ) {
                 navigateHomeTimer.restart()
             }
         }
@@ -134,8 +134,8 @@ ApplicationWindow {
         function onValidationAlarmTriggered()
         {
             console.log(
-                "Main.qml: Alarm Received"
-            )
+                        "Main.qml: Alarm Received"
+                        )
 
             validationAlarmPopup.open()
         }
@@ -152,8 +152,8 @@ ApplicationWindow {
         function onMcuParameterRequestReceived() {
 
             console.log(
-                "MCU requested parameters"
-            )
+                        "MCU requested parameters"
+                        )
 
             if (GlobalState.ddusterEnabled) {
                 GlobalState.ddusterEnabled = false
@@ -283,11 +283,11 @@ ApplicationWindow {
                 var i = 0;
                 i < item.children.length;
                 i++
-            ) {
+                ) {
 
                 applyFontToAllChildren(
-                    item.children[i]
-                )
+                            item.children[i]
+                            )
             }
         }
     }
@@ -297,14 +297,14 @@ ApplicationWindow {
     onRegularFontFamilyChanged: {
 
         applyFontToAllChildren(
-            contentItem
-        )
+                    contentItem
+                    )
 
 
         if (Overlay.overlay)
             applyFontToAllChildren(
-                Overlay.overlay
-            )
+                        Overlay.overlay
+                        )
     }
 
 
@@ -331,37 +331,37 @@ ApplicationWindow {
 
 
         if (
-            "highlightMoveDuration"
-            in flick
-        )
+                "highlightMoveDuration"
+                in flick
+                )
             flick.highlightMoveDuration = 220
 
 
         if (
-            "maximumFlickVelocity"
-            in flick
-        )
+                "maximumFlickVelocity"
+                in flick
+                )
             flick.maximumFlickVelocity = 2500
 
 
         if (
-            "flickDeceleration"
-            in flick
-        )
+                "flickDeceleration"
+                in flick
+                )
             flick.flickDeceleration = 1500
 
 
         if (
-            "pressDelay"
-            in flick
-        )
+                "pressDelay"
+                in flick
+                )
             flick.pressDelay = 0
 
 
         if (
-            "boundsBehavior"
-            in flick
-        )
+                "boundsBehavior"
+                in flick
+                )
             flick.boundsBehavior =
                     Flickable.StopAtBounds
     }
@@ -376,23 +376,23 @@ ApplicationWindow {
         SerialManager.setBaudRate(GlobalState.baudRate)
 
         applyFontToAllChildren(
-            root.contentItem
-        )
+                    root.contentItem
+                    )
 
 
         if (Overlay.overlay)
             applyFontToAllChildren(
-                Overlay.overlay
-            )
+                        Overlay.overlay
+                        )
 
 
         tuneSwipeViewSmoothness()
 
 
         console.log(
-            "Count Rejection:",
-            GlobalState.countRejection
-        )
+                    "Count Rejection:",
+                    GlobalState.countRejection
+                    )
 
 
         // ================= APPLICATION START AUDIT =================
@@ -413,29 +413,29 @@ ApplicationWindow {
         }
 
         if (
-            GlobalState.machinePowerState
-            === "Running"
-            && updateStatus === 0
-        )
+                GlobalState.machinePowerState
+                === "Running"
+                && updateStatus === 0
+                )
         {
             GlobalState.savePowerFailureTime()
 
 
             databaseManager.addAuditTrailRecord(
-                "---",
-                GlobalState.powerFailureDate,
-                GlobalState.powerFailureTime,
-                "M/C OFF (Power Failure)"
-            )
+                        "---",
+                        GlobalState.powerFailureDate,
+                        GlobalState.powerFailureTime,
+                        "M/C OFF (Power Failure)"
+                        )
         }
 
 
         databaseManager.addAuditTrailRecord(
-            "---",
-            "",
-            "",
-            "M/C Switch ON"
-        )
+                    "---",
+                    "",
+                    "",
+                    "M/C Switch ON"
+                    )
 
 
         startupTimer.start()
@@ -445,9 +445,9 @@ ApplicationWindow {
 
 
         console.log(
-            "Machine State:" +
-            GlobalState.machinePowerState
-        )
+                    "Machine State:" +
+                    GlobalState.machinePowerState
+                    )
     }
 
 
@@ -474,16 +474,16 @@ ApplicationWindow {
         onTriggered: {
 
             if (
-                parameterQueue.length === 0
-            ) {
+                    parameterQueue.length === 0
+                    ) {
 
                 stop()
 
 
                 if (mainTopBar)
                     mainTopBar.showNotification(
-                        "✓ System is ready"
-                    )
+                                "✓ System is ready"
+                                )
 
 
                 return
@@ -517,8 +517,8 @@ ApplicationWindow {
 
             if (mainTopBar)
                 mainTopBar.showNotification(
-                    "Updating...."
-                )
+                            "Updating...."
+                            )
 
 
             parameterQueue = []
@@ -530,13 +530,13 @@ ApplicationWindow {
 
             var machineSettings =
                     databaseManager
-                    .getMachinePhaseSettings()
+            .getMachinePhaseSettings()
 
 
             if (
-                machineSettings.machinePhase
-                !== undefined
-            )
+                    machineSettings.machinePhase
+                    !== undefined
+                    )
             {
 
                 GlobalState.machinePhase =
@@ -544,23 +544,23 @@ ApplicationWindow {
 
 
                 parameterQueue.push(
-                    function() {
+                            function() {
 
-                        SerialManager.setMachinePhase(
-                            Math.round(
-                                GlobalState.machinePhase
-                                * 10
+                                SerialManager.setMachinePhase(
+                                            Math.round(
+                                                GlobalState.machinePhase
+                                                * 10
+                                                )
+                                            )
+                            }
                             )
-                        )
-                    }
-                )
             }
 
 
             if (
-                machineSettings.signalThr
-                !== undefined
-            )
+                    machineSettings.signalThr
+                    !== undefined
+                    )
             {
 
                 GlobalState.signalThreshold =
@@ -568,20 +568,20 @@ ApplicationWindow {
 
 
                 parameterQueue.push(
-                    function() {
+                            function() {
 
-                        SerialManager.setSignalThreshold(
-                            GlobalState.signalThreshold
-                        )
-                    }
-                )
+                                SerialManager.setSignalThreshold(
+                                            GlobalState.signalThreshold
+                                            )
+                            }
+                            )
             }
 
 
             if (
-                machineSettings.ampThr
-                !== undefined
-            )
+                    machineSettings.ampThr
+                    !== undefined
+                    )
             {
 
                 GlobalState.amplitudeThreshold =
@@ -589,13 +589,13 @@ ApplicationWindow {
 
 
                 parameterQueue.push(
-                    function() {
+                            function() {
 
-                        SerialManager.setAmplitudeThreshold(
-                            GlobalState.amplitudeThreshold
-                        )
-                    }
-                )
+                                SerialManager.setAmplitudeThreshold(
+                                            GlobalState.amplitudeThreshold
+                                            )
+                            }
+                            )
             }
 
 
@@ -611,44 +611,110 @@ ApplicationWindow {
                     && s1Settings.hpf !== undefined
                     && Number(s1Settings.lpf) < Number(s1Settings.hpf)) {
                 parameterQueue.push(
-                    function() {
+                            function() {
 
-                        SerialManager.setLPF(s1Settings.lpf)
+                                SerialManager.setLPF(s1Settings.lpf)
 
-                    }
-                )
+                            }
+                            )
             }
 
             if (s1Settings.lpf !== undefined
                     && s1Settings.hpf !== undefined
                     && Number(s1Settings.lpf) < Number(s1Settings.hpf)) {
                 parameterQueue.push(
-                    function() {
+                            function() {
 
-                        SerialManager.setHPF(s1Settings.hpf)
+                                SerialManager.setHPF(s1Settings.hpf)
 
-                    }
-                )
+                            }
+                            )
+            }
+
+            if (
+                    s1Settings.holdDelay
+                    !== undefined
+                    )
+            {
+
+                parameterQueue.push(
+                            function() {
+
+                                SerialManager.setHoldDelay(
+                                            s1Settings.holdDelay
+                                            )
+                            }
+                            )
             }
 
 
             if (
-                s1Settings.digitalGain
-                !== undefined
-            )
+                    s1Settings.operateDelay
+                    !== undefined
+                    )
             {
 
                 parameterQueue.push(
-                    function() {
+                            function() {
 
-                        SerialManager.setDigitalGain(
-                            Math.round(
-                                s1Settings.digitalGain
-                                * 10
+                                SerialManager.setOperateDelay(
+                                            s1Settings.operateDelay
+                                            )
+                            }
                             )
-                        )
-                    }
-                )
+            }
+
+
+            if (
+                    s1Settings.relayDelay
+                    !== undefined
+                    )
+            {
+
+                parameterQueue.push(
+                            function() {
+
+                                SerialManager.setRelayDelay(
+                                            s1Settings.relayDelay
+                                            )
+                            }
+                            )
+            }
+
+
+            if (
+                    s1Settings.digitalGain
+                    !== undefined
+                    )
+            {
+
+                parameterQueue.push(
+                            function() {
+
+                                SerialManager.setDigitalGain(
+                                            Math.round(
+                                                s1Settings.digitalGain
+                                                * 10
+                                                )
+                                            )
+                            }
+                            )
+            }
+
+            if (
+                    s1Settings.analogGain
+                    !== undefined
+                    )
+            {
+
+                parameterQueue.push(
+                            function() {
+
+                                SerialManager.setAnalogGain(
+                                            s1Settings.analogGain
+                                            )
+                            }
+                            )
             }
 
 
@@ -661,39 +727,39 @@ ApplicationWindow {
 
 
             if (
-                ddSettings.ddFreq
-                !== undefined
-            )
+                    ddSettings.ddFreq
+                    !== undefined
+                    )
             {
 
                 parameterQueue.push(
-                    function() {
+                            function() {
 
-                        SerialManager.setDDFrequency(
-                            Math.round(
-                                ddSettings.ddFreq
-                                * 10
+                                SerialManager.setDDFrequency(
+                                            Math.round(
+                                                ddSettings.ddFreq
+                                                * 10
+                                                )
+                                            )
+                            }
                             )
-                        )
-                    }
-                )
             }
 
 
             if (
-                ddSettings.ddPower
-                !== undefined
-            )
+                    ddSettings.ddPower
+                    !== undefined
+                    )
             {
 
                 parameterQueue.push(
-                    function() {
+                            function() {
 
-                        SerialManager.setDDPower(
-                            ddSettings.ddPower
-                        )
-                    }
-                )
+                                SerialManager.setDDPower(
+                                            ddSettings.ddPower
+                                            )
+                            }
+                            )
             }
 
             // =====================================================
@@ -705,57 +771,67 @@ ApplicationWindow {
 
 
             if (
-                trackingSettings.trackingCount
-                !== undefined
-            )
+                    trackingSettings.trackingCount
+                    !== undefined
+                    )
             {
 
                 parameterQueue.push(
-                    function() {
+                            function() {
 
-                        SerialManager.setTrackingCount(
-                            trackingSettings.trackingCount
-                        )
-                    }
-                )
-            }
-
-
-            if (
-                trackingSettings.trackingThreshold
-                !== undefined
-            )
-            {
-
-                parameterQueue.push(
-                    function() {
-
-                        SerialManager.setTrackingThreshold(
-                            trackingSettings.trackingThreshold
-                        )
-                    }
-                )
-            }
-
-
-            if (
-                trackingSettings.trackingTolerance
-                !== undefined
-            )
-            {
-
-                parameterQueue.push(
-                    function() {
-
-                        SerialManager.setTrackingTolerance(
-
-                            Math.round(
-                                trackingSettings.trackingTolerance
-                                * 10
+                                SerialManager.setTrackingCount(
+                                            trackingSettings.trackingCount
+                                            )
+                            }
                             )
-                        )
-                    }
-                )
+            }
+
+
+            if (
+                    trackingSettings.trackingThreshold
+                    !== undefined
+                    )
+            {
+
+                parameterQueue.push(
+                            function() {
+
+                                SerialManager.setTrackingThreshold(
+                                            trackingSettings.trackingThreshold
+                                            )
+                            }
+                            )
+            }
+
+
+            if (
+                    trackingSettings.trackingTolerance
+                    !== undefined
+                    )
+            {
+
+                parameterQueue.push(
+                            function() {
+
+                                SerialManager.setTrackingTolerance(
+
+                                            Math.round(
+                                                trackingSettings.trackingTolerance
+                                                * 10
+                                                )
+                                            )
+                            }
+                            )
+            }
+
+            if (s1Settings.filterOption !== undefined) {
+                parameterQueue.push(
+                            function() {
+                                SerialManager.setFilterOption(
+                                            Number(s1Settings.filterOption)
+                                            )
+                            }
+                            )
             }
 
 
@@ -764,16 +840,16 @@ ApplicationWindow {
             // =====================================================
 
             if (
-                parameterQueue.length > 0
-            ) {
+                    parameterQueue.length > 0
+                    ) {
 
                 parameterSender.start()
 
             } else if (mainTopBar) {
 
                 mainTopBar.showNotification(
-                    "✓ System is ready"
-                )
+                            "✓ System is ready"
+                            )
             }
 
 
@@ -811,19 +887,19 @@ ApplicationWindow {
                     Qt.formatTime(
                         now,
                         "HH:mm"
-                    )
+                        )
 
 
             var alarms =
                     GlobalState
-                    .getValidationTimers()
+            .getValidationTimers()
 
 
             for (
                 var i = 0;
                 i < alarms.length;
                 i++
-            )
+                )
             {
 
                 var alarm =
@@ -831,16 +907,16 @@ ApplicationWindow {
 
 
                 if (
-                    alarm.enabled
-                    &&
-                    alarm.time === currentTime
-                )
+                        alarm.enabled
+                        &&
+                        alarm.time === currentTime
+                        )
                 {
 
                     if (
-                        root.lastTriggeredAlarmTime
-                        !== currentTime
-                    )
+                            root.lastTriggeredAlarmTime
+                            !== currentTime
+                            )
                     {
 
                         root.lastTriggeredAlarmTime =
@@ -848,7 +924,7 @@ ApplicationWindow {
 
 
                         GlobalState
-                            .triggerValidationAlarm()
+                        .triggerValidationAlarm()
                     }
 
 
@@ -936,7 +1012,7 @@ ApplicationWindow {
                 Math.max(
                     63,
                     root.height * 0.08
-                )
+                    )
 
 
             onMenuClicked: {
@@ -961,8 +1037,8 @@ ApplicationWindow {
             onBackClicked: {
 
                 if (
-                    menuStack.length > 0
-                ) {
+                        menuStack.length > 0
+                        ) {
 
                     var previous =
                             menuStack.pop()
@@ -992,12 +1068,12 @@ ApplicationWindow {
 
 
                     if (
-                        swipeViewLoader.item
-                    ) {
+                            swipeViewLoader.item
+                            ) {
 
                         swipeViewLoader
-                            .item
-                            .currentIndex = 0
+                        .item
+                        .currentIndex = 0
 
 
                         navigator.currentPage =
@@ -1056,14 +1132,14 @@ ApplicationWindow {
                 onLoaded: {
 
                     console.log(
-                        "SwipeView loaded."
-                    )
+                                "SwipeView loaded."
+                                )
 
 
                     console.log(
-                        "showTrackingScreen =",
-                        GlobalState.showTrackingScreen
-                    )
+                                "showTrackingScreen =",
+                                GlobalState.showTrackingScreen
+                                )
 
 
                     root.tuneSwipeViewSmoothness()
@@ -1110,14 +1186,14 @@ ApplicationWindow {
 
                         // Apply fonts to newly loaded screen
                         root.applyFontToAllChildren(
-                            item
-                        )
+                                    item
+                                    )
 
 
                         if (
-                            "globalTopBar"
-                            in item
-                        )
+                                "globalTopBar"
+                                in item
+                                )
                         {
                             item.globalTopBar =
                                     mainTopBar
@@ -1125,42 +1201,42 @@ ApplicationWindow {
 
 
                         if (
-                            "navigateTo"
-                            in item
-                        )
+                                "navigateTo"
+                                in item
+                                )
                         {
 
                             item.navigateTo =
                                     function(screen) {
 
-                                if (screen === "DeveloperSettings" &&
-                                        !GlobalState.developerLogin) {
-                                    mainTopBar.showNotification(
-                                                "Developer login is required to open Developer Settings.")
-                                    return
-                                }
+                                        if (screen === "DeveloperSettings" &&
+                                                !GlobalState.developerLogin) {
+                                            mainTopBar.showNotification(
+                                                        "Developer login is required to open Developer Settings.")
+                                            return
+                                        }
 
-                                if (
-                                    root.currentMenuScreen
-                                    !== ""
-                                )
-                                {
+                                        if (
+                                                root.currentMenuScreen
+                                                !== ""
+                                                )
+                                        {
 
-                                    root.menuStack.push(
-                                        root.currentMenuScreen
-                                    )
-                                }
-
-
-                                root.currentMenuScreen =
-                                        screen
+                                            root.menuStack.push(
+                                                        root.currentMenuScreen
+                                                        )
+                                        }
 
 
-                                menuLoader.source =
-                                        "screens/"
-                                        + screen
-                                        + "Screen.qml"
-                            }
+                                        root.currentMenuScreen =
+                                                screen
+
+
+                                        menuLoader.source =
+                                                "screens/"
+                                                + screen
+                                                + "Screen.qml"
+                                    }
                         }
                     }
                 }
@@ -1188,7 +1264,7 @@ ApplicationWindow {
                 Math.max(
                     32,
                     root.height * 0.015
-                )
+                    )
 
 
             // =================================================
@@ -1198,25 +1274,25 @@ ApplicationWindow {
             pageNames:
                 GlobalState.showTrackingScreen
                 ? [
-                    "Dashboard",
+                      "Dashboard",
 
-                    GlobalState.showDDuster
-                        ? "Batch & DD"
-                        : "Batch Menu",
+                      GlobalState.showDDuster
+                      ? "Batch & DD"
+                      : "Batch Menu",
 
-                    "Tracking Phase",
+                      "Tracking Phase",
 
-                    "About Machine"
-                ]
+                      "About Machine"
+                  ]
                 : [
-                    "Dashboard",
+                      "Dashboard",
 
-                    GlobalState.showDDuster
-                        ? "Batch & DD"
-                        : "Batch Menu",
+                      GlobalState.showDDuster
+                      ? "Batch & DD"
+                      : "Batch Menu",
 
-                    "About Machine"
-                ]
+                      "About Machine"
+                  ]
 
 
             // =================================================
@@ -1239,15 +1315,15 @@ ApplicationWindow {
             onPreviousClicked: {
 
                 if (
-                    swipeViewLoader.item
-                    &&
-                    swipeViewLoader.item.currentIndex
-                    > 0
-                ) {
+                        swipeViewLoader.item
+                        &&
+                        swipeViewLoader.item.currentIndex
+                        > 0
+                        ) {
 
                     swipeViewLoader
-                        .item
-                        .currentIndex--
+                    .item
+                    .currentIndex--
                 }
             }
 
@@ -1259,16 +1335,16 @@ ApplicationWindow {
             onNextClicked: {
 
                 if (
-                    swipeViewLoader.item
-                    &&
-                    swipeViewLoader.item.currentIndex
-                    <
-                    swipeViewLoader.item.count - 1
-                ) {
+                        swipeViewLoader.item
+                        &&
+                        swipeViewLoader.item.currentIndex
+                        <
+                        swipeViewLoader.item.count - 1
+                        ) {
 
                     swipeViewLoader
-                        .item
-                        .currentIndex++
+                    .item
+                    .currentIndex++
                 }
             }
 
@@ -1280,25 +1356,25 @@ ApplicationWindow {
             onPageSelected:
                 function(index) {
 
-                if (
-                    !swipeViewLoader.item
-                )
-                    return
+                    if (
+                            !swipeViewLoader.item
+                            )
+                        return
 
 
-                if (
-                    index >= 0
-                    &&
-                    index <
-                    swipeViewLoader.item.count
-                ) {
+                    if (
+                            index >= 0
+                            &&
+                            index <
+                            swipeViewLoader.item.count
+                            ) {
 
-                    swipeViewLoader
+                        swipeViewLoader
                         .item
                         .currentIndex =
-                            index
+                         index
+                    }
                 }
-            }
         }
     }
 
@@ -1393,34 +1469,34 @@ ApplicationWindow {
                 navigateTo:
                     function(screen) {
 
-                    if (
-                        root.currentMenuScreen
-                        !== ""
-                    ) {
+                        if (
+                                root.currentMenuScreen
+                                !== ""
+                                ) {
 
-                        root.menuStack.push(
-                            root.currentMenuScreen
-                        )
+                            root.menuStack.push(
+                                        root.currentMenuScreen
+                                        )
+                        }
+
+
+                        root.currentMenuScreen =
+                                screen
+
+
+                        menuLoader.source =
+                                "screens/"
+                                + screen
+                                + "Screen.qml"
+
+
+                        menuLoader.active =
+                                true
+
+
+                        mainTopBar.showBackButton =
+                                true
                     }
-
-
-                    root.currentMenuScreen =
-                            screen
-
-
-                    menuLoader.source =
-                            "screens/"
-                            + screen
-                            + "Screen.qml"
-
-
-                    menuLoader.active =
-                            true
-
-
-                    mainTopBar.showBackButton =
-                            true
-                }
             }
 
 
@@ -1592,34 +1668,34 @@ ApplicationWindow {
                 navigateTo:
                     function(screen) {
 
-                    if (
-                        root.currentMenuScreen
-                        !== ""
-                    ) {
+                        if (
+                                root.currentMenuScreen
+                                !== ""
+                                ) {
 
-                        root.menuStack.push(
-                            root.currentMenuScreen
-                        )
+                            root.menuStack.push(
+                                        root.currentMenuScreen
+                                        )
+                        }
+
+
+                        root.currentMenuScreen =
+                                screen
+
+
+                        menuLoader.source =
+                                "screens/"
+                                + screen
+                                + "Screen.qml"
+
+
+                        menuLoader.active =
+                                true
+
+
+                        mainTopBar.showBackButton =
+                                true
                     }
-
-
-                    root.currentMenuScreen =
-                            screen
-
-
-                    menuLoader.source =
-                            "screens/"
-                            + screen
-                            + "Screen.qml"
-
-
-                    menuLoader.active =
-                            true
-
-
-                    mainTopBar.showBackButton =
-                            true
-                }
             }
 
 
@@ -1756,8 +1832,8 @@ ApplicationWindow {
             if (!visible) {
 
                 if (
-                    GlobalState.activeInputField
-                )
+                        GlobalState.activeInputField
+                        )
                 {
 
                     GlobalState.activeInputField.focus =
