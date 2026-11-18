@@ -354,8 +354,10 @@ Item {
 
                                                 hourTumbler.currentIndex = h
 
-                                                var minuteMap = { "00": 0, "15": 1, "30": 2, "45": 3 }
-                                                minuteTumbler.currentIndex = minuteMap[m] !== undefined ? minuteMap[m] : 0
+                                                var minuteValue = parseInt(m)
+                                                minuteTumbler.currentIndex =
+                                                        minuteValue >= 0 && minuteValue < 60
+                                                        ? minuteValue : 0
 
                                                 timePopup.open()
                                             }
@@ -521,12 +523,12 @@ Item {
 
                                             anchors.fill: parent
 
-                                            model: ["00", "15", "30", "45"]
+                                            model: 60
                                             visibleItemCount: 3
                                             wrap: true
 
                                             delegate: Text {
-                                                text: modelData
+                                                text: modelData < 10 ? "0" + modelData : modelData
 
                                                 width: parent.width
                                                 height: 48 * root.scale
@@ -572,7 +574,7 @@ Item {
                                         var h = hourTumbler.currentIndex
                                         var m = minuteTumbler.currentIndex
 
-                                        var minutes = ["00", "15", "30", "45"][m]
+                                        var minutes = m < 10 ? "0" + m : m.toString()
                                         var hours = h < 10 ? "0" + h : h
 
                                         var newTime = hours + ":" + minutes

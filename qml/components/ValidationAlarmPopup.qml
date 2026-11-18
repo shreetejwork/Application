@@ -5,7 +5,6 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Popup {
-
     id: validationAlarmPopup
 
     Typography {
@@ -15,35 +14,30 @@ Popup {
 
     property string popupTitle: "Validation Reminder"
     property string popupMessage: "This is reminder for Validation"
+    property real baseWidth: 1024
+    property real baseHeight: 600
+    property real uiScale: Math.min(
+                               Overlay.overlay.width / baseWidth,
+                               Overlay.overlay.height / baseHeight
+                           )
+    property bool minimized: false
+
+    signal continueClicked()
+
     AccessDeniedPopup {
         id: accessDeniedPopup
     }
 
-    property real baseWidth: 1024
-    property real baseHeight: 600
-
-    property real uiScale: Math.min(
-                                  Overlay.overlay.width / baseWidth,
-                                  Overlay.overlay.height / baseHeight
-                              )
-
-    property bool minimized: false
-
-    function saveValidationAudit(action)
-    {
+    function saveValidationAudit(action) {
         var role = GlobalState.loggedInUserRole
         var username = GlobalState.loggedInUserName
-
         var auditUser = "---"
 
         if (GlobalState.developerLogin) {
             auditUser = "D/Developer"
-        }
-        else if (GlobalState.engineerLogin) {
+        } else if (GlobalState.engineerLogin) {
             auditUser = "E/Engineer"
-        }
-        else if (role !== "" && username !== "") {
-
+        } else if (role !== "" && username !== "") {
             var initial = "U"
 
             if (role === "Admin")
@@ -56,12 +50,7 @@ Popup {
             auditUser = initial + "/" + username
         }
 
-        databaseManager.addAuditTrailRecord(
-                    auditUser,
-                    "",
-                    "",
-                    action
-                    )
+        databaseManager.addAuditTrailRecord(auditUser, "", "", action)
     }
 
     function requireLogin() {
@@ -80,12 +69,11 @@ Popup {
         saveValidationAudit("Remainder for validation")
     }
 
-    signal continueClicked()
-
     Timer {
         id: minimizeTimer
         interval: 5 * 60 * 1000
         repeat: false
+
         onTriggered: {
             if (!validationAlarmPopup.minimized)
                 return
@@ -98,7 +86,6 @@ Popup {
     modal: true
     focus: true
     dim: true
-
     closePolicy: Popup.NoAutoClose
 
     Overlay.modal: Rectangle {
@@ -107,20 +94,13 @@ Popup {
 
     width: 520 * uiScale
     height: 360 * uiScale
-
     x: (Overlay.overlay.width - width) / 2
+    y: (Overlay.overlay.height - height) / 2 + 35 * uiScale
 
-    // Move slightly downward
-    y: (Overlay.overlay.height - height) / 2 + (35 * uiScale)
-
-    //------------------------------------------------------
-    // Open animation
-    //------------------------------------------------------
+    background: Item {}
 
     enter: Transition {
-
         ParallelAnimation {
-
             NumberAnimation {
                 property: "opacity"
                 from: 0
@@ -128,25 +108,18 @@ Popup {
                 duration: 350
                 easing.type: Easing.OutQuad
             }
-
             NumberAnimation {
                 property: "scale"
                 from: 0.85
-                to: 1.0
+                to: 1
                 duration: 350
                 easing.type: Easing.OutBack
             }
         }
     }
 
-    //------------------------------------------------------
-    // Close animation
-    //------------------------------------------------------
-
     exit: Transition {
-
         ParallelAnimation {
-
             NumberAnimation {
                 property: "opacity"
                 from: 1
@@ -154,7 +127,6 @@ Popup {
                 duration: 250
                 easing.type: Easing.InQuad
             }
-
             NumberAnimation {
                 property: "scale"
                 from: 1
@@ -165,116 +137,61 @@ Popup {
         }
     }
 
-    //------------------------------------------------------
-    // Remove Popup default background
-    //------------------------------------------------------
-
-    background: Item {
-
+    contentItem: Item {
         id: popupContent
-
         implicitWidth: validationAlarmPopup.width
         implicitHeight: validationAlarmPopup.height
 
-        transformOrigin: Item.Center
-
-        //--------------------------------------------------
-        // Glow Border
-        //--------------------------------------------------
-
         Rectangle {
-
             id: glowBorder
-
             anchors.centerIn: parent
-
-            width: parent.width + 12 * uiScale
-            height: parent.height + 12 * uiScale
-
-            radius: 26 * uiScale
-
+            width: parent.width + 12 * validationAlarmPopup.uiScale
+            height: parent.height + 12 * validationAlarmPopup.uiScale
+            radius: 26 * validationAlarmPopup.uiScale
             color: "transparent"
-
             border.color: "#1A4DB5"
             border.width: 3
-
             opacity: 0.15
-
-
             antialiasing: true
         }
-
-        //--------------------------------------------------
-        // Main Background
-        //--------------------------------------------------
 
         Rectangle {
-
             anchors.fill: parent
-
-            radius: 20 * uiScale
-
+            radius: 20 * validationAlarmPopup.uiScale
             color: "#EBEBEB"
-
             border.color: "#C8C8C8"
             border.width: 1
-
             antialiasing: true
         }
 
-        //--------------------------------------------------
-        // Content
-        //--------------------------------------------------
-
         ColumnLayout {
-
             anchors.fill: parent
-
-            anchors.margins: 24 * uiScale
-
-            spacing: 18 * uiScale
+            anchors.margins: 24 * validationAlarmPopup.uiScale
+            spacing: 18 * validationAlarmPopup.uiScale
 
             Text {
-
                 Layout.alignment: Qt.AlignHCenter
-
-                Layout.bottomMargin: 35 * uiScale
-
+                Layout.bottomMargin: 35 * validationAlarmPopup.uiScale
                 text: validationAlarmPopup.popupTitle
-
                 font.pixelSize: popupTypography.title
-
                 color: "#1A4DB5"
             }
 
             Rectangle {
-
                 Layout.fillWidth: true
-
-                height: 82 * uiScale
-
-                radius: 10 * uiScale
-
+                Layout.preferredHeight: 82 * validationAlarmPopup.uiScale
+                radius: 10 * validationAlarmPopup.uiScale
                 color: "#F2F2F2"
-
                 border.color: "#1A4DB5"
-
                 antialiasing: true
 
                 Text {
-
                     anchors.centerIn: parent
-
                     width: parent.width * 0.9
-
                     text: validationAlarmPopup.popupMessage
-
                     wrapMode: Text.WordWrap
-
                     horizontalAlignment: Text.AlignHCenter
-
                     font.pixelSize: popupTypography.body
-
                     color: "#1A1A2E"
                 }
             }
@@ -284,190 +201,154 @@ Popup {
             }
 
             Row {
-
                 Layout.alignment: Qt.AlignHCenter
-                spacing: 18 * uiScale
+                spacing: 18 * validationAlarmPopup.uiScale
 
-                // Skip
-                Rectangle {
-                    width: 120 * uiScale
-                    height: 48 * uiScale
-                    radius: 10 * uiScale
-                    color: "white"
-                    border.color: "#1A4DB5"
-                    border.width: 2
-                    antialiasing: true
+                Button {
+                    id: skipButton
+                    text: "Skip"
+                    width: 120 * validationAlarmPopup.uiScale
+                    height: 48 * validationAlarmPopup.uiScale
+                    padding: 0
+                    font.pixelSize: popupTypography.body
 
-                    Text {
-                        anchors.centerIn: parent
-                        text: "Skip"
-                        color: "#1A4DB5"
-                        font.pixelSize: popupTypography.body
-                    }
-
-                    MouseArea {
-                        anchors.fill: parent
-                        onClicked: {
-                            if (!validationAlarmPopup.requireLogin())
-                                return
-
-                            saveValidationAudit("Validation Skipped")
-
-                            minimizeTimer.stop()
-                            validationAlarmPopup.close()
-                        }
-                    }
-                }
-
-                // Minimize
-                Rectangle {
-
-                    width: 120 * uiScale
-                    height: 48 * uiScale
-                    radius: 10 * uiScale
-                    color: "white"
-                    border.color: "#1A4DB5"
-                    border.width: 2
-                    antialiasing: true
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "Minimize"
-                        color: "#1A4DB5"
-                        font.pixelSize: popupTypography.body
-                    }
-
-                    MouseArea {
-
-                        anchors.fill: parent
-
-                        onClicked: {
-                            validationAlarmPopup.minimized = true
-                            minimizeTimer.restart()
-                            validationAlarmPopup.visible = false
-                        }
-                    }
-                }
-
-                // Continue
-                Rectangle {
-
-                    width: 120 * uiScale
-                    height: 48 * uiScale
-
-                    radius: 10 * uiScale
-
-                    color: "#1A4DB5"
-
-                    antialiasing: true
-
-                    Text {
-                        anchors.centerIn: parent
-                        text: "Continue"
+                    background: Rectangle {
+                        radius: 10 * validationAlarmPopup.uiScale
                         color: "white"
-                        font.pixelSize: popupTypography.body
+                        border.color: "#1A4DB5"
+                        border.width: 2
+                        antialiasing: true
                     }
 
-                    MouseArea {
+                    contentItem: Text {
+                        text: skipButton.text
+                        color: "#1A4DB5"
+                        font: skipButton.font
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
 
-                        anchors.fill: parent
+                    onClicked: {
+                        if (!validationAlarmPopup.requireLogin())
+                            return
 
-                        onClicked: {
-                            if (!validationAlarmPopup.requireLogin())
-                                return
+                        validationAlarmPopup.saveValidationAudit("Validation Skipped")
+                        minimizeTimer.stop()
+                        validationAlarmPopup.close()
+                    }
+                }
 
-                            saveValidationAudit("Validation Started")
+                Button {
+                    id: minimizeButton
+                    text: "Minimize"
+                    width: 120 * validationAlarmPopup.uiScale
+                    height: 48 * validationAlarmPopup.uiScale
+                    padding: 0
+                    font.pixelSize: popupTypography.body
 
-                            minimizeTimer.stop()
-                            validationAlarmPopup.close()
+                    background: Rectangle {
+                        radius: 10 * validationAlarmPopup.uiScale
+                        color: "white"
+                        border.color: "#1A4DB5"
+                        border.width: 2
+                        antialiasing: true
+                    }
 
-                            validationAlarmPopup.continueClicked()
-                        }
+                    contentItem: Text {
+                        text: minimizeButton.text
+                        color: "#1A4DB5"
+                        font: minimizeButton.font
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    onClicked: {
+                        validationAlarmPopup.minimized = true
+                        minimizeTimer.restart()
+                        validationAlarmPopup.visible = false
+                    }
+                }
+
+                Button {
+                    id: continueButton
+                    text: "Continue"
+                    width: 120 * validationAlarmPopup.uiScale
+                    height: 48 * validationAlarmPopup.uiScale
+                    padding: 0
+                    font.pixelSize: popupTypography.body
+
+                    background: Rectangle {
+                        radius: 10 * validationAlarmPopup.uiScale
+                        color: "#1A4DB5"
+                        antialiasing: true
+                    }
+
+                    contentItem: Text {
+                        text: continueButton.text
+                        color: "white"
+                        font: continueButton.font
+                        horizontalAlignment: Text.AlignHCenter
+                        verticalAlignment: Text.AlignVCenter
+                    }
+
+                    onClicked: {
+                        if (!validationAlarmPopup.requireLogin())
+                            return
+
+                        validationAlarmPopup.saveValidationAudit("Validation Started")
+                        minimizeTimer.stop()
+                        validationAlarmPopup.close()
+                        validationAlarmPopup.continueClicked()
                     }
                 }
             }
         }
-    }
 
-    //------------------------------------------------------
-    // Heartbeat Animation
-    //------------------------------------------------------
+        SequentialAnimation {
+            running: validationAlarmPopup.visible
+            loops: Animation.Infinite
 
-    SequentialAnimation {
-
-        running: validationAlarmPopup.visible
-
-        loops: Animation.Infinite
-
-        NumberAnimation {
-
-            target: popupContent
-
-            property: "scale"
-
-            from: 1.0
-            to: 1.02
-
-            duration: 650
-
-            easing.type: Easing.InOutSine
+            NumberAnimation {
+                target: popupContent
+                property: "scale"
+                from: 1
+                to: 1.02
+                duration: 650
+                easing.type: Easing.InOutSine
+            }
+            NumberAnimation {
+                target: popupContent
+                property: "scale"
+                from: 1.02
+                to: 1
+                duration: 650
+                easing.type: Easing.InOutSine
+            }
+            PauseAnimation {
+                duration: 400
+            }
         }
 
-        NumberAnimation {
+        SequentialAnimation {
+            running: validationAlarmPopup.visible
+            loops: Animation.Infinite
 
-            target: popupContent
-
-            property: "scale"
-
-            from: 1.02
-            to: 1.0
-
-            duration: 650
-
-            easing.type: Easing.InOutSine
-        }
-
-        PauseAnimation {
-            duration: 400
-        }
-    }
-
-    //------------------------------------------------------
-    // Glow Animation
-    //------------------------------------------------------
-
-    SequentialAnimation {
-
-        running: validationAlarmPopup.visible
-
-        loops: Animation.Infinite
-
-        NumberAnimation {
-
-            target: glowBorder
-
-            property: "opacity"
-
-            from: 0.12
-            to: 0.35
-
-            duration: 700
-
-            easing.type: Easing.InOutQuad
-        }
-
-        NumberAnimation {
-
-            target: glowBorder
-
-            property: "opacity"
-
-            from: 0.35
-            to: 0.12
-
-            duration: 700
-
-            easing.type: Easing.InOutQuad
+            NumberAnimation {
+                target: glowBorder
+                property: "opacity"
+                from: 0.12
+                to: 0.35
+                duration: 700
+                easing.type: Easing.InOutQuad
+            }
+            NumberAnimation {
+                target: glowBorder
+                property: "opacity"
+                from: 0.35
+                to: 0.12
+                duration: 700
+                easing.type: Easing.InOutQuad
+            }
         }
     }
 }

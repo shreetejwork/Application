@@ -306,6 +306,17 @@ Popup {
 
             stop()
 
+            var undetectedRound = false
+            for (var i = 0; i < validationpopupnew.totalRounds; i++) {
+                if (!validationpopupnew.roundStatus[i]) {
+                    undetectedRound = true
+                    break
+                }
+            }
+
+            if (!undetectedRound)
+                return
+
             validationpopupnew.rejectCycleStarted = false
 
             validationpopupnew.validationState = "failed"

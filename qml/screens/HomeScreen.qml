@@ -1075,7 +1075,7 @@ Item {
                                 horizontalAlignment: Text.AlignHCenter
                                 verticalAlignment: Text.AlignVCenter
 
-                                text: "DEFECT DETECTED"
+                                text: "METAL DETECTED"
 
                                 color: "#5E5C64"
                                 font.pixelSize: 16
