@@ -259,8 +259,6 @@ Popup {
 
         recordAudit("Validation Skipped")
 
-        notify("Validation exit clicked")
-
         close()
     }
 
@@ -271,8 +269,6 @@ Popup {
         rejectCycleStarted = false
 
         GlobalState.countRejection = true
-
-        notify("Validation close clicked")
 
         close()
     }
