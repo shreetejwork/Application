@@ -78,6 +78,14 @@ Item {
         )
     }
 
+    function notifyMachineDetailsSaved(message) {
+        if (root.notify)
+            root.notify(message)
+
+        if (root.globalTopBar && root.globalTopBar.resetSessionTimer)
+            root.globalTopBar.resetSessionTimer()
+    }
+
     Behavior on keyboardHeight {
         NumberAnimation { duration: 260; easing.type: Easing.OutQuart }
     }
@@ -88,7 +96,7 @@ Item {
 
         GlobalState.supplierName = data.supplierName || ""
         GlobalState.serialNumber = data.serialNumber || ""
-        GlobalState.machineId    = data.machineId || "PHMX"
+        GlobalState.machineId    = data.machineId || ""
         GlobalState.userName     = data.userName || ""
         GlobalState.location     = data.location || ""
     }
@@ -321,8 +329,7 @@ Item {
                         )
                     }
 
-                    if (root.notify)
-                        root.notify("✓ Supplier Name Saved")
+                    root.notifyMachineDetailsSaved("✓ Supplier Name Saved")
                 }
 
                 else if (id === "machineId") {
@@ -336,8 +343,7 @@ Item {
                         )
                     }
 
-                    if (root.notify)
-                        root.notify("✓ Machine ID Saved")
+                    root.notifyMachineDetailsSaved("✓ Machine ID Saved")
                 }
 
                 else if (id === "user") {
@@ -351,8 +357,7 @@ Item {
                         )
                     }
 
-                    if (root.notify)
-                        root.notify("✓ User Saved")
+                    root.notifyMachineDetailsSaved("✓ User Saved")
                 }
 
                 else if (id === "location") {
@@ -366,8 +371,7 @@ Item {
                         )
                     }
 
-                    if (root.notify)
-                        root.notify("✓ Location Saved")
+                    root.notifyMachineDetailsSaved("✓ Location Saved")
                 }
 
                 else if (id === "serialNumber") {
@@ -381,8 +385,7 @@ Item {
                         )
                     }
 
-                    if (root.notify)
-                        root.notify("✓ Serial Number Saved")
+                    root.notifyMachineDetailsSaved("✓ Serial Number Saved")
                 }
 
 

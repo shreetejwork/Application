@@ -244,14 +244,14 @@ Item {
                         onTileClicked: navigateTo("DeveloperSettings")
                     }
 
-                    // MenuTile {
-                    //     iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
-                    //     label:      "Machine\nDocuments"
-                    //     iconSize:   100 * root.scale
-                    //     visible: true
-                    //     enabled: true
-                    //     onTileClicked: navigateTo("MachineDocuments")
-                    // }
+                    MenuTile {
+                        iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
+                        label:      "Machine\nDocuments"
+                        iconSize:   100 * root.scale
+                        visible: true
+                        enabled: true
+                        onTileClicked: navigateTo("MachineDocuments")
+                    }
 
                     MenuTile {
 

@@ -348,8 +348,15 @@ QString PdfExporter::generateMachineSummaryDocument(
         return QString();
 
     const QDateTime createdAt = QDateTime::currentDateTime();
+    QString machineId = machineInfo.value("machineId").toString().trimmed();
+    if (machineId.isEmpty())
+        machineId = "Unknown";
+    for (const QChar invalidCharacter : QStringLiteral("/\\:*?\"<>|"))
+        machineId.replace(invalidCharacter, QLatin1Char('_'));
+
     const QString filePath =
-        QDir(folderPath).filePath("Machine_Summary_Document.pdf");
+        QDir(folderPath).filePath(
+            "Machine_Summary_Document_" + machineId + ".pdf");
 
     QPdfWriter writer(filePath);
     writer.setTitle("Machine Summary Document");
@@ -393,7 +400,6 @@ QString PdfExporter::generateMachineSummaryDocument(
     };
 
     const QString supplierName = machineInfo.value("supplierName").toString();
-    const QString machineId = machineInfo.value("machineId").toString();
     const QString machineSerial = machineInfo.value("serialNumber").toString();
     const QString machineType = machineInfo.value("machineType").toString();
     const QString location = machineInfo.value("location").toString();

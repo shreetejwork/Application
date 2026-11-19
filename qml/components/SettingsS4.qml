@@ -87,7 +87,7 @@ Item {
 
         GlobalState.supplierName = data.supplierName || ""
         GlobalState.serialNumber = data.serialNumber || ""
-        GlobalState.machineId    = data.machineId || "PHMX"
+        GlobalState.machineId    = data.machineId || ""
         GlobalState.userName     = data.userName || ""
         GlobalState.location     = data.location || ""
     }
