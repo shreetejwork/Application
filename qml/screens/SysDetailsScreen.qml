@@ -13,7 +13,8 @@ Item {
     property var globalTopBar
 
     property real baseHeight: 700
-    property real scale: Math.max(0.9, Math.min(1.8, height / baseHeight))
+    property real viewportScale: Math.min(1, width / 1024, (height + 95) / 600)
+    property real scale: Math.max(0.9 * viewportScale, Math.min(1.8, height / baseHeight))
 
     Connections {
         target: GlobalState

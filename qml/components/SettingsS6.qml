@@ -7,7 +7,8 @@ Item {
     id: root
     anchors.fill: parent
 
-    property real scale: Math.max(0.85, Math.min(width / 1024, height / 600))
+    property real viewportScale: Math.min(1, width / 1024, (height + 95) / 600)
+    property real scale: Math.max(0.85 * viewportScale, Math.min(width / 1024, height / 600))
 
     Rectangle {
         anchors.centerIn: parent

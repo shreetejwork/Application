@@ -33,6 +33,11 @@ Popup {
     property int remainingSeconds: roundDuration
     property bool rejectCycleStarted: false
     property string validationState: "running"
+    property real uiScale: Overlay.overlay
+                           ? Math.max(0, Math.min(1,
+                                                  (Overlay.overlay.width - 16) / 850,
+                                                  (Overlay.overlay.height - 16) / 540))
+                           : 1
 
     property color stateColor: validationState === "failed"
                                  ? "#FF5252"
@@ -91,6 +96,17 @@ Popup {
         timerArcCanvas.requestPaint()
         countdownTimer.start()
     }
+
+    function updatePopupScale() {
+        if (contentItem)
+            contentItem.scale = uiScale
+        if (background)
+            background.scale = uiScale
+    }
+
+    onUiScaleChanged: updatePopupScale()
+
+    Component.onCompleted: updatePopupScale()
 
     function completeRound() {
         if (validationState !== "running" ||

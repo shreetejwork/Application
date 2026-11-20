@@ -2,6 +2,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQuickWindow>
+#include <QScreen>
 #include <QFontDatabase>
 #include <QFont>
 
@@ -187,11 +188,15 @@ int main(int argc, char *argv[])
 
     if (window)
     {
-        window->setWidth(1024);
-        window->setHeight(600);
+        const QScreen *screen = QGuiApplication::primaryScreen();
+        const QSize screenSize = screen
+                ? screen->geometry().size()
+                : QSize(1024, 600);
 
-        window->setMinimumSize(QSize(1024, 600));
-        window->setMaximumSize(QSize(1024, 600));
+        window->setWidth(qMin(1024, screenSize.width()));
+        window->setHeight(qMin(600, screenSize.height()));
+        window->setMinimumSize(QSize(qMin(800, screenSize.width()),
+                                     qMin(480, screenSize.height())));
     }
 
     return app.exec();

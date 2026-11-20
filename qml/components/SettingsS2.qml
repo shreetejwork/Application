@@ -14,7 +14,8 @@ Item {
     // ===== RESPONSIVE SCALE =====
     property real baseWidth: 1024
     property real baseHeight: 600
-    property real scale: Math.max(0.85, Math.min(width / baseWidth, height / baseHeight))
+    property real viewportScale: Math.min(1, width / baseWidth, (height + 95) / baseHeight)
+    property real scale: Math.max(0.85 * viewportScale, Math.min(width / baseWidth, height / baseHeight))
     
     // =========================================================
     // TYPOGRAPHY FOR SETTINGS S2

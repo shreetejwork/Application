@@ -14,6 +14,7 @@ Item {
 
     property bool showTopBar: true
     property var globalTopBar
+    property real scale: Math.min(1, width / 1024, (height + 95) / 600)
 
     property string lastValidBatch: "General Batch"
     property string lastValidProduct: "Default Product"
@@ -373,7 +374,7 @@ Item {
                     ColumnLayout {
                         anchors.fill: parent
                         anchors.margins: 24
-                        spacing: 20
+                        spacing: 20 * root.scale
 
                         ColumnLayout {
                             Layout.fillWidth: true
@@ -731,12 +732,12 @@ Item {
                             // START
                             ActionButton {
                                 text: "Batch Start"
-                                width: 100
-                                height: 60
+                                width: 100 * root.scale
+                                height: 60 * root.scale
                                 bgColor: "#1A4DB5"
                                 hoverColor: "#123A8A"
 
-                                font.pixelSize : 18
+                                font.pixelSize: Math.max(14, 18 * root.scale)
 
                                 enabled: !root.batchRunning
 
@@ -873,8 +874,8 @@ Item {
                                       ? "Batch Resume"
                                       : "Batch Pause"
 
-                                width: 110
-                                height: 60
+                                width: 110 * root.scale
+                                height: 60 * root.scale
 
                                 // Green when paused, original blue when resumed
                                 bgColor: root.batchPaused
@@ -887,7 +888,7 @@ Item {
 
                                 enabled: root.batchRunning
 
-                                font.pixelSize: 18
+                                font.pixelSize: Math.max(14, 18 * root.scale)
 
                                 onClicked: {
 
@@ -988,14 +989,14 @@ Item {
                             // END
                             ActionButton {
                                 text: "Batch End"
-                                width: 100
-                                height: 60
+                                width: 100 * root.scale
+                                height: 60 * root.scale
                                 bgColor: "#1A4DB5"
                                 hoverColor: "#123A8A"
 
                                 enabled: root.batchRunning
 
-                                font.pixelSize : 18
+                                font.pixelSize: Math.max(14, 18 * root.scale)
 
                                 onClicked: {
 
@@ -1166,7 +1167,7 @@ Item {
 
                     Rectangle {
                         Layout.fillWidth: true
-                        Layout.preferredHeight: 140
+                        Layout.preferredHeight: 140 * root.scale
                         radius: 16
                         color: "#FFFFFF"
                         border.color: "#E5E7EB"
@@ -1190,6 +1191,8 @@ Item {
 
                             DDButton {
                                 id: ddBtn
+                                width: 160 * root.scale
+                                height: 60 * root.scale
 
                                 Layout.alignment: Qt.AlignHCenter
 

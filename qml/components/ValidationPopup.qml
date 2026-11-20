@@ -37,6 +37,11 @@ Popup {
 
     property bool rejectCycleStarted: false
     property string validationState: "running"
+    property real uiScale: Overlay.overlay
+                           ? Math.max(0, Math.min(1,
+                                                  (Overlay.overlay.width - 16) / 850,
+                                                  (Overlay.overlay.height - 16) / 540))
+                           : 1
 
     readonly property color stateColor:
         validationState === "failed"
@@ -454,6 +459,7 @@ Popup {
 
         width: validationpopupnew.width
         height: validationpopupnew.height
+        scale: validationpopupnew.uiScale
 
         // ============================================================
         // OUTER GLOW

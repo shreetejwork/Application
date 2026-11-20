@@ -7,9 +7,14 @@ Popup {
 
     width: 850
     height: 460
+    property real uiScale: Overlay.overlay
+                           ? Math.max(0, Math.min(1,
+                                                  (Overlay.overlay.width - 16) / width,
+                                                  (Overlay.overlay.height - 16) / height))
+                           : 1
 
     x: Overlay.overlay
-       ? Math.max(10, Math.round((Overlay.overlay.width - width) / 2))
+       ? Math.round((Overlay.overlay.width - width) / 2)
        : 0
 
     y: Overlay.overlay
@@ -171,6 +176,7 @@ Popup {
     // ============================================================
 
     background: Rectangle {
+        scale: popupRoot.uiScale
 
         radius: 24
 
@@ -198,8 +204,8 @@ Popup {
     // ============================================================
 
     contentItem: ColumnLayout {
-
         anchors.fill: parent
+        scale: popupRoot.uiScale
 
         anchors.leftMargin: 28
         anchors.rightMargin: 28

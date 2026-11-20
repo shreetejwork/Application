@@ -10,7 +10,8 @@ Item {
     // ── Scale: keep diagnosis text readable on smaller displays ──────
     property real baseWidth:  1024
     property real baseHeight: 600
-    property real scale: Math.max(0.8, Math.min(width / baseWidth, height / baseHeight))
+    property real viewportScale: Math.min(1, width / baseWidth, (height + 95) / baseHeight)
+    property real scale: Math.max(0.8 * viewportScale, Math.min(width / baseWidth, height / baseHeight))
 
     Typography {
         id: diagnosisTypography
