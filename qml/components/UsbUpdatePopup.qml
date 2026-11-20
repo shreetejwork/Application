@@ -5,12 +5,11 @@ import QtQuick.Layouts
 Popup {
     id: popupRoot
 
-    width: 850
-    height: 460
+    width: Overlay.overlay ? Math.min(850, Overlay.overlay.width - 16) : 850
+    height: Overlay.overlay ? Math.min(460, Overlay.overlay.height - 20) : 460
     property real uiScale: Overlay.overlay
                            ? Math.max(0, Math.min(1,
-                                                  (Overlay.overlay.width - 16) / width,
-                                                  (Overlay.overlay.height - 16) / height))
+                                                  (Overlay.overlay.height - 16) / 460))
                            : 1
 
     x: Overlay.overlay

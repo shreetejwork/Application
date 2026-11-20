@@ -412,7 +412,7 @@ Item {
             // ══════════════════════════════════════════════════════
             Rectangle {
                 Layout.fillWidth: true
-                height: root.width < 900 ? 58 : 60 * root.scale
+                height: root.width < 900 ? 48 : 60 * root.scale
                 color: "#FFFFFF"
                 radius: 12 * root.scale
                 border.color: "#C8D4EE"
@@ -542,8 +542,8 @@ Item {
                     // ── Move to USB ───────────────────────────────────────
                     Rectangle {
                         visible: root.selectionMode
-                        width: root.width < 900 ? 120 : 100 * root.scale
-                        height: root.width < 900 ? 40 : 38 * root.scale
+                        width: root.width < 900 ? 92 : 100 * root.scale
+                        height: root.width < 900 ? 34 : 38 * root.scale
                         radius: 8 * root.scale
                         color: "#FFFFFF"
                         border.color: "#2E7D32"
@@ -552,7 +552,7 @@ Item {
                         Text {
                             anchors.centerIn: parent
                             text: "Move to USB"
-                            font.pixelSize: 15
+                            font.pixelSize: root.width < 900 ? 13 : 15
                             font.weight: Font.Medium
                             color: "#2E7D32"
                         }
