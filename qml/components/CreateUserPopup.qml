@@ -18,9 +18,7 @@ Popup {
 
     property var globalTopBar: null
 
-    Component.onCompleted: {
-        root.applyFontToAllChildren(this)
-    }
+    font.family: Application.font.family
 
     property string errorText: ""
     property bool hasError: false
@@ -89,24 +87,21 @@ Popup {
 
     closePolicy: Popup.NoAutoClose
 
+    property real usableHeight: Overlay.overlay
+                                ? Overlay.overlay.height * (GlobalState.loginKeyboardRequest ? 0.5 : 1)
+                                : height
     width: 520 * scale
-    height: 460 * scale
-
+    height: GlobalState.loginKeyboardRequest
+            ? Math.min(460 * scale, Math.max(0, usableHeight - 16))
+            : 460 * scale
     x: (Overlay.overlay.width - width) / 2
-
-    property real keyboardHeight: GlobalState.loginKeyboardRequest
-                                  ? Overlay.overlay.height * 0.2
-                                  : 0
-
-    property real keyboardOffset:
-        GlobalState.loginKeyboardRequest
-        ? (keyboardHeight / 2 + 40 * scale)
-        : 0
 
     property real baseY:
         (Overlay.overlay.height - height) / 2 - (40 * scale)
 
-    y: baseY - keyboardOffset
+    y: GlobalState.loginKeyboardRequest
+       ? (usableHeight - height) / 2
+       : Math.max(0, baseY)
 
     // ── RESET STATE ──
     onOpened: {

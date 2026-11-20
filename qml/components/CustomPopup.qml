@@ -5,10 +5,6 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Item {
-    Typography {
-        id: componentTypography
-        scale: root.scale || 1.0
-    }
     id: popupRoot
 
     anchors.fill: parent
@@ -24,6 +20,7 @@ Item {
         z: 101
         width: Math.min(parent.width * 0.40, 450)
         height: Math.min(parent.height * 0.80, 700)
+        property real uiScale: Math.min(1, width / 410, height / 425)
         radius: 16
         color: "#FFFFFF"
         anchors.centerIn: parent
@@ -112,13 +109,13 @@ Item {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 20
-            spacing: 12
+            anchors.margins: 20 * popup.uiScale
+            spacing: 12 * popup.uiScale
 
             // ===== TITLE =====
             Text {
                 text: popup.fieldName
-                font.pixelSize: 22
+                font.pixelSize: 22 * popup.uiScale
 
                 horizontalAlignment: Text.AlignHCenter
                 color: "#1A4DB5"
@@ -128,8 +125,8 @@ Item {
             // ===== INPUT =====
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 60
-                radius: 12
+                Layout.preferredHeight: 60 * popup.uiScale
+                radius: 12 * popup.uiScale
                 border.color: popup.hasError ? "#FF5252" : "#D0D0D0"
                 border.width: popup.hasError ? 2 : 1
                 color: "#F8F9FB"
@@ -139,8 +136,8 @@ Item {
                 TextInput {
                     id: inputField
                     anchors.fill: parent
-                    anchors.margins: 12
-                    font.pixelSize: 28
+                    anchors.margins: 12 * popup.uiScale
+                    font.pixelSize: 28 * popup.uiScale
 
                     color: "#333"
                     horizontalAlignment: TextInput.AlignHCenter
@@ -162,18 +159,18 @@ Item {
             // ===== MIN MAX =====
             Rectangle {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 35
-                radius: 8
+                Layout.preferredHeight: 35 * popup.uiScale
+                radius: 8 * popup.uiScale
                 color: "#E8EEFB"
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.margins: 10
+                    anchors.margins: 10 * popup.uiScale
 
                     Text {
                         text: "Min: " + popup.minValue
                         color: "#1A4DB5"
-                        font.pixelSize: 15
+                        font.pixelSize: Math.max(13, 15 * popup.uiScale)
 
                         Layout.fillWidth: true
                     }
@@ -183,7 +180,7 @@ Item {
                     Text {
                         text: "Max: " + popup.maxValue
                         color: "#1A4DB5"
-                        font.pixelSize: 15
+                        font.pixelSize: Math.max(13, 15 * popup.uiScale)
 
                         Layout.fillWidth: true
                     }
@@ -194,21 +191,21 @@ Item {
             Text {
                 text: popup.errorText
                 color: "#FF5252"
-                font.pixelSize: 15
+                font.pixelSize: Math.max(13, 15 * popup.uiScale)
 
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
                 visible: popup.hasError
-                Layout.preferredHeight: visible ? 20 : 0
+                Layout.preferredHeight: visible ? 20 * popup.uiScale : 0
             }
 
             // ===== KEYPAD =====
             GridLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 160
+                Layout.preferredHeight: 160 * popup.uiScale
                 columns: 3
-                rowSpacing: 6
-                columnSpacing: 6
+                rowSpacing: 6 * popup.uiScale
+                columnSpacing: 6 * popup.uiScale
 
                 Repeater {
                     model: ["1","2","3","4","5","6","7","8","9",".","0","⌫"]
@@ -216,7 +213,7 @@ Item {
                     delegate: Rectangle {
                         Layout.fillWidth: true
                         Layout.fillHeight: true
-                        radius: 10
+                        radius: 10 * popup.uiScale
 
                         // "." should be disabled when decimal input is not allowed
                         property bool decimalDisabled:
@@ -256,7 +253,7 @@ Item {
 
                                 text: modelData
 
-                                font.pixelSize: 18
+                                font.pixelSize: 18 * popup.uiScale
 
                                 color: decimalDisabled ? "#999999" : "#333333"
                             }
@@ -304,8 +301,8 @@ Item {
             // ===== BUTTONS =====
             RowLayout {
                 Layout.fillWidth: true
-                Layout.preferredHeight: 48
-                spacing: 10
+                Layout.preferredHeight: 48 * popup.uiScale
+                spacing: 10 * popup.uiScale
 
                 // CANCEL
                 Rectangle {
@@ -318,7 +315,7 @@ Item {
                         anchors.centerIn: parent
                         text: "Cancel"
 
-                        font.pixelSize: 22
+                        font.pixelSize: 22 * popup.uiScale
                     }
 
                     MouseArea {
@@ -343,7 +340,7 @@ Item {
                         text: "Save"
                         color: "white"
 
-                        font.pixelSize: 22
+                        font.pixelSize: 22 * popup.uiScale
                     }
 
                     MouseArea {

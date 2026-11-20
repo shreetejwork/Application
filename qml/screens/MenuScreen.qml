@@ -16,6 +16,7 @@ Item {
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
+    property real tileScale: Math.min(1, width / baseWidth, (height + 63) / 600)
 
     AccessDeniedPopup {
         id: accessDeniedPopup
@@ -77,6 +78,7 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
 
                     MenuTile {
+                        uiScale: root.tileScale
                         iconSource: "qrc:/qt/qml/Application/assets/images/UserCircle.png"
                         label: "User"
                         iconSize: 100 * root.scale
@@ -92,6 +94,7 @@ Item {
                         }
                     }
                     MenuTile {
+                        uiScale: root.tileScale
 
                         visible: GlobalState.showProductLib
 
@@ -103,6 +106,7 @@ Item {
                         }
                     }
                     MenuTile {
+                        uiScale: root.tileScale
                         iconSource: "qrc:/qt/qml/Application/assets/images/Reports.png"
                         label: "Reports"
                         iconSize: 100 * root.scale
@@ -132,6 +136,7 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
 
                     MenuTile {
+                        uiScale: root.tileScale
                         iconSource: "qrc:/qt/qml/Application/assets/images/FactorySettings.png"
                         label: "Factory\nSettings"
                         iconSize: 100 * root.scale
@@ -148,6 +153,7 @@ Item {
                         }
                     }
                     MenuTile {
+                        uiScale: root.tileScale
                         iconSource: "qrc:/qt/qml/Application/assets/images/Settings.png"
                         label: "System\nSettings"
                         iconSize: 100 * root.scale
@@ -156,6 +162,7 @@ Item {
                         }
                     }
                     MenuTile {
+                        uiScale: root.tileScale
                         iconSource: "qrc:/qt/qml/Application/assets/images/diagnosis.png"
                         label: "System\nDiagnosis"
                         iconSize: 100 * root.scale

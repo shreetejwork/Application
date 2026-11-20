@@ -4,7 +4,7 @@ import QtQuick.Layouts
 Rectangle {
     Typography {
         id: componentTypography
-        scale: root.scale || 1.0
+        scale: card.uiScale
     }
     id: card
 

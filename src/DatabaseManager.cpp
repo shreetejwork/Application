@@ -652,14 +652,11 @@ void DatabaseManager::createTables()
     // PRODUCT LIBRARY
     // ============================================================
 
-    for (int groupNo = 1; groupNo <= 10; groupNo++)
+    if (!createProductLibraryTable(1))
     {
-        if (!createProductLibraryTable(groupNo))
-        {
-            qDebug()
-            << "Failed to create product library table:"
-            << groupNo;
-        }
+        qDebug()
+        << "Failed to create product library table:"
+        << 1;
     }
 
     QString defaultTableName = productLibraryTableName(1);

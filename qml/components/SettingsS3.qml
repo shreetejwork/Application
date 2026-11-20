@@ -15,8 +15,11 @@ Item {
     property real baseWidth: 1024
     property real baseHeight: 600
 
-    // ONLY CHANGE: uniform scaling boost (keeps layout identical)
-    property real scale: Math.min(width / baseWidth, height / baseHeight) * 1.10
+    property real scale: {
+        var fitScale = Math.min(width / baseWidth, height / baseHeight)
+        var boostedScale = fitScale * 1.10
+        return height < 537 ? Math.min(boostedScale, height / 560) : boostedScale
+    }
 
     function saveValidationAudit(action, oldValue, newValue)
     {

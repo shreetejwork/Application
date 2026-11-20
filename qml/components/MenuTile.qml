@@ -1,8 +1,10 @@
 import QtQuick
 
  Item {
-    width: 200
-    height: 200
+    property real uiScale: 1
+
+    width: 200 * uiScale
+    height: 200 * uiScale
 
     property string iconSource: ""
     property string label: ""
@@ -11,7 +13,7 @@ import QtQuick
 
     Column {
         anchors.centerIn: parent
-        spacing: 10
+        spacing: 10 * parent.uiScale
 
         Image {
             width: iconSize
@@ -34,7 +36,7 @@ import QtQuick
         Text {
             text: label
             anchors.horizontalCenter: parent.horizontalCenter
-            font.pixelSize: 18
+            font.pixelSize: 18 * parent.parent.uiScale
             color: "#000000"
             horizontalAlignment: Text.AlignHCenter
         }

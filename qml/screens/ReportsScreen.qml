@@ -13,6 +13,7 @@ Item {
     property real baseWidth: 1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
+    property real tileScale: Math.min(1, width / baseWidth, (height + 63) / 600)
 
     // =====================================================
     // STATIC BACKDROP
@@ -133,6 +134,7 @@ Item {
                     Layout.alignment: Qt.AlignHCenter
 
                     MenuTile {
+                        uiScale: root.tileScale
 
                         visible: GlobalState.showAuditTrail
 
@@ -143,6 +145,7 @@ Item {
                     }
 
                     MenuTile {
+                        uiScale: root.tileScale
                         iconSource: "qrc:/qt/qml/Application/assets/images/More.png"
                         label: "Batch Report"
                         iconSize: 100 * root.scale
@@ -150,6 +153,7 @@ Item {
                     }
 
                     MenuTile {
+                        uiScale: root.tileScale
                         iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
                         label: "Generated PDF\n Files"
                         iconSize: 100 * root.scale

@@ -17,6 +17,7 @@ Item {
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth,
                                   height / baseHeight)
+    property real tileScale: Math.min(1, width / baseWidth, (height + 63) / 600)
 
     Rectangle {
         anchors.fill: parent
@@ -32,6 +33,7 @@ Item {
             anchors.horizontalCenter: parent.horizontalCenter
 
             MenuTile {
+                uiScale: root.tileScale
 
                 iconSource: "qrc:/qt/qml/Application/assets/images/barchart.png"
                 label: "Coil Output"
@@ -41,6 +43,7 @@ Item {
             }
 
             MenuTile {
+                uiScale: root.tileScale
                 iconSource: "qrc:/qt/qml/Application/assets/images/axis.png"
                 label: "X-Y Plot"
                 iconSize: 100 * root.scale
@@ -53,6 +56,7 @@ Item {
             }
 
             MenuTile {
+                uiScale: root.tileScale
                 iconSource: "qrc:/qt/qml/Application/assets/images/cpu.png"
                 label: "H/W Diagnosis"
                 iconSize: 100 * root.scale
@@ -61,6 +65,7 @@ Item {
             }
 
             MenuTile {
+                uiScale: root.tileScale
                 iconSource: "qrc:/qt/qml/Application/assets/images/axis.png"
                 label: "4 Channel DSO"
                 iconSize: 100 * root.scale

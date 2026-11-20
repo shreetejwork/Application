@@ -4,11 +4,6 @@ import QtQuick.Controls
 Button {
     id: btn
 
-    Typography {
-        id: componentTypography
-        scale: root.scale || 1.0
-    }
-
     property color bgColor: "#1A4DB5"
     property color hoverColor: "#163E91"
     property color disabledColor: "#D1D5DB"

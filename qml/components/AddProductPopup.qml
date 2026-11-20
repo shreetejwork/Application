@@ -74,10 +74,18 @@ Popup {
 
     closePolicy: Popup.NoAutoClose
 
-    anchors.centerIn: parent
+    property real usableHeight: Overlay.overlay
+                                ? Overlay.overlay.height * (GlobalState.loginKeyboardRequest ? 0.5 : 1)
+                                : height
+    property real uiScale: GlobalState.loginKeyboardRequest
+                           ? Math.max(0, Math.min(1,
+                                                  (usableHeight - 16) / (420 * scaleFactor)))
+                           : 1
 
     width: 560 * scaleFactor
     height: 420 * scaleFactor
+    x: (Overlay.overlay.width - width) / 2
+    y: (usableHeight - height) / 2
 
     padding: 0
 
@@ -120,6 +128,7 @@ Popup {
     // =====================================================
 
     background: Rectangle {
+        scale: popup.uiScale
 
         radius: 18 * popup.scaleFactor
 
@@ -137,6 +146,7 @@ Popup {
 
     Column {
 
+        scale: popup.uiScale
         anchors.fill: parent
 
         anchors.leftMargin: 28 * popup.scaleFactor

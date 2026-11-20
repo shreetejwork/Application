@@ -4,10 +4,6 @@ import QtQuick.Layouts
 import AppState 1.0
 
 Rectangle {
-    Typography {
-        id: componentTypography
-        scale: root.scale || 1.0
-    }
     id: keyboard
 
     width: parent.width

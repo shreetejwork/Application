@@ -86,7 +86,7 @@ Popup {
     height: 380 * scale
 
     x: (Overlay.overlay.width - width) / 2
-    y: (Overlay.overlay.height - height) / 2 - (60 * scale)
+    y: Math.max(0, (Overlay.overlay.height - height) / 2 - (60 * scale))
 
     // =====================================================
     // NO Behavior on y HERE — it was the problem

@@ -69,6 +69,7 @@ Item {
     property real baseWidth:  1024
     property real baseHeight: 600
     property real scale: Math.min(width / baseWidth, height / baseHeight)
+    property real tileScale: Math.min(1, width / baseWidth, (height + 63) / 600)
 
     // =====================================================
     // STATIC BACKDROP
@@ -200,6 +201,7 @@ Item {
                     // }
 
                     MenuTile {
+                        uiScale: root.tileScale
                         iconSource: "qrc:/qt/qml/Application/assets/images/MachieDetails.png"
                         label:      "Machine Details"
                         iconSize:   100 * root.scale
@@ -207,6 +209,7 @@ Item {
                     }
 
                     MenuTile {
+                        uiScale: root.tileScale
                         iconSource: "qrc:/qt/qml/Application/assets/images/usbupdate.png"
                         label:      "Software Update \n(USB)"
                         iconSize:   100 * root.scale
@@ -217,6 +220,7 @@ Item {
                     }
 
                     MenuTile {
+                        uiScale: root.tileScale
                         visible: GlobalState.showPrinterSettings
                         enabled: GlobalState.showPrinterSettings
                         iconSource: "qrc:/qt/qml/Application/assets/images/printer.png"
@@ -234,6 +238,7 @@ Item {
                     // ── SLOT 1: Add your future PNG here ───
 
                     MenuTile {
+                        uiScale: root.tileScale
 
                         visible: GlobalState.developerLogin
 
@@ -245,6 +250,7 @@ Item {
                     }
 
                     MenuTile {
+                        uiScale: root.tileScale
                         iconSource: "qrc:/qt/qml/Application/assets/images/folder.png"
                         label:      "Machine\nDocuments"
                         iconSize:   100 * root.scale
@@ -254,6 +260,7 @@ Item {
                     }
 
                     MenuTile {
+                        uiScale: root.tileScale
 
                         // visible: GlobalState.developerLogin
                         // enabled: GlobalState.developerLogin
