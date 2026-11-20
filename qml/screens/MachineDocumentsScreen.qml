@@ -189,8 +189,12 @@ Item {
                     }
 
                     Rectangle {
-                        Layout.preferredWidth: 280 * root.scale
-                        Layout.preferredHeight: 38 * root.scale
+                        Layout.preferredWidth: root.width < 900
+                                               ? 250
+                                               : 280 * root.scale
+                        Layout.preferredHeight: root.width < 900
+                                                ? 42
+                                                : 38 * root.scale
                         radius: 8 * root.scale
                         color: "#1A4DB5"
 
@@ -200,6 +204,12 @@ Item {
                             font.pixelSize: 14
                             font.weight: Font.Medium
                             color: "#FFFFFF"
+                            width: root.width < 900
+                                   ? parent.width - 16
+                                   : implicitWidth
+                            wrapMode: root.width < 900 ? Text.WordWrap : Text.NoWrap
+                            horizontalAlignment: Text.AlignHCenter
+                            verticalAlignment: Text.AlignVCenter
                         }
 
                         MouseArea {

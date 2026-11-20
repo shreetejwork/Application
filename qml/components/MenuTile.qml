@@ -36,7 +36,7 @@ import QtQuick
         Text {
             text: label
             anchors.horizontalCenter: parent.horizontalCenter
-            font.pixelSize: 18 * parent.parent.uiScale
+            font.pixelSize: Math.max(16, 18 * parent.parent.uiScale)
             color: "#000000"
             horizontalAlignment: Text.AlignHCenter
         }
