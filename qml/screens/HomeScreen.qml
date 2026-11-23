@@ -16,7 +16,6 @@ Item {
     property var batchPage: null
     property var navigateToBatch
     property real scale: Math.min(1, width / 1024, (height + 95) / 600)
-    readonly property bool compactHome: homeScreen.scale < 1.0
 
     readonly property bool batchRunning:
         batchPage ? batchPage.batchRunning : false
@@ -1260,7 +1259,7 @@ Item {
 
                     anchors.horizontalCenter: parent.horizontalCenter
 
-                    spacing: compactHome ? 10 : 40
+                    spacing: 40
 
                     // =====================================================
                     // BATCH STATUS BUTTON
@@ -1439,7 +1438,7 @@ Item {
                         x: rightCol.x + (rightCol.width - width) / 2
                         y: 10
                         width: rightCol.width * 0.85 * 0.50
-                        height: compactHome ? 55 : 65
+                        height: 65
 
                         radius: 14
 
@@ -1552,7 +1551,7 @@ Item {
 
                     Item {
                         width: 1
-                        height: compactHome ? 20 : 65
+                        height: 65
                     }
 
                     CircularGauge {
@@ -1561,9 +1560,7 @@ Item {
 
                         anchors.horizontalCenter: parent.horizontalCenter
 
-                        width: compactHome
-                               ? parent.width * 0.78
-                               : parent.width
+                        width: parent.width
                         height: width
 
 
@@ -1653,41 +1650,34 @@ Item {
 
                     }
 
-                    Item{
-                        width: 1
-                        height: 2
-                    }
+                }
 
-                    Text {
-                        textFormat: Text.RichText
+                Text {
+                    textFormat: Text.RichText
 
-                        text: GlobalState.rejectedCount
-                              + " : Total Rejections<br>"
-                              + "<span style='font-size:"
-                              + Math.round(16 * homeScreen.scale)
-                              + "px; color:#1A4DB5;'>(Since Power On)</span>"
+                    text: GlobalState.rejectedCount
+                          + " : Total Rejections<br>"
+                          + "<span style='font-size:16px; color:#1A4DB5;'>(Since Power On)</span>"
 
-                        font.pixelSize: compactHome
-                                       ? Math.max(13, screenTypography.bodySmall)
-                                       : screenTypography.bodySmall
-                        color: "#1A4DB5"
+                    font.pixelSize: screenTypography.bodySmall
+                    color: "#1A4DB5"
 
-                        width: parent.width
-                        horizontalAlignment: Text.AlignRight
+                    width: rightCol.width
+                    horizontalAlignment: Text.AlignRight
 
-                        anchors.right: parent.right
-                        anchors.rightMargin: 10
+                    anchors.right: parent.right
+                    anchors.rightMargin: 10
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 10 * homeScreen.scale
 
-                        MouseArea {
-                            anchors.fill: parent
-                            pressAndHoldInterval: 1500
+                    MouseArea {
+                        anchors.fill: parent
+                        pressAndHoldInterval: 1500
 
-                            onPressAndHold: {
-                                GlobalState.rejectedCount = 0
-                                console.log("Rejected count reset")
-                            }
+                        onPressAndHold: {
+                            GlobalState.rejectedCount = 0
+                            console.log("Rejected count reset")
                         }
-
                     }
                 }
             }
