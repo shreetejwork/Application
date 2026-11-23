@@ -702,11 +702,17 @@ Item {
         Item {
             id: homeContent
 
-            anchors.top: topBar.bottom
-            anchors.left: parent.left
-            anchors.right: parent.right
-            anchors.bottom: parent.bottom
-            anchors.margins: Math.max(12, parent.width * 0.01)
+            width: 1024
+            height: Math.max(505, (parent.height - topBar.height - 24) / homeScreen.scale)
+            x: (parent.width - width * homeScreen.scale) / 2
+            y: topBar.height + 12
+
+            transform: Scale {
+                origin.x: 0
+                origin.y: 0
+                xScale: homeScreen.scale
+                yScale: homeScreen.scale
+            }
 
             // LEFT
             Item {
