@@ -27,10 +27,23 @@ Item {
         anchors.fill: parent
         color: "#F5F7FC"
 
-        Column {
+        Flickable {
+            id: developerScroll
             anchors.fill: parent
             anchors.margins: 30 * root.scale
-            spacing: 24 * root.scale
+            clip: true
+            boundsBehavior: Flickable.StopAtBounds
+            contentWidth: width
+            contentHeight: developerContent.implicitHeight
+
+            ScrollBar.vertical: ScrollBar {
+                policy: ScrollBar.AsNeeded
+            }
+
+            Column {
+                id: developerContent
+                width: parent.width
+                spacing: 24 * root.scale
 
             // ===== HEADER =====
             Column {
@@ -579,6 +592,7 @@ Item {
                             }
                         }
                     }
+                }
                 }
 
                 Rectangle {
