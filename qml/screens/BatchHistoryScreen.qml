@@ -543,7 +543,7 @@ Item {
 
                                     Text {
 
-                                        text: index + 1
+                                        text: batchHistoryModel.count - index
 
                                         width: root.colSr
 

@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.16)
 
 project(Application VERSION 4.0.1 LANGUAGES CXX)
 
-set(APP_DISPLAY_VERSION "1.0/041126" CACHE STRING
-    "Application display version (maximum 16 characters)")
+set(APP_DISPLAY_VERSION "2.0/231126" CACHE STRING
+    "Application display version (maximum 16 characters)" FORCE)
 string(LENGTH "${APP_DISPLAY_VERSION}" APP_DISPLAY_VERSION_LENGTH)
 if(APP_DISPLAY_VERSION_LENGTH GREATER 16)
     message(FATAL_ERROR "APP_DISPLAY_VERSION must be 16 characters or fewer")
