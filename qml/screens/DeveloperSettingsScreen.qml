@@ -595,6 +595,48 @@ Item {
                 }
                 }
 
+                // ===== Defect Card =====
+                Rectangle {
+                    width: flow.cardWidth
+                    height: 120 * root.scale
+                    radius: 16
+                    color: "#FFFFFF"
+                    border.color: "#E5E7EB"
+
+                    RowLayout {
+                        anchors.fill: parent
+                        anchors.margins: 16
+
+                        ColumnLayout {
+                            Layout.fillWidth: true
+
+                            Text {
+                                text: "Defect Card"
+                                font.pixelSize: 20
+                                color: "#111827"
+                            }
+
+                            Text {
+                                text: GlobalState.showDefectCard
+                                      ? "Defect Card On"
+                                      : "Defect Card Off"
+                                font.pixelSize: 16
+                                color: "#6B7280"
+                            }
+                        }
+
+                        DDButton {
+                            width: 90 * root.scale
+                            height: 36 * root.scale
+                            toggled: GlobalState.showDefectCard
+
+                            onToggledChanged: {
+                                GlobalState.showDefectCard = toggled
+                            }
+                        }
+                    }
+                }
+
                 Rectangle {
                     width: flow.cardWidth
                     height: 120 * root.scale

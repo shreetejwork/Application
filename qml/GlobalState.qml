@@ -22,6 +22,7 @@ QtObject {
         property bool showTrackingScreen: true
         property bool showWaveformScreen: true
         property bool showXyPlotScreen: true
+        property bool showDefectCard: true
 
         property string networkSelectedTab: "WiFi"
 
@@ -62,6 +63,7 @@ QtObject {
     property bool showTrackingScreen: settings.showTrackingScreen
     property bool showWaveformScreen: settings.showWaveformScreen
     property bool showXyPlotScreen: settings.showXyPlotScreen
+    property bool showDefectCard: settings.showDefectCard
 
     property int baudRate: settings.baudRate
 
@@ -176,6 +178,7 @@ QtObject {
     onShowTrackingScreenChanged: settings.showTrackingScreen = showTrackingScreen
     onShowWaveformScreenChanged: settings.showWaveformScreen = showWaveformScreen
     onShowXyPlotScreenChanged: settings.showXyPlotScreen = showXyPlotScreen
+    onShowDefectCardChanged: settings.showDefectCard = showDefectCard
 
     onBaudRateChanged: settings.baudRate = baudRate
 

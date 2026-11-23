@@ -147,6 +147,9 @@ Item {
         target: SerialManager
 
         function onDefectPacketReceived() {
+            if (!GlobalState.showDefectCard)
+                return
+
             homeScreen.defectCardVisible = true
             defectCardTimer.restart()
         }
@@ -1012,8 +1015,8 @@ Item {
                         id: defectCard
 
                         width: parent.width * 0.98
-                        height: homeScreen.defectCardVisible ? 70 : 0
-                        visible: homeScreen.defectCardVisible
+                        height: GlobalState.showDefectCard && homeScreen.defectCardVisible ? 70 : 0
+                        visible: GlobalState.showDefectCard && homeScreen.defectCardVisible
 
                         anchors.horizontalCenter: parent.horizontalCenter
 
@@ -1169,7 +1172,7 @@ Item {
                         // ZOOM IN / OUT
                         // --------------------------------------------------
                         SequentialAnimation {
-                            running: homeScreen.defectCardVisible
+                            running: GlobalState.showDefectCard && homeScreen.defectCardVisible
                             loops: Animation.Infinite
 
                             NumberAnimation {
@@ -1205,7 +1208,7 @@ Item {
                         // RED GLOW PULSE
                         // --------------------------------------------------
                         SequentialAnimation {
-                            running: homeScreen.defectCardVisible
+                            running: GlobalState.showDefectCard && homeScreen.defectCardVisible
                             loops: Animation.Infinite
 
                             NumberAnimation {
