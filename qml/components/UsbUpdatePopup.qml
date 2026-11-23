@@ -5,8 +5,8 @@ import QtQuick.Layouts
 Popup {
     id: popupRoot
 
-    width: Overlay.overlay ? Math.min(850, Overlay.overlay.width - 16) : 850
-    height: Overlay.overlay ? Math.min(460, Overlay.overlay.height - 20) : 460
+    width: Overlay.overlay ? Math.min(850, Overlay.overlay.width - 32) : 850
+    height: Overlay.overlay ? Math.min(460, Overlay.overlay.height - 32) : 460
     property real uiScale: Overlay.overlay
                            ? Math.max(0, Math.min(1,
                                                   (Overlay.overlay.width - 16) / 850,
@@ -176,8 +176,6 @@ Popup {
     // ============================================================
 
     background: Rectangle {
-        scale: popupRoot.uiScale
-
         radius: 24
 
         color: "#FFFFFF"
@@ -205,13 +203,12 @@ Popup {
 
     contentItem: ColumnLayout {
         anchors.fill: parent
-        scale: popupRoot.uiScale
 
-        anchors.leftMargin: 28
-        anchors.rightMargin: 28
+        anchors.leftMargin: 28 * popupRoot.uiScale
+        anchors.rightMargin: 28 * popupRoot.uiScale
 
-        anchors.topMargin: 14
-        anchors.bottomMargin: 14
+        anchors.topMargin: 14 * popupRoot.uiScale
+        anchors.bottomMargin: 14 * popupRoot.uiScale
 
         spacing: 6
 
@@ -222,7 +219,7 @@ Popup {
         Item {
 
             Layout.fillWidth: true
-            Layout.preferredHeight: 62
+            Layout.preferredHeight: 62 * popupRoot.uiScale
 
             Column {
 
@@ -274,7 +271,7 @@ Popup {
             id: stepArea
 
             Layout.fillWidth: true
-            Layout.preferredHeight: 78
+            Layout.preferredHeight: 78 * popupRoot.uiScale
 
             // ----------------------------------------------------
             // BASE CONNECTOR
@@ -482,7 +479,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 118
+            Layout.preferredHeight: 118 * popupRoot.uiScale
 
             // ----------------------------------------------------
             // PROGRESS
@@ -674,7 +671,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 58
+            Layout.preferredHeight: 58 * popupRoot.uiScale
 
             radius: 12
 
@@ -802,7 +799,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 28
+            Layout.preferredHeight: 28 * popupRoot.uiScale
 
             visible:
                 popupRoot.showConfirmation
@@ -834,7 +831,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 46
+            Layout.preferredHeight: 46 * popupRoot.uiScale
 
             // ----------------------------------------------------
             // CANCEL
