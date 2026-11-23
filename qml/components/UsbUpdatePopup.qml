@@ -9,6 +9,7 @@ Popup {
     height: Overlay.overlay ? Math.min(460, Overlay.overlay.height - 20) : 460
     property real uiScale: Overlay.overlay
                            ? Math.max(0, Math.min(1,
+                                                  (Overlay.overlay.width - 16) / 850,
                                                   (Overlay.overlay.height - 16) / 460))
                            : 1
 
@@ -17,7 +18,7 @@ Popup {
        : 0
 
     y: Overlay.overlay
-       ? Math.max(10, Math.round((Overlay.overlay.height - height) / 2) - 35)
+       ? Math.round((Overlay.overlay.height - height) / 2)
        : 0
 
     modal: true
