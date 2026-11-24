@@ -44,7 +44,7 @@ Item {
 
             batchReportModel.append({
                 id: r.id,
-                sno: i + 1,
+                sno: reports.length - i,
 
                 batch: r.batch,
                 product: r.product,
@@ -304,7 +304,7 @@ Item {
                             onClicked: {
 
                                 // Clear actual database records
-                                var success = databaseManager.clearBatchReports()
+                                var success = databaseManager.deleteAllBatchReports()
 
                                 if (success) {
 
