@@ -5,13 +5,14 @@ import QtQuick.Layouts
 Popup {
     id: popupRoot
 
-    width: Overlay.overlay ? Math.min(850, Overlay.overlay.width - 32) : 850
-    height: Overlay.overlay ? Math.min(460, Overlay.overlay.height - 32) : 460
     property real uiScale: Overlay.overlay
                            ? Math.max(0, Math.min(1,
-                                                  (Overlay.overlay.width - 16) / 850,
-                                                  (Overlay.overlay.height - 16) / 460))
+                                                  Math.max(0, Overlay.overlay.width - 32) / 850,
+                                                  Math.max(0, Overlay.overlay.height - 32) / 460))
                            : 1
+
+    width: 850 * uiScale
+    height: 460 * uiScale
 
     x: Overlay.overlay
        ? Math.round((Overlay.overlay.width - width) / 2)
@@ -176,7 +177,7 @@ Popup {
     // ============================================================
 
     background: Rectangle {
-        radius: 24
+        radius: 24 * popupRoot.uiScale
 
         color: "#FFFFFF"
 
@@ -186,9 +187,9 @@ Popup {
         Rectangle {
 
             anchors.fill: parent
-            anchors.margins: 2
+            anchors.margins: 2 * popupRoot.uiScale
 
-            radius: 22
+            radius: 22 * popupRoot.uiScale
 
             color: "transparent"
 
@@ -202,13 +203,10 @@ Popup {
     // ============================================================
 
     contentItem: ColumnLayout {
-        anchors.fill: parent
-
-        anchors.leftMargin: 28 * popupRoot.uiScale
-        anchors.rightMargin: 28 * popupRoot.uiScale
-
-        anchors.topMargin: 14 * popupRoot.uiScale
-        anchors.bottomMargin: 14 * popupRoot.uiScale
+        width: 794
+        height: 432
+        anchors.centerIn: parent
+        scale: popupRoot.uiScale
 
         spacing: 6
 
@@ -219,7 +217,7 @@ Popup {
         Item {
 
             Layout.fillWidth: true
-            Layout.preferredHeight: 62 * popupRoot.uiScale
+            Layout.preferredHeight: 62
 
             Column {
 
@@ -271,7 +269,7 @@ Popup {
             id: stepArea
 
             Layout.fillWidth: true
-            Layout.preferredHeight: 78 * popupRoot.uiScale
+            Layout.preferredHeight: 78
 
             // ----------------------------------------------------
             // BASE CONNECTOR
@@ -479,7 +477,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 118 * popupRoot.uiScale
+            Layout.preferredHeight: 118
 
             // ----------------------------------------------------
             // PROGRESS
@@ -671,7 +669,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 58 * popupRoot.uiScale
+            Layout.preferredHeight: 58
 
             radius: 12
 
@@ -799,7 +797,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 28 * popupRoot.uiScale
+            Layout.preferredHeight: 28
 
             visible:
                 popupRoot.showConfirmation
@@ -831,7 +829,7 @@ Popup {
 
             Layout.fillWidth: true
 
-            Layout.preferredHeight: 46 * popupRoot.uiScale
+            Layout.preferredHeight: 46
 
             // ----------------------------------------------------
             // CANCEL
