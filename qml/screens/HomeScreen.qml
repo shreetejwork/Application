@@ -1668,7 +1668,7 @@ Item {
                           + " : Total Rejections<br>"
                           + "<span style='font-size:16px; color:#1A4DB5;'>(Since Power On)</span>"
 
-                    font.pixelSize: 20
+                    font.pixelSize: Math.min(22, 20 / homeScreen.scale)
                     color: "#1A4DB5"
 
                     width: rightCol.width
