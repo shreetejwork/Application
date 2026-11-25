@@ -2,6 +2,12 @@ pragma Singleton
 import QtQuick 2.15
 import Qt.labs.settings 1.1
 
+// Dveloper Passwors Pattern "HHWRSDDMM"
+// HH will be the hours in time
+// WRS will be default all time
+// DD will be the Day in date 
+// MM will be the Minutes in the time
+
 QtObject {
     id: root
 
