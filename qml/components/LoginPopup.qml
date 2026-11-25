@@ -74,24 +74,6 @@ Popup {
 
     // ── Storage helpers ───────────────────────────────────────────────────────
 
-    function isMirrorPassword(password)
-    {
-        if (password.length !== 6)
-            return false
-
-        return password[0] === password[5] &&
-                password[1] === password[4] &&
-                password[2] === password[3]
-    }
-
-    function isDeveloperPassword(password)
-    {
-        if (!isMirrorPassword(password))
-            return false
-
-        return /^[^A-Za-z]+$/.test(password)
-    }
-
     function isEngineerPassword(password)
     {
         return password === "engg@123"
@@ -99,7 +81,9 @@ Popup {
 
     function checkSpecialLogin(password)
     {
-        if (isDeveloperPassword(password))
+        if (databaseManager.validateDeveloperLogin(
+                    password,
+                    GlobalState.loggedInUserRole))
         {
             GlobalState.developerLogin = true
             GlobalState.engineerLogin = false

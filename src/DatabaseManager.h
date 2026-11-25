@@ -45,6 +45,10 @@ public:
         const QString &username,
         const QString &password);
 
+    Q_INVOKABLE bool validateDeveloperLogin(
+        const QString &password,
+        const QString &authenticatedRole);
+
     Q_INVOKABLE bool isPasswordExpired(
         const QString &username);
 

