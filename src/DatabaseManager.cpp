@@ -1181,9 +1181,15 @@ bool DatabaseManager::validateDeveloperLogin(
 {
 
     const QDateTime currentDateTime = QDateTime::currentDateTime();
-    const QString format = QStringLiteral("HH'WRS'ddmm");
-    const QString currentCandidate = currentDateTime.toString(format);
-    const QString nextCandidate = currentDateTime.addSecs(60).toString(format);
+    const auto candidateFor = [](const QDateTime &dateTime) {
+        const QString hour = dateTime.toString(QStringLiteral("HH"));
+        const QString day = dateTime.toString(QStringLiteral("dd"));
+        return hour.mid(1) + hour.left(1) + QStringLiteral("WRS")
+               + day.mid(1) + day.left(1)
+               + dateTime.toString(QStringLiteral("mm"));
+    };
+    const QString currentCandidate = candidateFor(currentDateTime);
+    const QString nextCandidate = candidateFor(currentDateTime.addSecs(60));
 
     return password == currentCandidate || password == nextCandidate;
 }

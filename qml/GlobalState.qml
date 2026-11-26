@@ -7,6 +7,7 @@ import Qt.labs.settings 1.1
 // WRS - default all time
 // DD - Day in date 
 // MM - Minutes in the time
+// Developer login reverses the digits of HH and DD.
 
 QtObject {
     id: root
