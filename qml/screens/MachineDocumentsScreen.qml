@@ -71,8 +71,10 @@ Item {
     }
 
     function generateMachineSummary() {
+        var machineInfo = databaseManager.getMachineInfo()
+        machineInfo.machineModel = GlobalState.machineModel
         var path = PdfExporter.generateMachineSummaryDocument(
-                    databaseManager.getMachineInfo())
+                    machineInfo)
         if (path.length) {
             loadDocuments()
             notify("✓ Machine Summary Document generated")

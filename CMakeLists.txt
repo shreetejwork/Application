@@ -43,6 +43,7 @@ qt_add_qml_module(appApplication
         qml/components/ActionButton.qml
         qml/components/ValueControl.qml
         qml/components/ParameterAuthorityPopup.qml
+        qml/components/MachineModelPopup.qml
         qml/components/CircleActionButton.qml
         qml/screens/AutoLearnScreen.qml
         qml/components/CustomPopup.qml

@@ -48,6 +48,7 @@ QtObject {
         property string powerFailureTime: ""
 
         property string productName: ""
+        property string machineModel: ""
 
         property int baudRate: 115200
 
@@ -85,6 +86,7 @@ QtObject {
     property string powerFailureTime: settings.powerFailureTime
 
     property string productName: settings.productName
+    property string machineModel: settings.machineModel
 
     property string networkSelectedTab: settings.networkSelectedTab
 
@@ -97,6 +99,7 @@ QtObject {
     onBlockedUsersJsonChanged:   settings.blockedUsersJson   = blockedUsersJson
     onFailedAttemptsJsonChanged: settings.failedAttemptsJson = failedAttemptsJson
     onParameterAccessJsonChanged: settings.parameterAccessJson = parameterAccessJson
+    onMachineModelChanged: settings.machineModel = machineModel
 
     function hasFullParameterAccess() {
         return developerLogin || engineerLogin ||

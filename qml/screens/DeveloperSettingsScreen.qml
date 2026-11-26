@@ -16,7 +16,11 @@ Item {
 
     ParameterAuthorityPopup {
         id: parameterAuthorityPopup
+    }
 
+    MachineModelPopup {
+        id: machineModelPopup
+        uiScale: root.scale
     }
 
     Rectangle {
@@ -637,43 +641,103 @@ Item {
                     }
                 }
 
-                Rectangle {
-                    width: flow.cardWidth
+                Item {
+                    width: flow.width
                     height: 120 * root.scale
-                    radius: 16
-                    color: "#FFFFFF"
-                    border.color: "#E5E7EB"
 
-                    ColumnLayout {
+                    Row {
                         anchors.fill: parent
-                        anchors.margins: 16
-                        spacing: 8 * root.scale
-
-                        Text {
-                            text: "Give User Authority"
-                            font.pixelSize: 20
-                            color: "#111827"
-                        }
-
+                        spacing: flow.spacing
 
                         Rectangle {
-                            Layout.preferredWidth: 132 * root.scale
-                            Layout.preferredHeight: 34 * root.scale
-                            radius: 6 * root.scale
-                            color: openAuthorityArea.pressed ? "#163E91" : "#1A4DB5"
+                            width: flow.cardWidth
+                            height: parent.height
+                            radius: 16
+                            color: "#FFFFFF"
+                            border.color: "#E5E7EB"
 
-                            Text {
-                                anchors.centerIn: parent
-                                text: "Configure"
-                                color: "#FFFFFF"
-                                font.pixelSize: Math.max(12, 14 * root.scale)
-                                font.weight: Font.Medium
-                            }
-
-                            MouseArea {
-                                id: openAuthorityArea
+                            ColumnLayout {
                                 anchors.fill: parent
-                                onClicked: parameterAuthorityPopup.open()
+                                anchors.margins: 16
+                                spacing: 8 * root.scale
+
+                                Text {
+                                    text: "Give User Authority"
+                                    font.pixelSize: 20
+                                    color: "#111827"
+                                }
+
+                                Rectangle {
+                                    Layout.preferredWidth: 132 * root.scale
+                                    Layout.preferredHeight: 34 * root.scale
+                                    radius: 6 * root.scale
+                                    color: openAuthorityArea.pressed
+                                           ? "#163E91" : "#1A4DB5"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Configure"
+                                        color: "#FFFFFF"
+                                        font.pixelSize: Math.max(12, 14 * root.scale)
+                                        font.weight: Font.Medium
+                                    }
+
+                                    MouseArea {
+                                        id: openAuthorityArea
+                                        anchors.fill: parent
+                                        onClicked: parameterAuthorityPopup.open()
+                                    }
+                                }
+                            }
+                        }
+
+                        Rectangle {
+                            width: flow.cardWidth
+                            height: parent.height
+                            radius: 16
+                            color: "#FFFFFF"
+                            border.color: "#E5E7EB"
+
+                            RowLayout {
+                                anchors.fill: parent
+                                anchors.margins: 16
+
+                                ColumnLayout {
+                                    Layout.fillWidth: true
+                                    Text {
+                                        text: "Machine Model"
+                                        font.pixelSize: 20
+                                        color: "#111827"
+                                    }
+
+                                    Text {
+                                        text: GlobalState.machineModel || "Not configured"
+                                        font.pixelSize: 16
+                                        color: "#6B7280"
+                                    }
+                                }
+
+                                Rectangle {
+                                    Layout.preferredWidth: 132 * root.scale
+                                    Layout.preferredHeight: 34 * root.scale
+                                    radius: 6 * root.scale
+                                    color: openMachineModelArea.pressed
+                                           ? "#163E91" : "#1A4DB5"
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Configure"
+                                        color: "#FFFFFF"
+                                        font.pixelSize: Math.max(12, 14 * root.scale)
+                                        font.weight: Font.Medium
+                                    }
+
+                                    MouseArea {
+                                        id: openMachineModelArea
+                                        anchors.fill: parent
+                                        onClicked: machineModelPopup.open()
+                                    }
+                                }
                             }
                         }
                     }

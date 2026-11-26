@@ -375,9 +375,9 @@ QString PdfExporter::generateMachineSummaryDocument(
 
     const int pageWidth = writer.width();
     const int pageHeight = writer.height();
-    const int marginLeft = 58;
-    const int marginRight = 58;
-    const int marginTop = 56;
+    const int marginLeft = 64;
+    const int marginRight = 64;
+    const int marginTop = 64;
     const int contentWidth = pageWidth - marginLeft - marginRight;
 
     const int regularFontId =
@@ -408,6 +408,7 @@ QString PdfExporter::generateMachineSummaryDocument(
     const QList<QPair<QString, QString>> details = {
         {"Machine ID", machineId},
         {"M/c Sr. No.", machineSerial},
+        {"Machine Model", machineInfo.value("machineModel").toString()},
         {"M/c Type", machineType},
         {"Supplier Name", supplierName},
         {"User", userName},
@@ -445,45 +446,45 @@ QString PdfExporter::generateMachineSummaryDocument(
         painter.restore();
     }
 
-    int y = marginTop + 36;
-    painter.setFont(fontB(14));
-    painter.drawText(QRect(marginLeft, y, contentWidth, 30),
+    int y = marginTop + 20;
+    painter.setPen(QColor("#1F2937"));
+    painter.setFont(fontB(20));
+    painter.drawText(QRect(marginLeft, y, contentWidth, 38),
                      Qt::AlignHCenter | Qt::AlignVCenter,
                      "MACHINE SUMMARY DOCUMENT");
-    y += 34;
-    painter.setPen(QPen(Qt::black, 2));
-    painter.drawLine(marginLeft, y + 4, pageWidth - marginRight, y + 4);
-    y += 20;
-    painter.setFont(fontB(10));
-    painter.drawText(QRect(marginLeft, y, contentWidth / 2, 20),
-                     Qt::AlignLeft | Qt::AlignVCenter,
-                     "MACHINE DETAILS");
-    painter.setFont(fontR(8));
-    painter.drawText(QRect(marginLeft + contentWidth / 2, y,
-                           contentWidth / 2, 20),
+    y += 46;
+    painter.setPen(QPen(QColor("#1A4DB5"), 2));
+    painter.drawLine(marginLeft, y, pageWidth - marginRight, y);
+    y += 18;
+    painter.setPen(QColor("#64748B"));
+    painter.setFont(fontR(10));
+    painter.drawText(QRect(marginLeft, y, contentWidth, 24),
                      Qt::AlignRight | Qt::AlignVCenter,
                      "File Creation Date & Time: " + createdText);
-    y += 26;
+    y += 30;
 
-    const int tableWidth = contentWidth * 88 / 100;
+    const int tableWidth = contentWidth * 94 / 100;
     const int tableLeft = (pageWidth - tableWidth) / 2;
-    const int labelWidth = tableWidth * 40 / 100;
-    const int rowHeight = 34;
-    const int tableHeaderHeight = 28;
-    const int cornerRadius = 6;
+    const int labelWidth = tableWidth * 38 / 100;
+    const int rowHeight = 62;
+    const int tableHeaderHeight = 42;
+    const int cornerRadius = 8;
+    const int tableTop = y;
 
     painter.save();
     painter.setPen(Qt::NoPen);
-    painter.setBrush(QColor(52, 58, 64));
+    painter.setBrush(QColor("#1A4DB5"));
     painter.drawRoundedRect(QRect(tableLeft, y, tableWidth, tableHeaderHeight),
                             cornerRadius, cornerRadius);
     painter.setPen(Qt::white);
-    painter.setFont(fontB(9));
-    painter.drawText(QRect(tableLeft, y, labelWidth, tableHeaderHeight),
-                     Qt::AlignCenter, "Machine Information");
-    painter.drawText(QRect(tableLeft + labelWidth, y,
-                           tableWidth - labelWidth, tableHeaderHeight),
-                     Qt::AlignCenter, "Details");
+    painter.setFont(fontB(11));
+    painter.drawText(QRect(tableLeft + 20, y, labelWidth - 28,
+                           tableHeaderHeight),
+                     Qt::AlignLeft | Qt::AlignVCenter,
+                     "Machine Information");
+    painter.drawText(QRect(tableLeft + labelWidth + 20, y,
+                           tableWidth - labelWidth - 36, tableHeaderHeight),
+                     Qt::AlignLeft | Qt::AlignVCenter, "Details");
     painter.restore();
     y += tableHeaderHeight + 4;
 
@@ -492,34 +493,44 @@ QString PdfExporter::generateMachineSummaryDocument(
         const int rowTop = y + static_cast<int>(i) * rowHeight;
         const QRect rowRect(tableLeft, rowTop, tableWidth, rowHeight);
         painter.fillRect(rowRect, i % 2
-                         ? QColor(220, 235, 255)
-                         : QColor(248, 250, 253));
+                         ? QColor("#FFFFFF")
+                         : QColor("#F6F8FC"));
 
-        painter.setPen(QColor(45, 45, 45));
-        painter.setFont(fontB(9));
-        painter.drawText(QRect(tableLeft + 14, rowTop + 2,
-                               labelWidth - 28, rowHeight - 4),
-                         Qt::AlignCenter | Qt::TextSingleLine,
+        painter.setPen(QColor("#334155"));
+        painter.setFont(fontB(12));
+        painter.drawText(QRect(tableLeft + 20, rowTop + 6,
+                               labelWidth - 32, rowHeight - 12),
+                         Qt::AlignLeft | Qt::AlignVCenter | Qt::TextSingleLine,
                          details.at(i).first);
-        painter.setFont(fontR(10));
-        painter.drawText(QRect(tableLeft + labelWidth + 14, rowTop + 2,
-                               tableWidth - labelWidth - 28, rowHeight - 4),
-                         Qt::AlignCenter | Qt::TextSingleLine,
+        painter.setPen(QColor("#0F172A"));
+        painter.setFont(fontR(12));
+        painter.drawText(QRect(tableLeft + labelWidth + 20, rowTop + 6,
+                               tableWidth - labelWidth - 36, rowHeight - 12),
+                         Qt::AlignLeft | Qt::AlignVCenter | Qt::TextWordWrap,
                          details.at(i).second.isEmpty()
                              ? QStringLiteral("---")
                              : details.at(i).second);
 
-        painter.setPen(QPen(QColor(230, 230, 230), 1));
+        painter.setPen(QPen(QColor("#DCE4EF"), 1));
+        painter.drawLine(tableLeft + labelWidth, rowTop + 10,
+                         tableLeft + labelWidth, rowTop + rowHeight - 10);
         painter.drawLine(tableLeft + 12, rowTop + rowHeight,
                          tableLeft + tableWidth - 12, rowTop + rowHeight);
     }
 
-    y += rowHeight * details.size() + 16;
-    painter.setPen(QPen(Qt::black, 2));
+    const int tableHeight =
+        tableHeaderHeight + 4 + rowHeight * static_cast<int>(details.size());
+    painter.setBrush(Qt::NoBrush);
+    painter.setPen(QPen(QColor("#D7E0EC"), 1));
+    painter.drawRoundedRect(QRect(tableLeft, tableTop, tableWidth, tableHeight),
+                            cornerRadius, cornerRadius);
+
+    y = tableTop + tableHeight + 26;
+    painter.setPen(QPen(QColor("#D7E0EC"), 1));
     painter.drawLine(marginLeft, y, pageWidth - marginRight, y);
-    painter.setPen(Qt::black);
-    painter.setFont(fontR(8));
-    painter.drawText(QRect(marginLeft, y + 3, contentWidth, 16),
+    painter.setPen(QColor("#64748B"));
+    painter.setFont(fontR(10));
+    painter.drawText(QRect(marginLeft, y + 6, contentWidth, 20),
                      Qt::AlignHCenter | Qt::AlignVCenter,
                      "This is machine generated document");
 
